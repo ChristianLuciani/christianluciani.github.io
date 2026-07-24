@@ -1,7 +1,7 @@
 # ESTADO — cv-cluciani
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-03-10
+> Última actualización: 2026-07-24
 
 ## Desplegado en
 https://christianluciani.github.io/cv-cluciani
@@ -125,3 +125,4 @@ Lo que puede dejarse al navegador: cuerpo de texto largo, publicaciones.
 - Foto: URL Google Photos con onerror fallback →
   si expira, colocar `assets/images/christian-luciani.jpg`
 - Ramas: `claude/[tema]` para Claude, `cursor/[tema]` para Cursor
+- 2026-07-24: Añadida contribución OSS pi-acp (svkozak/pi-acp#76) — implementación session/delete para protocolo ACP — en sección Open Source de Sala 07 Competencias
