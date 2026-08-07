@@ -1,7 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/cv-cluciani/",
+  base: "/",
   build: {
     sourcemap: true
   },
