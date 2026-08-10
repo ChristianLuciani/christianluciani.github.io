@@ -115,3 +115,6 @@ Al añadir texto ES en `index.html` → <strong>actualizar también su traducci�
 - 2026-08-10: Limpieza de artefactos: eliminados `assets/index-OWey81UA.js` (+ `.map`) del árbol; el entry pasa a apuntar a `/src/main.ts`
 - 2026-08-10: Sala Contacto renombrada a «Conectar» (SALA 07); se añade `docs/REFACTOR_PLAN.md` (parametrización + modularización, plan para próxima ventana)
 - 2026-08-10: Fix crítico: faltaba `</script>` tras el bloque i18n (rompía el parseo); se corrige y se revalidan los scripts embebidos
+- 2026-08-10: Se añade Sala «El Grafo» (mapa de conexiones interactivo en canvas, fondos según publicado/no-publicado); se mueve a penúltima posición como recapitulación
+- 2026-08-10: Galería/Evidencia oculta (`display:none`) hasta llenar el contenido
+- 2026-08-10: El nombre «Christian Luciani» persiste como firma debajo del fractal minimizado (esquina SI) tras la intro
