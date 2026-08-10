@@ -41,7 +41,7 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | 03 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
 | 04 · Galería | Fotografías y evidencias | — |
 | 05 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
-| 06 · Competencias | Skills, idiomas, open source | Sierpinski |
+| 06 · Competencias | Agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
 | 07 · Conectar | Redes y contacto | — |
 
 ## Flujo de trabajo
