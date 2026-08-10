@@ -1,4 +1,4 @@
-# Sistema de Diseño — cv-cluciani
+# Sistema de Diseño — cv (Christian Luciani)
 
 ## Paleta de colores
 
