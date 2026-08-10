@@ -49,6 +49,18 @@ describe("SALAS — integridad", () => {
     );
   });
 
+  it("planoLabel: todas las visibles tienen etiqueta uppercase para el plano", () => {
+    for (const s of visibleSalas()) {
+      expect(s.planoLabel, `planoLabel de ${s.id}`).toBe(s.planoLabel?.toUpperCase());
+    }
+    // Experiencia usa TRAYECTORIA en el plano (≠ navLabel).
+    const exp = SALAS.find((s) => s.id === "experiencia")!;
+    expect(exp.planoLabel).toBe("TRAYECTORIA");
+    expect(exp.planoLabel).not.toBe(exp.navLabel.toUpperCase());
+    // La galería (oculta) no participa del plano.
+    expect(SALAS.find((s) => s.id === "galeria")!.planoLabel).toBeUndefined();
+  });
+
   it("todo título y traducción llevan <em> (estilo museístico)", () => {
     for (const s of SALAS) {
       expect(s.titulo).toMatch(/<em>/);

@@ -34,6 +34,8 @@ export interface SalaDef {
   subtituloEn: string;
   /** Etiqueta del nav lateral (hover) — solo ES (atributo, no se traduce) */
   navLabel: string;
+  /** Etiqueta del plano SVG (uppercase) — puede diferir de navLabel (p.ej. experiencia → TRAYECTORIA) */
+  planoLabel?: string;
   /** id del canvas de ilusión de fondo de la sala (museo 3D / metadata) */
   ilusion?: string;
   /** true → sala oculta (no numerada, sin nav, sin re-render de metadatos) */
@@ -58,6 +60,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "PERFIL PROFESIONAL · CUENCA, ECUADOR",
     subtituloEn: "PROFESSIONAL PROFILE · CUENCA, ECUADOR",
     navLabel: "Perfil",
+    planoLabel: "PERFIL",
     ilusion: "c-necker"
   },
   {
@@ -67,6 +70,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS",
     subtituloEn: "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS",
     navLabel: "Proyectos",
+    planoLabel: "PROYECTOS",
     ilusion: "c-proyectos"
   },
   {
@@ -76,6 +80,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
     subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
     navLabel: "Experiencia",
+    planoLabel: "TRAYECTORIA",
     ilusion: "c-exp"
   },
   {
@@ -94,6 +99,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026",
     subtituloEn: "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026",
     navLabel: "Biblioteca",
+    planoLabel: "BIBLIOTECA",
     ilusion: "c-fisica"
   },
   {
@@ -103,6 +109,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
     subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
     navLabel: "Competencias",
+    planoLabel: "COMPETENCIAS",
     ilusion: "c-comp"
   },
   {
@@ -112,6 +119,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
     subtituloEn: "CONSTELLATION · AREAS · PROJECTS · CONNECTIONS · 2026",
     navLabel: "Constelación",
+    planoLabel: "CONSTELACIÓN",
     ilusion: "c-graph"
   },
   {
@@ -120,6 +128,7 @@ export const SALAS: SalaDef[] = [
     tituloEn: "<em>Connect</em>",
     subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
     subtituloEn: "CONTACT · NETWORKS · RESEARCH",
-    navLabel: "Conectar"
+    navLabel: "Conectar",
+    planoLabel: "CONECTAR"
   }
 ];

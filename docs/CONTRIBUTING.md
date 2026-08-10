@@ -24,19 +24,25 @@ git push origin aionui/pi/fix-foto-perfil
 
 ```
 christianluciani.github.io/
-├── index.html          ← ARCHIVO PRINCIPAL DESPLEGADO (GitHub Pages + Vite)
-├── build.sh            ← Ensambla src/ → index.html (opcional, legacy)
+├── index.html          ← GENERADO (build.ts) — NO editar a mano
+├── build.ts            ← Ensambla src/templates + SALAS → index.html
 ├── vite.config.ts      ← build (base "/")
 ├── README.md
 ├── ESTADO.md           ← Estado actual y próximo paso por proyecto
 ├── public/             ← Estáticos servidos tal cual (íconos, fotos)
 ├── src/
-│   ├── main.ts         ← entry Vite (mounts canvases + mountSalas)
-│   ├── cv/             ← PARAMETRIZACIÓN: estructura del museo
-│   │   ├── salas.ts    ← SALAS: única fuente de verdad (nav, numeración, i18n, títulos)
+│   ├── main.ts         ← entry Vite (UI, i18n, intro, grafo, canvases, mountSalas)
+│   ├── cv/
+│   │   ├── salas.ts    ← SALAS: única fuente de verdad de la estructura del museo
 │   │   ├── render.ts   ← deriva nav/números/ROOM_EN/MAP_EXTRA desde SALAS
-│   │   └── *.test.ts   ← integridad + paridad con index.html + guarda scripts inline
-│   └── ts/             ← Fractales/ilusiones en TypeScript (Koch, canvas)
+│   │   ├── i18n.ts     ← diccionario MAP + toggle ES/EN (módulo)
+│   │   ├── intro.ts    ← animación de introducción (módulo)
+│   │   └── *.test.ts   ← integridad + paridad + build + guarda scripts
+│   ├── templates/      ← HTML ensamblable (head, cover, hero, plano, salas…)
+│   └── ts/
+│       ├── app/        ← ui.ts + canvasWatch.ts
+│       ├── graph/      ← grafo.ts (mapa de conexiones)
+│       └── illusions/  ← ilusiones ópticas por canvas (módulos)
 ├── assets/             ← Recursos del sitio (og-image, thumbs de papers)
 ├── tools/              ← Generadores (og-image.svg)
 └── docs/
@@ -44,32 +50,33 @@ christianluciani.github.io/
     └── STYLE_GUIDE.md  ← Sistema de diseño completo
 ```
 
-> Nota: el flujo de edición real es **directamente sobre `index.html`**. La subcarpeta
-> modular legacy (`src/styles|js|sections`) ya no se usa; la lógica viva está en `src/ts/`
-> (compilada por Vite), el contenido en `index.html` y la **estructura de salas en `src/cv/salas.ts`**
-> (la navegación, numeración e i18n de salas se generan desde ahí en runtime — ver
-> `docs/REFACTOR_PLAN.md`, Fase 1).
+> **El `index.html` es 100% generado.** Editar contenido = tocar `src/` y reconstruir:
+> `npm run build:html` (solo HTML) o `npm run build` (HTML + bundle Vite). El test
+> `src/cv/build.test.ts` falla si el index.html commiteado no coincide byte a byte con el
+> output de `assembleHtml()` — no edites `index.html` a mano.
 
 ## Editar el CV
 
-### Editar la estructura de salas (recomendado para el refactor)
+### Editar la estructura de salas
 La **única fuente de verdad** de las salas es `src/cv/salas.ts` (`SALAS`). Desde ahí se generan
-nav lateral, numeración (`SALA 01–07`), títulos EN (`ROOM_EN`) y claves de sala del diccionario
-ES/EN. Para renombrar, reordenar, añadir o quitar una sala: edita `SALAS` (y en Fase 2 el HTML
-se regenerará solo; hoy los `<section>` viven en `index.html` en el mismo orden que `SALAS` —
-el test `src/cv/parity.test.ts` falla si se desalinean).
+nav lateral, numeración (`SALA 01–07`), etiquetas del plano, títulos EN (`ROOM_EN`) y claves de
+sala del diccionario ES/EN. Renombrar/reordenar/añadir/quitar sala = editar `SALAS` + `npm run
+build:html` (o `npm run build`). Los tests `src/cv/parity.test.ts` y `src/cv/build.test.ts`
+fallan si algo queda desalineado o el HTML no se regeneró.
 
 ### Editar el contenido (recomendado)
-El `index.html` tiene comentarios `SALA 0X` que delimitan cada sala.
-Busca `SALA 01`, `SALA 02`, etc. para navegar.
+Cada `<section class="room">` vive en `src/templates/sala_html.ts` (`ROOM_SHELL` + `ROOM_BODY` por
+sala; el header número/título/subtítulo se genera desde `SALAS`). El `<style>` global y el head
+viven en `src/templates/head_html.ts`; el plano en `src/templates/plano_html.ts`. Cambiá la
+fuente y reconstruí (`npm run build:html`).
 
-**Al editar texto en español, actualiza también su traducción EN** en el diccionario
-`MAP` al final del archivo (el bloque `<!-- i18n ES/EN toggle -->`). Si no, el toggle
-dejará ese texto sin traducir.
+**Al editar texto en español, actualiza también su traducción EN** en el diccionario `MAP` de
+`src/cv/i18n.ts`. Si no, el toggle dejará ese texto sin traducir.
 
 ### Editar estilos / ilusiones
-- Variables de diseño y CSS: empieza en el bloque `:root` y el `<style>` del `index.html`.
-- Ilusiones/fractales en TypeScript: `src/ts/` (se compila con `npm run build`).
+- Variables de diseño y CSS: empieza en el bloque `:root` y el `<style>` de
+  `src/templates/head_html.ts`.
+- Ilusiones/fractales en TypeScript: `src/ts/illusions/` (se compilan con `npm run build`).
 
 ## Añadir fotos a la galería
 

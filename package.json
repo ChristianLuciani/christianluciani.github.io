@@ -4,14 +4,17 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "node build.ts && vite build",
     "preview": "vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "build:html": "node build.ts"
   },
   "devDependencies": {
+    "@types/node": "^26.2.0",
     "typescript": "^5.7.0",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
-  }
+  },
+  "type": "module"
 }

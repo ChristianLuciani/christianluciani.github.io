@@ -1,39 +1,42 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (Fase 1 refactor: parametrización SALAS)
+> Última actualización: 2026-08-10 (Fase 2 refactor: modularización — index.html 100% generado)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
 
 ---
 
-## 🔧 Fase 1 del refactor — parametrización de salas (rama `aionui/pi/salas-parametrizacion`)
+## ✅ Fase 2 del refactor — modularización (rama `aionui/pi/modularizacion`)
 
-**SPEC:** `docs/REFACTOR_PLAN.md`. Fuente de verdad de la estructura del museo = `src/cv/salas.ts` (`SALAS`).
+**SPEC:** `docs/REFACTOR_PLAN.md` §3.2/§4. `index.html` es **100% generado** por `build.ts`.
 
-- Navegación lateral (`.nav-dot`), numeración (`SALA 01–07`), `ROOM_EN[]`, claves de sala del `MAP`
-  y subtítulos se derivan de `SALAS` en `src/cv/render.ts` (runtime, vía `main.ts` → `mountSalas()`).
-- Renombrar/reordenar/agregar/quitar sala = editar `salas.ts` (o su orden); la numeración se
-  recalcula sola (01..N por orden visible).
-- El i18n inline ya NO tiene `ROOM_EN` hardcodeado ni claves de sala en `MAP`: las fusiona desde
-  `window.__CV_I18N__` (ROOM_EN + MAP_EXTRA) que publica `render.ts`; refresca en `cv:salas-ready`.
-- Tests nuevos: `src/cv/salas.test.ts` (integridad/derivados), `src/cv/parity.test.ts` (paridad
-  DOM generado ↔ index.html), `src/cv/inline-scripts.test.ts` (guarda `node --check` de los
-  scripts inline — protege la clase de bug del `</script>`). 32 tests en total.
-- Fix preexistente: comentario HTML anidado en el bloque de la galería (parse5 `nested-comment`,
-  dejaba texto+`<img>` sueltos en el DOM); ahora es un comentario válido.
+- `npm run build` = `node build.ts && vite build`; `npm run build:html` regenera solo el HTML.
+- Templates en `src/templates/` (head, print-cv, cover, hero, plano, salas + ensamble `index.ts`);
+  nav-dots, celdas del plano (grilla 3×2) y headers de sala se generan desde `SALAS`.
+- **Cero scripts inline**: los 4 bloques `<script>` → módulos TS bundleados por Vite
+  (`src/ts/app/ui.ts`, `canvasWatch.ts`, 7 ilusiones, `src/ts/graph/grafo.ts`, `src/cv/i18n.ts`,
+  `src/cv/intro.ts`). El `dist/index.html` solo tiene ld+json + el bundle.
+- i18n importa SALAS directo (ya no usa `window.__CV_I18N__`); `mountSalas()` con drift-guard
+  i18n-aware (no pisa traducciones EN).
+- Test de build (`src/cv/build.test.ts`): el index.html commiteado debe ser byte a byte el
+  output de `assembleHtml()` → editar contenido = editar `src/` + rebuild (contrato enforced).
+- Verificado en browser headless: ES/EN + persistencia, nav, plano, intro completa, grafo,
+  canvases, sin errores de consola. 39 tests.
 
-**Pendiente Fase 2 (modularización):** extraer CSS/salas/scripts a fuentes ensamblables y
-`index.html` 100% generado por `build.ts` (plano SVG generado desde `SALAS` incluido).
+---
+
+## ✅ Fase 1 del refactor — parametrización de salas (`aionui/pi/salas-parametrizacion`, mergeada)
+
+- Fuente de verdad = `src/cv/salas.ts` (`SALAS`); nav, numeración, `ROOM_EN[]` y claves de sala
+  del `MAP` se derivan desde ahí (runtime vía `mountSalas()` + build vía templates).
+- Tests: `salas.test.ts`, `parity.test.ts`, `inline-scripts.test.ts`.
+- Fix preexistente: comentario HTML anidado del bloque galería.
 
 ---
 
 ## ✅ Completado
-
-- Parametrización de salas (Fase 1 del refactor): `SALAS` como fuente de verdad
-
-- Estructura de 7 salas + entrada con ilusiones ópticas por canvas
 - Fractal Koch animado (3 copos anidados, rotación diferencial) → minimiza como logo
 - Foto de perfil circular (enero 2023) con fallback automático
 - Botón descarga CV + versión imprimible A4 (@media print)
