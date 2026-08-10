@@ -10,18 +10,18 @@ https://christianluciani.github.io/  (raíz · base "/")
 
 ## ✅ Completado
 
-- Estructura de 8 salas con ilusiones ópticas por canvas
+- Estructura de 7 salas + entrada con ilusiones ópticas por canvas
 - Fractal Koch animado (3 copos anidados, rotación diferencial) → minimiza como logo
 - Foto de perfil circular (enero 2023) con fallback automático
 - Botón descarga CV + versión imprimible A4 (@media print)
 - Logo Drahma desde repo público DRAHMAN-ORG
 - Galería con placeholders en 3 sub-secciones (Drahma, Lab STEM, Ciencia pública)
 - WhatsApp, LinkedIn, ResearchGate, X, Instagram
-- Thumbnails reales de papers (figuras de portada) en Sala 06
+- Thumbnails reales de papers (figuras de portada) en Sala 05 Ciencia
 - Enlaces a ilusiones ópticas (michaelbach.de) en cada `.illusion-frame`
 - i18n ES/EN (toggle + diccionario `MAP`) para el sitio; print-CV/imprimible actualmente solo en ES
 - Necker BG full-width en Sala 01
-- Sala 02 Proyectos: Kontablo, ZENTROPY, Esteléctica, CLAPPS.AI, NOOS, Drahma
+- Sala 02 Proyectos: Kontablo, ZENTROPY, Esteléctica, CLAPPS.AI, NOOS, Drahma (showcase integrado, ya no es sala aparte)
 - Manual de estilo embebido en comentario HTML
 - Estructura modular: docs/CONTRIBUTING.md, docs/STYLE_GUIDE.md, build.sh, ESTADO.md
 
@@ -94,7 +94,7 @@ Al añadir texto ES en `index.html` → <strong>actualizar también su traducci�
 - Variante CV para ERP/Zoho consulting
 - Variante CV académica con publicaciones expandidas
 - Página dedicada a ilusiones ópticas (dominio propio o subdominio)
-- Revisión de repos GitHub y actualización de Sala 03 con info real
+- Revisión de repos GitHub y actualización de Sala 02 Proyectos con info real
 
 ---
 
@@ -109,4 +109,7 @@ Al añadir texto ES en `index.html` → <strong>actualizar también su traducci�
 - Ramas: `aionui/pi/[tema]` (aioncore), `claude/[tema]` (Claude), `cursor/[tema]` (Cursor)
 - i18n: texto ES en el HTML + diccionario EN en `MAP` (final del archivo). Rojo y verde: al editar ES, editar EN.
 - 2026-07-24: Añadida contribución OSS pi-acp (svkozak/pi-acp#76) — implementación session/delete para protocolo ACP — en sección Open Source de Sala 07 Competencias
-- 2026-08-10: Sitio alineado a la raíz (`christianluciani.github.io/`); lista de publicaciones unificada entre JSON-LD, Sala 06 y print-CV; numeración de salas y nivel de inglés consistentes
+- 2026-08-10: Sitio alineado a la raíz (`christianluciani.github.io/`); lista de publicaciones unificada entre JSON-LD, Sala 05 Ciencia y print-CV; numeración de salas y nivel de inglés consistentes
+- 2026-08-10: Drahma integrado como showcase dentro de Sala 02 Proyectos (ya no es sala aparte); renumera salas 03–07
+- 2026-08-10: Nombre "Christian Luciani" (sin Toledo); animación intro (frase → nombre) tras el fractal; QR en el CV imprimible
+- 2026-08-10: Limpieza de artefactos: eliminados `assets/index-OWey81UA.js` (+ `.map`) del árbol; el entry pasa a apuntar a `/src/main.ts`
