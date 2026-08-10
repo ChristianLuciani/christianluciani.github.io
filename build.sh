@@ -11,7 +11,7 @@ ROOT="$(cd "$(dirname "$0")" && pwd)"
 SRC="$ROOT/src"
 OUT="$ROOT/index.html"
 
-echo "🔨 Ensamblando cv-cluciani..."
+echo "🔨 Ensamblando cv (CV de Christian Luciani)..."
 
 # Nota: el flujo de trabajo recomendado es editar index.html directamente
 # usando los comentarios de sección como guía.

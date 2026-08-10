@@ -1,10 +1,10 @@
-# ESTADO — cv-cluciani
+# ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-07-24
+> Última actualización: 2026-08-10 (alineación deploy a raíz + consistencia de contenido)
 
 ## Desplegado en
-https://christianluciani.github.io/cv-cluciani
+https://christianluciani.github.io/  (raíz · base "/")
 
 ---
 
@@ -17,8 +17,11 @@ https://christianluciani.github.io/cv-cluciani
 - Logo Drahma desde repo público DRAHMAN-ORG
 - Galería con placeholders en 3 sub-secciones (Drahma, Lab STEM, Ciencia pública)
 - WhatsApp, LinkedIn, ResearchGate, X, Instagram
+- Thumbnails reales de papers (figuras de portada) en Sala 06
+- Enlaces a ilusiones ópticas (michaelbach.de) en cada `.illusion-frame`
+- i18n ES/EN (toggle + diccionario `MAP`) para el sitio; print-CV/imprimible actualmente solo en ES
 - Necker BG full-width en Sala 01
-- Sala 03 Proyectos: CLAPPS.AI, NOOS, Kontablo, Drahma repo
+- Sala 02 Proyectos: Kontablo, ZENTROPY, Esteléctica, CLAPPS.AI, NOOS, Drahma
 - Manual de estilo embebido en comentario HTML
 - Estructura modular: docs/CONTRIBUTING.md, docs/STYLE_GUIDE.md, build.sh, ESTADO.md
 
@@ -32,26 +35,6 @@ Añadir imágenes reales a `assets/gallery/` y descomentar los `<img>` en cada `
 - Lab STEM USFQ — impresora 3D, cortadora láser, materiales (4 slots)
 - Casa Abierta USFQ / difractómetro de rayos X (2 slots)
 **Acción:** sesión fotográfica o rescate de archivo. Sin código nuevo.
-
-### P2 — Thumbnails de papers científicos
-Mostrar la portada o figura principal de cada publicación junto al ítem en la lista.
-Estrategia: captura de pantalla del abstract en el journal, guardar en `assets/images/papers/`.
-En el `.pub-item` añadir `<img class="pub-thumb">` con CSS `width:60px;object-fit:cover`.
-**Nota:** Wiley, Elsevier, MDPI permiten mostrar la portada del artículo con enlace al DOI.
-
-### P3 — Links de ilusiones ópticas a página externa
-Añadir en cada `.illusion-frame` un enlace discreto a Wikipedia u otra referencia.
-
-Referencias sugeridas (mejor que Wikipedia para este contexto):
-- Cubo de Necker → https://michaelbach.de/ot/sze-necker/
-- Escalera de Penrose → https://michaelbach.de/ot/sze-penrose-stairs/
-- Triángulo de Penrose → https://michaelbach.de/ot/sze-penrose-triangle/
-- Serpientes Rotantes → https://michaelbach.de/ot/mot-rotSnakes/
-- Sierpinski → https://en.wikipedia.org/wiki/Sierpiński_triangle
-(michaelbach.de = recurso académico de referencia en ciencias visuales, U. de Freiburg)
-
-Implementación: pequeño ícono "↗" en `.illusion-label`, abre en `_blank`.
-Futuro: página dedicada a ilusiones ópticas bajo clapps.ai o dominio propio.
 
 ### P4 — Fractales en TypeScript con leyenda matemática
 Generar los fractales del lado del cliente en TypeScript compilado.
@@ -93,15 +76,14 @@ Canvas de fondo por plano con textura sutil.
 **Esfuerzo:** M-L. Abrir issue dedicado.
 
 ### P6 — Multilingüe ES / EN / FR
+**Estado:** ES/EN implementado con toggle (`#btn-lang`) y diccionario `MAP` al final del `index.html`.
+**Pendiente:** FR.
 **Criterio:** vale la pena a medias. Los navegadores traducen bien el texto plano,
 pero NO traducen: metadatos OG/Twitter, PDF descargable, labels de canvas,
 tooltips de ilusiones, ni el CV imprimible.
-Lo que sí tiene sentido implementar manualmente:
-- `lang` toggle (botón ES/EN/FR en la nav)
-- Objeto `i18n` en JS con strings por idioma para títulos, labels y sala-subtítulos
-- `<html lang="es">` dinámico
-- CV imprimible en 3 idiomas (3 secciones `#print-cv-es`, `#print-cv-en`, `#print-cv-fr`)
-Lo que puede dejarse al navegador: cuerpo de texto largo, publicaciones.
+
+Al añadir texto ES en `index.html` → <strong>actualizar también su traducción EN en `MAP`</strong>.
+
 **Esfuerzo:** M. Francés requiere revisión nativa.
 
 ---
@@ -119,10 +101,12 @@ Lo que puede dejarse al navegador: cuerpo de texto largo, publicaciones.
 ## Notas técnicas
 
 - Single HTML file · sin build step obligatorio para editar contenido
-- GitHub Pages: push a `main` → deploy automático ~1 min
+- Deploy: GitHub Actions compila `dist/` (Vite, base "/") y publica en la raíz; push a `main` → ~1 min
 - Fractal: 3 copos Koch anidados rotando a velocidades distintas
   (`fractalAngle`, `-fractalAngle*1.3`, `fractalAngle*2`)
 - Foto: URL Google Photos con onerror fallback →
   si expira, colocar `assets/images/christian-luciani.jpg`
-- Ramas: `claude/[tema]` para Claude, `cursor/[tema]` para Cursor
+- Ramas: `aionui/pi/[tema]` (aioncore), `claude/[tema]` (Claude), `cursor/[tema]` (Cursor)
+- i18n: texto ES en el HTML + diccionario EN en `MAP` (final del archivo). Rojo y verde: al editar ES, editar EN.
 - 2026-07-24: Añadida contribución OSS pi-acp (svkozak/pi-acp#76) — implementación session/delete para protocolo ACP — en sección Open Source de Sala 07 Competencias
+- 2026-08-10: Sitio alineado a la raíz (`christianluciani.github.io/`); lista de publicaciones unificada entre JSON-LD, Sala 06 y print-CV; numeración de salas y nivel de inglés consistentes

@@ -1,4 +1,4 @@
-# Sistema de Diseño — cv-cluciani
+# Sistema de Diseño — christianluciani.github.io (CV de Christian Luciani)
 
 ## Paleta de colores
 

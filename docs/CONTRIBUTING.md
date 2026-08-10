@@ -1,63 +1,67 @@
-# Guía de Contribución — cv-cluciani
+# Guía de Contribución — christianluciani.github.io (CV de Christian Luciani)
 
 ## Flujo de trabajo Git
 
-**Regla absoluta:** nunca trabajar directamente en `main`.
+**Regla absoluta:** nunca trabajar directamente en `main`. Usar worktree/rama dedicada por sesión.
 
 ```
-claude/[tema]   ← ramas de Claude
-cursor/[tema]   ← ramas de Cursor / IDE agents
+aionui/pi/[tema]   ← ramas de AionUi / Pi (harness del autor)
+claude/[tema]      ← ramas de Claude
+cursor/[tema]      ← ramas de Cursor / IDE agents
 ```
 
 Ejemplo:
 ```bash
-git checkout -b claude/fix-foto-perfil
+git checkout -b aionui/pi/fix-foto-perfil
 # ... editar ...
 git add .
 git commit -m "fix: foto perfil circular con fallback"
-git push origin claude/fix-foto-perfil
+git push origin aionui/pi/fix-foto-perfil
 # → abrir PR para que Christian revise y haga merge
 ```
 
 ## Estructura del proyecto
 
 ```
-cv-cluciani/
-├── index.html          ← ARCHIVO DESPLEGADO (GitHub Pages lo sirve)
-├── build.sh            ← Ensambla src/ → index.html (opcional)
+christianluciani.github.io/
+├── index.html          ← ARCHIVO PRINCIPAL DESPLEGADO (GitHub Pages + Vite)
+├── build.sh            ← Ensambla src/ → index.html (opcional, legacy)
+├── vite.config.ts      ← build (base "/")
 ├── README.md
 ├── ESTADO.md           ← Estado actual y próximo paso por proyecto
-├── assets/
-│   ├── images/         ← Fotos propias (christian-luciani.jpg, etc.)
-│   └── gallery/        ← Fotos para las galerías de sala
-├── docs/
-│   ├── CONTRIBUTING.md ← Este archivo
-│   └── STYLE_GUIDE.md  ← Sistema de diseño completo
-└── src/                ← FUENTES MODULARES (referencia + edición)
-    ├── styles/         ← CSS por sección
-    ├── js/             ← JS por módulo funcional
-    └── sections/       ← HTML por sala (partials)
+├── public/             ← Estáticos servidos tal cual (íconos, fotos)
+├── src/ts/             ← Fractales/ilusiones en TypeScript (Koch, canvas)
+├── assets/             ← Recursos del sitio (og-image, thumbs de papers)
+├── tools/              ← Generadores (og-image.svg)
+└── docs/
+    ├── CONTRIBUTING.md ← Este archivo
+    └── STYLE_GUIDE.md  ← Sistema de diseño completo
 ```
+
+> Nota: el flujo de edición real es **directamente sobre `index.html`**. La subcarpeta
+> modular legacy (`src/styles|js|sections`) ya no se usa; la lógica viva está en `src/ts/`
+> (compilada por Vite) y el contenido en `index.html`.
 
 ## Editar el CV
 
-### Opción A — editar index.html directamente
-El `index.html` tiene comentarios claros que delimitan cada sección.
+### Editar el contenido (recomendado)
+El `index.html` tiene comentarios `SALA 0X` que delimitan cada sala.
 Busca `SALA 01`, `SALA 02`, etc. para navegar.
-Después de editar: `git commit` y `git push` → GitHub Pages actualiza en ~1min.
 
-### Opción B — editar en src/ y reconstruir
-1. Edita el archivo relevante en `src/styles/`, `src/js/` o `src/sections/`
-2. Ejecuta `bash build.sh` para regenerar `index.html`
-3. Revisa el resultado en el navegador
-4. Commit y push
+**Al editar texto en español, actualiza también su traducción EN** en el diccionario
+`MAP` al final del archivo (el bloque `<!-- i18n ES/EN toggle -->`). Si no, el toggle
+dejará ese texto sin traducir.
+
+### Editar estilos / ilusiones
+- Variables de diseño y CSS: empieza en el bloque `:root` y el `<style>` del `index.html`.
+- Ilusiones/fractales en TypeScript: `src/ts/` (se compila con `npm run build`).
 
 ## Añadir fotos a la galería
 
-1. Copia la imagen a `assets/gallery/nombre-descriptivo.jpg`
-2. En `index.html`, dentro de la sala correspondiente, busca `.gallery-slot`
-3. Descomenta `<img src="assets/gallery/nombre-descriptivo.jpg">`
-4. El placeholder desaparece automáticamente
+1. Copia la imagen a `public/assets/` (o `assets/`) con nombre descriptivo.
+2. En `index.html`, dentro de la sala correspondiente, busca `.gallery-slot`.
+3. Descomenta `<img src="assets/gallery/nombre-descriptivo.jpg">` (ajusta la ruta).
+4. El placeholder desaparece automáticamente.
 
 ## Convención de commits
 
