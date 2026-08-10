@@ -380,6 +380,25 @@ body {
   transition:opacity 1s ease, transform 1s cubic-bezier(.16,1,.3,1);
 }
 .intro-name.in { opacity:1; transform:scale(1); }
+/* Estado final: el nombre se mueve y persiste debajo del fractal minimizado (esquina SI) */
+.intro-name.persist {
+  position:fixed;
+  top:70px !important;
+  left:26px !important;
+  font-size:.82rem;
+  font-weight:600;
+  letter-spacing:.18em;
+  text-align:left;
+  white-space:nowrap;
+  color:var(--muted);
+  opacity:1;
+  visibility:visible;
+  pointer-events:auto;
+  transform:none !important;
+  transition:top 1s cubic-bezier(.16,1,.3,1), left 1s cubic-bezier(.16,1,.3,1), font-size 1s ease, opacity 1s ease, color 1s ease;
+  cursor:pointer;
+}
+.intro-name.persist:hover { color:var(--teal); }
 @media (prefers-reduced-motion: reduce) {
   #intro-block { display:none; }
 }
@@ -2545,10 +2564,11 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   var started=false, idx=0;
 
   function finish(){
-    if (nameEl) nameEl.classList.remove('in');
+    // El nombre permanece: se mueve a la esquina, debajo del fractal minimizado.
+    if (nameEl){ nameEl.classList.add('persist'); }
     loader.classList.add('hidden');
     if (fractal) fractal.classList.add('minimized');
-    setTimeout(function(){ if (block && block.parentNode) block.parentNode.removeChild(block); }, 1200);
+    // No se elimina el bloque: el nombre persiste como firma bajo el fractal.
   }
 
   function showNext(){
@@ -2591,6 +2611,11 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   // Skip: un clic durante el intro salta directo al nombre y revela el hero.
   var skip = function(){ if (!started) return; finish(); };
   document.addEventListener('click', skip, { once:true });
+
+  // El nombre persistente (firma bajo el fractal) lleva al hero.
+  if (nameEl) nameEl.addEventListener('click', function(){
+    var hero=document.getElementById('hero'); if(hero) hero.scrollIntoView({behavior:'smooth'});
+  });
 })();
 </script>
 
