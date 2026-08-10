@@ -1,4 +1,4 @@
-# Guía de Contribución — cv (Christian Luciani)
+# Guía de Contribución — christianluciani.github.io (CV de Christian Luciani)
 
 ## Flujo de trabajo Git
 
@@ -23,7 +23,7 @@ git push origin aionui/pi/fix-foto-perfil
 ## Estructura del proyecto
 
 ```
-cv/
+christianluciani.github.io/
 ├── index.html          ← ARCHIVO PRINCIPAL DESPLEGADO (GitHub Pages + Vite)
 ├── build.sh            ← Ensambla src/ → index.html (opcional, legacy)
 ├── vite.config.ts      ← build (base "/")

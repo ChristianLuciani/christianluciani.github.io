@@ -1,13 +1,13 @@
 # Christian Luciani — Museo de una Trayectoria
 
-CV interactivo diseñado como recorrido museográfico, con ilusiones ópticas animadas y scroll cinematográfico.
+CV interactivo diseñado como recorrido museográfico, con ilusiones ópticas animadas y scroll cinematográfico. Repositorio y sitio de GitHub Pages.
 
 **[→ Ver en vivo](https://christianluciani.github.io/)**
 
 ## Estructura
 
 ```
-cv/
+christianluciani.github.io/
 ├── index.html            ← Archivo principal (desplegado por GitHub Pages)
 ├── build.sh              ← Ensamblador opcional de src/
 ├── ESTADO.md             ← Estado actual y próximos pasos

@@ -1,4 +1,4 @@
-# ESTADO — cv (Christian Luciani)
+# ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
 > Última actualización: 2026-08-10 (alineación deploy a raíz + consistencia de contenido)
