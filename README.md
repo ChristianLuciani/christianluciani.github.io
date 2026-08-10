@@ -42,7 +42,7 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | ~~04 · Evidencia~~ | ~~Galería (pendiente de llenar)~~ — *oculta* | — |
 | 04 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
 | 05 · Competencias | Agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
-| 06 · El Grafo | Recapitulación: Mapa de conexiones (áreas · proyectos · no-publicados) | Grafo físico interactivo (canvas) |
+| 06 · La Constelación | Recapitulación: Mapa de conexiones (áreas · proyectos · no-publicados) | Constelación interactiva (canvas, mapa de conexiones) |
 | 07 · Conectar | Redes y contacto | — |
 
 ## Flujo de trabajo
