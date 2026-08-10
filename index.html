@@ -382,23 +382,31 @@ body {
 .intro-name.in { opacity:1; transform:scale(1); }
 /* Estado final: el nombre se mueve y persiste debajo del fractal minimizado (esquina SI) */
 .intro-name.persist {
-  position:fixed;
-  top:70px !important;
-  left:26px !important;
-  font-size:.82rem;
-  font-weight:600;
-  letter-spacing:.18em;
-  text-align:left;
-  white-space:nowrap;
-  color:var(--muted);
+  /* El nombre queda COMO EL HERO: grande, en dos líneas (Christian / Luciani), visible.
+     Se mantiene centrado (el anchor #persist-anchor lo centra); no se miniaturiza. */
+  position:static;
+  font-size:clamp(2.8rem, 8vw, 6rem);
+  font-weight:900;
+  line-height:.96;
+  letter-spacing:.01em;
+  text-align:center;
+  color:#fff;
   opacity:1;
   visibility:visible;
   pointer-events:auto;
   transform:none !important;
-  transition:top 1s cubic-bezier(.16,1,.3,1), left 1s cubic-bezier(.16,1,.3,1), font-size 1s ease, opacity 1s ease, color 1s ease;
+  transition:opacity 1s ease, color 1s ease;
   cursor:pointer;
 }
+.intro-name.persist span { color:var(--teal); }
 .intro-name.persist:hover { color:var(--teal); }
+#persist-anchor {
+  position:fixed; inset:0;
+  z-index:1002;
+  display:flex; align-items:center; justify-content:center;
+  text-align:center;
+  pointer-events:none;
+}
 @media (prefers-reduced-motion: reduce) {
   #intro-block { display:none; }
 }
@@ -1043,7 +1051,7 @@ body {
 <div id="loader">
   <div id="intro-block">
     <p id="intro-phrase" class="intro-phrase">¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?</p>
-    <h1 class="intro-name">Christian Luciani</h1>
+    <h1 class="intro-name">Christian<br><span>Luciani</span></h1>
   </div>
 </div>
 
@@ -2550,7 +2558,7 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   var FRASES = [
     '¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?',
     'Distintas perspectivas de una misma realidad…',
-    'una <em>Instancia Humana</em>.'
+    'Una <em>Instancia Humana</em>.'
   ];
   var FADE_IN  = 1100;  // ms
   var HOLD     = 1000;  // ms (tiempo de lectura del texto)
