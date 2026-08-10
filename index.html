@@ -382,14 +382,16 @@ body {
 .intro-name.in { opacity:1; transform:scale(1); }
 /* Estado final: el nombre se mueve y persiste debajo del fractal minimizado (esquina SI) */
 .intro-name.persist {
-  /* El nombre queda COMO EL HERO: grande, en dos líneas (Christian / Luciani), visible.
-     Se mantiene centrado (el anchor #persist-anchor lo centra); no se miniaturiza. */
-  position:static;
-  font-size:clamp(2.8rem, 8vw, 6rem);
+  /* El nombre queda en la ESQUINA sup-izq, debajo del fractal, grande y en dos líneas.
+     (como originalmente: el fractal minimiza a la esquina y el nombre queda debajo). */
+  position:fixed;
+  top:66px !important;
+  left:24px !important;
+  margin:0;
+  font-family:var(--font-display);
   font-weight:900;
   line-height:.96;
-  letter-spacing:.01em;
-  text-align:center;
+  text-align:left;
   color:#fff;
   opacity:1;
   visibility:visible;
@@ -397,14 +399,24 @@ body {
   transform:none !important;
   transition:opacity 1s ease, color 1s ease;
   cursor:pointer;
+  z-index:1003;
 }
-.intro-name.persist span { color:var(--teal); }
+/* 'Christian' (más corto de contener) se deja algo más pequeña que 'Luciani' */
+.intro-name.persist .intro-first {
+  display:block;
+  font-size:clamp(1.6rem, 4.5vw, 3rem);
+}
+/* 'Luciani' (más corto de letras) se deja igual o un poco más grande */
+.intro-name.persist .intro-last {
+  display:block;
+  color:var(--teal);
+  font-size:clamp(2.2rem, 6vw, 4rem);
+}
 .intro-name.persist:hover { color:var(--teal); }
 #persist-anchor {
   position:fixed; inset:0;
   z-index:1002;
-  display:flex; align-items:center; justify-content:center;
-  text-align:center;
+  display:block;
   pointer-events:none;
 }
 @media (prefers-reduced-motion: reduce) {
@@ -1051,7 +1063,7 @@ body {
 <div id="loader">
   <div id="intro-block">
     <p id="intro-phrase" class="intro-phrase">¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?</p>
-    <h1 class="intro-name">Christian<br><span>Luciani</span></h1>
+    <h1 class="intro-name"><span class="intro-first">Christian</span><br><span class="intro-last">Luciani</span></h1>
   </div>
 </div>
 
