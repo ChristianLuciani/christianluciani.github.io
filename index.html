@@ -380,45 +380,10 @@ body {
   transition:opacity 1s ease, transform 1s cubic-bezier(.16,1,.3,1);
 }
 .intro-name.in { opacity:1; transform:scale(1); }
-/* Estado final: el nombre se mueve y persiste debajo del fractal minimizado (esquina SI) */
-.intro-name.persist {
-  /* El nombre queda en la ESQUINA sup-izq, debajo del fractal, grande y en dos líneas.
-     (como originalmente: el fractal minimiza a la esquina y el nombre queda debajo). */
-  position:fixed;
-  top:66px !important;
-  left:24px !important;
-  margin:0;
-  font-family:var(--font-display);
-  font-weight:900;
-  line-height:.96;
-  text-align:left;
-  color:#fff;
-  opacity:1;
-  visibility:visible;
-  pointer-events:auto;
-  transform:none !important;
-  transition:opacity 1s ease, color 1s ease;
-  cursor:pointer;
-  z-index:1003;
-}
-/* 'Christian' (más corto de contener) se deja algo más pequeña que 'Luciani' */
-.intro-name.persist .intro-first {
-  display:block;
-  font-size:clamp(1.6rem, 4.5vw, 3rem);
-}
-/* 'Luciani' (más corto de letras) se deja igual o un poco más grande */
-.intro-name.persist .intro-last {
-  display:block;
-  color:var(--teal);
-  font-size:clamp(2.2rem, 6vw, 4rem);
-}
-.intro-name.persist:hover { color:var(--teal); }
-#persist-anchor {
-  position:fixed; inset:0;
-  z-index:1002;
-  display:block;
-  pointer-events:none;
-}
+/* Fase final del intro: el nombre en dos líneas con Christian < Luciani (transición al hero) */
+.intro-name .intro-first { display:block; font-size:.72em; }
+.intro-name .intro-last  { display:block; color:var(--teal); font-size:1.02em; }
+
 @media (prefers-reduced-motion: reduce) {
   #intro-block { display:none; }
 }
@@ -487,6 +452,11 @@ body {
   overflow:hidden; padding:0 8vw;
 }
 #hero-canvas { position:absolute; inset:0; opacity:.35; }
+@keyframes fadeUp {
+  from { opacity:0; transform:translateY(12px); }
+  to   { opacity:1; transform:translateY(0); }
+}
+
 .hero-content { position:relative; z-index:2; max-width:860px; }
 
 .hero-label {
@@ -500,7 +470,9 @@ body {
   font-weight:900; line-height:.93; color:#fff; margin-bottom:1.5rem;
   opacity:0; animation:fadeUp .8s 1.6s both;
 }
-.hero-name span { display:block; color:var(--teal); font-style:italic; font-weight:400; }
+/* Tipografía ajustada: 'Christian' más pequeña, 'Luciani' más grande (Christian es más larga) */
+.hero-name .hero-first { display:block; font-size:.72em; font-weight:900; }
+.hero-name .hero-last  { display:block; color:var(--teal); font-style:italic; font-weight:400; font-size:1.02em; }
 .hero-tagline {
   font-size:1.15rem; color:var(--muted); font-style:italic; max-width:480px;
   opacity:0; animation:fadeUp .8s 1.8s both;
@@ -1089,8 +1061,8 @@ body {
   <div class="hero-content">
     <div class="hero-label">Museo de una Trayectoria · 2026</div>
     <h1 class="hero-name">
-      Christian<br>
-      <span>Luciani</span>
+      <span class="hero-first">Christian</span><br>
+      <span class="hero-last">Luciani</span>
     </h1>
     <p class="hero-tagline">Físico · Inteligencia Sintética · Economía Agéntica</p>
   </div>
@@ -2580,17 +2552,9 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   var started=false, idx=0;
 
   function finish(){
-    // El nombre PERSISTE debajo del fractal: primero se saca del loader (que se oculta
-    // con opacity:0), para que NO herede el desvanecido, y se mueve a la esquina.
-    if (nameEl){
-      nameEl.classList.add('persist');
-      // mover fuera del loader para no heredar opacity:0
-      if (nameEl.parentNode && nameEl.parentNode.id !== 'persist-anchor'){
-        var anchor=document.getElementById('persist-anchor');
-        if(!anchor){ anchor=document.createElement('div'); anchor.id='persist-anchor'; anchor.style.position='fixed'; anchor.style.inset='0'; anchor.style.zIndex='1002'; anchor.style.pointerEvents='none'; document.body.appendChild(anchor); }
-        anchor.appendChild(nameEl);
-      }
-    }
+    // La intro termina: se oculta el loader y se minimiza el fractal a la esquina.
+    // El nombre grande queda en su posición natural dentro del hero (en flujo del documento),
+    // de modo que hace scroll con la página y NO se superpone a las demás secciones.
     loader.classList.add('hidden');
     if (fractal) fractal.classList.add('minimized');
   }
@@ -2635,11 +2599,6 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   // Skip: un clic durante el intro salta directo al nombre y revela el hero.
   var skip = function(){ if (!started) return; finish(); };
   document.addEventListener('click', skip, { once:true });
-
-  // El nombre persistente (firma bajo el fractal) lleva al hero.
-  if (nameEl) nameEl.addEventListener('click', function(){
-    var hero=document.getElementById('hero'); if(hero) hero.scrollIntoView({behavior:'smooth'});
-  });
 })();
 </script>
 
