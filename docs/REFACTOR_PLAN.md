@@ -7,6 +7,35 @@
 
 ---
 
+## ▶ Ejecución — FASE 1 COMPLETADA (rama `aionui/pi/salas-parametrizacion`, 2026-08-10)
+
+Implementada y verificada (32 tests + browser check headless Chrome: nav, plano, títulos ES/EN,
+QR en print-cv, sin errores de consola). Decisiones tomadas durante la ejecución:
+
+- **`num` derivado, no almacenado:** el campo `num` de la interface original se calcula en
+  `render.ts` (`numFor`) como índice de la sala entre las VISIBLES (01..N). Renumerar es automático
+  al reordenar `SALAS`; se elimina la clase de bug de numeración desalineada.
+- **Galería oculta en `SALAS` con `hidden: true`:** participa en el orden posicional de `ROOM_EN`
+  (el i18n recorre todos los `.room-title`, incluidos los ocultos — causa histórica del off-by-one),
+  pero no se numera, no aparece en el nav y su metadato stale (“SALA 05”) no se re-renderiza.
+- **Render en runtime (no build-time):** `mountSalas()` corre desde `main.ts` (módulo diferido,
+  antes de `DOMContentLoaded`); el i18n inline se enteró por el evento `cv:salas-ready` (refresh de
+  títulos + re-aplica idioma, idempotente). `window.__CV_I18N__` = { ROOM_EN, MAP_EXTRA }.
+- **MAP limpio:** el `MAP` inline ya no contiene claves de sala (“SALA 0X” ni subtítulos); las
+  fusiona en runtime desde `SALAS`. Se eliminaron claves stale (“SALA 08”, “SALIDA”, “SALA 03-B”).
+- **Fix preexistente:** comentario HTML anidado en el bloque de la galería (parse5
+  `nested-comment`; dejaba texto + `<img src="ruta/foto.jpg">` sueltos en el DOM). Corregido a
+  comentario válido — cambio invisible, no de contenido.
+- **Guarda del riesgo crítico:** `src/cv/inline-scripts.test.ts` corre `node --check` sobre cada
+  script inline del `index.html` y cuenta aperturas/cierres de `<script>` (la clase de bug del
+  `</script>` faltante).
+- **Plano SVG:** se mantiene estático (Fase 1 opcional per SPEC §5); coordenadas/labels manuales
+  siguen en `index.html`. Se genera desde `SALAS` en Fase 2.
+
+---
+
+---
+
 ## 1. Objetivo
 
 Rehacer la arquitectura del CV (hoy un único `index.html` de ~2.360 líneas con todo dentro:

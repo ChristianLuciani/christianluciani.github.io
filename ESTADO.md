@@ -1,14 +1,37 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (alineación deploy a raíz + consistencia de contenido)
+> Última actualización: 2026-08-10 (Fase 1 refactor: parametrización SALAS)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
 
 ---
 
+## 🔧 Fase 1 del refactor — parametrización de salas (rama `aionui/pi/salas-parametrizacion`)
+
+**SPEC:** `docs/REFACTOR_PLAN.md`. Fuente de verdad de la estructura del museo = `src/cv/salas.ts` (`SALAS`).
+
+- Navegación lateral (`.nav-dot`), numeración (`SALA 01–07`), `ROOM_EN[]`, claves de sala del `MAP`
+  y subtítulos se derivan de `SALAS` en `src/cv/render.ts` (runtime, vía `main.ts` → `mountSalas()`).
+- Renombrar/reordenar/agregar/quitar sala = editar `salas.ts` (o su orden); la numeración se
+  recalcula sola (01..N por orden visible).
+- El i18n inline ya NO tiene `ROOM_EN` hardcodeado ni claves de sala en `MAP`: las fusiona desde
+  `window.__CV_I18N__` (ROOM_EN + MAP_EXTRA) que publica `render.ts`; refresca en `cv:salas-ready`.
+- Tests nuevos: `src/cv/salas.test.ts` (integridad/derivados), `src/cv/parity.test.ts` (paridad
+  DOM generado ↔ index.html), `src/cv/inline-scripts.test.ts` (guarda `node --check` de los
+  scripts inline — protege la clase de bug del `</script>`). 32 tests en total.
+- Fix preexistente: comentario HTML anidado en el bloque de la galería (parse5 `nested-comment`,
+  dejaba texto+`<img>` sueltos en el DOM); ahora es un comentario válido.
+
+**Pendiente Fase 2 (modularización):** extraer CSS/salas/scripts a fuentes ensamblables y
+`index.html` 100% generado por `build.ts` (plano SVG generado desde `SALAS` incluido).
+
+---
+
 ## ✅ Completado
+
+- Parametrización de salas (Fase 1 del refactor): `SALAS` como fuente de verdad
 
 - Estructura de 7 salas + entrada con ilusiones ópticas por canvas
 - Fractal Koch animado (3 copos anidados, rotación diferencial) → minimiza como logo
