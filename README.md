@@ -35,15 +35,14 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 
 | Sala | Contenido | Ilusión óptica |
 |------|-----------|----------------|
-| 00 · Entrada | Hero / museo | Cubos isométricos |
+| 00 · Entrada | Intro (frase → nombre) + Hero / museo | Cubos isométricos |
 | 01 · Perfil | Formación + perfil | Cubo de Necker (grid BG + frame) |
-| 02 · Proyectos | Kontablo / ZENTROPY / Esteléctica / CLAPPS / NOOS | Campo de Mandelbrot |
-| 03 · Drahma | Proyecto IA educativa | Escalera de Penrose |
-| 04 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
-| 05 · Galería | Fotografías y evidencias | — |
-| 06 · Ciencia | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
-| 07 · Competencias | Skills, idiomas, open source | Sierpinski |
-| 08 · Contacto | Links y salida | — |
+| 02 · Proyectos | Kontablo / ZENTROPY / Esteléctica / CLAPPS / NOOS / **Drahma** (showcase) | Campo de Mandelbrot |
+| 03 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
+| 04 · Galería | Fotografías y evidencias | — |
+| 05 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
+| 06 · Competencias | Skills, idiomas, open source | Sierpinski |
+| 07 · Conectar | Redes y contacto | — |
 
 ## Flujo de trabajo
 

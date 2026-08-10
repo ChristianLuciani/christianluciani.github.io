@@ -7,8 +7,27 @@ type CanvasModule = {
   mount: (canvas: HTMLCanvasElement) => { stop(): void };
 };
 
+// La secuencia intro (frases bajo el fractal) controla el ocultado del loader
+// vía el script inline; por eso el fractal no debe auto-ocultarse temprano.
+// En prefers-reduced-motion se oculta casi de inmediato (la intro se omite).
+const reduceMotion =
+  typeof window !== "undefined" &&
+  window.matchMedia &&
+  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const INTRO_MINIMIZE_DELAY_MS = 60000; // normal: lo resuelve la intro (~10s)
+const REDUCED_MINIMIZE_DELAY_MS = 300; // reduced-motion: ocultar ya
+
 const CANVAS_MODULES: CanvasModule[] = [
-  { id: kochId, mount: (c) => mountKochLogo(c) },
+  {
+    id: kochId,
+    mount: (c) =>
+      mountKochLogo(c, {
+        minimizeDelayMs: reduceMotion
+          ? REDUCED_MINIMIZE_DELAY_MS
+          : INTRO_MINIMIZE_DELAY_MS
+      })
+  },
   { id: neckerBgId, mount: (c) => mountNeckerBg(c) },
   { id: neckerIllId, mount: (c) => mountNeckerIll(c) }
 ];

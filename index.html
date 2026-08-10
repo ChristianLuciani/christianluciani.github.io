@@ -341,16 +341,42 @@ body {
   filter:brightness(1.3) drop-shadow(0 0 6px var(--teal));
 }
 
-.loader-text {
-  font-family:var(--font-mono);
-  font-size:.68rem; color:var(--teal);
-  letter-spacing:.45em;
-  margin-top:160px; /* below the logo space */
-  animation:fadeUp .5s .7s both;
+/* Introducción: frase rotando debajo del fractal (dentro del loader) */
+#intro-block {
+  width:100%;
+  max-width:min(820px, 90vw);
+  text-align:center;
+  padding:0 1.5rem;
+  /* coloca el bloque por debajo del fractal centrado (fractal = 120px centrado en 50%) */
+  margin-top:130px;
+  pointer-events:none;
 }
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(10px); }
-  to   { opacity:1; transform:translateY(0); }
+.intro-phrase {
+  margin:0 auto;
+  font-family:var(--font-display);
+  font-size:clamp(1.4rem, 3.6vw, 2.4rem);
+  line-height:1.45;
+  color:var(--text);
+  opacity:0;
+  transform:translateY(18px);
+  transition:opacity .9s ease, transform .9s ease;
+}
+.intro-phrase em { color:var(--teal); font-style:italic; }
+.intro-phrase.in   { opacity:1; transform:translateY(0); }
+.intro-phrase.hide { opacity:0; transform:translateY(-16px); }
+.intro-name {
+  margin:0;
+  font-family:var(--font-display);
+  font-size:clamp(2.4rem, 6.5vw, 4.6rem);
+  font-weight:700;
+  color:#fff;
+  opacity:0;
+  transform:scale(.94);
+  transition:opacity 1s ease, transform 1s cubic-bezier(.16,1,.3,1);
+}
+.intro-name.in { opacity:1; transform:scale(1); }
+@media (prefers-reduced-motion: reduce) {
+  #intro-block { display:none; }
 }
 
 /* ══════════════════════════════════════════════
@@ -839,23 +865,40 @@ body {
   .profile-grid, .two-col { grid-template-columns:1fr; }
   .profile-aside { position:static; }
   .drahma-grid   { grid-template-columns:1fr; }
+  .two-col-drahma { grid-template-columns:1fr !important; }
   .skills-grid   { grid-template-columns:repeat(2,1fr); }
   .gallery-grid.cols-3, .gallery-grid.cols-4 { grid-template-columns:repeat(2,1fr); }
   #nav { display:none; }
 }
 </style>
-  <script type="module" crossorigin src="/assets/index-OWey81UA.js"></script>
+  <script type="module" crossorigin src="/src/main.ts"></script>
 </head>
 <body>
 <a href="#room-perfil" class="skip-link">Saltar al contenido</a>
 
 <!-- ── CV PLANO PARA IMPRESIÓN / PDF (oculto en pantalla, visible al imprimir) ── -->
 <div id="print-cv" aria-hidden="true">
-  <h1>Christian Luciani</h1>
-  <div class="p-meta">
-    Investigador independiente · Cuenca, Ecuador<br>
-    cluciani@gmail.com · WhatsApp +593 99 371 6335<br>
-    ORCID 0000-0002-6955-5384 · christianluciani.github.io · github.com/ChristianLuciani
+  <style>
+    /* QR del CV impreso: arriba a la derecha */
+    #print-cv .p-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem; }
+    #print-cv .p-head > div:first-child { flex:1; min-width:200px; }
+    #print-cv .qr-wrap { text-align:center; }
+    #print-cv .qr-wrap img { width:30mm; height:30mm; }
+    #print-cv .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
+  </style>
+  <div class="p-head">
+    <div>
+      <h1>Christian Luciani</h1>
+      <div class="p-meta">
+        Investigador independiente · Cuenca, Ecuador<br>
+        cluciani@gmail.com · WhatsApp +593 99 371 6335<br>
+        ORCID 0000-0002-6955-5384 · christianluciani.github.io · github.com/ChristianLuciani
+      </div>
+    </div>
+    <div class="qr-wrap">
+      <img src="assets/qr-site.svg" alt="QR · Christian Luciani — christianluciani.github.io">
+      <div class="qr-note">christianluciani.github.io</div>
+    </div>
   </div>
 
   <div class="p-section">
@@ -974,7 +1017,12 @@ body {
 <canvas id="fractal-logo"></canvas>
 
 <div id="loader">
-  <div class="loader-text">ABRIENDO EXPOSICIÓN</div>
+  <div id="intro-block">
+    <p class="intro-phrase" data-idx="0">¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?</p>
+    <p class="intro-phrase" data-idx="1">Distintas perspectivas de una misma realidad…</p>
+    <p class="intro-phrase" data-idx="2">una <em>Instancia Humana</em>.</p>
+    <h1 class="intro-name">Christian Luciani</h1>
+  </div>
 </div>
 
 <!-- ── NAVEGACIÓN LATERAL ──────────────────────────── -->
@@ -982,7 +1030,6 @@ body {
   <div class="nav-dot" data-target="hero"              data-label="Entrada"></div>
   <div class="nav-dot" data-target="room-perfil"       data-label="Perfil"></div>
   <div class="nav-dot" data-target="room-proyectos"    data-label="Proyectos"></div>
-  <div class="nav-dot" data-target="room-drahma"       data-label="Drahma"></div>
   <div class="nav-dot" data-target="room-experiencia"  data-label="Experiencia"></div>
   <div class="nav-dot" data-target="room-galeria"      data-label="Galería"></div>
   <div class="nav-dot" data-target="room-fisica"       data-label="Física"></div>
@@ -1002,7 +1049,6 @@ body {
     <h1 class="hero-name">
       Christian<br>
       <span>Luciani</span>
-      Toledo
     </h1>
     <p class="hero-tagline">Físico · Inteligencia Sintética · Economía Agéntica</p>
   </div>
@@ -1053,35 +1099,30 @@ body {
     <text class="bp-num"  x="618" y="122">02</text>
     <text class="bp-name" x="618" y="190">PROYECTOS</text>
   </a>
-  <a href="#room-drahma" class="bp-room">
-    <rect x="600" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="618" y="282">03</text>
-    <text class="bp-name" x="618" y="350">DRAHMA</text>
-  </a>
   <a href="#room-experiencia" class="bp-room">
     <rect x="330" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="282">04</text>
+    <text class="bp-num"  x="348" y="282">03</text>
     <text class="bp-name" x="348" y="350">TRAYECTORIA</text>
   </a>
   <a href="#room-galeria" class="bp-room">
     <rect x="60" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="282">05</text>
+    <text class="bp-num"  x="78" y="282">04</text>
     <text class="bp-name" x="78" y="350">GALERÍA</text>
   </a>
   <a href="#room-fisica" class="bp-room">
     <rect x="60" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="442">06</text>
-    <text class="bp-name" x="78" y="510">CIENCIA</text>
+    <text class="bp-num"  x="78" y="442">05</text>
+    <text class="bp-name" x="78" y="510">BIBLIOTECA</text>
   </a>
   <a href="#room-competencias" class="bp-room">
     <rect x="330" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="442">07</text>
+    <text class="bp-num"  x="348" y="442">06</text>
     <text class="bp-name" x="348" y="510">COMPETENCIAS</text>
   </a>
   <a href="#room-contacto" class="bp-room">
     <rect x="600" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="618" y="442">08</text>
-    <text class="bp-name" x="618" y="510">CONTACTO</text>
+    <text class="bp-num"  x="618" y="442">07</text>
+    <text class="bp-name" x="618" y="510">CONECTAR</text>
   </a>
   </svg>
 </section>
@@ -1269,13 +1310,92 @@ body {
       <div class="project-note">Investigación en curso. Publicación académica planificada.</div>
     </div>
 
-    <!-- DRAHMA (resumen → showcase Sala 03) -->
+    <!-- DRAHMA (proyecto destacado → showcase completo abajo, misma sala) -->
     <div class="project-card" data-scroll="from-left" data-delay="5">
-      <span class="project-status status-paused">Showcase completo más abajo</span>
+      <span class="project-status status-paused">Proyecto destacado · ver showcase completo abajo</span>
       <div class="project-title"><em>Drahma</em> — Inteligencia Sintética Educativa</div>
       <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
-      <a class="pub-doi" href="#room-drahma">↓ Ver showcase completo (Sala 03)</a>
     </div>
+
+    <!-- ── SHOWCASE DRAHMA (interno a la sala de proyectos) ── -->
+    <div style="margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid var(--border)" data-scroll="up">
+      <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.5rem">
+        <img src="https://raw.githubusercontent.com/DRAHMAN-ORG/drahman-org/main/assets/images/logo.png"
+             alt="Drahma logo"
+             style="height:44px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,201,192,.4));opacity:.92"
+             onerror="this.style.display='none'">
+        <h3 class="drahma-showcase-title" style="font-family:var(--font-display);font-size:1.6rem;color:#fff;margin:0">Proyecto <em style="color:var(--teal)">Drahma</em></h3>
+      </div>
+      <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
+
+      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:3rem;align-items:start" class="two-col-drahma">
+        <div>
+          <div class="timeline-note" data-scroll="from-left">
+            <strong>LÍNEA TEMPORAL</strong>
+            Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.
+          </div>
+          <div class="drahma-grid">
+            <div class="drahma-cell" data-scroll="from-center" data-delay="1">
+              <div class="drahma-cell-icon">🐉</div>
+              <div class="drahma-cell-label">Diseño</div>
+              <div class="drahma-cell-text">Dragones alados con iconografía precolombina y amazónica. Culturalmente resonantes para el estudiante ecuatoriano.</div>
+            </div>
+            <div class="drahma-cell" data-scroll="from-center" data-delay="2">
+              <div class="drahma-cell-icon">🧠</div>
+              <div class="drahma-cell-label">Pedagogía</div>
+              <div class="drahma-cell-text">Método socrático: guía al estudiante hacia el razonamiento propio. No entrega respuestas — construye preguntas.</div>
+            </div>
+            <div class="drahma-cell" data-scroll="from-center" data-delay="3">
+              <div class="drahma-cell-icon">📚</div>
+              <div class="drahma-cell-label">Alcance</div>
+              <div class="drahma-cell-text">36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.</div>
+            </div>
+            <div class="drahma-cell" data-scroll="from-center" data-delay="2">
+              <div class="drahma-cell-icon">⚙️</div>
+              <div class="drahma-cell-label">Arquitectura</div>
+              <div class="drahma-cell-text">Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.</div>
+            </div>
+            <div class="drahma-cell" data-scroll="from-center" data-delay="3">
+              <div class="drahma-cell-icon">🛡️</div>
+              <div class="drahma-cell-label">Seguridad</div>
+              <div class="drahma-cell-text">Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.</div>
+            </div>
+            <div class="drahma-cell" data-scroll="from-center" data-delay="4">
+              <div class="drahma-cell-icon">🌿</div>
+              <div class="drahma-cell-label">Campo</div>
+              <div class="drahma-cell-text">Pilotado con comunidades indígenas amazónicas. Validado en condiciones reales de bajo recurso tecnológico.</div>
+            </div>
+          </div>
+        </div>
+
+        <div data-scroll="from-right" style="position:sticky;top:15vh">
+          <div class="illusion-frame" style="height:340px">
+            <canvas id="c-stairs-ill" style="width:100%;height:100%"></canvas>
+            <div class="illusion-label">ESCALERA DE PENROSE · 1958</div>
+            <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-stairs/" target="_blank" rel="noopener">↗ michaelbach.de</a>
+          </div>
+          <div style="margin-top:1.5rem;border:1px solid var(--border);padding:1.5rem" data-scroll="up" data-delay="2">
+            <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--teal);letter-spacing:.3em;margin-bottom:.8rem">LAB STEM</div>
+            <div style="font-family:var(--font-display);font-size:1.2rem;color:#fff;margin-bottom:.8rem">Fabricación <em style="color:var(--teal)">Pedagógica</em></div>
+            <ul class="entry-body">
+              <li>Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos</li>
+              <li>Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores</li>
+              <li>Visión en pausa: chatbots como manuales vivos para cada objeto físico</li>
+            </ul>
+          </div>
+        </div>
+      </div><!-- /grid drahma -->
+
+      <div style="margin-top:2.5rem;border-top:1px solid var(--border);padding-top:1.4rem" data-scroll="up">
+        <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--teal);letter-spacing:.3em;margin-bottom:.8rem">REPOSITORIO · ESTRATEGIA DE AUTORÍA</div>
+        <p style="color:var(--muted);font-size:.95rem;margin-bottom:.8rem;font-style:italic">Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo</p>
+        <ul class="entry-body">
+          <li>Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos</li>
+          <li>Repositorio privado: system prompts, documentos de contenido, notas de implementación</li>
+          <li>Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes</li>
+        </ul>
+      </div>
+    </div><!-- /showcase drahma -->
 
   </div><!-- /room-content -->
 </section>
@@ -1283,115 +1403,13 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 03 — Proyecto Drahma
-════════════════════════════════════════════════════ -->
-<section class="room" id="room-drahma" style="background:#080d18">
-  <canvas class="room-canvas" id="c-stairs" role="img" aria-label="Escalera de Penrose animada"></canvas>
-
-  <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 03</div>
-    <div style="display:flex;align-items:center;gap:1.5rem;margin-bottom:.5rem">
-      <img src="https://raw.githubusercontent.com/DRAHMAN-ORG/drahman-org/main/assets/images/logo.png"
-           alt="Drahma logo"
-           style="height:56px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,201,192,.4));opacity:.92"
-           onerror="this.style.display='none'">
-      <h2 class="room-title" data-scroll="zoom-out" style="margin-bottom:0">Proyecto <em>Drahma</em></h2>
-    </div>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
-
-    <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:4rem;align-items:start" class="two-col-drahma">
-
-      <!-- Columna izquierda: contenido -->
-      <div>
-        <div class="timeline-note" data-scroll="from-left">
-          <strong>LÍNEA TEMPORAL</strong>
-          Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.
-        </div>
-
-        <div class="drahma-grid">
-          <div class="drahma-cell" data-scroll="from-center" data-delay="1">
-            <div class="drahma-cell-icon">🐉</div>
-            <div class="drahma-cell-label">Diseño</div>
-            <div class="drahma-cell-text">Dragones alados con iconografía precolombina y amazónica. Culturalmente resonantes para el estudiante ecuatoriano.</div>
-          </div>
-          <div class="drahma-cell" data-scroll="from-center" data-delay="2">
-            <div class="drahma-cell-icon">🧠</div>
-            <div class="drahma-cell-label">Pedagogía</div>
-            <div class="drahma-cell-text">Método socrático: guía al estudiante hacia el razonamiento propio. No entrega respuestas — construye preguntas.</div>
-          </div>
-          <div class="drahma-cell" data-scroll="from-center" data-delay="3">
-            <div class="drahma-cell-icon">📚</div>
-            <div class="drahma-cell-label">Alcance</div>
-            <div class="drahma-cell-text">36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.</div>
-          </div>
-          <div class="drahma-cell" data-scroll="from-center" data-delay="2">
-            <div class="drahma-cell-icon">⚙️</div>
-            <div class="drahma-cell-label">Arquitectura</div>
-            <div class="drahma-cell-text">Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.</div>
-          </div>
-          <div class="drahma-cell" data-scroll="from-center" data-delay="3">
-            <div class="drahma-cell-icon">🛡️</div>
-            <div class="drahma-cell-label">Seguridad</div>
-            <div class="drahma-cell-text">Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.</div>
-          </div>
-          <div class="drahma-cell" data-scroll="from-center" data-delay="4">
-            <div class="drahma-cell-icon">🌿</div>
-            <div class="drahma-cell-label">Campo</div>
-            <div class="drahma-cell-text">Pilotado con comunidades indígenas amazónicas. Validado en condiciones reales de bajo recurso tecnológico.</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Columna derecha: ilusión + Lab STEM -->
-      <div data-scroll="from-right" style="position:sticky;top:15vh">
-
-        <!-- Ilusión: Escalera de Penrose -->
-        <!-- PROMPT PARA GENERAR SVG:
-             "Crea un SVG de la Escalera de Penrose (Penrose Stairs, 1958)
-              en perspectiva isométrica. Líneas en gradiente #00c9c0 a #c9a84c.
-              Fondo transparente. 380×480px. Los peldaños deben parecer
-              subir infinitamente formando un bucle imposible cerrado." -->
-        <div class="illusion-frame" style="height:360px">
-          <canvas id="c-stairs-ill" style="width:100%;height:100%"></canvas>
-          <div class="illusion-label">ESCALERA DE PENROSE · 1958</div>
-          <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-stairs/" target="_blank" rel="noopener">↗ michaelbach.de</a>
-        </div>
-
-        <!-- Lab STEM -->
-        <div style="margin-top:1.5rem;border:1px solid var(--border);padding:1.8rem" data-scroll="up" data-delay="2">
-          <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--teal);letter-spacing:.3em;margin-bottom:.8rem">SALA 03-B · LAB STEM</div>
-          <div style="font-family:var(--font-display);font-size:1.3rem;color:#fff;margin-bottom:.8rem">Fabricación <em style="color:var(--teal)">Pedagógica</em></div>
-          <ul class="entry-body">
-            <li>Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos</li>
-            <li>Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores</li>
-            <li>Visión en pausa: chatbots como manuales vivos para cada objeto físico</li>
-          </ul>
-        </div>
-      </div>
-    </div><!-- /grid drahma -->
-
-    <div style="margin-top:3rem;border-top:1px solid var(--border);padding-top:1.6rem" data-scroll="up">
-      <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--teal);letter-spacing:.3em;margin-bottom:.8rem">REPOSITORIO · ESTRATEGIA DE AUTORÍA</div>
-      <p style="color:var(--muted);font-size:.95rem;margin-bottom:.8rem;font-style:italic">Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo</p>
-      <ul class="entry-body">
-        <li>Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos</li>
-        <li>Repositorio privado: system prompts, documentos de contenido, notas de implementación</li>
-        <li>Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes</li>
-      </ul>
-    </div>
-  </div>
-</section>
-<div class="room-divider"></div>
-
-
-<!-- ════════════════════════════════════════════════════
-  SALA 04 — Trayectoria Profesional
+  SALA 03 — Trayectoria Profesional
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-experiencia" style="background:var(--deep)">
   <canvas class="room-canvas" id="c-exp" role="img" aria-label="Patrón de interferencia de doble fuente"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 04</div>
+    <div class="room-number" data-scroll="up">SALA 03</div>
     <h2 class="room-title"   data-scroll="zoom-in">La <em>Trayectoria</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">EXPERIENCIA PROFESIONAL · 2003 – PRESENTE</div>
 
@@ -1475,7 +1493,7 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 05 — Galería
+  SALA 04 — Galería
   INSTRUCCIONES PARA COMPLETAR:
   · Añade <img src="ruta/foto.jpg"> dentro de cada .gallery-slot
   · El placeholder desaparece automáticamente al haber imagen
@@ -1484,7 +1502,7 @@ body {
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-galeria" style="background:var(--night)">
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 05</div>
+    <div class="room-number" data-scroll="up">SALA 04</div>
     <h2 class="room-title"   data-scroll="zoom-out">La <em>Evidencia</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS</div>
 
@@ -1554,15 +1572,15 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 06 — Registro Científico (Publicaciones)
+  SALA 05 — La Biblioteca (Publicaciones y Preprints)
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-fisica" style="background:var(--deep)">
   <canvas class="room-canvas" id="c-fisica" role="img" aria-label="Ilusión de serpientes rotantes"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 06</div>
-    <h2 class="room-title"   data-scroll="zoom-out"><em>Registro</em> Científico</h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">PUBLICACIONES Y PREPRINTS · 2006 – 2026</div>
+    <div class="room-number" data-scroll="up">SALA 05</div>
+    <h2 class="room-title"   data-scroll="zoom-out">La <em>Biblioteca</em></h2>
+    <div class="room-subtitle" data-scroll="up" data-delay="1">PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026</div>
 
     <div style="display:grid;grid-template-columns:1fr 300px;gap:4rem;align-items:start" class="two-col-pub">
 
@@ -1685,13 +1703,13 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 07 — Competencias
+  SALA 06 — Competencias
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-competencias" style="background:var(--night)">
   <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 07</div>
+    <div class="room-number" data-scroll="up">SALA 06</div>
     <h2 class="room-title"   data-scroll="zoom-in">Caja de <em>Herramientas</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">COMPETENCIAS TÉCNICAS · IDIOMAS · PLATAFORMAS</div>
 
@@ -1754,12 +1772,12 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 08 — Contacto / Salida
+  SALA 07 — Contacto / Salida
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-contacto" style="background:var(--deep);min-height:55vh;display:flex;align-items:center">
   <div class="room-content" style="width:100%">
-    <div class="room-number" data-scroll="up">SALIDA</div>
-    <h2 class="room-title"   data-scroll="zoom-out">Iniciar <em>Conversación</em></h2>
+    <div class="room-number" data-scroll="up">SALA 07</div>
+    <h2 class="room-title"   data-scroll="zoom-out"><em>Conectar</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">CONTACTO · REDES · INVESTIGACIÓN</div>
 
     <div class="contact-links" data-scroll="from-center" data-delay="2">
@@ -1898,7 +1916,7 @@ updateParallax();
 /* ──────────────────────────────────────────────
    NAVEGACIÓN LATERAL
 ────────────────────────────────────────────── */
-const navSections = ['hero','room-perfil','room-drahma','room-proyectos','room-experiencia','room-galeria','room-fisica','room-competencias','room-contacto'];
+const navSections = ['hero','room-perfil','room-proyectos','room-experiencia','room-galeria','room-fisica','room-competencias','room-contacto'];
 const dots = document.querySelectorAll('.nav-dot');
 
 dots.forEach((d, i) => {
@@ -2259,9 +2277,9 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
 <!-- ── i18n ES/EN toggle (text-node dictionary, structure-preserving) ── -->
 <script>
 (function(){
-  var MAP={"Plano": "Museum", "del Museo": "Map", "PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR": "MUSEUM FLOOR PLAN · INDEX — CLICK A SPACE TO ENTER", "ENTRADA": "ENTRANCE", "PERFIL": "PROFILE", "PROYECTOS": "PROJECTS", "TRAYECTORIA": "CAREER", "GALERÍA": "GALLERY", "CIENCIA": "SCIENCE", "COMPETENCIAS": "SKILLS", "CONTACTO": "CONTACT", "↓ Descargar CV": "↓ Download CV", "ABRIENDO EXPOSICIÓN": "OPENING EXHIBITION", "Museo de una Trayectoria · 2026": "Museum of a Trajectory · 2026", "Físico · Inteligencia Sintética · Economía Agéntica": "Physicist · Synthetic Intelligence · Agentic Economy", "SCROLL PARA RECORRER": "SCROLL TO EXPLORE", "SALA 01": "ROOM 01", "SALA 02": "ROOM 02", "SALA 03-B · LAB STEM": "ROOM 03-B · STEM LAB", "Showcase completo más abajo": "Full showcase below", "— Inteligencia Sintética Educativa": "— Educational Synthetic Intelligence", "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (August 2024).", "↓ Ver showcase completo (Sala 03)": "↓ See full showcase (Room 03)", "REPOSITORIO · ESTRATEGIA DE AUTORÍA": "REPOSITORY · AUTHORSHIP STRATEGY", "SALA 03": "ROOM 03", "SALA 04": "ROOM 04", "SALA 05": "ROOM 05", "SALA 06": "ROOM 06", "SALA 07": "ROOM 07", "SALIDA": "EXIT", "PERFIL PROFESIONAL · CUENCA, ECUADOR": "PROFESSIONAL PROFILE · CUENCA, ECUADOR", "INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024": "EDUCATIONAL SYNTHETIC INTELLIGENCE · ECUADOR · AUGUST 2024", "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS": "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS", "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE": "PROFESSIONAL EXPERIENCE · 2003 – PRESENT", "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS": "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS", "PUBLICACIONES Y PREPRINTS · 2006 – 2026": "PUBLICATIONS & PREPRINTS · 2006 – 2026", "COMPETENCIAS TÉCNICAS · IDIOMAS · PLATAFORMAS": "TECHNICAL SKILLS · LANGUAGES · PLATFORMS", "AionCore · Agente Pi como built-in ACP ↗": "AionCore · Pi agent as built-in ACP ↗",
+  var MAP={"Plano": "Museum", "del Museo": "Map", "PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR": "MUSEUM FLOOR PLAN · INDEX — CLICK A SPACE TO ENTER", "ENTRADA": "ENTRANCE", "PERFIL": "PROFILE", "PROYECTOS": "PROJECTS", "TRAYECTORIA": "CAREER", "GALERÍA": "GALLERY", "CIENCIA": "SCIENCE", "BIBLIOTECA": "LIBRARY", "COMPETENCIAS": "SKILLS", "CONTACTO": "CONTACT", "CONECTAR": "CONNECT", "↓ Descargar CV": "↓ Download CV", "ABRIENDO EXPOSICIÓN": "OPENING EXHIBITION", "Museo de una Trayectoria · 2026": "Museum of a Trajectory · 2026", "Físico · Inteligencia Sintética · Economía Agéntica": "Physicist · Synthetic Intelligence · Agentic Economy", "SCROLL PARA RECORRER": "SCROLL TO EXPLORE", "SALA 01": "ROOM 01", "SALA 02": "ROOM 02", "Proyecto": "Project", "LAB STEM": "STEM LAB", "SALA 03-B · LAB STEM": "ROOM 03-B · STEM LAB", "Showcase completo más abajo": "Full showcase below", "— Inteligencia Sintética Educativa": "— Educational Synthetic Intelligence", "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (August 2024).", "↓ Ver showcase completo (Sala 03)": "↓ See full showcase (Room 03)", "REPOSITORIO · ESTRATEGIA DE AUTORÍA": "REPOSITORY · AUTHORSHIP STRATEGY", "SALA 03": "ROOM 03", "SALA 04": "ROOM 04", "SALA 05": "ROOM 05", "SALA 06": "ROOM 06", "SALA 07": "ROOM 07", "SALIDA": "EXIT", "PERFIL PROFESIONAL · CUENCA, ECUADOR": "PROFESSIONAL PROFILE · CUENCA, ECUADOR", "INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024": "EDUCATIONAL SYNTHETIC INTELLIGENCE · ECUADOR · AUGUST 2024", "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS": "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS", "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE": "PROFESSIONAL EXPERIENCE · 2003 – PRESENT", "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS": "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS", "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026": "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026", "COMPETENCIAS TÉCNICAS · IDIOMAS · PLATAFORMAS": "TECHNICAL SKILLS · LANGUAGES · PLATFORMS", "AionCore · Agente Pi como built-in ACP ↗": "AionCore · Pi agent as built-in ACP ↗",
 "pi-acp · session/delete ACP lifecycle ↗": "pi-acp · session/delete ACP lifecycle ↗", "CONTACTO · REDES · INVESTIGACIÓN": "CONTACT · NETWORKS · RESEARCH", "Añadir foto local": "Add local photo", "Físico con candidatura doctoral en sistemas complejos y más de 20 años navegando entre la investigación científica, la docencia universitaria y la innovación educativa.": "Physicist with a doctoral candidacy in complex systems and over 20 years navigating between scientific research, university teaching and educational innovation.", "En 2024 diseñé e implementé": "In 2024 I designed and implemented", ": 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.": ": 36 synthetic-intelligence virtual tutors with Socratic pedagogy, aligned to the Ecuadorian curriculum, field-tested with Amazonian indigenous communities.", "Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.": "Functionally bilingual Spanish-English (Intermediate English). Active networks in Panama and Ecuador.", "CUBO DE NECKER · 1832": "NECKER CUBE · 1832", "Especialización en Audiovisuales": "Specialization in Audiovisual Media", "Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008": "Film & TV School, Caracas · Prix du Public FECOVEN 2008", "Candidatura Doctoral — Sistemas Complejos": "Doctoral Candidacy — Complex Systems", "Universidad Simón Bolívar, Venezuela · ABD — tesis pendiente": "Universidad Simón Bolívar, Venezuela · ABD — thesis pending", "Licenciatura en Física": "B.Sc. in Physics", "Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536": "Universidad Central de Venezuela · Thesis: N-Dimensional Cosmological Models · SENESCYT: 862177536", "La física me enseñó a ver patrones donde otros ven ruido.": "Physics taught me to see patterns where others see noise.", "El cine me enseñó a hacer ese patrón visible para otros.": "Film taught me to make that pattern visible to others.", "I Taller Andino de Caos y Complejidad": "1st Andean Workshop on Chaos and Complexity", "2003 · CERN · BECA": "2003 · CERN · SCHOLARSHIP", "LÍNEA TEMPORAL": "TIMELINE", "Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.": "August 2024 — roughly two months before Khanmigo (Khan Academy) became publicly available. Built without external funding or public launch. Field-tested with indigenous communities of the Ecuadorian Amazon.", "Diseño": "Design", "Dragones alados con iconografía precolombina y amazónica. Culturalmente resonantes para el estudiante ecuatoriano.": "Winged dragons with pre-Columbian and Amazonian iconography. Culturally resonant for the Ecuadorian student.", "Pedagogía": "Pedagogy", "Método socrático: guía al estudiante hacia el razonamiento propio. No entrega respuestas — construye preguntas.": "Socratic method: guides the student toward their own reasoning. It does not hand out answers — it builds questions.", "Alcance": "Scope", "36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.": "36 subjects from the official curriculum of Ecuador's Ministry of Education — primary and secondary.", "Arquitectura": "Architecture", "Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.": "Poe (Quora): model-agnostic, free access, persistent conversational memory across sessions.", "Seguridad": "Safety", "Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.": "Guardrails for minors — an alignment problem the field was still formalizing.", "Campo": "Field", "Pilotado con comunidades indígenas amazónicas. Validado en condiciones reales de bajo recurso tecnológico.": "Piloted with Amazonian indigenous communities. Validated under real low-resource technological conditions.", "ESCALERA DE PENROSE · 1958": "PENROSE STAIRS · 1958", "Fabricación": "Fabrication", "Pedagógica": "Pedagogical", "Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos": "3D printer + laser cutter · production of concrete pedagogical toys", "Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores": "Peer-to-peer model: advanced students create for younger students", "Visión en pausa: chatbots como manuales vivos para cada objeto físico": "Vision on hold: chatbots as living manuals for every physical object", "Concepto activo · Dominio vigente": "Active concept · Domain held", "Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional": "Self-taught human-development platform — a counterpoint to the traditional LMS model", "Los LMS (Learning Management Systems) son en realidad plataformas de": "LMS (Learning Management Systems) are really platforms for", "registro y control de enseñanza": "teaching record-keeping and control", ": tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real": ": evaluation tracking, content delivery, designed for the traditional education system — not for real learning", "CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad": "CLAPPS proposes structured, dynamic support for long-term skill development, not just delivery of high-quality content", "Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias": "Closest current reference: NotebookLM — but limited to a diversity of material on one topic, with no structured progression system for competency development", "Paraguas para múltiples desarrollos futuros bajo el dominio personal (Christian Luciani Applications)": "An umbrella for multiple future developments under the personal domain (Christian Luciani Applications)", "El desarrollo de una plataforma clínica (portal para proveedores de salud) fue un proyecto temporal bajo este dominio — se migrará a dominio comercial separado.": "The development of a clinical platform (a portal for healthcare providers) was a temporary project under this domain — it will migrate to a separate commercial domain.", "Investigación privada": "Private research", "Reducir la entropía organizacional mediante inteligencia sintética distribuida y grafos de conocimiento": "Reduce organizational entropy through distributed synthetic intelligence and knowledge graphs", "Marco conceptual que aplica teoría de sistemas complejos al diseño organizacional": "Conceptual framework that applies complex-systems theory to organizational design", "Propuesta: las organizaciones pueden modelarse como sistemas termodinámicos con estados de alta/baja entropía": "Proposal: organizations can be modeled as thermodynamic systems with high/low-entropy states", "Arquitectura: inteligencia sintética distribuida + bases de datos en grafo para mapear flujos de decisión y conocimiento tácito": "Architecture: distributed synthetic intelligence + graph databases to map decision flows and tacit knowledge", "Destino: consultoría de alto valor para organizaciones en transición digital": "Destination: high-value consulting for organizations in digital transition", "Investigación en curso. Publicación académica planificada.": "Ongoing research. Academic publication planned.", "Publicado · v0.1.0 · Open-source": "Published · v0.1.0 · Open-source", "— Ontología Contable Universal": "— Universal Accounting Ontology", "Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)": "An Esperanto for accounting: a graph-based ontology mapping the 195 sovereign jurisdictions to IFRS/XBRL and to the agentic economy (MCP · A2A · AP2)", "Un UUID inamovible por cada concepto contable universal — los códigos son etiquetas visuales; el UUID es la identidad canónica": "One immutable UUID per universal accounting concept — codes are visual labels; the UUID is the canonical identity", "195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)": "195 sovereign jurisdictions mapped; 60 statutory chart-of-accounts overlays (56 exercised against primary sources)", ": un agente no puede proponer un UUID que no exista en el grafo — elimina la clase clásica de alucinación contable a nivel del harness": ": an agent cannot propose a UUID that does not exist in the graph — eliminating the classic class of accounting hallucination at the harness level", "Capa agent-native para la economía agéntica; resolución determinista en tres niveles, con inteligencia sintética estocástica solo como último recurso": "Agent-native layer for the agentic economy; deterministic three-tier resolution, with stochastic synthetic intelligence only as a last resort", "Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.": "Published in June 2026 under Business Source License 1.1 (converts to Apache 2.0 in 2030). Preprint (not yet peer-reviewed) deposited on Zenodo and SSRN.", "↗ Repositorio": "↗ Repository", "Operacional · Stage 1 completo": "Operational · Stage 1 complete", "Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética": "Personal cognitive operating system — captures, distills and organizes synthetic-cognition conversations", "Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema": "Solves dialectical entropy: every synthetic-cognition conversation produces flashes of clarity that vanish. ZENTROPY captures them in a structured database (Supabase, schema", "Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (": "Universal ingestion: Claude JSON/ZIP, ChatGPT, Markdown — custom parser (", "Módulo central del ecosistema NEXOS: integra con CLAPPS, UCVE, NOOS, Kontablo": "Central module of the NEXOS ecosystem: integrates with CLAPPS, UCVE, NOOS, Kontablo", "Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter": "Multi-tenant architecture ready for public use. Stage 2: local Open WebUI with OpenRouter", "La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.": "The abundance of cognitive tools without architecture is the most sophisticated form of entropy.", "Investigación activa": "Active research", "— Epistemología del Diálogo Poli-dialéctico Destilado": "— Epistemology of Poly-dialectical Distilled Dialogue", "Propuesta filosófica sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética": "A philosophical proposal on the nature of collective knowledge in the age of synthetic cognition", "Problema: toda conversación prolongada tiende hacia el ruido. El diálogo con cognición sintética lo acelera — la ventana de contexto se degrada, las sesiones no persisten": "Problem: every prolonged conversation tends toward noise. Dialogue with synthetic cognition accelerates it — the context window degrades, sessions do not persist", "Propuesta: modelo": "Proposal: a", "Tronco/Rizoma": "Trunk/Rhizome", "— el rizoma explora libremente; periódicamente el par humano-cognición sintética destila hacia el Tronco (conocimiento estable)": "model — the rhizome explores freely; periodically the human–synthetic-cognition pair distills toward the Trunk (stable knowledge)", "Doble naturaleza: propuesta filosófica": "Dual nature: a philosophical proposal", "y": "and", "arquitectura de software para gestión epistemológica": "a software architecture for epistemological management", "Línea de investigación doctoral activa — epistemología de la interacción humano-cognición sintética": "An active doctoral research line — epistemology of human–synthetic-cognition interaction", "Intersecta con la candidatura doctoral en sistemas complejos. Candidata a publicación académica.": "Intersects with the doctoral candidacy in complex systems. Candidate for academic publication.", "Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo": "Document the architecture and pedagogy before the field reinvents it as new", "Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos": "Public repository: technical architecture, pedagogical principles, guardrails — without internal prompts", "Repositorio privado: system prompts, documentos de contenido, notas de implementación": "Private repository: system prompts, content documents, implementation notes", "Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes": "Goal: establish authorship and date before the mass adoption of equivalent systems", "2025 – PRESENTE": "2025 – PRESENT", "Consultor Estratégico de Sistemas": "Strategic Systems Consultant", "Independiente · Panamá / Ecuador": "Independent · Panama / Ecuador", "Plataformas BI e infraestructura digital · Zoho ERP": "BI platforms and digital infrastructure · Zoho ERP", "Sistema de auditoría y registro de efectivo para casino tipo C (Salsa-Casino)": "Cash auditing and recording system for a Type C casino (Salsa-Casino)", "Arquitectura SaaS para gestión clínica (ver CLAPPS.AI)": "SaaS architecture for clinical management (see CLAPPS.AI)", "Coordinador de Laboratorios de Física": "Physics Laboratory Coordinator", "800+ estudiantes anuales · 36 guías de laboratorio originales": "800+ students per year · 36 original laboratory guides", "Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento": "USFQ Open House: development of experiments for the general public · department petty cash", "Técnico-operador del difractómetro de rayos X · 5 publicaciones co-autoradas": "X-ray diffractometer technician-operator · 5 co-authored publications", "Responsable de Seguridad Radiológica institucional": "Institutional Radiological Safety Officer", "Diseñador de Sistemas / Luminotécnico": "Systems Designer / Lighting Technician", "Sistema de registro de cuentas y bóveda para casinos · procedimientos de auditoría": "Account-recording and vault system for casinos · auditing procedures", "Luminotécnico freelance para eventos corporativos y de entretenimiento": "Freelance lighting technician for corporate and entertainment events", "Logística BTL y Relación con Clientes": "BTL Logistics & Client Relations", "Logística y montaje de activaciones BTL en eventos masivos según proyecto": "Logistics and setup of BTL activations at large-scale events, per project", "Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic": "Clients: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic", "Coordinación de 1.000 pax · Desfile de Navidad Panamá 2013": "Coordination of 1,000 attendees · Panama Christmas Parade 2013", "Producción evento Extravaganza Herbalife 2012": "Event production · Herbalife Extravaganza 2012", "Participación en: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, Copa Mundial de Béisbol 2011": "Featured in: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, 2011 Baseball World Cup", "Fotografía · Edición · Docencia Audiovisual": "Photography · Editing · Audiovisual Teaching", "Escuela de Cine y TV / Venezuela": "Film & TV School / Venezuela", "— selección ESPN 2008": "— ESPN selection 2008", "Docente de edición y montaje · Coord. post-producción Creadores Visuales (2010)": "Editing and montage instructor · Post-production coordinator, Creadores Visuales (2010)", "Profesor de Física": "Physics Professor", "Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)": "Labs I, II and III for engineering and sciences (2nd and 3rd year)", "Investigación doctoral en sistemas complejos · primeras publicaciones": "Doctoral research in complex systems · first publications", "DRAHMA · CAMPO AMAZÓNICO": "DRAHMA · AMAZON FIELDWORK", "DRAHMA EN CAMPO": "DRAHMA IN THE FIELD", "Añadir fotografía": "Add photograph", "COMUNIDAD AMAZÓNICA": "AMAZONIAN COMMUNITY", "INTERFAZ DEL SISTEMA": "SYSTEM INTERFACE", "Añadir captura": "Add screenshot", "LABORATORIO STEM · FABRICACIÓN PEDAGÓGICA": "STEM LAB · PEDAGOGICAL FABRICATION", "IMPRESORA 3D": "3D PRINTER", "MATERIALES DIDÁCTICOS": "TEACHING MATERIALS", "CORTADORA LÁSER": "LASER CUTTER", "SESIÓN CON ESTUDIANTES": "SESSION WITH STUDENTS", "CIENCIA EN PÚBLICO · EVENTOS": "PUBLIC SCIENCE · EVENTS", "CASA ABIERTA USFQ": "USFQ OPEN HOUSE", "DIFRACTÓMETRO DE RAYOS X": "X-RAY DIFFRACTOMETER", "Luciani, C. · Preprint (aún no arbitrado) · Zenodo & SSRN": "Luciani, C. · Preprint (not yet peer-reviewed) · Zenodo & SSRN", "36 guías de prácticas de laboratorio de física": "36 physics laboratory practice guides", "USFQ · Ingeniería, Ciencias de la Salud, Ciencias Puras · Publicación institucional interna": "USFQ · Engineering, Health Sciences, Pure Sciences · Internal institutional publication", "↗ Ver en GitHub (HTML5)": "↗ View on GitHub (HTML5)", "TRIÁNGULO DE PENROSE · 1954": "PENROSE TRIANGLE · 1954", "\"Lo imposible solo lo es hasta que alguien lo dibuja correctamente.\"": "\"The impossible is only impossible until someone draws it correctly.\"", "Idiomas": "Languages", "Español — nativo": "Spanish — native", "Inglés — Intermedio": "English — Intermediate", "Francés — B1": "French — B1", "Ciencias": "Sciences", "Difractometría de rayos X": "X-ray diffractometry", "Seguridad radiológica": "Radiological safety", "Sistemas complejos": "Complex systems", "Programación": "Programming", "Agentes de inteligencia sintética": "Synthetic-intelligence agents", "Plataformas": "Platforms", "INTERESES": "INTERESTS", "Escalada en roca · Montañismo · Cine asiático · Neurociencias · Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·": "Rock climbing · Mountaineering · Asian cinema · Neuroscience · Philosophical consequences of post-human synthetic cognition · Nutrition · Meditation ·", "La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.": "The cognitive nature of organic beings in a world of synthetic cognition.", "La naturaleza de los seres cognitivos y su interacción · emergencia de la inteligencia universal": "The nature of cognitive beings and their interaction · emergence of universal intelligence"};
-  var ROOM_EN=["The <em>Visitor</em>", "Project <em>Drahma</em>", "Active <em>Projects</em>", "The <em>Path</em>", "The <em>Evidence</em>", "Scientific <em>Record</em>", "The <em>Toolbox</em>", "Start a <em>Conversation</em>"];
+  var ROOM_EN=["The <em>Visitor</em>", "Active <em>Projects</em>", "The <em>Path</em>", "The <em>Evidence</em>", "The <em>Library</em>", "The <em>Toolbox</em>", "<em>Connect</em>"];
   var norm=function(s){return s.replace(/\s+/g,' ').trim();};
   var SKIP={SCRIPT:1,STYLE:1,TITLE:1};
   var printcv=document.getElementById('print-cv');
@@ -2290,6 +2308,51 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   if(b)b.addEventListener('click',function(){apply(document.documentElement.lang==='en'?'es':'en');});
   var cur='es';try{cur=localStorage.getItem('lang')||'es';}catch(e){}
   if(cur==='en')apply('en');
+})();
+</script>
+
+<!-- ── INTRO animación de frase → nombre (debajo del fractal, en paralelo) ── -->
+<script>
+(function(){
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    var ib=document.getElementById('intro-block'); if (ib) ib.remove();
+    return; // el loader lo oculta el fractal normalmente (minimizeDelayMs corto)
+  }
+  var loader=document.getElementById('loader');
+  var fractal=document.getElementById('fractal-logo');
+  var phrases=[].slice.call(document.querySelectorAll('.intro-phrase'));
+  var nameEl=document.querySelector('.intro-name');
+  var block=document.getElementById('intro-block');
+  if (!loader || !block || !phrases.length) return;
+
+  var started=false;
+  function finish(){
+    if (nameEl) nameEl.classList.remove('in');
+    loader.classList.add('hidden');
+    if (fractal) fractal.classList.add('minimized');
+    // limpieza tras la transición
+    setTimeout(function(){ if (block && block.parentNode) block.parentNode.removeChild(block); }, 1200);
+  }
+
+  function play(){
+    if (started) return; started=true;
+    var t=350; // dejar que el fractal aparezca
+    phrases.forEach(function(p){
+      setTimeout(function(){ p.classList.add('in'); }, t);
+      setTimeout(function(){ p.classList.remove('in'); p.classList.add('hide'); }, t+2200);
+      t+=2500;
+    });
+    setTimeout(function(){ if (nameEl) nameEl.classList.add('in'); }, t+250);
+    setTimeout(finish, t+1600);
+  }
+
+  if (document.readyState === 'complete') { play(); }
+  else window.addEventListener('load', play, { once:true });
+
+  // Skip: un clic durante el intro salta directo al nombre y revela el hero.
+  var skip = function(){ if (!started) return; finish(); };
+  document.addEventListener('click', skip, { once:true });
 })();
 </script>
 
