@@ -1,6 +1,7 @@
 import { id as kochId, mountKochLogo } from "./ts/fractals/koch";
 import { id as neckerBgId, mountNeckerBg } from "./ts/illusions/neckerBg";
 import { id as neckerIllId, mountNeckerIll } from "./ts/illusions/neckerIll";
+import { mountSalas } from "./cv/render";
 
 type CanvasModule = {
   id: string;
@@ -33,6 +34,9 @@ const CANVAS_MODULES: CanvasModule[] = [
 ];
 
 function init() {
+  // Parametrización de salas: nav, numeración, títulos y i18n estructural se
+  // derivan de SALAS (src/cv) — debe montarse antes que los canvas.
+  mountSalas();
   for (const mod of CANVAS_MODULES) {
     const el = document.getElementById(mod.id);
     if (el instanceof HTMLCanvasElement) mod.mount(el);

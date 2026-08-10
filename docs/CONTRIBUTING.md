@@ -30,7 +30,13 @@ christianluciani.github.io/
 ├── README.md
 ├── ESTADO.md           ← Estado actual y próximo paso por proyecto
 ├── public/             ← Estáticos servidos tal cual (íconos, fotos)
-├── src/ts/             ← Fractales/ilusiones en TypeScript (Koch, canvas)
+├── src/
+│   ├── main.ts         ← entry Vite (mounts canvases + mountSalas)
+│   ├── cv/             ← PARAMETRIZACIÓN: estructura del museo
+│   │   ├── salas.ts    ← SALAS: única fuente de verdad (nav, numeración, i18n, títulos)
+│   │   ├── render.ts   ← deriva nav/números/ROOM_EN/MAP_EXTRA desde SALAS
+│   │   └── *.test.ts   ← integridad + paridad con index.html + guarda scripts inline
+│   └── ts/             ← Fractales/ilusiones en TypeScript (Koch, canvas)
 ├── assets/             ← Recursos del sitio (og-image, thumbs de papers)
 ├── tools/              ← Generadores (og-image.svg)
 └── docs/
@@ -40,9 +46,18 @@ christianluciani.github.io/
 
 > Nota: el flujo de edición real es **directamente sobre `index.html`**. La subcarpeta
 > modular legacy (`src/styles|js|sections`) ya no se usa; la lógica viva está en `src/ts/`
-> (compilada por Vite) y el contenido en `index.html`.
+> (compilada por Vite), el contenido en `index.html` y la **estructura de salas en `src/cv/salas.ts`**
+> (la navegación, numeración e i18n de salas se generan desde ahí en runtime — ver
+> `docs/REFACTOR_PLAN.md`, Fase 1).
 
 ## Editar el CV
+
+### Editar la estructura de salas (recomendado para el refactor)
+La **única fuente de verdad** de las salas es `src/cv/salas.ts` (`SALAS`). Desde ahí se generan
+nav lateral, numeración (`SALA 01–07`), títulos EN (`ROOM_EN`) y claves de sala del diccionario
+ES/EN. Para renombrar, reordenar, añadir o quitar una sala: edita `SALAS` (y en Fase 2 el HTML
+se regenerará solo; hoy los `<section>` viven en `index.html` en el mismo orden que `SALAS` —
+el test `src/cv/parity.test.ts` falla si se desalinean).
 
 ### Editar el contenido (recomendado)
 El `index.html` tiene comentarios `SALA 0X` que delimitan cada sala.
