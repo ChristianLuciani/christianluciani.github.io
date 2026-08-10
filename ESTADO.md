@@ -113,3 +113,5 @@ Al añadir texto ES en `index.html` → <strong>actualizar también su traducci�
 - 2026-08-10: Drahma integrado como showcase dentro de Sala 02 Proyectos (ya no es sala aparte); renumera salas 03–07
 - 2026-08-10: Nombre "Christian Luciani" (sin Toledo); animación intro (frase → nombre) tras el fractal; QR en el CV imprimible
 - 2026-08-10: Limpieza de artefactos: eliminados `assets/index-OWey81UA.js` (+ `.map`) del árbol; el entry pasa a apuntar a `/src/main.ts`
+- 2026-08-10: Sala Contacto renombrada a «Conectar» (SALA 07); se añade `docs/REFACTOR_PLAN.md` (parametrización + modularización, plan para próxima ventana)
+- 2026-08-10: Fix crítico: faltaba `</script>` tras el bloque i18n (rompía el parseo); se corrige y se revalidan los scripts embebidos

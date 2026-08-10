@@ -42,7 +42,7 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | 04 · Galería | Fotografías y evidencias | — |
 | 05 · Ciencia | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
 | 06 · Competencias | Skills, idiomas, open source | Sierpinski |
-| 07 · Contacto | Links y salida | — |
+| 07 · Conectar | Redes y contacto | — |
 
 ## Flujo de trabajo
 
