@@ -341,74 +341,42 @@ body {
   filter:brightness(1.3) drop-shadow(0 0 6px var(--teal));
 }
 
-.loader-text {
-  font-family:var(--font-mono);
-  font-size:.68rem; color:var(--teal);
-  letter-spacing:.45em;
-  margin-top:160px; /* below the logo space */
-  animation:fadeUp .5s .7s both;
-}
-@keyframes fadeUp {
-  from { opacity:0; transform:translateY(10px); }
-  to   { opacity:1; transform:translateY(0); }
-}
-
-/* ══════════════════════════════════════════════
-   INTRO — animación de frase → nombre
-   Pantalla completa que sucede tras el fractal/loader
-   y resuelve al nombre antes de revelar el hero.
-══════════════════════════════════════════════ */
-#intro-tx {
-  position:fixed; inset:0;
-  background:var(--night);
-  z-index:950;
-  display:flex; align-items:center; justify-content:center;
-  opacity:0; visibility:hidden;
-  transition:opacity .8s ease, visibility .8s;
-}
-#intro-tx.showing {
-  opacity:1; visibility:visible;
-}
-#intro-tx.done {
-  opacity:0; visibility:hidden;
-}
-.intro-stage {
-  max-width:min(820px, 88vw);
+/* Introducción: frase rotando debajo del fractal (dentro del loader) */
+#intro-block {
+  width:100%;
+  max-width:min(820px, 90vw);
   text-align:center;
   padding:0 1.5rem;
+  /* coloca el bloque por debajo del fractal centrado (fractal = 120px centrado en 50%) */
+  margin-top:130px;
+  pointer-events:none;
 }
 .intro-phrase {
   margin:0 auto;
   font-family:var(--font-display);
-  font-size:clamp(1.5rem, 4.2vw, 2.6rem);
-  line-height:1.4;
+  font-size:clamp(1.4rem, 3.6vw, 2.4rem);
+  line-height:1.45;
   color:var(--text);
   opacity:0;
   transform:translateY(18px);
   transition:opacity .9s ease, transform .9s ease;
 }
 .intro-phrase em { color:var(--teal); font-style:italic; }
-.intro-phrase.in {
-  opacity:1; transform:translateY(0);
-}
-.intro-phrase.hide {
-  opacity:0; transform:translateY(-16px);
-}
+.intro-phrase.in   { opacity:1; transform:translateY(0); }
+.intro-phrase.hide { opacity:0; transform:translateY(-16px); }
 .intro-name {
   margin:0;
   font-family:var(--font-display);
-  font-size:clamp(2.4rem, 7vw, 5rem);
+  font-size:clamp(2.4rem, 6.5vw, 4.6rem);
   font-weight:700;
   color:#fff;
   opacity:0;
   transform:scale(.94);
   transition:opacity 1s ease, transform 1s cubic-bezier(.16,1,.3,1);
 }
-.intro-name.in {
-  opacity:1; transform:scale(1);
-}
+.intro-name.in { opacity:1; transform:scale(1); }
 @media (prefers-reduced-motion: reduce) {
-  #intro-tx { display:none; }
+  #intro-block { display:none; }
 }
 
 /* ══════════════════════════════════════════════
@@ -1049,13 +1017,8 @@ body {
 <canvas id="fractal-logo"></canvas>
 
 <div id="loader">
-  <div class="loader-text">ABRIENDO EXPOSICIÓN</div>
-</div>
-
-<!-- ── INTRO: animación de frase → nombre (tras el fractal/loader) ── -->
-<div id="intro-tx" aria-hidden="true">
-  <div class="intro-stage">
-    <p class="intro-phrase" data-idx="0">¿Pueden el Arte, la Ciencia, la Ingeniería y la Filosofía convivir en una persona?</p>
+  <div id="intro-block">
+    <p class="intro-phrase" data-idx="0">¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?</p>
     <p class="intro-phrase" data-idx="1">Distintas perspectivas de una misma realidad…</p>
     <p class="intro-phrase" data-idx="2">una <em>Instancia Humana</em>.</p>
     <h1 class="intro-name">Christian Luciani</h1>
@@ -2346,49 +2309,51 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
   var cur='es';try{cur=localStorage.getItem('lang')||'es';}catch(e){}
   if(cur==='en')apply('en');
 })();
+</script>
 
-<!-- ── INTRO animación de frase → nombre ── -->
+<!-- ── INTRO animación de frase → nombre (debajo del fractal, en paralelo) ── -->
 <script>
 (function(){
-  if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    var ix=document.getElementById('intro-tx'); if (ix) ix.remove();
-    return;
+  var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reduceMotion) {
+    var ib=document.getElementById('intro-block'); if (ib) ib.remove();
+    return; // el loader lo oculta el fractal normalmente (minimizeDelayMs corto)
   }
-  var intro=document.getElementById('intro-tx');
   var loader=document.getElementById('loader');
+  var fractal=document.getElementById('fractal-logo');
   var phrases=[].slice.call(document.querySelectorAll('.intro-phrase'));
   var nameEl=document.querySelector('.intro-name');
-  if (!intro || !loader || !phrases.length) return;
+  var block=document.getElementById('intro-block');
+  if (!loader || !block || !phrases.length) return;
 
-  // Inicia cuando el loader (fractal) se oculta.
   var started=false;
+  function finish(){
+    if (nameEl) nameEl.classList.remove('in');
+    loader.classList.add('hidden');
+    if (fractal) fractal.classList.add('minimized');
+    // limpieza tras la transición
+    setTimeout(function(){ if (block && block.parentNode) block.parentNode.removeChild(block); }, 1200);
+  }
+
   function play(){
     if (started) return; started=true;
-    intro.classList.add('showing');
-    var t=0;
+    var t=350; // dejar que el fractal aparezca
     phrases.forEach(function(p){
       setTimeout(function(){ p.classList.add('in'); }, t);
-      setTimeout(function(){ p.classList.remove('in'); p.classList.add('hide'); }, t+2100);
-      t+=2400;
+      setTimeout(function(){ p.classList.remove('in'); p.classList.add('hide'); }, t+2200);
+      t+=2500;
     });
-    // Tras las frases, mostrar el nombre.
-    setTimeout(function(){ if (nameEl) nameEl.classList.add('in'); }, t+200);
-    setTimeout(function(){
-      if (nameEl) nameEl.classList.remove('in');
-      intro.classList.add('done');
-      setTimeout(function(){ if (intro.parentNode) intro.parentNode.removeChild(intro); }, 900);
-    }, t+1200);
+    setTimeout(function(){ if (nameEl) nameEl.classList.add('in'); }, t+250);
+    setTimeout(finish, t+1600);
   }
 
-  if (loader.classList.contains('hidden')) { play(); }
-  else {
-    var mo=new MutationObserver(function(){
-      if (loader.classList.contains('hidden')){ play(); mo.disconnect(); }
-    });
-    mo.observe(loader,{ attributes:true, attributeFilter:['class'] });
-  }
+  if (document.readyState === 'complete') { play(); }
+  else window.addEventListener('load', play, { once:true });
+
+  // Skip: un clic durante el intro salta directo al nombre y revela el hero.
+  var skip = function(){ if (!started) return; finish(); };
+  document.addEventListener('click', skip, { once:true });
 })();
-</script>
 </script>
 
 </body>
