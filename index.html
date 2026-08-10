@@ -315,10 +315,11 @@ body {
 #loader.hidden { opacity:0; visibility:hidden; }
 
 #fractal-logo {
-  /* starts centered in loader */
+  /* comienza centrado en el loader; se sube para dejar espacio al texto */
   position:fixed;
   z-index:1001;
   width:120px; height:120px;
+  top:calc(50vh - 200px) !important;   /* sube el fractal vs el centrado exacto (50vh-60px) */
   transition:
     top    1s cubic-bezier(.16,1,.3,1),
     left   1s cubic-bezier(.16,1,.3,1),
@@ -326,7 +327,7 @@ body {
     height 1s cubic-bezier(.16,1,.3,1),
     transform 1s cubic-bezier(.16,1,.3,1),
     filter 1s;
-  /* centered via JS on init */
+  /* el left lo define JS (centrado horizontal) */
   cursor:pointer;
 }
 #fractal-logo.minimized {
@@ -347,8 +348,8 @@ body {
   max-width:min(820px, 90vw);
   text-align:center;
   padding:0 1.5rem;
-  /* coloca el bloque por debajo del fractal centrado (fractal = 120px centrado en 50%) */
-  margin-top:130px;
+  /* coloca el bloque por debajo del fractal (fractal subido a 50vh-200px) */
+  margin-top:190px;
   pointer-events:none;
 }
 /* Una sola línea que rota el texto en la misma posición; altura reservada para no brincar */
@@ -1032,11 +1033,12 @@ body {
   <div class="nav-dot" data-target="hero"              data-label="Entrada"></div>
   <div class="nav-dot" data-target="room-perfil"       data-label="Perfil"></div>
   <div class="nav-dot" data-target="room-proyectos"    data-label="Proyectos"></div>
+  <div class="nav-dot" data-target="room-grafo"        data-label="Grafo"></div>
   <div class="nav-dot" data-target="room-experiencia"  data-label="Experiencia"></div>
   <div class="nav-dot" data-target="room-galeria"      data-label="Galería"></div>
-  <div class="nav-dot" data-target="room-fisica"       data-label="Física"></div>
+  <div class="nav-dot" data-target="room-fisica"       data-label="Biblioteca"></div>
   <div class="nav-dot" data-target="room-competencias" data-label="Competencias"></div>
-  <div class="nav-dot" data-target="room-contacto"     data-label="Contacto"></div>
+  <div class="nav-dot" data-target="room-contacto"     data-label="Conectar"></div>
 </nav>
 
 
@@ -1082,7 +1084,7 @@ body {
   </style>
   <div class="bp-title" data-scroll="up"><em>Plano</em> del Museo</div>
   <div class="bp-hint" data-scroll="up" data-delay="1">PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR</div>
-  <svg class="bp-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label="Plano del museo">
+    <svg class="bp-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label="Plano del museo">
     <rect class="bp-frame" x="30" y="40" width="840" height="490"/>
     <rect class="bp-frame" x="36" y="46" width="828" height="478"/>
 <polyline class="bp-path" points="180,145 450,145 720,145 720,305 450,305 180,305 180,465 450,465 720,465"/>
@@ -1101,29 +1103,34 @@ body {
     <text class="bp-num"  x="618" y="122">02</text>
     <text class="bp-name" x="618" y="190">PROYECTOS</text>
   </a>
+  <a href="#room-grafo" class="bp-room">
+    <rect x="60" y="240" width="240" height="130" rx="2"/>
+    <text class="bp-num"  x="78" y="282">03</text>
+    <text class="bp-name" x="78" y="350">GRAFO</text>
+  </a>
   <a href="#room-experiencia" class="bp-room">
     <rect x="330" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="282">03</text>
+    <text class="bp-num"  x="348" y="282">04</text>
     <text class="bp-name" x="348" y="350">TRAYECTORIA</text>
   </a>
   <a href="#room-galeria" class="bp-room">
-    <rect x="60" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="282">04</text>
-    <text class="bp-name" x="78" y="350">GALERÍA</text>
+    <rect x="600" y="240" width="240" height="130" rx="2"/>
+    <text class="bp-num"  x="618" y="282">05</text>
+    <text class="bp-name" x="618" y="350">GALERÍA</text>
   </a>
   <a href="#room-fisica" class="bp-room">
     <rect x="60" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="442">05</text>
+    <text class="bp-num"  x="78" y="442">06</text>
     <text class="bp-name" x="78" y="510">BIBLIOTECA</text>
   </a>
   <a href="#room-competencias" class="bp-room">
     <rect x="330" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="442">06</text>
+    <text class="bp-num"  x="348" y="442">07</text>
     <text class="bp-name" x="348" y="510">COMPETENCIAS</text>
   </a>
   <a href="#room-contacto" class="bp-room">
     <rect x="600" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="618" y="442">07</text>
+    <text class="bp-num"  x="618" y="442">08</text>
     <text class="bp-name" x="618" y="510">CONECTAR</text>
   </a>
   </svg>
@@ -1407,13 +1414,34 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 03 — Trayectoria Profesional
+<!-- ════════════════════════════════════════════════════
+  SALA 03 — El Grafo (mapa de conexiones del CV)
+════════════════════════════════════════════════════ -->
+<section class="room" id="room-grafo" style="background:var(--night)">
+  <div class="room-content" style="position:relative">
+    <div class="room-number" data-scroll="up">SALA 03</div>
+    <h2 class="room-title"   data-scroll="zoom-in">El <em>Grafo</em></h2>
+    <div class="room-subtitle" data-scroll="up" data-delay="1">RED · ÁREAS · PROYECTOS · CONEXIONES · 2026</div>
+    <p data-scroll="up" data-delay="2" style="color:var(--muted);font-style:italic;max-width:560px;margin:0 auto 1.5rem;font-size:.95rem">
+      No solo amplitud: la conexión entre áreas, trabajos y proyectos.
+      Un nodo <span style="color:var(--gold)">dorado</span> aún no está publicado.
+    </p>
+    <div style="position:relative;height:min(64vh,560px);width:100%" id="graph-stage">
+      <canvas id="c-graph" style="width:100%;height:100%"></canvas>
+      <div id="graph-tip" style="position:absolute;display:none;background:rgba(8,13,24,.96);border:1px solid var(--teal);border-radius:6px;padding:.4rem .6rem;font-family:var(--font-mono);font-size:.72rem;color:var(--text);pointer-events:none;z-index:5;max-width:220px"></div>
+    </div>
+  </div>
+</section>
+<div class="room-divider"></div>
+
+
+  SALA 04 — Trayectoria Profesional
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-experiencia" style="background:var(--deep)">
   <canvas class="room-canvas" id="c-exp" role="img" aria-label="Patrón de interferencia de doble fuente"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 03</div>
+    <div class="room-number" data-scroll="up">SALA 04</div>
     <h2 class="room-title"   data-scroll="zoom-in">La <em>Trayectoria</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">EXPERIENCIA PROFESIONAL · 2003 – PRESENTE</div>
 
@@ -1497,7 +1525,7 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 04 — Galería
+  SALA 05 — Galería
   INSTRUCCIONES PARA COMPLETAR:
   · Añade <img src="ruta/foto.jpg"> dentro de cada .gallery-slot
   · El placeholder desaparece automáticamente al haber imagen
@@ -1506,7 +1534,7 @@ body {
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-galeria" style="background:var(--night)">
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 04</div>
+    <div class="room-number" data-scroll="up">SALA 05</div>
     <h2 class="room-title"   data-scroll="zoom-out">La <em>Evidencia</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS</div>
 
@@ -1576,13 +1604,13 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 05 — La Biblioteca (Publicaciones y Preprints)
+  SALA 06 — La Biblioteca (Publicaciones y Preprints)
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-fisica" style="background:var(--deep)">
   <canvas class="room-canvas" id="c-fisica" role="img" aria-label="Ilusión de serpientes rotantes"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 05</div>
+    <div class="room-number" data-scroll="up">SALA 06</div>
     <h2 class="room-title"   data-scroll="zoom-out">La <em>Biblioteca</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026</div>
 
@@ -1707,13 +1735,13 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 06 — Competencias
+  SALA 07 — Competencias
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-competencias" style="background:var(--night)">
   <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 06</div>
+    <div class="room-number" data-scroll="up">SALA 07</div>
     <h2 class="room-title"   data-scroll="zoom-in">Caja de <em>Herramientas</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS</div>
 
@@ -1793,11 +1821,11 @@ body {
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 07 — Contacto / Salida
+  SALA 08 — Contacto / Salida
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-contacto" style="background:var(--deep);min-height:55vh;display:flex;align-items:center">
   <div class="room-content" style="width:100%">
-    <div class="room-number" data-scroll="up">SALA 07</div>
+    <div class="room-number" data-scroll="up">SALA 08</div>
     <h2 class="room-title"   data-scroll="zoom-out"><em>Conectar</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">CONTACTO · REDES · INVESTIGACIÓN</div>
 
@@ -1937,7 +1965,7 @@ updateParallax();
 /* ──────────────────────────────────────────────
    NAVEGACIÓN LATERAL
 ────────────────────────────────────────────── */
-const navSections = ['hero','room-perfil','room-proyectos','room-experiencia','room-galeria','room-fisica','room-competencias','room-contacto'];
+const navSections = ['hero','room-perfil','room-proyectos','room-grafo','room-experiencia','room-galeria','room-fisica','room-competencias','room-contacto'];
 const dots = document.querySelectorAll('.nav-dot');
 
 dots.forEach((d, i) => {
@@ -2295,12 +2323,168 @@ function _cvWatch(c, draw) { _cvDraw.set(c.id, draw); _cvObs.observe(c); }
 })();
 
 </script>
+
+
+<!-- ── GRAFO: mapa de conexiones (física de fuerzas en canvas) ── -->
+<script>
+
+/* GRAFO: mapa de conexiones (física de fuerzas en canvas) */
+(function(){
+  var canvas = document.getElementById('c-graph');
+  if (!canvas) return;
+  var stage = document.getElementById('graph-stage');
+  var tip = document.getElementById('graph-tip');
+  var ctx = canvas.getContext('2d');
+
+  // status: raiz | area | pub (publicado) | futuro (no publicado, dorado)
+  var NODOS = [
+    {id:'raiz',    label:'Christian Luciani', status:'raiz'},
+    {id:'fisica',  label:'Física', status:'area'},
+    {id:'ia',      label:'IA Sintética · Agentes', status:'area'},
+    {id:'sob',     label:'Soberanía Tecnológica', status:'area'},
+    {id:'oss',     label:'Open Source', status:'area'},
+    {id:'edu',     label:'Educación', status:'area'},
+    {id:'cog',     label:'Cognición · Filosofía', status:'area'},
+    {id:'kontablo',label:'Kontablo', status:'pub'},
+    {id:'zentropy',label:'ZENTROPY', status:'pub'},
+    {id:'drahma',  label:'Drahma', status:'pub'},
+    {id:'clapps',  label:'CLAPPS · Noesis/Noetix', status:'pub'},
+    {id:'estel',   label:'Esteléctica', status:'pub'},
+    {id:'erp',     label:'ERPNext · Zanah', status:'pub'},
+    {id:'topia',   label:'Topia', status:'futuro'},
+    {id:'nelson',  label:'Nelson Companion', status:'futuro'}
+  ];
+  var LINKS = [
+    ['raiz','fisica'],['raiz','ia'],['raiz','sob'],['raiz','oss'],['raiz','edu'],['raiz','cog'],
+    ['ia','kontablo'],['sob','kontablo'],['oss','kontablo'],
+    ['ia','zentropy'],['cog','zentropy'],
+    ['edu','drahma'],['ia','drahma'],
+    ['edu','clapps'],['ia','clapps'],['cog','clapps'],
+    ['cog','estel'],
+    ['sob','erp'],['oss','erp'],
+    ['oss','topia'],['cog','topia'],
+    ['edu','nelson']
+  ];
+
+  var W,H;
+  var nodes = NODOS.map(function(n){ return Object.assign({}, n, { x:0,y:0,vx:0,vy:0, r: n.status==='raiz'?15:(n.status==='area'?9:7) }); });
+  var byId = {}; nodes.forEach(function(n){ byId[n.id]=n; });
+  var edges = LINKS.map(function(l){ return { a:byId[l[0]], b:byId[l[1]] }; });
+
+  function seed(){
+    nodes.forEach(function(n){
+      if(n.status==='raiz'){ n.x=W/2; n.y=H/2; return; }
+      var a=Math.random()*Math.PI*2, r=Math.sqrt(Math.random())*Math.min(W,H)*0.42;
+      n.x=W/2+Math.cos(a)*r; n.y=H/2+Math.sin(a)*r;
+    });
+  }
+  function resize(){
+    W=canvas.width=stage.clientWidth; H=canvas.height=stage.clientHeight;
+    seed();
+  }
+  resize(); window.addEventListener('resize', resize);
+
+  var REP=9000, SPR=0.02, REST=120, CTR=0.0025, DAMP=0.85;
+  function step(){
+    nodes.forEach(function(n){ n.fx=0; n.fy=0; });
+    for(var i=0;i<nodes.length;i++) for(var j=i+1;j<nodes.length;j++){
+      var a=nodes[i], b=nodes[j];
+      var dx=b.x-a.x, dy=b.y-a.y, d2=dx*dx+dy*dy+1e-6, d=Math.sqrt(d2);
+      var f=REP/d2;
+      a.fx-=dx/d*f; a.fy-=dy/d*f; b.fx+=dx/d*f; b.fy+=dy/d*f;
+    }
+    edges.forEach(function(e){
+      var dx=e.b.x-e.a.x, dy=e.b.y-e.a.y, d=Math.sqrt(dx*dx+dy*dy)||1;
+      var f=(d-REST)*SPR;
+      e.a.fx+=dx/d*f; e.a.fy+=dy/d*f; e.b.fx-=dx/d*f; e.b.fy-=dy/d*f;
+    });
+    nodes.forEach(function(n){
+      if(n.status==='raiz'){ n.x=W/2; n.y=H/2; n.vx=0; n.vy=0; return; }
+      n.x += (W/2-n.x)*CTR; n.y += (H/2-n.y)*CTR;
+      n.vx=(n.vx+n.fx)*DAMP; n.vy=(n.vy+n.fy)*DAMP;
+      n.x+=n.vx; n.y+=n.vy;
+      if(n.x<12)n.x=12; if(n.x>W-12)n.x=W-12;
+      if(n.y<12)n.y=12; if(n.y>H-12)n.y=H-12;
+    });
+  }
+  function col(n){
+    if(n.status==='raiz') return '#00c9c0';
+    if(n.status==='futuro') return '#c9a84c';
+    return n.status==='area' ? '#4aa8a4' : '#7fd6cc';
+  }
+
+  var hv=null;
+  function hit(x,y){
+    for(var i=nodes.length-1;i>=0;i--){
+      var n=nodes[i];
+      if(Math.hypot(n.x-x,n.y-y) <= n.r+6) return n;
+    }
+    return null;
+  }
+
+  function draw(){
+    ctx.clearRect(0,0,W,H);
+    // aristas
+    edges.forEach(function(e){
+      var active = hv && (e.a===hv||e.b===hv);
+      ctx.beginPath(); ctx.moveTo(e.a.x,e.a.y); ctx.lineTo(e.b.x,e.b.y);
+      ctx.strokeStyle = active ? 'rgba(0,201,192,.65)' : 'rgba(0,201,192,.15)';
+      ctx.lineWidth = active?1.6:1;
+      ctx.stroke();
+    });
+    // nodos
+    var neigh=[];
+    if(hv){ edges.forEach(function(e){ if(e.a===hv)neigh.push(e.b); else if(e.b===hv)neigh.push(e.a); }); }
+    nodes.forEach(function(n){
+      var act = hv && (n===hv || neigh.indexOf(n)!==-1);
+      ctx.globalAlpha = hv ? (act?1:.16) : 1;
+      ctx.beginPath(); ctx.arc(n.x,n.y,n.r,0,Math.PI*2);
+      ctx.fillStyle = col(n);
+      // halo sutil
+      if(n===hv){ ctx.shadowColor=col(n); ctx.shadowBlur=18; }
+      ctx.fill();
+      ctx.shadowBlur=0;
+      // label
+      ctx.fillStyle = act||!hv ? (n.status==='raiz'?'#ffffff':'#d6dde8') : 'rgba(130,140,155,.6)';
+      ctx.font = (n.status==='raiz'?'600 13px ':'11px ') + "'Playfair Display', serif";
+      ctx.textAlign='center';
+      var ly = n.y + n.r + 14;
+      ctx.fillText(n.label, n.x, ly);
+      ctx.globalAlpha=1;
+    });
+  }
+
+  function loop(){ step(); draw(); requestAnimationFrame(loop); }
+
+  // interacción
+  canvas.addEventListener('mousemove', function(e){
+    var r=canvas.getBoundingClientRect();
+    var mx=e.clientX-r.left, my=e.clientY-r.top;
+    var n=hit(mx,my);
+    if(n!==hv){
+      hv=n;
+      if(n){
+        tip.style.display='block';
+        var stat = n.status==='pub' ? 'publicado/activo' : n.status==='futuro' ? 'no publicado' : n.status==='raiz' ? 'raíz' : 'área';
+        tip.innerHTML = '<b style="color:'+col(n)+'">'+n.label+'</b><br><span style="color:var(--muted)">'+stat+'</span>';
+      } else tip.style.display='none';
+    }
+    if(n){ tip.style.left=Math.min(mx+14, W-230)+'px'; tip.style.top=(my-10)+'px'; }
+  });
+  canvas.addEventListener('mouseleave', function(){ hv=null; tip.style.display='none'; });
+
+  loop();
+})();
+
+</script>
 <!-- ── i18n ES/EN toggle (text-node dictionary, structure-preserving) ── -->
 <script>
 (function(){
-  var MAP={"Plano": "Museum", "del Museo": "Map", "PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR": "MUSEUM FLOOR PLAN · INDEX — CLICK A SPACE TO ENTER", "ENTRADA": "ENTRANCE", "PERFIL": "PROFILE", "PROYECTOS": "PROJECTS", "TRAYECTORIA": "CAREER", "GALERÍA": "GALLERY", "CIENCIA": "SCIENCE", "BIBLIOTECA": "LIBRARY", "COMPETENCIAS": "SKILLS", "CONTACTO": "CONTACT", "CONECTAR": "CONNECT", "↓ Descargar CV": "↓ Download CV", "ABRIENDO EXPOSICIÓN": "OPENING EXHIBITION", "Museo de una Trayectoria · 2026": "Museum of a Trajectory · 2026", "Físico · Inteligencia Sintética · Economía Agéntica": "Physicist · Synthetic Intelligence · Agentic Economy", "SCROLL PARA RECORRER": "SCROLL TO EXPLORE", "SALA 01": "ROOM 01", "SALA 02": "ROOM 02", "Proyecto": "Project", "LAB STEM": "STEM LAB", "SALA 03-B · LAB STEM": "ROOM 03-B · STEM LAB", "Showcase completo más abajo": "Full showcase below", "— Inteligencia Sintética Educativa": "— Educational Synthetic Intelligence", "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (August 2024).", "↓ Ver showcase completo (Sala 03)": "↓ See full showcase (Room 03)", "REPOSITORIO · ESTRATEGIA DE AUTORÍA": "REPOSITORY · AUTHORSHIP STRATEGY", "SALA 03": "ROOM 03", "SALA 04": "ROOM 04", "SALA 05": "ROOM 05", "SALA 06": "ROOM 06", "SALA 07": "ROOM 07", "SALIDA": "EXIT", "PERFIL PROFESIONAL · CUENCA, ECUADOR": "PROFESSIONAL PROFILE · CUENCA, ECUADOR", "INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024": "EDUCATIONAL SYNTHETIC INTELLIGENCE · ECUADOR · AUGUST 2024", "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS": "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS", "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE": "PROFESSIONAL EXPERIENCE · 2003 – PRESENT", "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS": "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS", "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026": "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026", "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS": "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES", "AionCore · Agente Pi como built-in ACP ↗": "AionCore · Pi agent as built-in ACP ↗",
-"pi-acp · session/delete ACP lifecycle ↗": "pi-acp · session/delete ACP lifecycle ↗", "CONTACTO · REDES · INVESTIGACIÓN": "CONTACT · NETWORKS · RESEARCH", "Añadir foto local": "Add local photo", "Físico con candidatura doctoral en sistemas complejos y más de 20 años navegando entre la investigación científica, la docencia universitaria y la innovación educativa.": "Physicist with a doctoral candidacy in complex systems and over 20 years navigating between scientific research, university teaching and educational innovation.", "En 2024 diseñé e implementé": "In 2024 I designed and implemented", ": 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.": ": 36 synthetic-intelligence virtual tutors with Socratic pedagogy, aligned to the Ecuadorian curriculum, field-tested with Amazonian indigenous communities.", "Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.": "Functionally bilingual Spanish-English (Intermediate English). Active networks in Panama and Ecuador.", "CUBO DE NECKER · 1832": "NECKER CUBE · 1832", "Especialización en Audiovisuales": "Specialization in Audiovisual Media", "Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008": "Film & TV School, Caracas · Prix du Public FECOVEN 2008", "Candidatura Doctoral — Sistemas Complejos": "Doctoral Candidacy — Complex Systems", "Universidad Simón Bolívar, Venezuela · ABD — tesis pendiente": "Universidad Simón Bolívar, Venezuela · ABD — thesis pending", "Licenciatura en Física": "B.Sc. in Physics", "Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536": "Universidad Central de Venezuela · Thesis: N-Dimensional Cosmological Models · SENESCYT: 862177536", "La física me enseñó a ver patrones donde otros ven ruido.": "Physics taught me to see patterns where others see noise.", "El cine me enseñó a hacer ese patrón visible para otros.": "Film taught me to make that pattern visible to others.", "I Taller Andino de Caos y Complejidad": "1st Andean Workshop on Chaos and Complexity", "2003 · CERN · BECA": "2003 · CERN · SCHOLARSHIP", "LÍNEA TEMPORAL": "TIMELINE", "Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.": "August 2024 — roughly two months before Khanmigo (Khan Academy) became publicly available. Built without external funding or public launch. Field-tested with indigenous communities of the Ecuadorian Amazon.", "Diseño": "Design", "Dragones alados con iconografía precolombina y amazónica. Culturalmente resonantes para el estudiante ecuatoriano.": "Winged dragons with pre-Columbian and Amazonian iconography. Culturally resonant for the Ecuadorian student.", "Pedagogía": "Pedagogy", "Método socrático: guía al estudiante hacia el razonamiento propio. No entrega respuestas — construye preguntas.": "Socratic method: guides the student toward their own reasoning. It does not hand out answers — it builds questions.", "Alcance": "Scope", "36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.": "36 subjects from the official curriculum of Ecuador's Ministry of Education — primary and secondary.", "Arquitectura": "Architecture", "Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.": "Poe (Quora): model-agnostic, free access, persistent conversational memory across sessions.", "Seguridad": "Safety", "Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.": "Guardrails for minors — an alignment problem the field was still formalizing.", "Campo": "Field", "Pilotado con comunidades indígenas amazónicas. Validado en condiciones reales de bajo recurso tecnológico.": "Piloted with Amazonian indigenous communities. Validated under real low-resource technological conditions.", "ESCALERA DE PENROSE · 1958": "PENROSE STAIRS · 1958", "Fabricación": "Fabrication", "Pedagógica": "Pedagogical", "Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos": "3D printer + laser cutter · production of concrete pedagogical toys", "Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores": "Peer-to-peer model: advanced students create for younger students", "Visión en pausa: chatbots como manuales vivos para cada objeto físico": "Vision on hold: chatbots as living manuals for every physical object", "Concepto activo · Dominio vigente": "Active concept · Domain held", "Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional": "Self-taught human-development platform — a counterpoint to the traditional LMS model", "Los LMS (Learning Management Systems) son en realidad plataformas de": "LMS (Learning Management Systems) are really platforms for", "registro y control de enseñanza": "teaching record-keeping and control", ": tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real": ": evaluation tracking, content delivery, designed for the traditional education system — not for real learning", "CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad": "CLAPPS proposes structured, dynamic support for long-term skill development, not just delivery of high-quality content", "Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias": "Closest current reference: NotebookLM — but limited to a diversity of material on one topic, with no structured progression system for competency development", "Paraguas para múltiples desarrollos futuros bajo el dominio personal (Christian Luciani Applications)": "An umbrella for multiple future developments under the personal domain (Christian Luciani Applications)", "El desarrollo de una plataforma clínica (portal para proveedores de salud) fue un proyecto temporal bajo este dominio — se migrará a dominio comercial separado.": "The development of a clinical platform (a portal for healthcare providers) was a temporary project under this domain — it will migrate to a separate commercial domain.", "Investigación privada": "Private research", "Reducir la entropía organizacional mediante inteligencia sintética distribuida y grafos de conocimiento": "Reduce organizational entropy through distributed synthetic intelligence and knowledge graphs", "Marco conceptual que aplica teoría de sistemas complejos al diseño organizacional": "Conceptual framework that applies complex-systems theory to organizational design", "Propuesta: las organizaciones pueden modelarse como sistemas termodinámicos con estados de alta/baja entropía": "Proposal: organizations can be modeled as thermodynamic systems with high/low-entropy states", "Arquitectura: inteligencia sintética distribuida + bases de datos en grafo para mapear flujos de decisión y conocimiento tácito": "Architecture: distributed synthetic intelligence + graph databases to map decision flows and tacit knowledge", "Destino: consultoría de alto valor para organizaciones en transición digital": "Destination: high-value consulting for organizations in digital transition", "Investigación en curso. Publicación académica planificada.": "Ongoing research. Academic publication planned.", "Publicado · v0.1.0 · Open-source": "Published · v0.1.0 · Open-source", "— Ontología Contable Universal": "— Universal Accounting Ontology", "Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)": "An Esperanto for accounting: a graph-based ontology mapping the 195 sovereign jurisdictions to IFRS/XBRL and to the agentic economy (MCP · A2A · AP2)", "Un UUID inamovible por cada concepto contable universal — los códigos son etiquetas visuales; el UUID es la identidad canónica": "One immutable UUID per universal accounting concept — codes are visual labels; the UUID is the canonical identity", "195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)": "195 sovereign jurisdictions mapped; 60 statutory chart-of-accounts overlays (56 exercised against primary sources)", ": un agente no puede proponer un UUID que no exista en el grafo — elimina la clase clásica de alucinación contable a nivel del harness": ": an agent cannot propose a UUID that does not exist in the graph — eliminating the classic class of accounting hallucination at the harness level", "Capa agent-native para la economía agéntica; resolución determinista en tres niveles, con inteligencia sintética estocástica solo como último recurso": "Agent-native layer for the agentic economy; deterministic three-tier resolution, with stochastic synthetic intelligence only as a last resort", "Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.": "Published in June 2026 under Business Source License 1.1 (converts to Apache 2.0 in 2030). Preprint (not yet peer-reviewed) deposited on Zenodo and SSRN.", "↗ Repositorio": "↗ Repository", "Operacional · Stage 1 completo": "Operational · Stage 1 complete", "Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética": "Personal cognitive operating system — captures, distills and organizes synthetic-cognition conversations", "Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema": "Solves dialectical entropy: every synthetic-cognition conversation produces flashes of clarity that vanish. ZENTROPY captures them in a structured database (Supabase, schema", "Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (": "Universal ingestion: Claude JSON/ZIP, ChatGPT, Markdown — custom parser (", "Módulo central del ecosistema de cognición sintética: integra con CLAPPS, UCVE, NOOS, Kontablo": "Core module of the synthetic-cognition ecosystem: integrates with CLAPPS, UCVE, NOOS, Kontablo", "Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter": "Multi-tenant architecture ready for public use. Stage 2: local Open WebUI with OpenRouter", "La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.": "The abundance of cognitive tools without architecture is the most sophisticated form of entropy.", "Investigación activa": "Active research", "— Epistemología del Diálogo Poli-dialéctico Destilado": "— Epistemology of Poly-dialectical Distilled Dialogue", "Propuesta filosófica sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética": "A philosophical proposal on the nature of collective knowledge in the age of synthetic cognition", "Problema: toda conversación prolongada tiende hacia el ruido. El diálogo con cognición sintética lo acelera — la ventana de contexto se degrada, las sesiones no persisten": "Problem: every prolonged conversation tends toward noise. Dialogue with synthetic cognition accelerates it — the context window degrades, sessions do not persist", "Propuesta: modelo": "Proposal: a", "Tronco/Rizoma": "Trunk/Rhizome", "— el rizoma explora libremente; periódicamente el par humano-cognición sintética destila hacia el Tronco (conocimiento estable)": "model — the rhizome explores freely; periodically the human–synthetic-cognition pair distills toward the Trunk (stable knowledge)", "Doble naturaleza: propuesta filosófica": "Dual nature: a philosophical proposal", "y": "and", "arquitectura de software para gestión epistemológica": "a software architecture for epistemological management", "Línea de investigación doctoral activa — epistemología de la interacción humano-cognición sintética": "An active doctoral research line — epistemology of human–synthetic-cognition interaction", "También proyecto filosófico: integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo": "Also a philosophical thread: integrates Noesis and Noetix — a taxonomy of thought perspectives and their agentic engine, as material for a dialogue epistemology", "Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos": "First real content: Noesis and Noetix — the map of cognitive perspectives and their compound-agent engine", "Intersecta con la candidatura doctoral en sistemas complejos. Candidata a publicación académica.": "Intersects with the doctoral candidacy in complex systems. Candidate for academic publication.", "Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo": "Document the architecture and pedagogy before the field reinvents it as new", "Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos": "Public repository: technical architecture, pedagogical principles, guardrails — without internal prompts", "Repositorio privado: system prompts, documentos de contenido, notas de implementación": "Private repository: system prompts, content documents, implementation notes", "Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes": "Goal: establish authorship and date before the mass adoption of equivalent systems", "2025 – PRESENTE": "2025 – PRESENT", "Consultor Estratégico de Sistemas": "Strategic Systems Consultant", "Independiente · Panamá / Ecuador": "Independent · Panama / Ecuador", "Plataformas BI e infraestructura digital · Zoho ERP": "BI platforms and digital infrastructure · Zoho ERP", "Sistema de auditoría y registro de efectivo para casino tipo C (Salsa-Casino)": "Cash auditing and recording system for a Type C casino (Salsa-Casino)", "Arquitectura SaaS para gestión clínica (ver CLAPPS.AI)": "SaaS architecture for clinical management (see CLAPPS.AI)", "Coordinador de Laboratorios de Física": "Physics Laboratory Coordinator", "800+ estudiantes anuales · 36 guías de laboratorio originales": "800+ students per year · 36 original laboratory guides", "Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento": "USFQ Open House: development of experiments for the general public · department petty cash", "Técnico-operador del difractómetro de rayos X · 5 publicaciones co-autoradas": "X-ray diffractometer technician-operator · 5 co-authored publications", "Responsable de Seguridad Radiológica institucional": "Institutional Radiological Safety Officer", "Diseñador de Sistemas / Luminotécnico": "Systems Designer / Lighting Technician", "Sistema de registro de cuentas y bóveda para casinos · procedimientos de auditoría": "Account-recording and vault system for casinos · auditing procedures", "Luminotécnico freelance para eventos corporativos y de entretenimiento": "Freelance lighting technician for corporate and entertainment events", "Logística BTL y Relación con Clientes": "BTL Logistics & Client Relations", "Logística y montaje de activaciones BTL en eventos masivos según proyecto": "Logistics and setup of BTL activations at large-scale events, per project", "Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic": "Clients: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic", "Coordinación de 1.000 pax · Desfile de Navidad Panamá 2013": "Coordination of 1,000 attendees · Panama Christmas Parade 2013", "Producción evento Extravaganza Herbalife 2012": "Event production · Herbalife Extravaganza 2012", "Participación en: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, Copa Mundial de Béisbol 2011": "Featured in: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, 2011 Baseball World Cup", "Fotografía · Edición · Docencia Audiovisual": "Photography · Editing · Audiovisual Teaching", "Escuela de Cine y TV / Venezuela": "Film & TV School / Venezuela", "— selección ESPN 2008": "— ESPN selection 2008", "Docente de edición y montaje · Coord. post-producción Creadores Visuales (2010)": "Editing and montage instructor · Post-production coordinator, Creadores Visuales (2010)", "Profesor de Física": "Physics Professor", "Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)": "Labs I, II and III for engineering and sciences (2nd and 3rd year)", "Investigación doctoral en sistemas complejos · primeras publicaciones": "Doctoral research in complex systems · first publications", "DRAHMA · CAMPO AMAZÓNICO": "DRAHMA · AMAZON FIELDWORK", "DRAHMA EN CAMPO": "DRAHMA IN THE FIELD", "Añadir fotografía": "Add photograph", "COMUNIDAD AMAZÓNICA": "AMAZONIAN COMMUNITY", "INTERFAZ DEL SISTEMA": "SYSTEM INTERFACE", "Añadir captura": "Add screenshot", "LABORATORIO STEM · FABRICACIÓN PEDAGÓGICA": "STEM LAB · PEDAGOGICAL FABRICATION", "IMPRESORA 3D": "3D PRINTER", "MATERIALES DIDÁCTICOS": "TEACHING MATERIALS", "CORTADORA LÁSER": "LASER CUTTER", "SESIÓN CON ESTUDIANTES": "SESSION WITH STUDENTS", "CIENCIA EN PÚBLICO · EVENTOS": "PUBLIC SCIENCE · EVENTS", "CASA ABIERTA USFQ": "USFQ OPEN HOUSE", "DIFRACTÓMETRO DE RAYOS X": "X-RAY DIFFRACTOMETER", "Luciani, C. · Preprint (aún no arbitrado) · Zenodo & SSRN": "Luciani, C. · Preprint (not yet peer-reviewed) · Zenodo & SSRN", "36 guías de prácticas de laboratorio de física": "36 physics laboratory practice guides", "USFQ · Ingeniería, Ciencias de la Salud, Ciencias Puras · Publicación institucional interna": "USFQ · Engineering, Health Sciences, Pure Sciences · Internal institutional publication", "↗ Ver en GitHub (HTML5)": "↗ View on GitHub (HTML5)", "TRIÁNGULO DE PENROSE · 1954": "PENROSE TRIANGLE · 1954", "\"Lo imposible solo lo es hasta que alguien lo dibuja correctamente.\"": "\"The impossible is only impossible until someone draws it correctly.\"", "Idiomas": "Languages", "Español — nativo": "Spanish — native", "Inglés — Intermedio": "English — Intermediate", "Francés — B1": "French — B1", "Ciencias": "Sciences", "Difractometría de rayos X": "X-ray diffractometry", "Seguridad radiológica": "Radiological safety", "Sistemas complejos": "Complex systems", "Programación": "Programming", "Agentes de inteligencia sintética": "Synthetic-intelligence agents", "Plataformas": "Platforms", "Código Sintético · Agentes": "Synthetic Code · Agents", "Codificación Agéntica": "Agentic Coding", "Soberanía Tecnológica": "Technological Sovereignty", "Plataformas & Ecosistema": "Platforms & Ecosystem", "INTERESES": "INTERESTS", "Escalada en roca · Montañismo · Cine asiático · Neurociencias · Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·": "Rock climbing · Mountaineering · Asian cinema · Neuroscience · Philosophical consequences of post-human synthetic cognition · Nutrition · Meditation ·", "La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.": "The cognitive nature of organic beings in a world of synthetic cognition.", "La naturaleza de los seres cognitivos y su interacción · emergencia de la inteligencia universal": "The nature of cognitive beings and their interaction · emergence of universal intelligence"};
-  var ROOM_EN=["The <em>Visitor</em>", "Active <em>Projects</em>", "The <em>Path</em>", "The <em>Evidence</em>", "The <em>Library</em>", "The <em>Toolbox</em>", "<em>Connect</em>"];
+
+  var MAP={"Plano": "Museum", "del Museo": "Map", "PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR": "MUSEUM FLOOR PLAN · INDEX — CLICK A SPACE TO ENTER", "ENTRADA": "ENTRANCE", "PERFIL": "PROFILE", "PROYECTOS": "PROJECTS", "TRAYECTORIA": "CAREER", "GALERÍA": "GALLERY", "CIENCIA": "SCIENCE", "BIBLIOTECA": "LIBRARY", "COMPETENCIAS": "SKILLS", "GRAFO": "GRAPH", "CONTACTO": "CONTACT", "CONECTAR": "CONNECT", "↓ Descargar CV": "↓ Download CV", "ABRIENDO EXPOSICIÓN": "OPENING EXHIBITION", "Museo de una Trayectoria · 2026": "Museum of a Trajectory · 2026", "Físico · Inteligencia Sintética · Economía Agéntica": "Physicist · Synthetic Intelligence · Agentic Economy", "SCROLL PARA RECORRER": "SCROLL TO EXPLORE", "SALA 01": "ROOM 01", "SALA 02": "ROOM 02", "Proyecto": "Project", "LAB STEM": "STEM LAB", "SALA 03-B · LAB STEM": "ROOM 03-B · STEM LAB", "Showcase completo más abajo": "Full showcase below", "— Inteligencia Sintética Educativa": "— Educational Synthetic Intelligence", "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (August 2024).", "↓ Ver showcase completo (Sala 03)": "↓ See full showcase (Room 03)", "REPOSITORIO · ESTRATEGIA DE AUTORÍA": "REPOSITORY · AUTHORSHIP STRATEGY", "SALA 03": "ROOM 03", "SALA 04": "ROOM 04", "SALA 05": "ROOM 05", "SALA 06": "ROOM 06", "SALA 07": "ROOM 07", "SALA 08": "ROOM 08", "SALIDA": "EXIT", "PERFIL PROFESIONAL · CUENCA, ECUADOR": "PROFESSIONAL PROFILE · CUENCA, ECUADOR", "INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024": "EDUCATIONAL SYNTHETIC INTELLIGENCE · ECUADOR · AUGUST 2024", "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS": "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS", "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE": "PROFESSIONAL EXPERIENCE · 2003 – PRESENT", "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS": "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS", "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026": "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026", "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS": "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES", "AionCore · Agente Pi como built-in ACP ↗": "AionCore · Pi agent as built-in ACP ↗",
+"pi-acp · session/delete ACP lifecycle ↗": "pi-acp · session/delete ACP lifecycle ↗", "CONTACTO · REDES · INVESTIGACIÓN": "CONTACT · NETWORKS · RESEARCH", "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026": "GRAPH · AREAS · PROJECTS · CONNECTIONS · 2026", "No solo amplitud: la conexión entre áreas, trabajos y proyectos. Un nodo dorado aún no está publicado.": "Not just breadth: the connection between areas, work and projects. A golden node is not yet published.", "Añadir foto local": "Add local photo", "Físico con candidatura doctoral en sistemas complejos y más de 20 años navegando entre la investigación científica, la docencia universitaria y la innovación educativa.": "Physicist with a doctoral candidacy in complex systems and over 20 years navigating between scientific research, university teaching and educational innovation.", "En 2024 diseñé e implementé": "In 2024 I designed and implemented", ": 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.": ": 36 synthetic-intelligence virtual tutors with Socratic pedagogy, aligned to the Ecuadorian curriculum, field-tested with Amazonian indigenous communities.", "Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.": "Functionally bilingual Spanish-English (Intermediate English). Active networks in Panama and Ecuador.", "CUBO DE NECKER · 1832": "NECKER CUBE · 1832", "Especialización en Audiovisuales": "Specialization in Audiovisual Media", "Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008": "Film & TV School, Caracas · Prix du Public FECOVEN 2008", "Candidatura Doctoral — Sistemas Complejos": "Doctoral Candidacy — Complex Systems", "Universidad Simón Bolívar, Venezuela · ABD — tesis pendiente": "Universidad Simón Bolívar, Venezuela · ABD — thesis pending", "Licenciatura en Física": "B.Sc. in Physics", "Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536": "Universidad Central de Venezuela · Thesis: N-Dimensional Cosmological Models · SENESCYT: 862177536", "La física me enseñó a ver patrones donde otros ven ruido.": "Physics taught me to see patterns where others see noise.", "El cine me enseñó a hacer ese patrón visible para otros.": "Film taught me to make that pattern visible to others.", "I Taller Andino de Caos y Complejidad": "1st Andean Workshop on Chaos and Complexity", "2003 · CERN · BECA": "2003 · CERN · SCHOLARSHIP", "LÍNEA TEMPORAL": "TIMELINE", "Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.": "August 2024 — roughly two months before Khanmigo (Khan Academy) became publicly available. Built without external funding or public launch. Field-tested with indigenous communities of the Ecuadorian Amazon.", "Diseño": "Design", "Dragones alados con iconografía precolombina y amazónica. Culturalmente resonantes para el estudiante ecuatoriano.": "Winged dragons with pre-Columbian and Amazonian iconography. Culturally resonant for the Ecuadorian student.", "Pedagogía": "Pedagogy", "Método socrático: guía al estudiante hacia el razonamiento propio. No entrega respuestas — construye preguntas.": "Socratic method: guides the student toward their own reasoning. It does not hand out answers — it builds questions.", "Alcance": "Scope", "36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.": "36 subjects from the official curriculum of Ecuador's Ministry of Education — primary and secondary.", "Arquitectura": "Architecture", "Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.": "Poe (Quora): model-agnostic, free access, persistent conversational memory across sessions.", "Seguridad": "Safety", "Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.": "Guardrails for minors — an alignment problem the field was still formalizing.", "Campo": "Field", "Pilotado con comunidades indígenas amazónicas. Validado en condiciones reales de bajo recurso tecnológico.": "Piloted with Amazonian indigenous communities. Validated under real low-resource technological conditions.", "ESCALERA DE PENROSE · 1958": "PENROSE STAIRS · 1958", "Fabricación": "Fabrication", "Pedagógica": "Pedagogical", "Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos": "3D printer + laser cutter · production of concrete pedagogical toys", "Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores": "Peer-to-peer model: advanced students create for younger students", "Visión en pausa: chatbots como manuales vivos para cada objeto físico": "Vision on hold: chatbots as living manuals for every physical object", "Concepto activo · Dominio vigente": "Active concept · Domain held", "Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional": "Self-taught human-development platform — a counterpoint to the traditional LMS model", "Los LMS (Learning Management Systems) son en realidad plataformas de": "LMS (Learning Management Systems) are really platforms for", "registro y control de enseñanza": "teaching record-keeping and control", ": tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real": ": evaluation tracking, content delivery, designed for the traditional education system — not for real learning", "CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad": "CLAPPS proposes structured, dynamic support for long-term skill development, not just delivery of high-quality content", "Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias": "Closest current reference: NotebookLM — but limited to a diversity of material on one topic, with no structured progression system for competency development", "Paraguas para múltiples desarrollos futuros bajo el dominio personal (Christian Luciani Applications)": "An umbrella for multiple future developments under the personal domain (Christian Luciani Applications)", "El desarrollo de una plataforma clínica (portal para proveedores de salud) fue un proyecto temporal bajo este dominio — se migrará a dominio comercial separado.": "The development of a clinical platform (a portal for healthcare providers) was a temporary project under this domain — it will migrate to a separate commercial domain.", "Investigación privada": "Private research", "Reducir la entropía organizacional mediante inteligencia sintética distribuida y grafos de conocimiento": "Reduce organizational entropy through distributed synthetic intelligence and knowledge graphs", "Marco conceptual que aplica teoría de sistemas complejos al diseño organizacional": "Conceptual framework that applies complex-systems theory to organizational design", "Propuesta: las organizaciones pueden modelarse como sistemas termodinámicos con estados de alta/baja entropía": "Proposal: organizations can be modeled as thermodynamic systems with high/low-entropy states", "Arquitectura: inteligencia sintética distribuida + bases de datos en grafo para mapear flujos de decisión y conocimiento tácito": "Architecture: distributed synthetic intelligence + graph databases to map decision flows and tacit knowledge", "Destino: consultoría de alto valor para organizaciones en transición digital": "Destination: high-value consulting for organizations in digital transition", "Investigación en curso. Publicación académica planificada.": "Ongoing research. Academic publication planned.", "Publicado · v0.1.0 · Open-source": "Published · v0.1.0 · Open-source", "— Ontología Contable Universal": "— Universal Accounting Ontology", "Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)": "An Esperanto for accounting: a graph-based ontology mapping the 195 sovereign jurisdictions to IFRS/XBRL and to the agentic economy (MCP · A2A · AP2)", "Un UUID inamovible por cada concepto contable universal — los códigos son etiquetas visuales; el UUID es la identidad canónica": "One immutable UUID per universal accounting concept — codes are visual labels; the UUID is the canonical identity", "195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)": "195 sovereign jurisdictions mapped; 60 statutory chart-of-accounts overlays (56 exercised against primary sources)", ": un agente no puede proponer un UUID que no exista en el grafo — elimina la clase clásica de alucinación contable a nivel del harness": ": an agent cannot propose a UUID that does not exist in the graph — eliminating the classic class of accounting hallucination at the harness level", "Capa agent-native para la economía agéntica; resolución determinista en tres niveles, con inteligencia sintética estocástica solo como último recurso": "Agent-native layer for the agentic economy; deterministic three-tier resolution, with stochastic synthetic intelligence only as a last resort", "Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.": "Published in June 2026 under Business Source License 1.1 (converts to Apache 2.0 in 2030). Preprint (not yet peer-reviewed) deposited on Zenodo and SSRN.", "↗ Repositorio": "↗ Repository", "Operacional · Stage 1 completo": "Operational · Stage 1 complete", "Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética": "Personal cognitive operating system — captures, distills and organizes synthetic-cognition conversations", "Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema": "Solves dialectical entropy: every synthetic-cognition conversation produces flashes of clarity that vanish. ZENTROPY captures them in a structured database (Supabase, schema", "Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (": "Universal ingestion: Claude JSON/ZIP, ChatGPT, Markdown — custom parser (", "Módulo central del ecosistema de cognición sintética: integra con CLAPPS, UCVE, NOOS, Kontablo": "Core module of the synthetic-cognition ecosystem: integrates with CLAPPS, UCVE, NOOS, Kontablo", "Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter": "Multi-tenant architecture ready for public use. Stage 2: local Open WebUI with OpenRouter", "La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.": "The abundance of cognitive tools without architecture is the most sophisticated form of entropy.", "Investigación activa": "Active research", "— Epistemología del Diálogo Poli-dialéctico Destilado": "— Epistemology of Poly-dialectical Distilled Dialogue", "Propuesta filosófica sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética": "A philosophical proposal on the nature of collective knowledge in the age of synthetic cognition", "Problema: toda conversación prolongada tiende hacia el ruido. El diálogo con cognición sintética lo acelera — la ventana de contexto se degrada, las sesiones no persisten": "Problem: every prolonged conversation tends toward noise. Dialogue with synthetic cognition accelerates it — the context window degrades, sessions do not persist", "Propuesta: modelo": "Proposal: a", "Tronco/Rizoma": "Trunk/Rhizome", "— el rizoma explora libremente; periódicamente el par humano-cognición sintética destila hacia el Tronco (conocimiento estable)": "model — the rhizome explores freely; periodically the human–synthetic-cognition pair distills toward the Trunk (stable knowledge)", "Doble naturaleza: propuesta filosófica": "Dual nature: a philosophical proposal", "y": "and", "arquitectura de software para gestión epistemológica": "a software architecture for epistemological management", "Línea de investigación doctoral activa — epistemología de la interacción humano-cognición sintética": "An active doctoral research line — epistemology of human–synthetic-cognition interaction", "También proyecto filosófico: integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo": "Also a philosophical thread: integrates Noesis and Noetix — a taxonomy of thought perspectives and their agentic engine, as material for a dialogue epistemology", "Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos": "First real content: Noesis and Noetix — the map of cognitive perspectives and their compound-agent engine", "Intersecta con la candidatura doctoral en sistemas complejos. Candidata a publicación académica.": "Intersects with the doctoral candidacy in complex systems. Candidate for academic publication.", "Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo": "Document the architecture and pedagogy before the field reinvents it as new", "Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos": "Public repository: technical architecture, pedagogical principles, guardrails — without internal prompts", "Repositorio privado: system prompts, documentos de contenido, notas de implementación": "Private repository: system prompts, content documents, implementation notes", "Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes": "Goal: establish authorship and date before the mass adoption of equivalent systems", "2025 – PRESENTE": "2025 – PRESENT", "Consultor Estratégico de Sistemas": "Strategic Systems Consultant", "Independiente · Panamá / Ecuador": "Independent · Panama / Ecuador", "Plataformas BI e infraestructura digital · Zoho ERP": "BI platforms and digital infrastructure · Zoho ERP", "Sistema de auditoría y registro de efectivo para casino tipo C (Salsa-Casino)": "Cash auditing and recording system for a Type C casino (Salsa-Casino)", "Arquitectura SaaS para gestión clínica (ver CLAPPS.AI)": "SaaS architecture for clinical management (see CLAPPS.AI)", "Coordinador de Laboratorios de Física": "Physics Laboratory Coordinator", "800+ estudiantes anuales · 36 guías de laboratorio originales": "800+ students per year · 36 original laboratory guides", "Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento": "USFQ Open House: development of experiments for the general public · department petty cash", "Técnico-operador del difractómetro de rayos X · 5 publicaciones co-autoradas": "X-ray diffractometer technician-operator · 5 co-authored publications", "Responsable de Seguridad Radiológica institucional": "Institutional Radiological Safety Officer", "Diseñador de Sistemas / Luminotécnico": "Systems Designer / Lighting Technician", "Sistema de registro de cuentas y bóveda para casinos · procedimientos de auditoría": "Account-recording and vault system for casinos · auditing procedures", "Luminotécnico freelance para eventos corporativos y de entretenimiento": "Freelance lighting technician for corporate and entertainment events", "Logística BTL y Relación con Clientes": "BTL Logistics & Client Relations", "Logística y montaje de activaciones BTL en eventos masivos según proyecto": "Logistics and setup of BTL activations at large-scale events, per project", "Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic": "Clients: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic", "Coordinación de 1.000 pax · Desfile de Navidad Panamá 2013": "Coordination of 1,000 attendees · Panama Christmas Parade 2013", "Producción evento Extravaganza Herbalife 2012": "Event production · Herbalife Extravaganza 2012", "Participación en: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, Copa Mundial de Béisbol 2011": "Featured in: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, 2011 Baseball World Cup", "Fotografía · Edición · Docencia Audiovisual": "Photography · Editing · Audiovisual Teaching", "Escuela de Cine y TV / Venezuela": "Film & TV School / Venezuela", "— selección ESPN 2008": "— ESPN selection 2008", "Docente de edición y montaje · Coord. post-producción Creadores Visuales (2010)": "Editing and montage instructor · Post-production coordinator, Creadores Visuales (2010)", "Profesor de Física": "Physics Professor", "Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)": "Labs I, II and III for engineering and sciences (2nd and 3rd year)", "Investigación doctoral en sistemas complejos · primeras publicaciones": "Doctoral research in complex systems · first publications", "DRAHMA · CAMPO AMAZÓNICO": "DRAHMA · AMAZON FIELDWORK", "DRAHMA EN CAMPO": "DRAHMA IN THE FIELD", "Añadir fotografía": "Add photograph", "COMUNIDAD AMAZÓNICA": "AMAZONIAN COMMUNITY", "INTERFAZ DEL SISTEMA": "SYSTEM INTERFACE", "Añadir captura": "Add screenshot", "LABORATORIO STEM · FABRICACIÓN PEDAGÓGICA": "STEM LAB · PEDAGOGICAL FABRICATION", "IMPRESORA 3D": "3D PRINTER", "MATERIALES DIDÁCTICOS": "TEACHING MATERIALS", "CORTADORA LÁSER": "LASER CUTTER", "SESIÓN CON ESTUDIANTES": "SESSION WITH STUDENTS", "CIENCIA EN PÚBLICO · EVENTOS": "PUBLIC SCIENCE · EVENTS", "CASA ABIERTA USFQ": "USFQ OPEN HOUSE", "DIFRACTÓMETRO DE RAYOS X": "X-RAY DIFFRACTOMETER", "Luciani, C. · Preprint (aún no arbitrado) · Zenodo & SSRN": "Luciani, C. · Preprint (not yet peer-reviewed) · Zenodo & SSRN", "36 guías de prácticas de laboratorio de física": "36 physics laboratory practice guides", "USFQ · Ingeniería, Ciencias de la Salud, Ciencias Puras · Publicación institucional interna": "USFQ · Engineering, Health Sciences, Pure Sciences · Internal institutional publication", "↗ Ver en GitHub (HTML5)": "↗ View on GitHub (HTML5)", "TRIÁNGULO DE PENROSE · 1954": "PENROSE TRIANGLE · 1954", "\"Lo imposible solo lo es hasta que alguien lo dibuja correctamente.\"": "\"The impossible is only impossible until someone draws it correctly.\"", "Idiomas": "Languages", "Español — nativo": "Spanish — native", "Inglés — Intermedio": "English — Intermediate", "Francés — B1": "French — B1", "Ciencias": "Sciences", "Difractometría de rayos X": "X-ray diffractometry", "Seguridad radiológica": "Radiological safety", "Sistemas complejos": "Complex systems", "Programación": "Programming", "Agentes de inteligencia sintética": "Synthetic-intelligence agents", "Plataformas": "Platforms", "Código Sintético · Agentes": "Synthetic Code · Agents", "Codificación Agéntica": "Agentic Coding", "Soberanía Tecnológica": "Technological Sovereignty", "Plataformas & Ecosistema": "Platforms & Ecosystem", "INTERESES": "INTERESTS", "Escalada en roca · Montañismo · Cine asiático · Neurociencias · Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·": "Rock climbing · Mountaineering · Asian cinema · Neuroscience · Philosophical consequences of post-human synthetic cognition · Nutrition · Meditation ·", "La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.": "The cognitive nature of organic beings in a world of synthetic cognition.", "La naturaleza de los seres cognitivos y su interacción · emergencia de la inteligencia universal": "The nature of cognitive beings and their interaction · emergence of universal intelligence"};
+  var ROOM_EN=["The <em>Visitor</em>", "Active <em>Projects</em>", "The <em>Graph</em>", "The <em>Path</em>", "The <em>Evidence</em>", "The <em>Library</em>", "The <em>Toolbox</em>", "<em>Connect</em>"];
+ (feat(cv): nueva Sala 03 'El Grafo' (mapa de conexiones interactivo) + fix overlap fractal/texto)
   var norm=function(s){return s.replace(/\s+/g,' ').trim();};
   var SKIP={SCRIPT:1,STYLE:1,TITLE:1};
   var printcv=document.getElementById('print-cv');

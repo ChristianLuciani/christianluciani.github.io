@@ -37,12 +37,13 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 |------|-----------|----------------|
 | 00 · Entrada | Intro (frase → nombre) + Hero / museo | Cubos isométricos |
 | 01 · Perfil | Formación + perfil | Cubo de Necker (grid BG + frame) |
-| 02 · Proyectos | Kontablo / ZENTROPY / Esteléctica / CLAPPS / NOOS / **Drahma** (showcase) | Campo de Mandelbrot |
-| 03 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
-| 04 · Galería | Fotografías y evidencias | — |
-| 05 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
-| 06 · Competencias | Agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
-| 07 · Conectar | Redes y contacto | — |
+| 02 · Proyectos | Kontablo / ZENTROPY / Esteléctica / CLAPPS · Noesis/Noetix / NOOS / **Drahma** (showcase) | Campo de Mandelbrot |
+| 03 · Grafo | Mapa de conexiones (áreas · proyectos · no-publicados) | Grafo físico interactivo (canvas) |
+| 04 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
+| 05 · Galería | Fotografías y evidencias | — |
+| 06 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
+| 07 · Competencias | Agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
+| 08 · Conectar | Redes y contacto | — |
 
 ## Flujo de trabajo
 
