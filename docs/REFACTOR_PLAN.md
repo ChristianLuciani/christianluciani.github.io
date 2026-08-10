@@ -173,4 +173,13 @@ ensamblables.
 - El nombre del paquete es `christianluciani-cv`; el repo es `ChristianLuciani/christianluciani.github.io`.
 - El deploy es GitHub Actions → `dist/` → raíz `christianluciani.github.io`.
 - No trabajar en `main`; usar worktree + rama `aionui/pi/<feature>`.
-- El contenido actual de las salas ya está alineado (numeración 01–07, Drahma integrado en Proyectos, Contacto="Conectar").
+- El contenido actual de las salas ya está alineado (numeración 01–07, Drahma integrado en Proyectos, Contacto="Conectar", Ciencia="La Biblioteca").
+
+### Política de contenido (proyectos) — importante
+- **Solo se publican proyectos REALES o en desarrollo activo y verificable.** No se declaran
+  iniciativas futuras no materializadas en el CV (coloquialismo: "no es realidad todavía").
+- **Topia** (studio de producción / campo hacia la eucopía, multi-canal mediático): planificado,
+  **no publicado** en el CV aún. Candidato a incorporarse como nueva sala/proyecto cuando exista
+  sustancia verificable (repositorio, publicaciones, canales activos). Su modelo busca contribuidores
+  y colaboradores, no una audiencia pasiva.
+- Al añadir una sala/proyecto futuro, encajará automáticamente gracias a la parametrización de `SALAS`.

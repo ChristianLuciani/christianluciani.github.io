@@ -40,7 +40,7 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | 02 · Proyectos | Kontablo / ZENTROPY / Esteléctica / CLAPPS / NOOS / **Drahma** (showcase) | Campo de Mandelbrot |
 | 03 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
 | 04 · Galería | Fotografías y evidencias | — |
-| 05 · Ciencia | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
+| 05 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
 | 06 · Competencias | Skills, idiomas, open source | Sierpinski |
 | 07 · Conectar | Redes y contacto | — |
 
