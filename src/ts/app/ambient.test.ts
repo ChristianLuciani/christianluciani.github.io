@@ -1,5 +1,59 @@
 import { describe, expect, it } from "vitest";
-import { fadeSteps } from "./ambient";
+import { fadeSteps, pickActive, type RoomRect } from "./ambient";
+
+/** Helper: construye rects desde fracciones del viewport. */
+function rectsFrom(...parts: [string, number, number][]): RoomRect[] {
+  return parts.map(([id, top, bottom]) => ({ id, top, bottom }));
+}
+
+describe("ambient — pickActive (sala que ocupa ≥50% del viewport)", () => {
+  const vh = 1000;
+
+  it("elige la sala que cubre ≥50% del viewport", () => {
+    // perfil cubre 700px del viewport (≥50%), hero solo 300px arriba
+    const r = rectsFrom(
+      ["hero", -700, 300],
+      ["perfil", 300, 1000]
+    );
+    expect(pickActive(r, vh)).toBe("perfil");
+  });
+
+  it("devuelve hero cuando es la entrada completa", () => {
+    const r = rectsFrom(["hero", 0, 1000]);
+    expect(pickActive(r, vh)).toBe("hero");
+  });
+
+  it("con dos salas que pasan el 50%, elige la de mayor área visible", () => {
+    const r = rectsFrom(
+      ["perfil", -100, 600], // 600px visibles
+      ["proyectos", 500, 1000] // 500px visibles
+    );
+    expect(pickActive(r, vh)).toBe("perfil");
+  });
+
+  it("ninguna llega al 50% → fallback a la de mayor área visible", () => {
+    const r = rectsFrom(
+      ["perfil", -800, 100], // 100px visibles
+      ["proyectos", 200, 600], // 400px visibles
+      ["experiencia", 600, 1000] // 400px visibles
+    );
+    expect(pickActive(r, vh)).toBe("proyectos");
+  });
+
+  it("sin secciones → null", () => {
+    expect(pickActive([], vh)).toBeNull();
+  });
+
+  it("una sala exactamente al 50% cuenta como activa", () => {
+    const r = rectsFrom(["perfil", 0, 500]);
+    expect(pickActive(r, vh)).toBe("perfil");
+  });
+
+  it("empate a 50% entre dos salas → gana la primera (orden DOM)", () => {
+    const r = rectsFrom(["hero", 0, 500], ["perfil", 500, 1000]);
+    expect(pickActive(r, vh)).toBe("hero");
+  });
+});
 
 describe("ambient — fadeSteps (fade in/out del sonido)", () => {
   it("fade in: arranca en silencio y sube linealmente hasta el volumen base", () => {
