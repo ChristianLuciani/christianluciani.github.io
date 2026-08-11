@@ -7,7 +7,7 @@
 const FRASES = [
   "¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?",
   "Distintas perspectivas de una misma realidad…",
-  "Una <em>Instancia Humana</em>."
+  "Una<br><em>Instancia Humana</em>."
 ];
 
 const FADE_IN = 1100; // ms

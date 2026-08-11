@@ -319,7 +319,7 @@ body {
   position:fixed;
   z-index:1001;
   width:120px; height:120px;
-  top:calc(50vh - 200px) !important;   /* sube el fractal vs el centrado exacto (50vh-60px) */
+  top:calc(50vh - 250px) !important;   /* fractal más arriba: deja espacio al texto del intro (fix superposición) */
   transition:
     top    1s cubic-bezier(.16,1,.3,1),
     left   1s cubic-bezier(.16,1,.3,1),
@@ -348,9 +348,15 @@ body {
   max-width:min(820px, 90vw);
   text-align:center;
   padding:0 1.5rem;
-  /* coloca el bloque por debajo del fractal (fractal subido a 50vh-200px) */
-  margin-top:190px;
+  /* coloca el bloque por debajo del fractal (fractal subido a 50vh-250px) */
+  margin-top:270px;
   pointer-events:none;
+}
+/* Pantallas bajas: vuelve a los valores originales para que el fractal no se
+   salga del viewport ni el texto quede cortado. */
+@media (max-height: 600px) {
+  #fractal-logo { top:calc(50vh - 200px) !important; }
+  #intro-block { margin-top:190px; }
 }
 /* Una sola línea que rota el texto en la misma posición; altura reservada para no brincar */
 .intro-phrase {
