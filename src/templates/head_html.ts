@@ -383,20 +383,6 @@ body {
 .intro-phrase em { color:var(--teal); font-style:italic; }
 .intro-phrase.in   { opacity:1; transform:translateY(0); }
 .intro-phrase.out  { opacity:0; transform:translateY(-8px); transition:opacity 1.1s ease, transform 1.1s ease; }
-.intro-name {
-  margin:0;
-  font-family:var(--font-display);
-  font-size:clamp(2.4rem, 6.5vw, 4.6rem);
-  font-weight:700;
-  color:#fff;
-  opacity:0;
-  transform:scale(.94);
-  transition:opacity 1s ease, transform 1s cubic-bezier(.16,1,.3,1);
-}
-.intro-name.in { opacity:1; transform:scale(1); }
-/* Fase final del intro: el nombre en dos líneas con Christian < Luciani (transición al hero) */
-.intro-name .intro-first { display:block; font-size:.72em; }
-.intro-name .intro-last  { display:block; color:var(--teal); font-size:1.02em; }
 
 @media (prefers-reduced-motion: reduce) {
   #intro-block { display:none; }

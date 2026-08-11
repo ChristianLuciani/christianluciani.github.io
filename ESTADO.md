@@ -1,10 +1,28 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (intro: frase 3 en dos líneas + nombre con movimiento único al hero)
+> Última actualización: 2026-08-10 (intro: nombre = un solo objeto, el .hero-name; sin <br>)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fix de sesión — intro (rama `aionui/pi/intro-uno`)
+
+- **El nombre es UN SOLO objeto**: se eliminó el `.intro-name` del loader (y su CSS). El propio
+  `.hero-name` (elemento del hero-content) aparece centrado sobre el loader (fade in) y vuela a
+  su posición natural vía transform; al aterrizar vuelve a flow y el loader se oculta. El
+  elemento nunca se mueve en el DOM — no hay nombre duplicado.
+- **`<br>` eliminado** entre Christian y Luciani (hero-name): los spans `hero-first/hero-last`
+  ya son `display:block`, así que el `<br>` era redundante y además generaba una línea vacía
+  (altura del nombre 306px → 194px).
+- **Bug de animación resuelto**: `fadeUp` con `fill-mode: both` pisaba los estilos inline
+  (transform/opacity) del vuelo para siempre; se desactiva (`animation: none`) al empezar el
+  vuelo y `opacity:1` queda inline tras el aterrizaje (la base CSS es opacity:0).
+- Verificado en browser: trayectoria animada del transform (centro 519,434 → natural 115,347 en
+  1440×900), aterrizaje en flow, sin `.intro-name` duplicado, sin `<br>`, sin excepciones;
+  1440×900 y 1280×720. 39 tests + tsc limpio.
 
 ---
 
