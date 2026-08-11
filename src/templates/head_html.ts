@@ -371,7 +371,7 @@ body {
   margin:0 auto;
   max-width:680px;
   min-height:4.2rem;              /* reserva el alto de 2 líneas para frases largas */
-  display:flex; align-items:flex-end; justify-content:center;
+  display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:center;
   font-family:var(--font-display);
   font-size:clamp(1.4rem, 3.6vw, 2.4rem);
   line-height:1.4;
@@ -380,6 +380,9 @@ body {
   transform:translateY(6px);
   transition:opacity 1.1s ease, transform 1.1s ease;   /* fade más largo */
 }
+/* Lectura guiada: cada palabra de la frase se enfoca de a una (opacidad/color). */
+.p-word { margin-right:.3em; opacity:.32; transition:opacity .3s ease, color .3s ease; }
+.p-word--focus { opacity:1; color:var(--teal); }
 .intro-phrase em { color:var(--teal); font-style:italic; }
 .intro-phrase.in   { opacity:1; transform:translateY(0); }
 .intro-phrase.out  { opacity:0; transform:translateY(-8px); transition:opacity 1.1s ease, transform 1.1s ease; }
