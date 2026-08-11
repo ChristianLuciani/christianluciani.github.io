@@ -15,6 +15,7 @@ const FADE_IN = 1100; // ms
 const HOLD = 1000; // ms base (tiempo de lectura del texto)
 const FADE_OUT = 1100; // ms
 const STEP = 350; // espera entre transiciones
+const START_DELAY = 700; // ms de negro antes de la primera frase (parsimonia)
 
 /** Intervalo del foco de lectura guiada: lento (~2× más lento que antes). */
 function wordInterval(count: number): number {
@@ -193,7 +194,8 @@ export function initIntro(): void {
   function start() {
     if (started) return;
     started = true;
-    showPhrase(0);
+    // 0.7s de negro (loader con el fractal) antes de la primera frase.
+    window.setTimeout(() => showPhrase(0), START_DELAY);
   }
 
   if (document.readyState === "complete") start();

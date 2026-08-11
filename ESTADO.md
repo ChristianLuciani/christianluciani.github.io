@@ -1,10 +1,25 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (audio: fade in, volumen más bajo, loop crossfade, botón de silencio)
+> Última actualización: 2026-08-10 (audio pulido: icono plano, sin salto inicial, 0.7s de negro en el intro)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fix de sesión — audio pulido (rama `aionui/pi/audio-pulido`)
+
+- **Botón plano tipo silueta**: el emoji 🔊/🔇 se reemplazó por dos SVG inline (altavoz + ondas /
+  altavoz + X), trazo `currentColor` estilo silueta; el botón ya no tiene fondo/borde (plano,
+  color `--muted`, hover teal). El toggle ahora cambia la clase `.muted` (icono off visible).
+- **Sin salto inicial en el audio**: el crossfade anterior arrancaba con la cola de la canción a
+  todo volumen. El MP3 se re-encodó con `afade` (fade-in 2.5s al inicio + fade-out 2.5s al final):
+  arranque suave y loop con respiro, sin clic.
+- **0.7s de negro antes del texto** del intro (`START_DELAY`): el loader (negro + fractal) queda
+  700ms antes de la primera frase — parsimonia en la entrada. Verificado en browser: el `.in` de
+  la frase aparece exactamente 0.7s después del `load`.
+- 43 tests + tsc limpio; sin excepciones en consola.
 
 ---
 
