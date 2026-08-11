@@ -15,7 +15,7 @@ export function heroHtml(): string {
   <div class="hero-content">
     <div class="hero-label">Museo de una Trayectoria · 2026</div>
     <h1 class="hero-name">
-      <span class="hero-first">Christian</span><br>
+      <span class="hero-first">Christian</span>
       <span class="hero-last">Luciani</span>
     </h1>
     <p class="hero-tagline">Físico · Inteligencia Sintética · Economía Agéntica</p>

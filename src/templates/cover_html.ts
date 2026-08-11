@@ -27,7 +27,6 @@ const COVER_TOP = `<button id="btn-lang" type="button" aria-label="Switch langua
 <div id="loader">
   <div id="intro-block">
     <p id="intro-phrase" class="intro-phrase">¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?</p>
-    <h1 class="intro-name"><span class="intro-first">Christian</span><br><span class="intro-last">Luciani</span></h1>
   </div>
 </div>
 

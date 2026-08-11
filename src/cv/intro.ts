@@ -1,7 +1,8 @@
 /**
- * INTRO — animación de frases → nombre (port fiel del script inline de Fase 1).
- * Al terminar, el nombre del intro VUELA a la posición del nombre del hero
- * (un solo objeto en movimiento) y el loader se oculta dejándolo en su lugar.
+ * INTRO — animación de frases → nombre. El nombre ES el propio `.hero-name`
+ * (un solo objeto, el del hero-content): al terminar las frases se muestra
+ * centrado sobre el loader y VUELA a su posición natural; al aterrizar se
+ * libera (vuelve a flow) y el loader se oculta. No hay nombre duplicado.
  */
 
 const FRASES = [
@@ -29,7 +30,6 @@ export function initIntro(): void {
   const loader = document.getElementById("loader");
   const fractal = document.getElementById("fractal-logo");
   const phrase = document.getElementById("intro-phrase");
-  const nameEl = document.querySelector<HTMLElement>(".intro-name");
   const block = document.getElementById("intro-block");
   if (!loader || !block || !phrase) return;
   const loaderEl = loader;
@@ -40,43 +40,77 @@ export function initIntro(): void {
   let started = false;
   let idx = 0;
 
+  function hideLoader() {
+    loaderEl.classList.add("hidden");
+    if (fractal) fractal.classList.add("minimized");
+  }
+
   function finish() {
-    // Un solo movimiento: el nombre del intro vuela hasta la posición del
-    // nombre del hero (rect exacto) y, al aterrizar, el loader se oculta y el
-    // hero queda revelado en la MISMA posición → continuidad visual.
+    // UN SOLO OBJETO: el propio .hero-name (elemento del hero-content) aparece
+    // centrado sobre el loader (fade in) y vuela a su posición natural vía
+    // transform; al aterrizar se libera (vuelve a flow en la misma posición)
+    // y el loader se oculta. El elemento nunca se mueve en el DOM.
     const heroName = document.querySelector<HTMLElement>(".hero-name");
-    if (nameEl && heroName) {
-      const from = nameEl.getBoundingClientRect();
-      const to = heroName.getBoundingClientRect();
-      // Fija el nombre sobre el loader (z-index por encima) en su rect actual.
-      nameEl.style.position = "fixed";
-      nameEl.style.left = from.left + "px";
-      nameEl.style.top = from.top + "px";
-      nameEl.style.width = from.width + "px";
-      nameEl.style.margin = "0";
-      nameEl.style.zIndex = "1002";
-      nameEl.style.pointerEvents = "none";
-      nameEl.style.transformOrigin = "top left";
-      void nameEl.offsetWidth; // reflow: aplica la posición antes de transicionar
-      const sx = to.width / from.width;
-      const sy = to.height / from.height;
-      nameEl.style.transition = "transform 1s cubic-bezier(.16,1,.3,1)";
-      nameEl.style.transform =
-        `translate(${to.left - from.left}px, ${to.top - from.top}px) scale(${sx}, ${sy})`;
+    if (!heroName) {
+      hideLoader();
+      return;
+    }
+    const natural = heroName.getBoundingClientRect();
+    // La animación CSS fadeUp (fill both) pisa los estilos inline para siempre;
+    // se desactiva para que el transform/opacity del vuelo manden.
+    heroName.style.animation = "none";
+    // Aparece centrado, un poco por debajo del centro (bajo el fractal).
+    const revealTop = window.innerHeight / 2 - natural.height / 2 + window.innerHeight * 0.09;
+    const dx0 = (window.innerWidth - natural.width) / 2 - natural.left;
+    const dy0 = revealTop - natural.top;
+
+    heroName.style.position = "fixed";
+    heroName.style.left = natural.left + "px";
+    heroName.style.top = natural.top + "px";
+    heroName.style.width = natural.width + "px";
+    heroName.style.margin = "0";
+    heroName.style.zIndex = "1002";
+    heroName.style.pointerEvents = "none";
+    heroName.style.transformOrigin = "top left";
+    heroName.style.opacity = "0";
+    heroName.style.transform = `translate(${dx0}px, ${dy0}px)`;
+    void heroName.offsetWidth; // reflow: aplica la posición antes de transicionar
+
+    // Fade in en la posición centrada, luego vuelo a la posición natural.
+    heroName.style.transition = "opacity .5s ease";
+    heroName.style.opacity = "1";
+    setTimeout(() => {
       let landed = false;
       const land = () => {
         if (landed) return;
         landed = true;
-        loaderEl.classList.add("hidden");
-        if (fractal) fractal.classList.add("minimized");
-        nameEl.remove(); // el nombre del hero (su propio contenido) queda revelado
+        // Libera el elemento: vuelve a flow en .hero-content (misma posición).
+        // opacity queda en 1 inline: la base CSS es opacity:0 (el fadeUp está
+        // desactivado) y sin esto el nombre quedaría invisible.
+        heroName.style.position = "";
+        heroName.style.left = "";
+        heroName.style.top = "";
+        heroName.style.width = "";
+        heroName.style.margin = "";
+        heroName.style.zIndex = "";
+        heroName.style.pointerEvents = "";
+        heroName.style.transformOrigin = "";
+        heroName.style.transform = "";
+        heroName.style.transition = "";
+        heroName.style.opacity = "1";
+        hideLoader();
       };
-      nameEl.addEventListener("transitionend", land, { once: true });
-      setTimeout(land, 1700); // fallback si transitionend no dispara
-    } else {
-      loaderEl.classList.add("hidden");
-      if (fractal) fractal.classList.add("minimized");
-    }
+      heroName.style.transition = "transform 1s cubic-bezier(.16,1,.3,1)";
+      heroName.addEventListener(
+        "transitionend",
+        (e) => {
+          if (e.propertyName === "transform") land();
+        },
+        { once: true }
+      );
+      heroName.style.transform = "translate(0, 0)"; // vuela a su lugar
+      setTimeout(land, 1800); // fallback si transitionend no dispara
+    }, 800);
   }
 
   function showNext() {
@@ -93,10 +127,10 @@ export function initIntro(): void {
         }, FADE_OUT);
       }, FADE_IN + HOLD);
     } else {
-      // Terminaron las frases: mostrar el nombre en la misma posición.
+      // Terminaron las frases: el nombre (el propio .hero-name) aparece centrado
+      // sobre el loader y vuela a su lugar — lo gestiona finish().
       phraseEl.style.display = "none";
-      if (nameEl) nameEl.classList.add("in");
-      setTimeout(finish, 1600);
+      setTimeout(finish, 1400);
     }
   }
 
