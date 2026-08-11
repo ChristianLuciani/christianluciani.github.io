@@ -54,7 +54,7 @@ function planoCells(): PlanoCell[] {
     cells.push({
       href: `#${sectionId(s.id)}`,
       num: numFor(s.id) ?? "",
-      label: s.navLabel.toUpperCase()
+      label: s.titulo.replace(/<[^>]*>/g, "").toUpperCase()
     });
   }
   return cells;
@@ -84,7 +84,7 @@ export function planoCellMeta(): { id: string; num: string; label: string }[] {
   const ids = [HERO_NAV.id, ...visibleSalas().map((s) => s.id)];
   return ids.map((id) => {
     const s = SALAS.find((x) => x.id === id);
-    const label = s ? s.navLabel.toUpperCase() : "ENTRADA";
+    const label = s ? s.titulo.replace(/<[^>]*>/g, "").toUpperCase() : "ENTRADA";
     const num = id === HERO_NAV.id ? "00" : (numFor(id) ?? "");
     return { id, num, label };
   });
