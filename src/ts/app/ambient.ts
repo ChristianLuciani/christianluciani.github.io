@@ -64,7 +64,7 @@ function tryPlay(): void {
 function updateButton(): void {
   const b = document.getElementById("btn-sound");
   if (!b) return;
-  b.textContent = userEnabled ? "🔊" : "🔇";
+  b.classList.toggle("muted", !userEnabled);
   b.setAttribute("aria-pressed", String(userEnabled));
   b.setAttribute(
     "aria-label",
