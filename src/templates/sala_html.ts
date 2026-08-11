@@ -24,7 +24,7 @@ export const ROOM_META: Record<string, { titleScroll: string; legacyNum?: string
 /** Comentario editorial + apertura de <section> + canvas + <div class="room-content">. */
 export const ROOM_SHELL: Record<string, string> = {
   perfil: `<!-- ════════════════════════════════════════════════════
-  SALA 01 — Perfil y Formación
+  SALA 06 — Perfil y Formación
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-perfil" style="background:var(--deep)">
   <canvas class="room-canvas" id="c-necker" role="img" aria-label="Cuadrícula de cubo de Necker"></canvas>
@@ -32,7 +32,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   proyectos: `<!-- ════════════════════════════════════════════════════
-  SALA 02 — Proyectos Activos y en Desarrollo
+  SALA 01 — Proyectos Activos y en Desarrollo
   NOTA: Estos proyectos son privados / en desarrollo.
   Las descripciones muestran el problema que resuelven,
   no los detalles de implementación.
@@ -73,7 +73,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   competencias: `<!-- ════════════════════════════════════════════════════
-  SALA 05 — Competencias
+  SALA 02 — Competencias
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-competencias" style="background:var(--night)">
   <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
@@ -81,7 +81,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   grafo: `<!-- ════════════════════════════════════════════════════
-  SALA 06 — La Constelación (mapa de conexiones / recapitulación)
+  SALA 05 — Constelación
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-grafo" style="background:var(--night)">
   <div class="room-content" style="position:relative">
@@ -115,7 +115,7 @@ export const ROOM_BODY: Record<string, string> = {
               <span>Añadir foto local</span>
             </div>
           </div>
-          <p class="profile-text">Físico con candidatura doctoral en sistemas complejos y más de 20 años navegando entre la investigación científica, la docencia universitaria y la innovación educativa.</p>
+          <p class="profile-text">Físico con más de 20 años en la intersección entre investigación científica, docencia universitaria e innovación educativa.</p>
           <br>
           <p class="profile-text" style="color:var(--muted);font-size:.95rem">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
           <br>
@@ -145,8 +145,8 @@ export const ROOM_BODY: Record<string, string> = {
 
         <div class="entry" data-scroll="from-right" data-delay="1">
           <div class="entry-period">2003 – 2006</div>
-          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos</div>
-          <div class="entry-org">Universidad Simón Bolívar, Venezuela · ABD — tesis pendiente</div>
+          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos (ABD)</div>
+          <div class="entry-org">Universidad Simón Bolívar, Venezuela</div>
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="2">
@@ -162,8 +162,8 @@ export const ROOM_BODY: Record<string, string> = {
 
         <div class="entry" data-scroll="from-right" data-delay="3">
           <div class="entry-period">2004</div>
-          <div class="entry-title">I Taller Andino de Caos y Complejidad</div>
-          <div class="entry-org">UNET, San Cristóbal, Venezuela</div>
+          <div class="entry-title">Taller Plástico</div>
+          <div class="entry-org">CABA, Buenos Aires, Argentina</div>
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="4">
@@ -223,25 +223,22 @@ export const ROOM_BODY: Record<string, string> = {
         <li>Problema: toda conversación prolongada tiende hacia el ruido. El diálogo con cognición sintética lo acelera — la ventana de contexto se degrada, las sesiones no persisten</li>
         <li>Propuesta: modelo <strong>Tronco/Rizoma</strong> — el rizoma explora libremente; periódicamente el par humano-cognición sintética destila hacia el Tronco (conocimiento estable)</li>
         <li>Doble naturaleza: propuesta filosófica <em>y</em> arquitectura de software para gestión epistemológica</li>
-        <li>Línea de investigación doctoral activa — epistemología de la interacción humano-cognición sintética</li>
-        <li>También proyecto filosófico: integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo</li>
+        <li>Integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo</li>
       </ul>
-      <div class="project-note">Intersecta con la candidatura doctoral en sistemas complejos. Candidata a publicación académica.</div>
+      <div class="project-note">Candidata a publicación académica.</div>
     </div>
 
     <!-- CLAPPS.AI -->
     <div class="project-card" data-scroll="from-left" data-delay="3">
-      <span class="project-status status-active">Concepto activo · Dominio vigente</span>
-      <div class="project-title"><em>CLAPPS.AI</em> — Comprehensive Learning Applications</div>
+      <span class="project-status status-active">Concepto activo</span>
+      <div class="project-title"><em>CLAPPS.AI</em> — Learning Applications Platform</div>
       <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional</div>
       <ul class="project-body">
         <li>Los LMS (Learning Management Systems) son en realidad plataformas de <em>registro y control de enseñanza</em>: tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real</li>
         <li>CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad</li>
         <li>Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias</li>
         <li>Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos</li>
-        <li>Paraguas para múltiples desarrollos futuros bajo el dominio personal (Christian Luciani Applications)</li>
       </ul>
-      <div class="project-note">El desarrollo de una plataforma clínica (portal para proveedores de salud) fue un proyecto temporal bajo este dominio — se migrará a dominio comercial separado.</div>
     </div>
 
     <!-- NOOS -->
@@ -258,15 +255,14 @@ export const ROOM_BODY: Record<string, string> = {
       <div class="project-note">Investigación en curso. Publicación académica planificada.</div>
     </div>
 
-    <!-- DRAHMA (proyecto destacado → showcase completo abajo, misma sala) -->
-    <div class="project-card" data-scroll="from-left" data-delay="5">
-      <span class="project-status status-paused">Proyecto destacado · ver showcase completo abajo</span>
+    <!-- ── DRAHMA (showcase integrado) ── -->
+    <div class="project-card" data-scroll="from-left" data-delay="5" style="margin-bottom:0">
+      <span class="project-status status-paused">Completado · Agosto 2024</span>
       <div class="project-title"><em>Drahma</em> — Inteligencia Sintética Educativa</div>
       <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
     </div>
 
-    <!-- ── SHOWCASE DRAHMA (interno a la sala de proyectos) ── -->
-    <div style="margin-top:3.5rem;padding-top:2.5rem;border-top:1px solid var(--border)" data-scroll="up">
+    <div style="margin-top:0;padding:2rem 2rem 1.5rem;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px" data-scroll="up">
       <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.5rem">
         <img src="https://raw.githubusercontent.com/DRAHMAN-ORG/drahman-org/main/assets/images/logo.png"
              alt="Drahma logo"
@@ -421,7 +417,7 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="entry-org">Universidad Simón Bolívar · Caracas</div>
           <ul class="entry-body">
             <li>Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)</li>
-            <li>Investigación doctoral en sistemas complejos · primeras publicaciones</li>
+            <li>Primeras publicaciones en sistemas complejos</li>
           </ul>
         </div>
       </div>

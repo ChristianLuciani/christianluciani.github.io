@@ -33,8 +33,7 @@ export function printCvHtml(): string {
 
   <div class="p-section">
     <h2>Perfil</h2>
-    <p>Físico (Universidad Central de Venezuela) con candidatura doctoral en sistemas complejos.
-    Trayectoria entre la investigación científica, la tecnología educativa y la inteligencia sintética.
+    <p>Físico (Universidad Central de Venezuela) con más de 20 años en la intersección entre investigación científica, tecnología educativa e inteligencia sintética.
     Creador de Kontablo —ontología contable universal basada en grafos para la economía agéntica— y de
     Drahma, sistema de tutores virtuales con inteligencia sintética y pedagogía socrática.</p>
   </div>
@@ -90,7 +89,7 @@ export function printCvHtml(): string {
     </div>
     <div class="p-entry">
       <h3>Candidatura doctoral — Sistemas Complejos — Universidad Simón Bolívar</h3>
-      <div class="p-meta">2003 – 2006 · ABD (tesis pendiente)</div>
+      <div class="p-meta">2003 – 2006 · ABD</div>
     </div>
     <div class="p-entry">
       <h3>Especialización en Audiovisuales — Escuela de Cine y TV, Caracas</h3>

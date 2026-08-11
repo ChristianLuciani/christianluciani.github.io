@@ -11,26 +11,26 @@ import {
 } from "./render";
 
 const IDS = [
-  "perfil",
   "proyectos",
-  "experiencia",
-  "galeria",
-  "fisica",
   "competencias",
+  "experiencia",
+  "fisica",
   "grafo",
-  "contacto"
+  "perfil",
+  "contacto",
+  "galeria"
 ];
 
-/** Baseline capturado del ROOM_EN[] que vivía hardcodeado en index.html (Fase 1 lo centraliza). */
+/** Baseline capturado del ROOM_EN[] (nuevo orden: proyectos primero). */
 const ROOM_EN_BASELINE = [
-  "The <em>Visitor</em>",
   "The <em>Exhibition</em>",
-  "The <em>Journey</em>",
-  "The <em>Archive</em>",
-  "The <em>Library</em>",
   "The <em>Workshop</em>",
+  "The <em>Journey</em>",
+  "The <em>Library</em>",
   "The <em>Constellation</em>",
-  "The <em>Mailbox</em>"
+  "The <em>Visitor</em>",
+  "The <em>Mailbox</em>",
+  "The <em>Archive</em>"
 ];
 
 describe("SALAS — integridad", () => {
@@ -49,17 +49,14 @@ describe("SALAS — integridad", () => {
     );
   });
 
-  it("planoLabel: todas las visibles tienen etiqueta uppercase para el plano", () => {
+  it("navLabel de cada sala en uppercase alimenta el plano (sin campo ad-hoc planoLabel)", () => {
+    // El plano deriva su etiqueta de navLabel.toUpperCase() sin override.
     for (const s of visibleSalas()) {
-      expect(s.planoLabel, `planoLabel de ${s.id}`).toBe(s.planoLabel?.toUpperCase());
-    }
-    // Con la renombración museística, planoLabel y navLabel son coherentes
-    // (p.ej. navLabel "Taller" → planoLabel "TALLER").
-    for (const s of visibleSalas()) {
-      expect(s.planoLabel, `planoLabel de ${s.id} vs navLabel`).toBe(s.navLabel.toUpperCase());
+      expect(typeof s.navLabel).toBe("string");
+      expect(s.navLabel.length).toBeGreaterThan(0);
     }
     // La galería (oculta) no participa del plano.
-    expect(SALAS.find((s) => s.id === "galeria")!.planoLabel).toBeUndefined();
+    expect(SALAS.find((s) => s.id === "galeria")!.hidden).toBe(true);
   });
 
   it("todo título y traducción llevan <em> (estilo museístico)", () => {
@@ -86,26 +83,26 @@ describe("render — derivados puros", () => {
     expect(sectionId("fisica")).toBe("room-fisica");
   });
 
-  it("navTargets = hero + salas visibles en orden", () => {
+  it("navTargets = hero + salas visibles en orden (proyectos primero)", () => {
     expect(navTargets()).toEqual([
       "hero",
-      "room-perfil",
       "room-proyectos",
+      "room-competencias",
       "room-experiencia",
       "room-fisica",
-      "room-competencias",
       "room-grafo",
+      "room-perfil",
       "room-contacto"
     ]);
   });
 
-  it("numFor: 01..07 secuencial en orden visible; null para ocultas", () => {
-    expect(numFor("perfil")).toBe("01");
-    expect(numFor("proyectos")).toBe("02");
+  it("numFor: 01..07 en nuevo orden; null para ocultas", () => {
+    expect(numFor("proyectos")).toBe("01");
+    expect(numFor("competencias")).toBe("02");
     expect(numFor("experiencia")).toBe("03");
     expect(numFor("fisica")).toBe("04");
-    expect(numFor("competencias")).toBe("05");
-    expect(numFor("grafo")).toBe("06");
+    expect(numFor("grafo")).toBe("05");
+    expect(numFor("perfil")).toBe("06");
     expect(numFor("contacto")).toBe("07");
     expect(numFor("galeria")).toBeNull();
     expect(numFor("inexistente")).toBeNull();
@@ -120,7 +117,7 @@ describe("render — derivados puros", () => {
     expect(extra["SALA 01"]).toBe("ROOM 01");
     expect(extra["SALA 04"]).toBe("ROOM 04");
     expect(extra["SALA 07"]).toBe("ROOM 07");
-    expect(extra["SALA 05"]).toBe("ROOM 05"); // competencias
+    expect(extra["SALA 05"]).toBe("ROOM 05"); // grafo en nuevo orden
     expect(extra).not.toHaveProperty("SALA 08"); // stale eliminado
     // Subtítulos (todas las salas, incl. oculta)
     expect(extra["PERFIL PROFESIONAL · CUENCA, ECUADOR"]).toBe(

@@ -34,8 +34,6 @@ export interface SalaDef {
   subtituloEn: string;
   /** Etiqueta del nav lateral (hover) — solo ES (atributo, no se traduce) */
   navLabel: string;
-  /** Etiqueta del plano SVG (uppercase) — puede diferir de navLabel (p.ej. experiencia → TRAYECTORIA) */
-  planoLabel?: string;
   /** id del canvas de ilusión de fondo de la sala (museo 3D / metadata) */
   ilusion?: string;
   /** true → sala oculta (no numerada, sin nav, sin re-render de metadatos) */
@@ -54,24 +52,22 @@ export const HERO_NAV = {
  */
 export const SALAS: SalaDef[] = [
   {
-    id: "perfil",
-    titulo: "El <em>Visitante</em>",
-    tituloEn: "The <em>Visitor</em>",
-    subtitulo: "PERFIL PROFESIONAL · CUENCA, ECUADOR",
-    subtituloEn: "PROFESSIONAL PROFILE · CUENCA, ECUADOR",
-    navLabel: "Perfil",
-    planoLabel: "PERFIL",
-    ilusion: "c-necker"
-  },
-  {
     id: "proyectos",
     titulo: "La <em>Exposición</em>",
     tituloEn: "The <em>Exhibition</em>",
     subtitulo: "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS",
     subtituloEn: "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS",
     navLabel: "Exposición",
-    planoLabel: "EXPOSICIÓN",
     ilusion: "c-proyectos"
+  },
+  {
+    id: "competencias",
+    titulo: "El <em>Taller</em>",
+    tituloEn: "The <em>Workshop</em>",
+    subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
+    subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
+    navLabel: "Taller",
+    ilusion: "c-comp"
   },
   {
     id: "experiencia",
@@ -80,8 +76,42 @@ export const SALAS: SalaDef[] = [
     subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
     subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
     navLabel: "Recorrido",
-    planoLabel: "RECORRIDO",
     ilusion: "c-exp"
+  },
+  {
+    id: "fisica",
+    titulo: "La <em>Biblioteca</em>",
+    tituloEn: "The <em>Library</em>",
+    subtitulo: "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026",
+    subtituloEn: "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026",
+    navLabel: "Biblioteca",
+    ilusion: "c-fisica"
+  },
+  {
+    id: "grafo",
+    titulo: "La <em>Constelación</em>",
+    tituloEn: "The <em>Constellation</em>",
+    subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
+    subtituloEn: "CONSTELLATION · AREAS · PROJECTS · CONNECTIONS · 2026",
+    navLabel: "Constelación",
+    ilusion: "c-graph"
+  },
+  {
+    id: "perfil",
+    titulo: "El <em>Visitante</em>",
+    tituloEn: "The <em>Visitor</em>",
+    subtitulo: "PERFIL PROFESIONAL · CUENCA, ECUADOR",
+    subtituloEn: "PROFESSIONAL PROFILE · CUENCA, ECUADOR",
+    navLabel: "Perfil",
+    ilusion: "c-necker"
+  },
+  {
+    id: "contacto",
+    titulo: "El <em>Buzón</em>",
+    tituloEn: "The <em>Mailbox</em>",
+    subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
+    subtituloEn: "CONTACT · NETWORKS · RESEARCH",
+    navLabel: "Contacto"
   },
   {
     id: "galeria",
@@ -91,44 +121,5 @@ export const SALAS: SalaDef[] = [
     subtituloEn: "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS",
     navLabel: "Archivo",
     hidden: true
-  },
-  {
-    id: "fisica",
-    titulo: "La <em>Biblioteca</em>",
-    tituloEn: "The <em>Library</em>",
-    subtitulo: "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026",
-    subtituloEn: "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026",
-    navLabel: "Biblioteca",
-    planoLabel: "BIBLIOTECA",
-    ilusion: "c-fisica"
-  },
-  {
-    id: "competencias",
-    titulo: "El <em>Taller</em>",
-    tituloEn: "The <em>Workshop</em>",
-    subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
-    subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
-    navLabel: "Taller",
-    planoLabel: "TALLER",
-    ilusion: "c-comp"
-  },
-  {
-    id: "grafo",
-    titulo: "La <em>Constelación</em>",
-    tituloEn: "The <em>Constellation</em>",
-    subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
-    subtituloEn: "CONSTELLATION · AREAS · PROJECTS · CONNECTIONS · 2026",
-    navLabel: "Constelación",
-    planoLabel: "CONSTELACIÓN",
-    ilusion: "c-graph"
-  },
-  {
-    id: "contacto",
-    titulo: "El <em>Buzón</em>",
-    tituloEn: "The <em>Mailbox</em>",
-    subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
-    subtituloEn: "CONTACT · NETWORKS · RESEARCH",
-    navLabel: "Contacto",
-    planoLabel: "CONTACTO"
   }
 ];
