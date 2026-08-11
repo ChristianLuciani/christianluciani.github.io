@@ -1,10 +1,23 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (Fase 2 refactor: modularización — index.html 100% generado)
+> Última actualización: 2026-08-10 (fixes intro: superposición fractal/texto + frase 3 en dos líneas)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fixes de sesión — intro (rama `aionui/pi/intro-fractal-fixes`)
+
+- **Superposición fractal ↔ texto del intro**: el fractal subió de `top:calc(50vh - 200px)` a
+  `50vh - 250px` y el bloque de texto de `margin-top:190px` a `270px` (el margen flex rinde ~la
+  mitad al centrar). Media query `@media (max-height: 600px)` restaura los valores originales en
+  pantallas bajas. Verificado en browser: sin solapamiento con gap 30–36px en 1440×900, 1280×720
+  y 700×500; el nombre final queda visible sin cortarse.
+- **Frase 3 del intro** → `"Una<br><em>Instancia Humana</em>."` (dos líneas, antes una sola).
+- Ambos fixes = editar `src/` + `npm run build` (flujo parametrizado Fase 2): los cambios de CSS
+  viven en `src/templates/head_html.ts` y la frase en `src/cv/intro.ts`.
 
 ---
 
