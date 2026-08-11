@@ -29,8 +29,8 @@ const ROOM_EN_BASELINE = [
   "The <em>Archive</em>",
   "The <em>Library</em>",
   "The <em>Workshop</em>",
-  "The <em>Planetarium</em>",
-  "The <em>Vestibule</em>"
+  "The <em>Constellation</em>",
+  "The <em>Mailbox</em>"
 ];
 
 describe("SALAS — integridad", () => {
@@ -137,7 +137,7 @@ describe("render — derivados puros", () => {
     expect(html).toContain(`data-target="${HERO_NAV.id}" data-label="${HERO_NAV.navLabel}"`);
     expect(html).toContain('data-target="room-perfil" data-label="Perfil"');
     expect(html).toContain('data-target="room-fisica" data-label="Biblioteca"');
-    expect(html).toContain('data-target="room-grafo" data-label="Planetario"');
+    expect(html).toContain('data-target="room-grafo" data-label="Constelación"');
     expect(html).not.toContain("room-galeria"); // oculta → fuera del nav
     // Orden: hero primero, contacto último
     const heroIdx = html.indexOf('data-target="hero"');

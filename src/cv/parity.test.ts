@@ -133,8 +133,8 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
       "The <em>Archive</em>",
       "The <em>Library</em>",
       "The <em>Workshop</em>",
-      "The <em>Planetarium</em>",
-      "The <em>Vestibule</em>"
+      "The <em>Constellation</em>",
+      "The <em>Mailbox</em>"
     ]);
   });
 
