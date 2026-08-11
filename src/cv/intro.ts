@@ -12,9 +12,19 @@ const FRASES = [
 ];
 
 const FADE_IN = 1100; // ms
-const HOLD = 1000; // ms (tiempo de lectura del texto)
+const HOLD = 1000; // ms base (tiempo de lectura del texto)
 const FADE_OUT = 1100; // ms
 const STEP = 350; // espera entre transiciones
+
+/** Intervalo del foco de lectura guiada: lento (~2× más lento que antes). */
+function wordInterval(count: number): number {
+  return Math.min(700, Math.max(300, Math.round(3600 / Math.max(1, count))));
+}
+
+/** Tiempo visible de la frase: la lectura guiada debe completarse antes del fade-out. */
+function phraseDisplay(count: number): number {
+  return FADE_IN + Math.max(1000, count * wordInterval(count) + 400);
+}
 
 /**
  * Envuelve cada palabra en `<span class="p-word">` (preservando tags como
@@ -58,7 +68,6 @@ export function initIntro(): void {
   const phraseEl = phrase;
 
   let started = false;
-  let idx = 0;
   let wordTimer: number | undefined;
 
   function hideLoader() {
@@ -66,16 +75,13 @@ export function initIntro(): void {
     if (fractal) fractal.classList.add("minimized");
   }
 
-  /** Lectura guiada: enfoca una palabra a la vez (intervalo según longitud). */
+  /** Lectura guiada: enfoca una palabra a la vez (intervalo según longitud, lento). */
   function startWordReading() {
     if (wordTimer) window.clearTimeout(wordTimer);
     wordTimer = undefined;
     const words = phraseEl.querySelectorAll<HTMLElement>(".p-word");
     if (!words.length) return;
-    const interval = Math.min(
-      320,
-      Math.max(120, Math.round((FADE_IN + HOLD - 500) / words.length))
-    );
+    const interval = wordInterval(words.length);
     words.forEach((w, i) => w.classList.toggle("p-word--focus", i === 0));
     let wi = 0;
     const tick = () => {
@@ -103,12 +109,13 @@ export function initIntro(): void {
     }
     heroName.style.animation = "none"; // el fadeUp (fill both) pisaría el vuelo
     const natural = heroName.getBoundingClientRect();
-    // Posición de revelado: centrado horizontalmente, arriba = el de la frase.
+    // Posición de revelado: CENTRADO en el recuadro donde terminó la última
+    // frase (misma posición, tanto en X como en Y).
     const revealLeft = revealRect
       ? revealRect.left + revealRect.width / 2 - natural.width / 2
       : (window.innerWidth - natural.width) / 2;
     const revealTop = revealRect
-      ? revealRect.top
+      ? revealRect.top + revealRect.height / 2 - natural.height / 2
       : window.innerHeight / 2 - natural.height / 2;
     const dx0 = revealLeft - natural.left;
     const dy0 = revealTop - natural.top;
@@ -160,46 +167,33 @@ export function initIntro(): void {
     }, 900);
   }
 
-  function showNext() {
-    if (idx < FRASES.length) {
-      if (wordTimer) window.clearTimeout(wordTimer);
-      phraseEl.innerHTML = renderPhraseWords(FRASES[idx]);
-      phraseEl.classList.add("in");
-      startWordReading();
-      setTimeout(() => {
-        phraseEl.classList.remove("in");
-        phraseEl.classList.add("out");
-        setTimeout(() => {
-          phraseEl.classList.remove("out");
-          idx++;
-          setTimeout(showNext, STEP);
-        }, FADE_OUT);
-      }, FADE_IN + HOLD);
-    } else {
-      // Continuación: el nombre aparece donde terminó la última frase.
-      const reveal = phraseEl.getBoundingClientRect();
-      phraseEl.style.display = "none";
-      finish(reveal);
-    }
-  }
-
-  function start() {
-    if (started) return;
-    started = true;
-    // Primera frase directa; el resto rota via showNext()
-    idx = 0;
-    phraseEl.innerHTML = renderPhraseWords(FRASES[0]);
+  function showPhrase(i: number) {
+    if (wordTimer) window.clearTimeout(wordTimer);
+    phraseEl.innerHTML = renderPhraseWords(FRASES[i]);
     phraseEl.classList.add("in");
+    const count = phraseEl.querySelectorAll(".p-word").length;
     startWordReading();
     setTimeout(() => {
       phraseEl.classList.remove("in");
       phraseEl.classList.add("out");
       setTimeout(() => {
         phraseEl.classList.remove("out");
-        idx = 1;
-        showNext();
+        if (i + 1 < FRASES.length) {
+          setTimeout(() => showPhrase(i + 1), STEP);
+        } else {
+          // Continuación: el nombre aparece en el lugar de la última frase.
+          const reveal = phraseEl.getBoundingClientRect();
+          phraseEl.style.display = "none";
+          finish(reveal);
+        }
       }, FADE_OUT);
-    }, STEP + FADE_IN + HOLD);
+    }, phraseDisplay(count));
+  }
+
+  function start() {
+    if (started) return;
+    started = true;
+    showPhrase(0);
   }
 
   if (document.readyState === "complete") start();
