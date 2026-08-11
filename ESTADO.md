@@ -1,10 +1,25 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (intro: foco más lento, nombre centrado en la frase, sonido ambiente de ballenas)
+> Última actualización: 2026-08-10 (audio: fade in, volumen más bajo, loop crossfade, botón de silencio)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fix de sesión — audio (rama `aionui/pi/audio-boton`)
+
+- **Fade in** al iniciar/reanudar el sonido (2.5s, rampa lineal testeada `fadeSteps`) y fade out
+  rápido (450ms) al apagar.
+- **Volumen base más bajo**: 0.06 → **0.04**.
+- **Loop sin costura**: el MP3 se re-encodó con ffmpeg aplicando un **crossfade fin→inicio**
+  (2.5s, `acrossfade`): el bucle ya no tiene clic/eco en el punto de corte (misma duración 37.94s).
+- **Botón arriba para apagar el audio**: `#btn-sound` (fijo arriba a la derecha, junto a
+  `btn-lang`), 🔊/🔇 con `aria-pressed`. Apaga con fade out + pause; reanuda con fade in. Oculta
+  en @media print.
+- Verificado en browser (CDP): botón visible top-right, toggle 🔊→🔇→🔊 con kPause al apagar,
+  audio reproduciendo el archivo crossfade; 43 tests + tsc limpio.
 
 ---
 

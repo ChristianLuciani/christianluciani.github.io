@@ -10,6 +10,9 @@ import { navDotsHtml } from "../cv/render.ts";
 // exponer funciones al atributo onclick global.
 const COVER_TOP = `<button id="btn-lang" type="button" aria-label="Switch language / Cambiar idioma">EN</button>
 
+<!-- ── BOTÓN SONIDO (canto de ballenas de fondo) ──── -->
+<button id="btn-sound" type="button" aria-pressed="true" title="Silenciar sonido">🔊</button>
+
 <!-- ── BOTÓN DESCARGA CV (imprimir → guardar como PDF) ── -->
 <button id="btn-download" type="button" aria-label="Descargar CV en PDF">↓ Descargar CV</button>
 
