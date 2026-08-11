@@ -1,10 +1,25 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (fixes intro: superposición fractal/texto + frase 3 en dos líneas)
+> Última actualización: 2026-08-10 (intro: frase 3 en dos líneas + nombre con movimiento único al hero)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fixes de sesión — intro (rama `aionui/pi/intro-movimiento`)
+
+- **Frase 3 en dos líneas**: `.intro-phrase` es `display:flex`, así que un `<br>` suelto se
+  convertía en un flex item vacío (nunca cortaba). Fix: la frase se envuelve en un `<span>`
+  (un solo flex item → el `<br>` funciona adentro): `"<span>Una<br><em>Instancia Humana</em>.</span>"`
+  en `src/cv/intro.ts`. Verificado: altura 108px (2 líneas) vs ~50px (1 línea).
+- **Nombre: un solo movimiento (no dos objetos)**: al terminar las frases, el nombre del intro
+  ahora VUELA a la posición del `.hero-name` (rect exacto vía transform translate+scale, z-index
+  por encima del loader) y al aterrizar se retira, se oculta el loader y el hero queda revelado
+  en la MISMA posición → continuidad visual sin salto. Aterrizaje verificado pixel-perfect en
+  browser (rect del intro converge al rect del hero: 115,291 403×306 en 1440×900).
+- Sin regresión en reduced-motion (loader oculto por el minimize del fractal) ni en 1280×720.
 
 ---
 
