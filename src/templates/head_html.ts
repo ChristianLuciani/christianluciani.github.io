@@ -807,7 +807,16 @@ body {
   opacity:0; animation:fadeUp 1s 2.4s both;
 }
 #btn-lang:hover { background:var(--teal); color:var(--night); box-shadow:0 0 16px rgba(0,201,192,.35); }
-@media print { #btn-lang { display:none !important; } }
+#btn-sound {
+  position:fixed; top:1.4rem; right:4.4rem; z-index:200;
+  width:2rem; height:2rem; display:flex; align-items:center; justify-content:center;
+  padding:0; font-size:.95rem; line-height:1;
+  background:var(--night); border:1px solid var(--border); border-radius:3px;
+  color:var(--text); cursor:pointer; transition:background .3s,color .3s,border-color .3s,box-shadow .3s;
+  opacity:0; animation:fadeUp 1s 2.4s both;
+}
+#btn-sound:hover { background:var(--surface); border-color:var(--teal); box-shadow:0 0 16px rgba(0,201,192,.25); }
+@media print { #btn-lang { display:none !important; } #btn-sound { display:none !important; } }
 
 /* ══════════════════════════════════════════════
    FOTO DE PERFIL — círculo con glow teal
@@ -856,7 +865,7 @@ body {
 
 @media print {
   body > *:not(#print-cv) { display:none !important; }
-  canvas,#loader,#nav,#progress,#btn-download,.cursor,.cursor-ring,.room-canvas { display:none !important; }
+  canvas,#loader,#nav,#progress,#btn-download,#btn-sound,.cursor,.cursor-ring,.room-canvas { display:none !important; }
   #print-cv { display:block !important; font-family:Georgia,serif; font-size:11pt; color:#111; line-height:1.6; padding:2cm; background:white; }
   #print-cv h1 { font-size:22pt; margin-bottom:2pt; }
   #print-cv h2 { font-size:13pt; border-bottom:1pt solid #ccc; padding-bottom:3pt; margin:18pt 0 6pt; }
