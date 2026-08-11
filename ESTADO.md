@@ -1,10 +1,27 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (intro: nombre = un solo objeto, el .hero-name; sin <br>)
+> Última actualización: 2026-08-10 (intro: lectura guiada + nombre como continuación del texto)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fix de sesión — intro (rama `aionui/pi/intro-lectura`)
+
+- **Lectura guiada**: cada frase se renderiza con una palabra por `<span class="p-word">` y un
+  foco que avanza palabra a palabra (`.p-word--focus`: opacidad plena + teal; el resto al 32%).
+  Intervalo adaptativo según longitud de la frase (120–320ms). Espaciado por margin (uniforme en
+  flex e inline).
+- **Nombre como continuación**: el `.hero-name` aparece (fade in) en el MISMO lugar donde terminó
+  la última frase (sin corte ni vacío) y vuela a su posición natural del hero; al aterrizar vuelve
+  a flow y el loader se oculta. Un solo objeto (sin `.intro-name`).
+- Bug de spans corregido: al quitar espacios del texto no debían tocarse los tags (`<span class`
+  → `<spanclass` rompía el markup); ahora se elimina solo el espacio entre spans.
+- Verificado en browser: foco avanza (¿Pueden → … → persona?), frase 3 en 2 líneas con 4 palabras,
+  nombre revelado en el lugar de la frase (511,531) y aterrizado en el hero (115,347); 1280×720 y
+  reduced-motion sin regresión; sin excepciones. 39 tests + tsc limpio.
 
 ---
 
