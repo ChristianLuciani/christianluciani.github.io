@@ -65,31 +65,31 @@ export const SALAS: SalaDef[] = [
   },
   {
     id: "proyectos",
-    titulo: "Proyectos <em>Activos</em>",
-    tituloEn: "Active <em>Projects</em>",
+    titulo: "La <em>Exposición</em>",
+    tituloEn: "The <em>Exhibition</em>",
     subtitulo: "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS",
     subtituloEn: "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS",
-    navLabel: "Proyectos",
-    planoLabel: "PROYECTOS",
+    navLabel: "Exposición",
+    planoLabel: "EXPOSICIÓN",
     ilusion: "c-proyectos"
   },
   {
     id: "experiencia",
-    titulo: "La <em>Trayectoria</em>",
-    tituloEn: "The <em>Path</em>",
+    titulo: "El <em>Recorrido</em>",
+    tituloEn: "The <em>Journey</em>",
     subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
     subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
-    navLabel: "Experiencia",
-    planoLabel: "TRAYECTORIA",
+    navLabel: "Recorrido",
+    planoLabel: "RECORRIDO",
     ilusion: "c-exp"
   },
   {
     id: "galeria",
-    titulo: "La <em>Evidencia</em>",
-    tituloEn: "The <em>Evidence</em>",
+    titulo: "El <em>Archivo</em>",
+    tituloEn: "The <em>Archive</em>",
     subtitulo: "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS",
     subtituloEn: "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS",
-    navLabel: "Evidencia",
+    navLabel: "Archivo",
     hidden: true
   },
   {
@@ -104,31 +104,31 @@ export const SALAS: SalaDef[] = [
   },
   {
     id: "competencias",
-    titulo: "Caja de <em>Herramientas</em>",
-    tituloEn: "The <em>Toolbox</em>",
+    titulo: "El <em>Taller</em>",
+    tituloEn: "The <em>Workshop</em>",
     subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
     subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
-    navLabel: "Competencias",
-    planoLabel: "COMPETENCIAS",
+    navLabel: "Taller",
+    planoLabel: "TALLER",
     ilusion: "c-comp"
   },
   {
     id: "grafo",
-    titulo: "La <em>Constelación</em>",
-    tituloEn: "The <em>Constellation</em>",
+    titulo: "El <em>Planetario</em>",
+    tituloEn: "The <em>Planetarium</em>",
     subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
     subtituloEn: "CONSTELLATION · AREAS · PROJECTS · CONNECTIONS · 2026",
-    navLabel: "Constelación",
-    planoLabel: "CONSTELACIÓN",
+    navLabel: "Planetario",
+    planoLabel: "PLANETARIO",
     ilusion: "c-graph"
   },
   {
     id: "contacto",
-    titulo: "<em>Conectar</em>",
-    tituloEn: "<em>Connect</em>",
+    titulo: "El <em>Vestíbulo</em>",
+    tituloEn: "The <em>Vestibule</em>",
     subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
     subtituloEn: "CONTACT · NETWORKS · RESEARCH",
-    navLabel: "Conectar",
-    planoLabel: "CONECTAR"
+    navLabel: "Contacto",
+    planoLabel: "CONTACTO"
   }
 ];

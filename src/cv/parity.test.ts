@@ -128,13 +128,13 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
   it("ROOM_EN derivado == baseline histórico de 8 títulos EN", () => {
     expect(roomEnList()).toEqual([
       "The <em>Visitor</em>",
-      "Active <em>Projects</em>",
-      "The <em>Path</em>",
-      "The <em>Evidence</em>",
+      "The <em>Exhibition</em>",
+      "The <em>Journey</em>",
+      "The <em>Archive</em>",
       "The <em>Library</em>",
-      "The <em>Toolbox</em>",
-      "The <em>Constellation</em>",
-      "<em>Connect</em>"
+      "The <em>Workshop</em>",
+      "The <em>Planetarium</em>",
+      "The <em>Vestibule</em>"
     ]);
   });
 

@@ -28,7 +28,9 @@
  */
 
 const AUDIO_DIR = "/audio/";
-const DEFAULT_AUDIO = AUDIO_DIR + "whale-song.mp3";
+/** Pista de la entrada (hero): olas del mar — claramente distinta de los cantos
+ *  de ballena de las salas para que el cambio sea reconocible. */
+const DEFAULT_AUDIO = AUDIO_DIR + "ocean-waves.mp3";
 
 /** Pista por sala (id de <section> → archivo en public/audio/). */
 const ROOM_AUDIO: Record<string, string> = {
@@ -106,6 +108,7 @@ let activeIdx = 0; // índice del elemento que se está oyendo
 let unlocked = false;
 let userEnabled = true; // preferencia del usuario (botón #btn-sound)
 let activeRoom: string | null = null; // id de la sección activa detectada
+let initDone = false; // evita que el scroll interfiera durante la inicialización
 let rafId: number | undefined; // throttle del scroll por rAF
 
 function urlForRoom(id: string | null): string {
@@ -212,7 +215,10 @@ function unlock(): void {
   if (userEnabled) ensurePlaying();
 }
 
-/** Detecta la sección activa en el DOM y cruza el audio si cambió. */
+/** Detecta la sección activa en el DOM y cruza el audio si cambió.
+ *  Durante la inicialización solo actualiza activeRoom sin disparar transiciones
+ *  (evita el corte que ocurría cuando un scroll/resize temprano competía con el
+ *  fade-in inicial). */
 function updateActive(): void {
   const sections = Array.from(document.querySelectorAll(SECTION_SELECTOR));
   const rects: RoomRect[] = sections.map((s) => {
@@ -222,7 +228,7 @@ function updateActive(): void {
   const next = pickActive(rects, window.innerHeight);
   if (next !== activeRoom) {
     activeRoom = next;
-    if (userEnabled && unlocked) transitionTo(urlForRoom(activeRoom));
+    if (initDone && userEnabled && unlocked) transitionTo(urlForRoom(activeRoom));
   }
 }
 
@@ -252,20 +258,37 @@ export function initAmbientSound(): void {
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
 
-  // Arranque: detectar la sala inicial (hero) e intentar reproducir (puede
-  // fallar por autoplay policy → el primer gesto lo asegura).
+  // Arranque: detectar la sala inicial (hero) e intentar reproducir.
+  // Se espera al evento 'canplaythrough' para que el audio esté realmente
+  // listo antes del fade-in, y se marca initDone solo después para que
+  // ningún scroll temprano interfiera con el arranque.
   updateActive();
   if (userEnabled) {
     const el = getPoolElement(0);
     el.src = urlForRoom(activeRoom);
     el.loop = true;
     el.volume = 0;
-    el.play()
-      .then(() => {
-        if (pool[activeIdx] === el) fadeTo(el, BASE_VOLUME, FADE_IN_MS);
-      })
-      .catch(() => {
-        /* autoplay policy: el primer gesto lo activa (unlock) */
-      });
+    const startFade = () => {
+      if (initDone) return; // ya arrancó (canplaythrough o timeout)
+      el.removeEventListener("canplaythrough", startFade);
+      el.play()
+        .then(() => {
+          if (pool[activeIdx] === el) fadeTo(el, BASE_VOLUME, FADE_IN_MS);
+        })
+        .catch(() => {
+          /* autoplay policy: el primer gesto lo activa (unlock) */
+        });
+      initDone = true;
+    };
+    el.addEventListener("canplaythrough", startFade, { once: true });
+    // Fallback: si el evento no dispara en 3s (ya sea porque el navegador
+    // lo disparó antes de registrar el listener, o porque la pista ya está
+    // en caché), arranca igual.
+    setTimeout(() => {
+      if (!initDone) startFade();
+    }, 3000);
+    el.load();
+  } else {
+    initDone = true;
   }
 }

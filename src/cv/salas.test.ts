@@ -24,13 +24,13 @@ const IDS = [
 /** Baseline capturado del ROOM_EN[] que vivía hardcodeado en index.html (Fase 1 lo centraliza). */
 const ROOM_EN_BASELINE = [
   "The <em>Visitor</em>",
-  "Active <em>Projects</em>",
-  "The <em>Path</em>",
-  "The <em>Evidence</em>",
+  "The <em>Exhibition</em>",
+  "The <em>Journey</em>",
+  "The <em>Archive</em>",
   "The <em>Library</em>",
-  "The <em>Toolbox</em>",
-  "The <em>Constellation</em>",
-  "<em>Connect</em>"
+  "The <em>Workshop</em>",
+  "The <em>Planetarium</em>",
+  "The <em>Vestibule</em>"
 ];
 
 describe("SALAS — integridad", () => {
@@ -53,10 +53,11 @@ describe("SALAS — integridad", () => {
     for (const s of visibleSalas()) {
       expect(s.planoLabel, `planoLabel de ${s.id}`).toBe(s.planoLabel?.toUpperCase());
     }
-    // Experiencia usa TRAYECTORIA en el plano (≠ navLabel).
-    const exp = SALAS.find((s) => s.id === "experiencia")!;
-    expect(exp.planoLabel).toBe("TRAYECTORIA");
-    expect(exp.planoLabel).not.toBe(exp.navLabel.toUpperCase());
+    // Con la renombración museística, planoLabel y navLabel son coherentes
+    // (p.ej. navLabel "Taller" → planoLabel "TALLER").
+    for (const s of visibleSalas()) {
+      expect(s.planoLabel, `planoLabel de ${s.id} vs navLabel`).toBe(s.navLabel.toUpperCase());
+    }
     // La galería (oculta) no participa del plano.
     expect(SALAS.find((s) => s.id === "galeria")!.planoLabel).toBeUndefined();
   });
@@ -136,7 +137,7 @@ describe("render — derivados puros", () => {
     expect(html).toContain(`data-target="${HERO_NAV.id}" data-label="${HERO_NAV.navLabel}"`);
     expect(html).toContain('data-target="room-perfil" data-label="Perfil"');
     expect(html).toContain('data-target="room-fisica" data-label="Biblioteca"');
-    expect(html).toContain('data-target="room-grafo" data-label="Constelación"');
+    expect(html).toContain('data-target="room-grafo" data-label="Planetario"');
     expect(html).not.toContain("room-galeria"); // oculta → fuera del nav
     // Orden: hero primero, contacto último
     const heroIdx = html.indexOf('data-target="hero"');
