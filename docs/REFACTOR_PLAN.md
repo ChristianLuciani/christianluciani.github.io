@@ -7,6 +7,30 @@
 
 ---
 
+## ▶ Ejecución — FASE 2 COMPLETADA (rama `aionui/pi/modularizacion`, 2026-08-10)
+
+Fases 1 y 2 implementadas y verificadas (39 tests + browser headless). Decisiones de Fase 2:
+
+- **`index.html` 100% generado** por `build.ts`; `npm run build` = `node build.ts && vite build`.
+  Test `src/cv/build.test.ts`: el index.html commiteado debe ser byte a byte el output de
+  `assembleHtml()` (contrato "editar = tocar src/" enforced).
+- **Templates**: `src/templates/{head,body_open,print_cv,cover,hero,plano,sala}_html.ts` + `index.ts`.
+  Head/print-cv/hero/sala extraídos verbatim (herramienta one-shot); cover/plano/headers de sala
+  se **generan desde SALAS** (nav-dots, celdas del plano por grilla 3×2, room-number/title/subtitle).
+- **Sin scripts inline (DoD)**: los 4 `<script>` → módulos TS bundleados (`src/ts/app/*`, 7
+  ilusiones, `src/ts/graph/grafo.ts`, `src/cv/{i18n,intro}.ts`). `dist/index.html` = 2 ld+json + bundle.
+- **`onclick="printCV()"` eliminado** (ui.ts lo enlaza; los módulos no exponen globales).
+- **i18n importa SALAS directo** (`src/cv/i18n.ts`, sin `window.__CV_I18N__`). `mountSalas()`
+  drift-guard ahora i18n-aware: no pisa traducciones EN (bug de integración detectado en browser:
+  el guard revertía "ROOM 07" y al reescribir desenganchaba nodos del walker del i18n).
+- **Paridad byte a byte**: diff generado vs Fase-1 = solo 4 scripts removidos + onclick + padding
+  de nav-dots (normalizado; render los regenera igual).
+- **Museo 3D**: prerrequisito cumplido — `SALAS` es la estructura que reutilizaría Three.js/R3F.
+
+---
+
+---
+
 ## ▶ Ejecución — FASE 1 COMPLETADA (rama `aionui/pi/salas-parametrizacion`, 2026-08-10)
 
 Implementada y verificada (32 tests + browser check headless Chrome: nav, plano, títulos ES/EN,

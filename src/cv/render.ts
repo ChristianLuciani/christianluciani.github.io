@@ -12,7 +12,7 @@
  *     5. Dispara 'cv:salas-ready' para que el i18n refresque títulos e idioma.
  */
 
-import { HERO_NAV, SALAS, type SalaDef } from "./salas";
+import { HERO_NAV, SALAS, type SalaDef } from "./salas.ts";
 
 /** id de <section> a partir del id de sala: 'perfil' → 'room-perfil' */
 export function sectionId(id: string): string {
@@ -79,12 +79,6 @@ export function mapExtra(): Record<string, string> {
   return extra;
 }
 
-/** Forma del global que render publica para el script i18n inline. */
-export interface CvI18nData {
-  ROOM_EN: string[];
-  MAP_EXTRA: Record<string, string>;
-}
-
 /* ──────────────────────────────────────────────
    DOM (browser) — mountSalas()
 ────────────────────────────────────────────── */
@@ -93,15 +87,21 @@ function applyRoomMeta(room: HTMLElement, s: SalaDef): void {
   const numEl = room.querySelector<HTMLElement>(".room-content > .room-number");
   const num = numFor(s.id);
   if (numEl && num) {
-    const expected = `SALA ${num}`;
-    // Solo escribe si hay deriva: evita reemplazar nodos de texto que el i18n
-    // ya capturó (paridad → sin cambios → sin churn → traducciones intactas).
-    if (numEl.textContent !== expected) numEl.textContent = expected;
+    const es = `SALA ${num}`;
+    const en = `ROOM ${num}`;
+    const cur = numEl.textContent;
+    // No pisa traducciones del i18n (EN) ni valores correctos (ES): si el texto
+    // ya es ES o EN, tocar el nodo lo desengancharía del walker del i18n.
+    if (cur !== es && cur !== en) numEl.textContent = es;
   }
   const titleEl = room.querySelector<HTMLElement>(".room-content > .room-title");
-  if (titleEl && titleEl.innerHTML !== s.titulo) titleEl.innerHTML = s.titulo;
+  if (titleEl && titleEl.innerHTML !== s.titulo && titleEl.innerHTML !== s.tituloEn) {
+    titleEl.innerHTML = s.titulo;
+  }
   const subEl = room.querySelector<HTMLElement>(".room-content > .room-subtitle");
-  if (subEl && subEl.textContent !== s.subtitulo) subEl.textContent = s.subtitulo;
+  if (subEl && subEl.textContent !== s.subtitulo && subEl.textContent !== s.subtituloEn) {
+    subEl.textContent = s.subtitulo;
+  }
 }
 
 function observeNavActive(targets: string[]): void {
@@ -141,13 +141,11 @@ export function mountSalas(): void {
     if (room) applyRoomMeta(room, s);
   }
 
-  // 3) i18n estructural para el script i18n inline.
-  const win = window as unknown as { __CV_I18N__?: CvI18nData };
-  win.__CV_I18N__ = { ROOM_EN: roomEnList(), MAP_EXTRA: mapExtra() };
-
-  // 4) Estado activo del nav (los dots nuevos no tienen los observers viejos).
+  // 3) Estado activo del nav (los dots nuevos no tienen los observers viejos).
   observeNavActive(navTargets());
 
-  // 5) El i18n refresca títulos capturados y re-aplica el idioma (idempotente).
+  // 4) Avisa al i18n (módulo) que refresque títulos capturados y re-aplique
+  //    el idioma actual (idempotente). En Fase 2 el i18n importa SALAS directo;
+  //    el evento cubre la auto-corrección por deriva (drift-guard).
   document.dispatchEvent(new CustomEvent("cv:salas-ready"));
 }
