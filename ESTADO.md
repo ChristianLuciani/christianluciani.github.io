@@ -1,10 +1,27 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (intro: lectura guiada + nombre como continuación del texto)
+> Última actualización: 2026-08-10 (intro: foco más lento, nombre centrado en la frase, sonido ambiente de ballenas)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
+
+---
+
+## ✅ Fix de sesión — intro + audio (rama `aionui/pi/intro-audio`)
+
+- **Foco de lectura más lento (~2×)**: intervalo por palabra `clamp(300, 700, 3600/n)` ms (antes
+  120–320ms) y el tiempo visible de cada frase se ajusta para que la lectura guiada complete antes
+  del fade-out (`phraseDisplay`).
+- **Nombre centrado en el lugar de la frase**: el `.hero-name` aparece CENTRADO en el recuadro de
+  la última frase (X e Y) y luego vuela a su posición del hero.
+- **Sonido ambiente de ballenas** (volumen 0.06, loop): `public/audio/whale-song.mp3` (38s, 112kbps)
+  — fuente Wikimedia Commons "Humpbackwhale2.ogg" (CC0, Spyrogumas), convertido con ffmpeg. Se
+  intenta reproducir al cargar y se asegura con el PRIMER gesto del usuario (autoplay policy):
+  módulo `src/ts/app/ambient.ts` → `initAmbientSound()`.
+- Verificado en browser: foco ~600ms/palabra (frase 6 palabras), nombre centrado en la frase y
+  aterrizado en el hero, audio reproduciendo (CDP Media: kPlay→kPlaying, duración 37.9s) y la ruta
+  del gesto disparando el play; sin excepciones. 39 tests + tsc limpio.
 
 ---
 

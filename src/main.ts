@@ -8,6 +8,7 @@
 import { initI18n } from "./cv/i18n";
 import { initIntro } from "./cv/intro";
 import { mountSalas } from "./cv/render";
+import { initAmbientSound } from "./ts/app/ambient";
 import { initUI } from "./ts/app/ui";
 import { mountGrafo } from "./ts/graph/grafo";
 
@@ -76,6 +77,9 @@ function init() {
 initUI();
 initI18n();
 initIntro();
+// Sonido ambiente (cantos de ballenas, volumen muy bajo): se activa con el
+// primer gesto del usuario (autoplay policy) o en carga si el browser lo permite.
+initAmbientSound();
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", init);
