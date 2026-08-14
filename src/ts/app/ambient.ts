@@ -1,6 +1,6 @@
 /**
- * AMBIENT — sonido de fondo por SALA (cantos de ballenas), volumen muy bajo y
- * con crossfade suave entre salas.
+ * AMBIENT — sonido de fondo por SALA (sonidos de naturaleza), volumen muy bajo
+ * y con crossfade suave entre salas.
  *
  * Cada sala del museo tiene SU PROPIA pista de audio. Cuando una sala ocupa
  * ≥50% de la pantalla (viewport), el sonido transiciona de forma suave y
@@ -20,22 +20,25 @@
  *    deja de oírse se pausa y libera. El cache HTTP hace instantánea la vuelta
  *    a una sala ya visitada.
  *
- * Fuente del audio: Wikimedia Commons — "Humpbackwhale2.ogg", canto de ballena
- * jorobada, autor Spyrogumas, licencia CC0 (dominio público) [pista por
- * defecto]. Las pistas por sala (room-*.mp3) son otros cantos de ballena
- * jorobada de Wikimedia Commons (CC0/CC-BY), convertidos a MP3 estéreo y
- * normalizados a ~20 dB para volumen consistente. public/audio/.
+ * Fuente del audio (todas CC0 / dominio público, convertidas a MP3 estéreo y
+ * normalizadas a ~-21.5 LUFS para volumen consistente; public/audio/):
+ *  - Pista por defecto (entrada/hero + contacto): "Humpbackwhale2.ogg", canto
+ *    de ballena jorobada, autor Spyrogumas — Wikimedia Commons (CC0).
+ *  - room-dolphin.mp3: "Dolphins calling" (comunicación subacuática de
+ *    delfines, Caribe mexicano), autor Felix Blume — Freesound 161691,
+ *    alojado en Wikimedia Commons (CC0).
+ *  - room-forest.mp3: "Wind in the Trees", autor Joseph Sardin —
+ *    BigSoundBank #0904 (CC0).
  */
 
 const AUDIO_DIR = "/audio/";
-/** Pista de la entrada (hero): olas del mar — claramente distinta de los cantos
- *  de ballena de las salas para que el cambio sea reconocible. */
-const DEFAULT_AUDIO = AUDIO_DIR + "ocean-waves.mp3";
+/** Pista de la entrada (hero) y por defecto: canto de ballena jorobada. */
+const DEFAULT_AUDIO = AUDIO_DIR + "whale-song.mp3";
 
 /** Pista por sala (id de <section> → archivo en public/audio/). */
 const ROOM_AUDIO: Record<string, string> = {
-  perfil: AUDIO_DIR + "room-sfx.mp3",
-  proyectos: AUDIO_DIR + "room-akhumphi.mp3",
+  perfil: AUDIO_DIR + "room-dolphin.mp3", // comunicación subacuática de delfines
+  proyectos: AUDIO_DIR + "room-forest.mp3", // viento en el bosque
   experiencia: AUDIO_DIR + "room-moo.mp3",
   fisica: AUDIO_DIR + "room-s001.mp3",
   competencias: AUDIO_DIR + "room-wheezeblow.mp3",
