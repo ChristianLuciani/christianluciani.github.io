@@ -161,12 +161,6 @@ export const ROOM_BODY: Record<string, string> = {
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="3">
-          <div class="entry-period">2004</div>
-          <div class="entry-title">Taller Plástico</div>
-          <div class="entry-org">CABA, Buenos Aires, Argentina</div>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="4">
           <div class="entry-period">2003 · CERN · BECA</div>
           <div class="entry-title">II Latin American School of High Energy Physics</div>
           <div class="entry-org">San Miguel Regla, México</div>
