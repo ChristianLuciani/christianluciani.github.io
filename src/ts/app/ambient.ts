@@ -29,6 +29,9 @@
  *    alojado en Wikimedia Commons (CC0).
  *  - room-forest.mp3: "Wind in the Trees", autor Joseph Sardin —
  *    BigSoundBank #0904 (CC0).
+ *  - room-constelacion.mp3: "Cosmic Navigation" (ambient espacial para la
+ *    Sala de la Constelación), autor OpenGameArt — licencia CC0 / dominio
+ *    público, sin atribución requerida (versión loop seamless).
  */
 
 const AUDIO_DIR = "/audio/";
@@ -42,7 +45,7 @@ const ROOM_AUDIO: Record<string, string> = {
   experiencia: AUDIO_DIR + "room-moo.mp3",
   fisica: AUDIO_DIR + "room-s001.mp3",
   competencias: AUDIO_DIR + "room-wheezeblow.mp3",
-  grafo: AUDIO_DIR + "room-s002.mp3"
+  grafo: AUDIO_DIR + "room-constelacion.mp3" // ambient espacial, evoca Interstellar
   // contacto y hero (entrada) → pista por defecto (whale-song.mp3)
 };
 
@@ -215,6 +218,8 @@ function unlock(): void {
   document.removeEventListener("pointerdown", unlock);
   document.removeEventListener("keydown", unlock);
   document.removeEventListener("touchstart", unlock);
+  window.removeEventListener("wheel", unlock);
+  window.removeEventListener("scroll", unlock);
   if (userEnabled) ensurePlaying();
 }
 
@@ -258,6 +263,11 @@ export function initAmbientSound(): void {
   document.addEventListener("pointerdown", unlock);
   document.addEventListener("keydown", unlock);
   document.addEventListener("touchstart", unlock);
+  // El museo se navega SCROLLEANDO (wheel / touchpad), no solo con clicks o
+  // teclas: sin estos listeners, el audio nunca se desbloquea al hacer scroll
+  // y las transiciones entre salas no se disparan.
+  window.addEventListener("wheel", unlock, { passive: true });
+  window.addEventListener("scroll", unlock, { passive: true });
   window.addEventListener("scroll", onScroll, { passive: true });
   window.addEventListener("resize", onScroll, { passive: true });
 
