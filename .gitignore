@@ -16,6 +16,7 @@ npm-debug.log*
 # Local env
 .env
 .env.*
+!.env.example
 
 # Local roadmap (not committed, tracked separately)
 ROADMAP.md
