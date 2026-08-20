@@ -669,8 +669,8 @@ export const PROFILE = {
         },
         {
           "claim": {
-            "en": "AionUi #3614 — theme-aware logos (open)",
-            "es": "AionUi #3614 — logos theme-aware (abierto)"
+            "en": "AionUi #3614 — theme-aware logos (merged)",
+            "es": "AionUi #3614 — logos theme-aware (mergeado)"
           },
           "source": "https://github.com/iOfficeAI/AionUi/pull/3614"
         }
@@ -914,13 +914,13 @@ export const PROFILE = {
         "195 jurisdicciones soberanas mapeadas (Kontablo)",
         "10 publicaciones/preprints 2006–2026, 6 con DOI resoluble",
         "5 publicaciones co-autoradas como operador de difractometría de rayos X",
-        "4 upstream PRs (2 merged): AionCore #618 (Pi como ACP built-in), pi-acp #76 (session/delete), AionCore #626 (Ollama → ACP local), AionUi #3614 (logos theme-aware)"
+        "4 upstream PRs (3 merged): AionCore #618 (Pi como ACP built-in), pi-acp #76 (session/delete), AionCore #626 (Ollama → ACP local), AionUi #3614 (logos theme-aware)"
       ]
     }
   },
   "source": {
     "repo": "https://github.com/ChristianLuciani/profile-data.git",
     "commit": "722d2b3ec201b13559098a3dd2f830f83a647c56",
-    "syncedAt": "2026-08-16T03:28:31.976Z"
+    "syncedAt": "2026-08-20T14:30:00.000Z"
   }
 } as const;

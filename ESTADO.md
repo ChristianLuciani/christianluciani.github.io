@@ -254,3 +254,4 @@ Al añadir texto ES en `index.html` → <strong>actualizar también su traducci�
 - 2026-08-10: Se añade Sala «La Constelación» (mapa de conexiones interactivo en canvas, fondos según publicado/no-publicado); se mueve a penúltima posición como recapitulación
 - 2026-08-10: Galería/Evidencia oculta (`display:none`) hasta llenar el contenido
 - 2026-08-10: El nombre «Christian Luciani» persiste como firma debajo del fractal minimizado (esquina SI) tras la intro
+- 2026-08-20: Añadida contribución OSS AionUi #3614 (iOfficeAI/AionUi) — fix para logos monocromáticos en dark theme — en sección Open Source de Sala 02 Competencias; actualizado profile.generated.ts (3 merged PRs)

@@ -645,6 +645,7 @@ export const ROOM_BODY: Record<string, string> = {
         <ul class="skill-items">
           <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener noreferrer">AionCore · Agente Pi como built-in ACP ↗</a></li>
           <li><a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener noreferrer">pi-acp · session/delete ACP lifecycle ↗</a></li>
+          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener noreferrer">AionUi · Theme-aware monochrome logos (merged) ↗</a></li>
           <li>Publicación Kontablo · BSL 1.1 → Apache 2.0</li>
         </ul>
       </div>
