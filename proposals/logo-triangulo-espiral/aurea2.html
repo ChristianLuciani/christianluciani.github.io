@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — v11 áurea (φ)</title>
+<title>Logo · Triángulo Espiral — v12 áurea (φ)</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">v11 áurea · C intacta · internos = C/φ · giro interno 4°×φ</div>
+      <div class="meta">v12 áurea · 6 generaciones · internos = C/φ · giro interno 3°×φ</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -128,11 +128,11 @@ const CONFIG = {
     R: 250,                       // radio del vértice final (punta de la C)
     mode: "aurea",                // internos áureos respecto a la C (la C no se toca)
     phi: 1.618,                   // proporción dorada
-    twistGolden: 6.47,            // 4°×φ — giro entre triángulos internos (áureo respecto al externo)
+    twistGolden: 4.854,           // 3°×φ — giro entre triángulos internos (áureo respecto al externo)
     scalePerLoop: 1.5,            // ancla de la C: igual que la base (v10)
     rotPerLoop: 3,                // + = horario; 3° de giro entre cada triángulo subsecuente
     globalRot: 1,                 // todo el triángulo espiral girado 1° horario
-    generations: 5,               // vueltas del espiral; la última queda parcial = la "C"
+    generations: 6,               // +1 generación: 5 internas + la C (ancla intacta)
     extendLast: 0.01,             // ancla de la C: igual que la base (v10)
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
     baseAngles: { A: -90, B: 40, C: 140 }, // ancla de la C: igual que la base (v10)
