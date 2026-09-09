@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v5</title>
+<title>Logo · Triángulo Espiral — propuesta v6</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -25,7 +25,7 @@
   · geometry   → radios, crecimiento por vuelta, rotación, centro
   · ramp       → opacidad/grosor inicial y final de las líneas del espiral
   · cWidth     → grosor de la "C" · colors → paleta (site: teal #00c9c0, oro #c9a84c)
-  · constellation → color de estrellas, duración del desvanecimiento,
+  · constellation → paleta (espectro) de estrellas, desvanecimiento,
     estrellas de fondo
   · timing     → ritmo de la animación
 
@@ -37,7 +37,7 @@
 <style>
   :root{
     --bg-0:#050810; --bg-1:#0b1120;
-    --teal:#00c9c0; --gold:#c9a84c; --star:#ff8a70; --star-ambient:#eec7bd;
+    --teal:#00c9c0; --gold:#c9a84c;
     --ink:#d6dde8; --ink-dim:#6b7a8d;
   }
   *{box-sizing:border-box}
@@ -65,11 +65,11 @@
   /* constelación: estrellas que preexisten y se desvanecen al ser tocadas */
   .constellation{opacity:0; animation:fadeIn .8s ease forwards}
   .star{transform-box:fill-box; transform-origin:center}
-  .star .core{fill:var(--star); animation:twinkle 2.7s ease-in-out infinite}
-  .star .glow{fill:var(--star); opacity:.16; filter:url(#soft2);
-              animation:twinkle 3.4s ease-in-out infinite}
-  .ambient{fill:var(--star-ambient,#dfe6f2); animation:twinkle 4.2s ease-in-out infinite}
-  @keyframes twinkle{0%,100%{opacity:.4} 50%{opacity:1}}
+  .star .core{animation:twinkle var(--dc,2.7s) ease-in-out infinite}
+  .star .glow{opacity:.16; filter:url(#soft2);
+              animation:twinkle var(--dg,3.4s) ease-in-out infinite}
+  .ambient{animation:twinkle var(--da,4.2s) ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:var(--lo,.4)} 50%{opacity:var(--hi,1)}}
   @keyframes fadeIn{to{opacity:1}}
 
   .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v5 · constelación rojiza · 5 generaciones</div>
+      <div class="meta">propuesta v6 · constelación · espectro de estrellas</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -132,7 +132,7 @@ const CONFIG = {
     generations: 5,               // vueltas del espiral; la última queda parcial = la "C"
     extendLast: 0.01,             // último tramo 1% más largo (insinúa seguir evolucionando)
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
-    baseAngles: { A: -90, B: 30, C: 150 }, // A=arriba, B=abajo-der, C=abajo-izq
+    baseAngles: { A: -90, B: 40, C: 140 }, // isósceles más agudo: ápice ~50° (antes equilátero)
   },
 
   ramp: { from: 0.10, to: 0.72 },         // opacidad creciente del espiral
@@ -146,8 +146,8 @@ const CONFIG = {
   },
 
   constellation: {
-    color: "#ff8a70",        // estrella (variante rojiza)
-    ambientColor: "#eec7bd", // estrellas de fondo, rojizas tenues
+    // espectro estelar: mezcla rojiza dominante + blancos cálidos + un azulado
+    palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
     ambient: 14,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
   },
@@ -179,6 +179,21 @@ const el = (tag, attrs = {}) => {
 };
 // pseudo-azar con semilla fija: misma constelación en cada replay
 const seeded = s => () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+// varianza de constelación real: tamaño, color e intensidad por estrella
+function starSpec(j, total, C) {
+  const rnd = seeded(90210 + j * 131);
+  const color = C.palette[Math.floor(rnd() * C.palette.length)];
+  const bright = j === 0 || j === total - 1 || rnd() > .72; // centro y punta brillan más
+  const coreR = +(bright ? 2.7 + rnd() * 1.2 : 1.2 + rnd() * 1.5).toFixed(2);
+  const lo = +(bright ? .55 + rnd() * .2 : .15 + rnd() * .3).toFixed(2);
+  const hi = +(bright ? 1 : .55 + rnd() * .4).toFixed(2);
+  return {
+    color, coreR, glowR: +(coreR * (bright ? 3.6 : 2.6)).toFixed(1),
+    lo, hi, loG: +(lo * .5).toFixed(2), hiG: +(.2 + hi * .18).toFixed(2),
+    dC: (1.9 + rnd() * 2).toFixed(2), dG: (2.6 + rnd() * 2).toFixed(2),
+    d1: (-(rnd() * 2.2)).toFixed(2), d2: (-(rnd() * 3.1)).toFixed(2),
+  };
+}
 
 /* ─────────────────────────── geometría del espiral ─────────────────────
    10 puntos: centro → B0 C0 A0 → B1 C1 A1 → B2 C2 A2  (t = vuelta/fracción)
@@ -266,27 +281,34 @@ function render() {
   // preexisten titilando y se desvanecen cuando la línea las toca
   if (!reduced) {
     const C = CONFIG.constellation;
-    document.documentElement.style.setProperty("--star", C.color);
-    document.documentElement.style.setProperty("--star-ambient", C.ambientColor);
     if (C.ambient > 0) { // atmósfera de fondo, nunca se disuelve
       const rnd = seeded(20260901);
       for (let i = 0; i < C.ambient; i++) {
-        svg.appendChild(el("circle", {
+        const c = el("circle", {
           class: "ambient", cx: 40 + rnd() * 720, cy: 40 + rnd() * 720,
-          r: .9 + rnd() * 1.3,
+          r: .8 + rnd() * 1.4,
           style: `animation-delay:${(-rnd() * 4.2).toFixed(2)}s`,
-        }));
+        });
+        c.style.fill = C.palette[Math.floor(rnd() * C.palette.length)];
+        c.style.setProperty("--lo", (.08 + rnd() * .12).toFixed(2));
+        c.style.setProperty("--hi", (.28 + rnd() * .3).toFixed(2));
+        c.style.setProperty("--da", (3 + rnd() * 2).toFixed(2) + "s");
+        svg.appendChild(c);
       }
     }
     const constellation = el("g", { class: "constellation" });
     const pts = [segs[0].a, ...segs.map(s => s.b)];
     pts.forEach((p, j) => {
+      const sp = starSpec(j, pts.length, C); // tamaño/color/intensidad variados
       const g = el("g", { class: "star" });
-      g.appendChild(el("circle", { class: "glow", cx: p.x, cy: p.y, r: 7 }));
-      g.appendChild(el("circle", { class: "core", cx: p.x, cy: p.y, r: 2.6 }));
-      g.lastChild.style.animationDelay = (-((j * .43) % 2.7)).toFixed(2) + "s";
-      g.firstChild.style.animationDelay = (-((j * .31) % 3.4)).toFixed(2) + "s";
-      if (j === pts.length - 1) g.lastChild.setAttribute("r", 3.1); // punta de la C
+      const glow = el("circle", { class: "glow", cx: p.x, cy: p.y, r: sp.glowR });
+      const core = el("circle", { class: "core", cx: p.x, cy: p.y, r: sp.coreR });
+      glow.style.fill = core.style.fill = sp.color;
+      core.style.setProperty("--lo", sp.lo); core.style.setProperty("--hi", sp.hi);
+      glow.style.setProperty("--lo", sp.loG); glow.style.setProperty("--hi", sp.hiG);
+      core.style.setProperty("--dc", sp.dC + "s"); core.style.animationDelay = sp.d1 + "s";
+      glow.style.setProperty("--dg", sp.dG + "s"); glow.style.animationDelay = sp.d2 + "s";
+      g.appendChild(glow); g.appendChild(core);
       constellation.appendChild(g);
     });
     svg.appendChild(constellation);
