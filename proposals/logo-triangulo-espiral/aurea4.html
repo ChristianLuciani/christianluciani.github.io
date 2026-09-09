@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — v13 áurea (φ)</title>
+<title>Logo · Triángulo Espiral — v14 áurea (φ)</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">v13 áurea · uniones limpias · cielo poblado</div>
+      <div class="meta">v14 áurea · 7 generaciones · arranque explosivo · C fija</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -132,7 +132,7 @@ const CONFIG = {
     scalePerLoop: 1.5,            // ancla de la C: igual que la base (v10)
     rotPerLoop: 3,                // + = horario; 3° de giro entre cada triángulo subsecuente
     globalRot: 1,                 // todo el triángulo espiral girado 1° horario
-    generations: 6,               // +1 generación: 5 internas + la C (ancla intacta)
+    generations: 7,               // 6 internas + la C (el ancla es invariante: C fija)
     extendLast: 0.01,             // ancla de la C: igual que la base (v10)
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
     baseAngles: { A: -90, B: 40, C: 140 }, // ancla de la C: igual que la base (v10)
@@ -158,8 +158,10 @@ const CONFIG = {
 
   timing: {
     start: 700,   // la constelación se ve primero; el espiral arranca después
-    stagger: 235, // ms entre líneas
-    seg: 460,     // duración del trazado de una línea del espiral
+    stagger: 235, // ms entre líneas al final (el ritmo de la C se mantiene)
+    staggerFast: 110, // ms entre líneas al arranque (explosivo)
+    seg: 460,     // duración del trazado de una línea al final
+    segFast: 260, // duración al arranque (explosivo)
     segC: 640,    // duración del trazado de las líneas de la "C"
     hotFade: 500, // ms en que una línea baja de intensidad al chocar con su nodo
     settlePad: 420,
@@ -292,8 +294,19 @@ function render() {
   const { segs, outer } = buildGeometry(CONFIG.geometry);
   const T = CONFIG.timing;
   const maxIdx = segs.length - 1;
-  const segDelay = i => T.start + i * T.stagger;
-  const segDur = i => (i >= segs.length - 2 ? T.segC : T.seg);
+  // arranque explosivo: los primeros tramos van rápido y el ritmo decae
+  // hasta el ritmo final — el de la C, que se mantiene
+  const n = segs.length;
+  const ramp = i => 1 - Math.pow(1 - i / (n - 1), CONFIG.timing.accelRamp || 3);
+  const delays = [], durs = [];
+  let acc = T.start;
+  for (let i = 0; i < n; i++) {
+    delays.push(acc);
+    durs.push(i >= n - 2 ? T.segC : lerp(T.segFast, T.seg, ramp(i)));
+    acc += lerp(T.staggerFast, T.stagger, ramp(i));
+  }
+  const segDelay = i => delays[i];
+  const segDur = i => durs[i];
 
   // halo tenue detrás de la C + arista fantasma del lado abierto
   const ghost = el("polygon", {
@@ -322,11 +335,9 @@ function render() {
   // sobre la última verde, para tragar su remate redondo: la unión se lee
   // como un engrosamiento suave de la línea, no como dos caps chocando
   const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
-  const prevA = segs[cIdx - 1].a;
-  const ux = cA.x - prevA.x, uy = cA.y - prevA.y, ul = Math.hypot(ux, uy) || 1;
-  const swallow = 6;
-  const cStart = { x: cA.x - ux / ul * swallow, y: cA.y - uy / ul * swallow };
-  const cD = `M ${cStart.x} ${cStart.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
+  // arranca exacto en B4: el cap dorado (r≈5) cubre de sobra el remate
+  // verde (r≈2) — sin solape no hay desborde por los lados
+  const cD = `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
   const cPath = el("path", {
     class: "seg", d: cD,
     stroke: CONFIG.colors.c, "stroke-width": CONFIG.cWidth, opacity: 1,
