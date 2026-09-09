@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v4</title>
+<title>Logo · Triángulo Espiral — propuesta v5</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -37,7 +37,7 @@
 <style>
   :root{
     --bg-0:#050810; --bg-1:#0b1120;
-    --teal:#00c9c0; --gold:#c9a84c; --star:#f2ead8;
+    --teal:#00c9c0; --gold:#c9a84c; --star:#ff8a70; --star-ambient:#eec7bd;
     --ink:#d6dde8; --ink-dim:#6b7a8d;
   }
   *{box-sizing:border-box}
@@ -66,9 +66,9 @@
   .constellation{opacity:0; animation:fadeIn .8s ease forwards}
   .star{transform-box:fill-box; transform-origin:center}
   .star .core{fill:var(--star); animation:twinkle 2.7s ease-in-out infinite}
-  .star .glow{fill:var(--gold); opacity:.16; filter:url(#soft2);
+  .star .glow{fill:var(--star); opacity:.16; filter:url(#soft2);
               animation:twinkle 3.4s ease-in-out infinite}
-  .ambient{fill:#dfe6f2; animation:twinkle 4.2s ease-in-out infinite}
+  .ambient{fill:var(--star-ambient,#dfe6f2); animation:twinkle 4.2s ease-in-out infinite}
   @keyframes twinkle{0%,100%{opacity:.4} 50%{opacity:1}}
   @keyframes fadeIn{to{opacity:1}}
 
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v4 · constelación · las estrellas se disuelven en las líneas</div>
+      <div class="meta">propuesta v5 · constelación rojiza · 5 generaciones</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -127,8 +127,10 @@ const CONFIG = {
     center: { x: 400, y: 418 },   // centro del espiral
     R: 250,                       // radio del vértice final (punta de la C)
     scalePerLoop: 1.5,            // crecimiento de radio por vuelta (>1 = espiral)
-    rotPerLoop: 2.5,              // + = horario; total ≈ 9° (≤ 10° pedido por el operador)
-    generations: 4,               // vueltas del espiral; la última queda parcial = la "C"
+    rotPerLoop: 2.5,              // + = horario por vuelta (espiral)
+    globalRot: -3,                // grados contrarreloj aplicados a toda la estructura
+    generations: 5,               // vueltas del espiral; la última queda parcial = la "C"
+    extendLast: 0.01,             // último tramo 1% más largo (insinúa seguir evolucionando)
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
     baseAngles: { A: -90, B: 30, C: 150 }, // A=arriba, B=abajo-der, C=abajo-izq
   },
@@ -144,7 +146,8 @@ const CONFIG = {
   },
 
   constellation: {
-    color: "#f2ead8",  // estrella (blanco cálido dorado)
+    color: "#ff8a70",        // estrella (variante rojiza)
+    ambientColor: "#eec7bd", // estrellas de fondo, rojizas tenues
     dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
     ambient: 14,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
   },
@@ -191,9 +194,15 @@ function buildGeometry(g) {
   for (let k = 0; k < steps; k++) {
     const t = k / 3;
     const v = g.vertexOrder[k % 3];
-    const ang = (g.baseAngles[v] + g.rotPerLoop * t) * Math.PI / 180;
+    const ang = (g.baseAngles[v] + g.rotPerLoop * t + (g.globalRot || 0)) * Math.PI / 180;
     const r = g.R * Math.pow(g.scalePerLoop, t - T_MAX);
     verts.push({ v, x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) });
+  }
+  if (g.extendLast) { // estira el último tramo más allá de la punta de la C
+    const a = verts[verts.length - 1], b = verts[verts.length - 2];
+    const dx = a.x - b.x, dy = a.y - b.y;
+    a.x += dx * g.extendLast;
+    a.y += dy * g.extendLast;
   }
   const all = [{ x: cx, y: cy }, ...verts];
   const segs = [];
@@ -257,6 +266,8 @@ function render() {
   // preexisten titilando y se desvanecen cuando la línea las toca
   if (!reduced) {
     const C = CONFIG.constellation;
+    document.documentElement.style.setProperty("--star", C.color);
+    document.documentElement.style.setProperty("--star-ambient", C.ambientColor);
     if (C.ambient > 0) { // atmósfera de fondo, nunca se disuelve
       const rnd = seeded(20260901);
       for (let i = 0; i < C.ambient; i++) {
