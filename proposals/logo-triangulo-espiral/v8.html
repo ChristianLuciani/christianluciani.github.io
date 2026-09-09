@@ -265,7 +265,7 @@ function render() {
   svg.appendChild(ghost);
 
   // líneas del espiral (cada una: opacidad/grosor según su posición)
-  const cGlowGroup = el("g", {});
+  const cGlowGroup = el("g", { class: "c-glow" }); // el resplandor de la C
   const lines = segs.map((s, i) => {
     const st = segStyle(i, segs.length);
     const line = el("line", {
@@ -369,6 +369,12 @@ function render() {
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
       { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
     ));
+    // blindaje: al terminar el trazado, la línea queda como trazo simple
+    // (sin dash) — así no puede desaparecer en ningún motor
+    timers.push(setTimeout(() => {
+      line.removeAttribute("stroke-dasharray");
+      line.removeAttribute("stroke-dashoffset");
+    }, segDelay(i) + segDur(i) + 80));
   });
   hot.forEach((h, i) => { // el brillo de formación sigue el mismo trazado…
     if (!h) return;
@@ -384,6 +390,7 @@ function render() {
       { duration: T.hotFade, delay: segDelay(i) + segDur(i),
         easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both" }
     ));
+    timers.push(setTimeout(() => h.remove(), segDelay(i) + segDur(i) + T.hotFade + 80));
   });
 
   if (reduced) { // estado final directo, sin animación
