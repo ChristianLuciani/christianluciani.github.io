@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v1</title>
+<title>Logo · Triángulo Espiral — propuesta v2</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -109,7 +109,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v1 · triángulo espiral del conocimiento</div>
+      <div class="meta">propuesta v2 · giro horario · 4 generaciones</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -123,7 +123,8 @@ const CONFIG = {
     center: { x: 400, y: 418 },   // centro del espiral
     R: 250,                       // radio del vértice final (punta de la C)
     scalePerLoop: 1.5,            // crecimiento de radio por vuelta (>1 = espiral)
-    rotPerLoop: -6,               // rotación extra por vuelta (0 = triángulos rectos)
+    rotPerLoop: 8,                // + = giro horario (pedido del operador); 0 = triángulos rectos
+    generations: 4,               // vueltas del espiral; la última queda parcial = la "C"
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
     baseAngles: { A: -90, B: 30, C: 150 }, // A=arriba, B=abajo-der, C=abajo-izq
   },
@@ -143,7 +144,7 @@ const CONFIG = {
 
   timing: {
     start: 180,   // ms antes del primer trazo
-    stagger: 260, // ms entre líneas
+    stagger: 235, // ms entre líneas
     seg: 460,     // duración del trazado de una línea del espiral
     segC: 640,    // duración del trazado de las líneas de la "C"
     pop: 520,     // duración del pop de cada nodo
@@ -175,9 +176,10 @@ const el = (tag, attrs = {}) => {
 ------------------------------------------------------------------------ */
 function buildGeometry(g) {
   const { x: cx, y: cy } = g.center;
-  const T_MAX = 8 / 3; // últimas 2 líneas de la 3ª vuelta = la "C"
+  const steps = g.generations * 3;     // vértices; k_max = steps-1 ≡ 2 mod 3 ⇒ termina en A
+  const T_MAX = (steps - 1) / 3;
   const verts = [];
-  for (let k = 0; k <= 8; k++) {
+  for (let k = 0; k < steps; k++) {
     const t = k / 3;
     const v = g.vertexOrder[k % 3];
     const ang = (g.baseAngles[v] + g.rotPerLoop * t) * Math.PI / 180;
@@ -187,14 +189,14 @@ function buildGeometry(g) {
   const all = [{ x: cx, y: cy }, ...verts];
   const segs = [];
   for (let i = 0; i < all.length - 1; i++) segs.push({ a: all[i], b: all[i + 1], idx: i });
-  return { segs, verts, outer: verts.slice(6) }; // outer = vértices del triángulo final
+  return { segs, outer: verts.slice(-3) }; // outer = vértices del triángulo final
 }
 
-function segStyle(idx) {
-  const c = CONFIG, RAMP = 7; // índices 0..6 en rampa; 7 y 8 = "C"
-  if (idx >= RAMP)
+function segStyle(idx, total) {
+  const c = CONFIG;
+  if (idx >= total - 2) // últimas 2 líneas = la "C"
     return { opacity: 1, width: c.cWidth, color: c.colors.c, isC: true };
-  const t = idx / (RAMP - 1);
+  const t = idx / (total - 3);
   return {
     opacity: lerp(c.ramp.from, c.ramp.to, t),
     width: lerp(c.rampWidth.from, c.rampWidth.to, t),
@@ -214,7 +216,7 @@ function render() {
   const T = CONFIG.timing;
   const maxIdx = segs.length - 1;
   const segDelay = i => T.start + i * T.stagger;
-  const segDur = i => (i >= 7 ? T.segC : T.seg);
+  const segDur = i => (i >= segs.length - 2 ? T.segC : T.seg);
 
   // halo tenue detrás de la C + arista fantasma del lado abierto
   const ghost = el("polygon", {
@@ -226,7 +228,7 @@ function render() {
   // líneas del espiral (cada una: opacidad/grosor según su posición)
   const cGlowGroup = el("g", {});
   const lines = segs.map((s, i) => {
-    const st = segStyle(i);
+    const st = segStyle(i, segs.length);
     const line = el("line", {
       class: "seg", x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
       stroke: st.color, "stroke-width": st.width, opacity: st.opacity,
@@ -243,17 +245,21 @@ function render() {
   svg.appendChild(cGlowGroup);
 
   // nodos = disciplinas (uno por vértice del triángulo final)
+  // el translate vive en un wrapper fijo: el pop (scale) se anima en el g interno,
+  // así la animación nunca pisa la posición del nodo
   outer.forEach((p, n) => {
-    const g = el("g", { class: "node", transform: `translate(${p.x} ${p.y})` });
+    const wrap = el("g", { transform: `translate(${p.x} ${p.y})` });
+    const g = el("g", { class: "node" });
     g.appendChild(el("circle", { class: "halo", r: 22 }));
     g.appendChild(el("circle", { class: "ring", r: 12.5 }));
     g.appendChild(el("circle", { class: "core", r: 6.5 }));
     if (CONFIG.nodeLabels.length === 3) {
-      const t = el("text", { x: 0, y: 44, dy: n === 0 ? 0 : 0 });
+      const t = el("text", { y: 44 });
       t.textContent = CONFIG.nodeLabels[n];
       g.appendChild(t);
     }
-    svg.appendChild(g);
+    wrap.appendChild(g);
+    svg.appendChild(wrap);
     return g;
   });
 
@@ -271,8 +277,10 @@ function render() {
   });
 
   const nodes = [...svg.querySelectorAll(".node")];
+  const vStart = segs.length - 3; // segmentos que terminan en los vértices finales B*, C*, A*
   nodes.forEach((node, n) => {
-    const delay = segDelay(6 + n) + segDur(6 + n) - 20; // cuando el espiral pasa por su vértice
+    const i = vStart + n;
+    const delay = segDelay(i) + segDur(i) - 20; // cuando el espiral pasa por su vértice
     if (reduced) return;
     node.style.opacity = 0;
     anims.push(node.animate(
