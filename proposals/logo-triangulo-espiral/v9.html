@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v8</title>
+<title>Logo · Triángulo Espiral — propuesta v9</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v8 · nodo central permanente · líneas que se enfrían al chocar</div>
+      <div class="meta">propuesta v9 · giro 1° + 3° por triángulo · disolución suave</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -127,8 +127,8 @@ const CONFIG = {
     center: { x: 400, y: 418 },   // centro del espiral
     R: 250,                       // radio del vértice final (punta de la C)
     scalePerLoop: 1.5,            // crecimiento de radio por vuelta (>1 = espiral)
-    rotPerLoop: 2.5,              // + = horario por vuelta (espiral)
-    globalRot: -3,                // grados contrarreloj aplicados a toda la estructura
+    rotPerLoop: 3,                // + = horario; 3° de giro entre cada triángulo subsecuente
+    globalRot: 1,                 // todo el triángulo espiral girado 1° horario
     generations: 5,               // vueltas del espiral; la última queda parcial = la "C"
     extendLast: 0.01,             // último tramo 1% más largo (insinúa seguir evolucionando)
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
@@ -348,9 +348,9 @@ function render() {
     pts.forEach((_, j) => {
       if (j === 0) return; // supernova central: no desaparece
       constellation.children[j].animate([
-        { opacity: .95, transform: "scale(1)" },
-        { opacity: 1, transform: "scale(1.65)", offset: .3 },
-        { opacity: 0, transform: "scale(2.3)" },
+        { opacity: .85, transform: "scale(1)" },
+        { opacity: 1, transform: "scale(1.4)", offset: .3 },
+        { opacity: 0, transform: "scale(1.9)" },
       ], {
         duration: C.dissolve, delay: touch(j),
         easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both",
