@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v3</title>
+<title>Logo · Triángulo Espiral — propuesta v4</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -13,8 +13,10 @@
   ──────────────────
   · Espiral de conocimiento: líneas que nacen del centro y crecen en radio
     y opacidad — cada disciplina se acumula sobre la anterior (evolución).
-  · Triángulo: 3 nodos (disciplinas) preexisten como fantasmas; cuando la
-    línea del espiral los toca, desvanecen a su forma plena.
+  · Constelación: estrellas preexistentes en cada punto del espiral
+    (disciplinas) — titilan; cuando la línea toca un vértice, la estrella
+    choca con él y se desvanece.
+  · Imagen final: solo líneas — la "C" queda limpia, sin nodos.
   · Las últimas 2 líneas quedan al 100% de opacidad y más gruesas:
     juntas forman la "C" de Christian (el espiral no cierra: sigue evolucionando).
 
@@ -23,7 +25,8 @@
   · geometry   → radios, crecimiento por vuelta, rotación, centro
   · ramp       → opacidad/grosor inicial y final de las líneas del espiral
   · cWidth     → grosor de la "C" · colors → paleta (site: teal #00c9c0, oro #c9a84c)
-  · nodeLabels → textos de las 3 disciplinas (vacío = sin etiquetas)
+  · constellation → color de estrellas, duración del desvanecimiento,
+    estrellas de fondo
   · timing     → ritmo de la animación
 
   Preview: abrir este archivo directo en el navegador (o `npx serve`).
@@ -34,7 +37,7 @@
 <style>
   :root{
     --bg-0:#050810; --bg-1:#0b1120;
-    --teal:#00c9c0; --gold:#c9a84c;
+    --teal:#00c9c0; --gold:#c9a84c; --star:#f2ead8;
     --ink:#d6dde8; --ink-dim:#6b7a8d;
   }
   *{box-sizing:border-box}
@@ -59,26 +62,15 @@
   .ghost{fill:none; stroke:var(--gold); stroke-width:1.4;
          stroke-dasharray:3 9; stroke-linecap:round; opacity:0}
 
-  .node{transform-box:fill-box; transform-origin:center}
-  /* preexisten como fantasma (visibles desde el arranque) */
-  .node .halo{fill:var(--teal); opacity:0; transition:opacity .5s ease}
-  .node .ring{fill:none; stroke:var(--gold); stroke-width:1.2; opacity:.3;
-              stroke-dasharray:2 5; transition:.5s ease}
-  .node .core{fill:var(--teal); opacity:.15; transform-box:fill-box; transform-origin:center;
-              transition:opacity .5s ease, transform .4s cubic-bezier(.34,1.56,.64,1)}
-  /* al tocarlas la línea, desvanecen a su forma plena */
-  .node.alive .halo{opacity:.12; animation:flash .8s ease}
-  .node.alive .ring{opacity:1; stroke-width:2; stroke-dasharray:none}
-  .node.alive .core{opacity:1; animation:pop .55s cubic-bezier(.34,1.4,.5,1)}
-  .node:hover .core{transform:scale(1.45)}
-  .node text{
-    fill:var(--ink); opacity:.78; font-size:15px; letter-spacing:.14em;
-    text-transform:uppercase; text-anchor:middle; font-weight:500;
-  }
-  @keyframes flash{0%{opacity:.55} 100%{opacity:.12}}
-  @keyframes pop{0%{transform:scale(.4)} 60%{transform:scale(1.25)} 100%{transform:scale(1)}}
-  .settle-on .node.alive .core{animation:pulse 3.4s ease-in-out infinite}
-  @keyframes pulse{0%,100%{transform:scale(1)} 50%{transform:scale(1.16)}}
+  /* constelación: estrellas que preexisten y se desvanecen al ser tocadas */
+  .constellation{opacity:0; animation:fadeIn .8s ease forwards}
+  .star{transform-box:fill-box; transform-origin:center}
+  .star .core{fill:var(--star); animation:twinkle 2.7s ease-in-out infinite}
+  .star .glow{fill:var(--gold); opacity:.16; filter:url(#soft2);
+              animation:twinkle 3.4s ease-in-out infinite}
+  .ambient{fill:#dfe6f2; animation:twinkle 4.2s ease-in-out infinite}
+  @keyframes twinkle{0%,100%{opacity:.4} 50%{opacity:1}}
+  @keyframes fadeIn{to{opacity:1}}
 
   .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
   .settle-on .c-glow{animation:breathe 3.6s ease-in-out infinite}
@@ -114,11 +106,14 @@
         <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
           <feGaussianBlur stdDeviation="8"/>
         </filter>
+        <filter id="soft2" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="3.5"/>
+        </filter>
       </defs>
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v3 · giro suave horario · nodos preexistentes</div>
+      <div class="meta">propuesta v4 · constelación · las estrellas se disuelven en las líneas</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -148,11 +143,15 @@ const CONFIG = {
     c: "#c9a84c",            // la "C" de Christian en oro (brand)
   },
 
-  nodeLabels: [],          // p.ej. ["IA aplicada","Ingeniería","Estrategia"]; [] = sin etiquetas
+  constellation: {
+    color: "#f2ead8",  // estrella (blanco cálido dorado)
+    dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
+    ambient: 14,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
+  },
   ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
 
   timing: {
-    start: 180,   // ms antes del primer trazo
+    start: 700,   // la constelación se ve primero; el espiral arranca después
     stagger: 235, // ms entre líneas
     seg: 460,     // duración del trazado de una línea del espiral
     segC: 640,    // duración del trazado de las líneas de la "C"
@@ -175,6 +174,8 @@ const el = (tag, attrs = {}) => {
   for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
   return n;
 };
+// pseudo-azar con semilla fija: misma constelación en cada replay
+const seeded = s => () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
 
 /* ─────────────────────────── geometría del espiral ─────────────────────
    10 puntos: centro → B0 C0 A0 → B1 C1 A1 → B2 C2 A2  (t = vuelta/fracción)
@@ -252,24 +253,46 @@ function render() {
   });
   svg.appendChild(cGlowGroup);
 
-  // nodos = disciplinas (uno por vértice del triángulo final)
-  // el translate vive en un wrapper fijo; el g interno va de fantasma a
-  // pleno cuando la línea del espiral toca su vértice
-  outer.forEach((p, n) => {
-    const wrap = el("g", { transform: `translate(${p.x} ${p.y})` });
-    const g = el("g", { class: "node" });
-    g.appendChild(el("circle", { class: "halo", r: 22 }));
-    g.appendChild(el("circle", { class: "ring", r: 12.5 }));
-    g.appendChild(el("circle", { class: "core", r: 6.5 }));
-    if (CONFIG.nodeLabels.length === 3) {
-      const t = el("text", { y: 44 });
-      t.textContent = CONFIG.nodeLabels[n];
-      g.appendChild(t);
+  // constelación: estrellas en cada punto del espiral (centro + vértices);
+  // preexisten titilando y se desvanecen cuando la línea las toca
+  if (!reduced) {
+    const C = CONFIG.constellation;
+    if (C.ambient > 0) { // atmósfera de fondo, nunca se disuelve
+      const rnd = seeded(20260901);
+      for (let i = 0; i < C.ambient; i++) {
+        svg.appendChild(el("circle", {
+          class: "ambient", cx: 40 + rnd() * 720, cy: 40 + rnd() * 720,
+          r: .9 + rnd() * 1.3,
+          style: `animation-delay:${(-rnd() * 4.2).toFixed(2)}s`,
+        }));
+      }
     }
-    wrap.appendChild(g);
-    svg.appendChild(wrap);
-    return g;
-  });
+    const constellation = el("g", { class: "constellation" });
+    const pts = [segs[0].a, ...segs.map(s => s.b)];
+    pts.forEach((p, j) => {
+      const g = el("g", { class: "star" });
+      g.appendChild(el("circle", { class: "glow", cx: p.x, cy: p.y, r: 7 }));
+      g.appendChild(el("circle", { class: "core", cx: p.x, cy: p.y, r: 2.6 }));
+      g.lastChild.style.animationDelay = (-((j * .43) % 2.7)).toFixed(2) + "s";
+      g.firstChild.style.animationDelay = (-((j * .31) % 3.4)).toFixed(2) + "s";
+      if (j === pts.length - 1) g.lastChild.setAttribute("r", 3.1); // punta de la C
+      constellation.appendChild(g);
+    });
+    svg.appendChild(constellation);
+
+    // al construirse el vértice, la línea coincide con la estrella: choca y desvanece
+    const touch = j => (j === 0 ? T.start + 220 : segDelay(j - 1) + segDur(j - 1));
+    pts.forEach((_, j) => {
+      constellation.children[j].animate([
+        { opacity: .95, transform: "scale(1)" },
+        { opacity: 1, transform: "scale(1.65)", offset: .3 },
+        { opacity: 0, transform: "scale(2.3)" },
+      ], {
+        duration: C.dissolve, delay: touch(j),
+        easing: "cubic-bezier(.2,.7,.4,1)", fill: "both",
+      });
+    });
+  }
 
   // animación
   const anims = [];
@@ -282,15 +305,6 @@ function render() {
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
       { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.25,.6,.3,1)", fill: "both" }
     ));
-  });
-
-  const nodes = [...svg.querySelectorAll(".node")];
-  const vStart = segs.length - 3; // segmentos que terminan en los vértices finales B*, C*, A*
-  nodes.forEach((node, n) => {
-    const i = vStart + n;
-    const touch = segDelay(i) + segDur(i) - 120; // cuando la línea alcanza su vértice
-    if (reduced) { node.classList.add("alive"); return; }
-    timers.push(setTimeout(() => node.classList.add("alive"), touch));
   });
 
   if (reduced) { // estado final directo, sin animación
