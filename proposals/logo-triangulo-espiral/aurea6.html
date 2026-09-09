@@ -152,8 +152,8 @@ const CONFIG = {
     // espectro estelar: mezcla rojiza dominante + blancos cálidos + un azulado
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
-    ambient: 48,       // estrellas de fondo dispersas (nunca se disuelven); 0 = sin ellas
-    galaxy: 56,        // estrellas en brazos de galaxia espiral (acompañan la trisespiral)
+    ambient: 36,       // estrellas de fondo dispersas (nunca se disuelven); 0 = sin ellas
+    galaxy: 76,        // estrellas en brazos de galaxia espiral (acompañan la trisespiral)
   },
   ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
 
@@ -389,18 +389,18 @@ function render() {
         for (let arm = 0; arm < arms; arm++) {
           for (let s2 = 0; s2 < sp; s2++) {
             const f = s2 / (sp - 1); // 0 = núcleo, 1 = borde del brazo
-            const th = phase + f * span + arm * (Math.PI * 2 / arms) + (rndG() - .5) * .3;
+            const th = phase + f * span + arm * (Math.PI * 2 / arms) + (rndG() - .5) * .18;
             const rad = 64 * Math.pow(growth, f) * (1 + (rndG() - .5) * .16);
-            const inner = 1.55 - f * .75; // más brillo hacia el núcleo
+            const inner = 1.7 - f * .9; // más brillo hacia el núcleo
             const c = el("circle", {
               class: "ambient",
               cx: geo.center.x + rad * Math.cos(th), cy: geo.center.y + rad * Math.sin(th),
-              r: (0.8 + rndG() * 1.1) * inner,
+              r: (1 + rndG() * 1.3) * inner,
               style: `animation-delay:${(-rndG() * 4.2).toFixed(2)}s`,
             });
             c.style.fill = C.palette[Math.floor(rndG() * C.palette.length)];
-            c.style.setProperty("--lo", (.1 + rndG() * .14).toFixed(2));
-            c.style.setProperty("--hi", (.32 + rndG() * .3).toFixed(2));
+            c.style.setProperty("--lo", (.16 + rndG() * .16).toFixed(2));
+            c.style.setProperty("--hi", (.42 + rndG() * .33).toFixed(2));
             c.style.setProperty("--da", (3 + rndG() * 2).toFixed(2) + "s");
             sky.appendChild(c);
           }
