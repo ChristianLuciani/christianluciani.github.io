@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v2</title>
+<title>Logo · Triángulo Espiral — propuesta v3</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -13,7 +13,8 @@
   ──────────────────
   · Espiral de conocimiento: líneas que nacen del centro y crecen en radio
     y opacidad — cada disciplina se acumula sobre la anterior (evolución).
-  · Triángulo: 3 vértices = 3 disciplinas/áreas de conocimiento (nodos).
+  · Triángulo: 3 nodos (disciplinas) preexisten como fantasmas; cuando la
+    línea del espiral los toca, desvanecen a su forma plena.
   · Las últimas 2 líneas quedan al 100% de opacidad y más gruesas:
     juntas forman la "C" de Christian (el espiral no cierra: sigue evolucionando).
 
@@ -59,16 +60,24 @@
          stroke-dasharray:3 9; stroke-linecap:round; opacity:0}
 
   .node{transform-box:fill-box; transform-origin:center}
-  .node .halo{fill:var(--teal); opacity:.12}
-  .node .ring{fill:none; stroke:var(--gold); stroke-width:2}
-  .node .core{fill:var(--teal); transform-box:fill-box; transform-origin:center;
-              transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+  /* preexisten como fantasma (visibles desde el arranque) */
+  .node .halo{fill:var(--teal); opacity:0; transition:opacity .5s ease}
+  .node .ring{fill:none; stroke:var(--gold); stroke-width:1.2; opacity:.3;
+              stroke-dasharray:2 5; transition:.5s ease}
+  .node .core{fill:var(--teal); opacity:.15; transform-box:fill-box; transform-origin:center;
+              transition:opacity .5s ease, transform .4s cubic-bezier(.34,1.56,.64,1)}
+  /* al tocarlas la línea, desvanecen a su forma plena */
+  .node.alive .halo{opacity:.12; animation:flash .8s ease}
+  .node.alive .ring{opacity:1; stroke-width:2; stroke-dasharray:none}
+  .node.alive .core{opacity:1; animation:pop .55s cubic-bezier(.34,1.4,.5,1)}
   .node:hover .core{transform:scale(1.45)}
   .node text{
     fill:var(--ink); opacity:.78; font-size:15px; letter-spacing:.14em;
     text-transform:uppercase; text-anchor:middle; font-weight:500;
   }
-  .settle-on .core{animation:pulse 3.4s ease-in-out infinite}
+  @keyframes flash{0%{opacity:.55} 100%{opacity:.12}}
+  @keyframes pop{0%{transform:scale(.4)} 60%{transform:scale(1.25)} 100%{transform:scale(1)}}
+  .settle-on .node.alive .core{animation:pulse 3.4s ease-in-out infinite}
   @keyframes pulse{0%,100%{transform:scale(1)} 50%{transform:scale(1.16)}}
 
   .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
@@ -109,7 +118,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v2 · giro horario · 4 generaciones</div>
+      <div class="meta">propuesta v3 · giro suave horario · nodos preexistentes</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -123,7 +132,7 @@ const CONFIG = {
     center: { x: 400, y: 418 },   // centro del espiral
     R: 250,                       // radio del vértice final (punta de la C)
     scalePerLoop: 1.5,            // crecimiento de radio por vuelta (>1 = espiral)
-    rotPerLoop: 8,                // + = giro horario (pedido del operador); 0 = triángulos rectos
+    rotPerLoop: 2.5,              // + = horario; total ≈ 9° (≤ 10° pedido por el operador)
     generations: 4,               // vueltas del espiral; la última queda parcial = la "C"
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
     baseAngles: { A: -90, B: 30, C: 150 }, // A=arriba, B=abajo-der, C=abajo-izq
@@ -147,7 +156,6 @@ const CONFIG = {
     stagger: 235, // ms entre líneas
     seg: 460,     // duración del trazado de una línea del espiral
     segC: 640,    // duración del trazado de las líneas de la "C"
-    pop: 520,     // duración del pop de cada nodo
     settlePad: 420,
   },
 };
@@ -245,8 +253,8 @@ function render() {
   svg.appendChild(cGlowGroup);
 
   // nodos = disciplinas (uno por vértice del triángulo final)
-  // el translate vive en un wrapper fijo: el pop (scale) se anima en el g interno,
-  // así la animación nunca pisa la posición del nodo
+  // el translate vive en un wrapper fijo; el g interno va de fantasma a
+  // pleno cuando la línea del espiral toca su vértice
   outer.forEach((p, n) => {
     const wrap = el("g", { transform: `translate(${p.x} ${p.y})` });
     const g = el("g", { class: "node" });
@@ -280,26 +288,17 @@ function render() {
   const vStart = segs.length - 3; // segmentos que terminan en los vértices finales B*, C*, A*
   nodes.forEach((node, n) => {
     const i = vStart + n;
-    const delay = segDelay(i) + segDur(i) - 20; // cuando el espiral pasa por su vértice
-    if (reduced) return;
-    node.style.opacity = 0;
-    anims.push(node.animate(
-      [
-        { transform: "scale(0)", opacity: 0 },
-        { transform: "scale(1.22)", opacity: 1, offset: .68 },
-        { transform: "scale(1)", opacity: 1 },
-      ],
-      { duration: T.pop, delay, easing: "cubic-bezier(.34,1.4,.5,1)", fill: "both" }
-    ));
+    const touch = segDelay(i) + segDur(i) - 120; // cuando la línea alcanza su vértice
+    if (reduced) { node.classList.add("alive"); return; }
+    timers.push(setTimeout(() => node.classList.add("alive"), touch));
   });
 
   if (reduced) { // estado final directo, sin animación
-    nodes.forEach(node => (node.style.opacity = 1));
     svg.classList.add("settle-on");
     return;
   }
 
-  const end = segDelay(maxIdx) + segDur(maxIdx) + T.pop + T.settlePad;
+  const end = segDelay(maxIdx) + segDur(maxIdx) + T.settlePad;
   timers.push(setTimeout(() => svg.classList.add("settle-on"), end));
 }
 
