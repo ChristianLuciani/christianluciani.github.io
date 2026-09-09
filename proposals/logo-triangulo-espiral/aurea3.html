@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — v12 áurea (φ)</title>
+<title>Logo · Triángulo Espiral — v13 áurea (φ)</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">v12 áurea · 6 generaciones · internos = C/φ · giro interno 3°×φ</div>
+      <div class="meta">v13 áurea · uniones limpias · cielo poblado</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -152,7 +152,7 @@ const CONFIG = {
     // espectro estelar: mezcla rojiza dominante + blancos cálidos + un azulado
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
-    ambient: 32,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
+    ambient: 48,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
   },
   ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
 
@@ -304,22 +304,35 @@ function render() {
 
   // líneas del espiral (cada una: opacidad/grosor según su posición)
   const cGlowGroup = el("g", { class: "c-glow" }); // el resplandor de la C
+  const cIdx = segs.length - 2; // las dos últimas = la C
   const lines = segs.map((s, i) => {
     const st = segStyle(i, segs.length);
+    if (st.isC) return null; // la C se dibuja como un solo path (uniones limpias)
     const line = el("line", {
       class: "seg", x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
       stroke: st.color, "stroke-width": st.width, opacity: st.opacity,
     });
     svg.appendChild(line);
-    if (st.isC) { // copia difuminada de la C para el resplandor
-      cGlowGroup.appendChild(el("line", {
-        x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
-        "stroke-width": st.width + 6, opacity: .5,
-      }));
-    }
     return line;
   });
   svg.appendChild(cGlowGroup);
+
+  // la C como UN solo path: el vértice en C4 es un join redondeado real
+  // (nada de caps semicirculares montadas) y arranca ~6px antes de B4,
+  // sobre la última verde, para tragar su remate redondo: la unión se lee
+  // como un engrosamiento suave de la línea, no como dos caps chocando
+  const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
+  const prevA = segs[cIdx - 1].a;
+  const ux = cA.x - prevA.x, uy = cA.y - prevA.y, ul = Math.hypot(ux, uy) || 1;
+  const swallow = 6;
+  const cStart = { x: cA.x - ux / ul * swallow, y: cA.y - uy / ul * swallow };
+  const cD = `M ${cStart.x} ${cStart.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
+  const cPath = el("path", {
+    class: "seg", d: cD,
+    stroke: CONFIG.colors.c, "stroke-width": CONFIG.cWidth, opacity: 1,
+  });
+  svg.appendChild(cPath);
+  cGlowGroup.appendChild(el("path", { d: cD, "stroke-width": CONFIG.cWidth + 6, opacity: .5 }));
 
   // "calor" de formación: cada línea nace más intensa y baja al chocar con su
   // nodo; las 2 últimas no (quedan en plena intensidad: son la C)
@@ -343,14 +356,15 @@ function render() {
       const rnd = seeded(20260901);
       const sky = el("g", { class: "sky" });
       for (let i = 0; i < C.ambient; i++) {
+        const big = rnd() > .85; // algunas estrellas de fondo más presentes
         const c = el("circle", {
           class: "ambient", cx: 40 + rnd() * 720, cy: 40 + rnd() * 720,
-          r: .8 + rnd() * 1.4,
+          r: big ? 1.9 + rnd() * 1.1 : .8 + rnd() * 1.4,
           style: `animation-delay:${(-rnd() * 4.2).toFixed(2)}s`,
         });
         c.style.fill = C.palette[Math.floor(rnd() * C.palette.length)];
-        c.style.setProperty("--lo", (.08 + rnd() * .12).toFixed(2));
-        c.style.setProperty("--hi", (.28 + rnd() * .3).toFixed(2));
+        c.style.setProperty("--lo", big ? (.22 + rnd() * .12).toFixed(2) : (.08 + rnd() * .12).toFixed(2));
+        c.style.setProperty("--hi", big ? (.5 + rnd() * .25).toFixed(2) : (.28 + rnd() * .3).toFixed(2));
         c.style.setProperty("--da", (3 + rnd() * 2).toFixed(2) + "s");
         sky.appendChild(c);
       }
@@ -408,6 +422,7 @@ function render() {
   // animación
   const anims = [];
   lines.forEach((line, i) => {
+    if (!line) return;
     const len = line.getTotalLength();
     if (reduced) return;
     line.setAttribute("stroke-dasharray", len);
@@ -440,7 +455,30 @@ function render() {
     timers.push(setTimeout(() => h.remove(), segDelay(i) + segDur(i) + T.hotFade + 80));
   });
 
+  // trazado de la C: un solo trazo continuo, y el glow aparece con ella
+  // (antes el glow preexistía visible desde el arranque)
+  if (!reduced) {
+    const cLen = cPath.getTotalLength();
+    const cWin = segDur(cIdx) + segDur(cIdx + 1);
+    cPath.setAttribute("stroke-dasharray", cLen);
+    cPath.setAttribute("stroke-dashoffset", cLen);
+    anims.push(cPath.animate(
+      [{ strokeDashoffset: cLen }, { strokeDashoffset: 0 }],
+      { duration: cWin, delay: segDelay(cIdx), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+    ));
+    timers.push(setTimeout(() => {
+      cPath.removeAttribute("stroke-dasharray");
+      cPath.removeAttribute("stroke-dashoffset");
+    }, segDelay(cIdx) + cWin + 80));
+    cGlowGroup.style.opacity = 0;
+    anims.push(cGlowGroup.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: cWin, delay: segDelay(cIdx), easing: "ease-out", fill: "both" }
+    ));
+  }
+
   if (reduced) { // estado final directo, sin animación
+    cGlowGroup.style.opacity = 1;
     svg.classList.add("settle-on");
     return;
   }
