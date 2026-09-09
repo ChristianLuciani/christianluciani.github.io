@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">v11 áurea · generaciones ×φ · ápice 36° · extensión 1/φ</div>
+      <div class="meta">v11 áurea · C intacta · internos = C/φ · giro interno 4°×φ</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -126,13 +126,16 @@ const CONFIG = {
   geometry: {
     center: { x: 400, y: 418 },   // centro del espiral
     R: 250,                       // radio del vértice final (punta de la C)
-    scalePerLoop: 1.618,          // φ — cada generación crece φ veces (espiral dorada)
+    mode: "aurea",                // internos áureos respecto a la C (la C no se toca)
+    phi: 1.618,                   // proporción dorada
+    twistGolden: 6.47,            // 4°×φ — giro entre triángulos internos (áureo respecto al externo)
+    scalePerLoop: 1.5,            // ancla de la C: igual que la base (v10)
     rotPerLoop: 3,                // + = horario; 3° de giro entre cada triángulo subsecuente
     globalRot: 1,                 // todo el triángulo espiral girado 1° horario
     generations: 5,               // vueltas del espiral; la última queda parcial = la "C"
-    extendLast: 0.00618,          // último tramo +(φ-1)/100 ≈ 0.62% (proporción áurea)
+    extendLast: 0.01,             // ancla de la C: igual que la base (v10)
     vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
-    baseAngles: { A: -90, B: 49.3, C: 130.7 }, // ápice 36°: triángulo áureo (δ resuelto numéricamente)
+    baseAngles: { A: -90, B: 40, C: 140 }, // ancla de la C: igual que la base (v10)
   },
 
   ramp: { from: 0.10, to: 0.72 },         // opacidad creciente del espiral
@@ -208,6 +211,7 @@ function starSpec(j, total, C) {
    C2→A2 (lado izquierdo): triángulo abierto a la derecha = la "C".
 ------------------------------------------------------------------------ */
 function buildGeometry(g) {
+  if (g.mode === "aurea") return buildAurea(g);
   const { x: cx, y: cy } = g.center;
   const steps = g.generations * 3;     // vértices; k_max = steps-1 ≡ 2 mod 3 ⇒ termina en A
   const T_MAX = (steps - 1) / 3;
@@ -232,6 +236,37 @@ function buildGeometry(g) {
   const segs = [];
   for (let i = 0; i < all.length - 1; i++) segs.push({ a: all[i], b: all[i + 1], idx: i });
   return { segs, outer: verts.slice(-3) }; // outer = vértices del triángulo final
+}
+
+/* ── geometría áurea: anclada en la C (idéntica a la base) ─────────────
+   El triángulo externo ES el de la base (posición y geometría intactas).
+   Los internos se derivan hacia atrás en proporción áurea respecto a él:
+   · distancia: cada triángulo interno = el externo / φ (por generación)
+   · rotación:  giro entre internos = giro externo (4°) × φ
+------------------------------------------------------------------------ */
+function buildAurea(g) {
+  const { x: cx, y: cy } = g.center;
+  const steps = g.generations * 3;
+  const phi = g.phi || (1 + Math.sqrt(5)) / 2;
+  const anchorR = k => g.R * Math.pow(g.scalePerLoop, k / 3 - (steps - 1) / 3);
+  const anchorA = k => g.baseAngles[g.vertexOrder[k % 3]] + g.rotPerLoop * (k / 3) + (g.globalRot || 0);
+  const verts = [];
+  for (let k = 0; k < steps; k++) {
+    const back = (steps / 3 - 1) - Math.floor(k / 3); // vueltas hacia adentro (0 = la C)
+    const anchorK = (steps - 3) + (k % 3);            // vértice correspondiente en la C
+    const r = anchorR(anchorK) / Math.pow(phi, back);
+    const ang = (anchorA(anchorK) - (g.twistGolden || 4 * phi) * back) * Math.PI / 180;
+    verts.push({ v: g.vertexOrder[k % 3], x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) });
+  }
+  if (g.extendLast) {
+    const a = verts[verts.length - 1], b = verts[verts.length - 2];
+    const dx = a.x - b.x, dy = a.y - b.y;
+    a.x += dx * g.extendLast; a.y += dy * g.extendLast;
+  }
+  const all = [{ x: cx, y: cy }, ...verts];
+  const segs = [];
+  for (let i = 0; i < all.length - 1; i++) segs.push({ a: all[i], b: all[i + 1], idx: i });
+  return { segs, outer: verts.slice(-3) };
 }
 
 function segStyle(idx, total) {
