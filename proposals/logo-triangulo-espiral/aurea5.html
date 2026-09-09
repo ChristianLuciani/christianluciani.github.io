@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — v14 áurea (φ)</title>
+<title>Logo · Triángulo Espiral — v15 áurea (φ)</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -80,7 +80,7 @@
     position:absolute; left:0; right:0; bottom:-64px; text-align:center; user-select:none;
   }
   .captions .name{
-    font-size:13px; letter-spacing:.42em; text-transform:uppercase;
+    font-size:16px; letter-spacing:.42em; text-transform:uppercase;
     color:var(--gold); opacity:.9; padding-left:.42em;
   }
   .captions .meta{margin-top:9px; font-size:11px; letter-spacing:.18em;
@@ -113,7 +113,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">v14 áurea · 7 generaciones · arranque explosivo · C fija</div>
+      <div class="meta">v15 áurea · galaxia espiral de fondo · 7 generaciones · C fija</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -152,7 +152,8 @@ const CONFIG = {
     // espectro estelar: mezcla rojiza dominante + blancos cálidos + un azulado
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
-    ambient: 48,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
+    ambient: 48,       // estrellas de fondo dispersas (nunca se disuelven); 0 = sin ellas
+    galaxy: 56,        // estrellas en brazos de galaxia espiral (acompañan la trisespiral)
   },
   ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
 
@@ -380,6 +381,31 @@ function render() {
         sky.appendChild(c);
       }
       svg.appendChild(sky);
+      if (C.galaxy > 0) { // brazos de galaxia: mismo sentido de giro y crecimiento φ que el logo
+        const geo = CONFIG.geometry;
+        const rndG = seeded(5150);
+        const arms = 2, sp = Math.floor(C.galaxy / arms), span = Math.PI * 1.75;
+        const growth = 5, phase = -0.6; // radio ×5 a lo largo del brazo
+        for (let arm = 0; arm < arms; arm++) {
+          for (let s2 = 0; s2 < sp; s2++) {
+            const f = s2 / (sp - 1); // 0 = núcleo, 1 = borde del brazo
+            const th = phase + f * span + arm * (Math.PI * 2 / arms) + (rndG() - .5) * .3;
+            const rad = 64 * Math.pow(growth, f) * (1 + (rndG() - .5) * .16);
+            const inner = 1.55 - f * .75; // más brillo hacia el núcleo
+            const c = el("circle", {
+              class: "ambient",
+              cx: geo.center.x + rad * Math.cos(th), cy: geo.center.y + rad * Math.sin(th),
+              r: (0.8 + rndG() * 1.1) * inner,
+              style: `animation-delay:${(-rndG() * 4.2).toFixed(2)}s`,
+            });
+            c.style.fill = C.palette[Math.floor(rndG() * C.palette.length)];
+            c.style.setProperty("--lo", (.1 + rndG() * .14).toFixed(2));
+            c.style.setProperty("--hi", (.32 + rndG() * .3).toFixed(2));
+            c.style.setProperty("--da", (3 + rndG() * 2).toFixed(2) + "s");
+            sky.appendChild(c);
+          }
+        }
+      }
     }
     const constellation = el("g", { class: "constellation" });
     const pts = [segs[0].a, ...segs.map(s => s.b)];
