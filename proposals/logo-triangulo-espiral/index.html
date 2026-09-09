@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Logo · Triángulo Espiral — propuesta v6</title>
+<title>Logo · Triángulo Espiral — propuesta v7</title>
 <!--
   ═══════════════════════════════════════════════════════════════════════
   PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
@@ -63,14 +63,13 @@
          stroke-dasharray:3 9; stroke-linecap:round; opacity:0}
 
   /* constelación: estrellas que preexisten y se desvanecen al ser tocadas */
-  .constellation{opacity:0; animation:fadeIn .8s ease forwards}
+  .constellation,.sky{opacity:0}
   .star{transform-box:fill-box; transform-origin:center}
   .star .core{animation:twinkle var(--dc,2.7s) ease-in-out infinite}
   .star .glow{opacity:.16; filter:url(#soft2);
               animation:twinkle var(--dg,3.4s) ease-in-out infinite}
   .ambient{animation:twinkle var(--da,4.2s) ease-in-out infinite}
   @keyframes twinkle{0%,100%{opacity:var(--lo,.4)} 50%{opacity:var(--hi,1)}}
-  @keyframes fadeIn{to{opacity:1}}
 
   .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
   .settle-on .c-glow{animation:breathe 3.6s ease-in-out infinite}
@@ -113,7 +112,7 @@
     </svg>
     <div class="captions">
       <div class="name">Christian Luciani</div>
-      <div class="meta">propuesta v6 · constelación · espectro de estrellas</div>
+      <div class="meta">propuesta v7 · supernova central · ignición elástica</div>
     </div>
   </main>
   <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
@@ -149,7 +148,8 @@ const CONFIG = {
     // espectro estelar: mezcla rojiza dominante + blancos cálidos + un azulado
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
-    ambient: 14,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
+    ambient: 32,       // estrellas de fondo (atmósfera, nunca se disuelven); 0 = sin ellas
+    entrance: { flash: 1500 }, // ms de la ignición inicial (intensa → valor final)
   },
   ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
 
@@ -181,9 +181,14 @@ const el = (tag, attrs = {}) => {
 const seeded = s => () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
 // varianza de constelación real: tamaño, color e intensidad por estrella
 function starSpec(j, total, C) {
+  if (j === 0) return { // supernova en el centro: la mayor del cielo
+    color: "#ffb3a0", coreR: 4.4, glowR: 16,
+    lo: .6, hi: 1, loG: .18, hiG: .34,
+    dC: "3.2", dG: "4", d1: "-0.4", d2: "-1.1",
+  };
   const rnd = seeded(90210 + j * 131);
   const color = C.palette[Math.floor(rnd() * C.palette.length)];
-  const bright = j === 0 || j === total - 1 || rnd() > .72; // centro y punta brillan más
+  const bright = j === total - 1 || rnd() > .72; // la punta brilla más
   const coreR = +(bright ? 2.7 + rnd() * 1.2 : 1.2 + rnd() * 1.5).toFixed(2);
   const lo = +(bright ? .55 + rnd() * .2 : .15 + rnd() * .3).toFixed(2);
   const hi = +(bright ? 1 : .55 + rnd() * .4).toFixed(2);
@@ -283,6 +288,7 @@ function render() {
     const C = CONFIG.constellation;
     if (C.ambient > 0) { // atmósfera de fondo, nunca se disuelve
       const rnd = seeded(20260901);
+      const sky = el("g", { class: "sky" });
       for (let i = 0; i < C.ambient; i++) {
         const c = el("circle", {
           class: "ambient", cx: 40 + rnd() * 720, cy: 40 + rnd() * 720,
@@ -293,8 +299,14 @@ function render() {
         c.style.setProperty("--lo", (.08 + rnd() * .12).toFixed(2));
         c.style.setProperty("--hi", (.28 + rnd() * .3).toFixed(2));
         c.style.setProperty("--da", (3 + rnd() * 2).toFixed(2) + "s");
-        svg.appendChild(c);
+        sky.appendChild(c);
       }
+      svg.appendChild(sky);
+      sky.animate([ // entrada de la atmósfera: intensa → valor final
+        { opacity: 0, filter: "brightness(1.8)" },
+        { opacity: 1, filter: "brightness(1.8)", offset: .25 },
+        { opacity: 1, filter: "brightness(1)" },
+      ], { duration: C.entrance.flash, easing: "cubic-bezier(.2,.8,.3,1)", fill: "both" });
     }
     const constellation = el("g", { class: "constellation" });
     const pts = [segs[0].a, ...segs.map(s => s.b)];
@@ -308,10 +320,24 @@ function render() {
       glow.style.setProperty("--lo", sp.loG); glow.style.setProperty("--hi", sp.hiG);
       core.style.setProperty("--dc", sp.dC + "s"); core.style.animationDelay = sp.d1 + "s";
       glow.style.setProperty("--dg", sp.dG + "s"); glow.style.animationDelay = sp.d2 + "s";
+      if (j === 0) { // supernova: segunda capa de resplandor amplio
+        const flare = el("circle", { class: "glow", cx: p.x, cy: p.y, r: sp.glowR * 2 });
+        flare.style.fill = sp.color;
+        flare.style.setProperty("--lo", .06); flare.style.setProperty("--hi", .2);
+        flare.style.setProperty("--dg", "4.6s"); flare.style.animationDelay = "-.8s";
+        g.appendChild(flare);
+      }
       g.appendChild(glow); g.appendChild(core);
       constellation.appendChild(g);
     });
     svg.appendChild(constellation);
+
+    // ignición: intensa al principio, se desvanece elásticamente a su valor final
+    constellation.animate([
+      { opacity: 0, filter: "brightness(2.4)" },
+      { opacity: 1, filter: "brightness(2.4)", offset: .25 },
+      { opacity: 1, filter: "brightness(1)" },
+    ], { duration: C.entrance.flash, easing: "cubic-bezier(.2,.8,.3,1)", fill: "both" });
 
     // al construirse el vértice, la línea coincide con la estrella: choca y desvanece
     const touch = j => (j === 0 ? T.start + 220 : segDelay(j - 1) + segDur(j - 1));
@@ -322,7 +348,7 @@ function render() {
         { opacity: 0, transform: "scale(2.3)" },
       ], {
         duration: C.dissolve, delay: touch(j),
-        easing: "cubic-bezier(.2,.7,.4,1)", fill: "both",
+        easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both",
       });
     });
   }
@@ -336,7 +362,7 @@ function render() {
     line.setAttribute("stroke-dashoffset", len);
     anims.push(line.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.25,.6,.3,1)", fill: "both" }
+      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
     ));
   });
 
