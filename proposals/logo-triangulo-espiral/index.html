@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Logo · Triángulo Espiral — propuesta v1</title>
+<!--
+  ═══════════════════════════════════════════════════════════════════════
+  PROPUESTA v1 — Logo animado "entrada al museo" (standalone, self-contained)
+  NO toca la página del sitio: este archivo es independiente para iterar.
+
+  Concepto simbólico
+  ──────────────────
+  · Espiral de conocimiento: líneas que nacen del centro y crecen en radio
+    y opacidad — cada disciplina se acumula sobre la anterior (evolución).
+  · Triángulo: 3 vértices = 3 disciplinas/áreas de conocimiento (nodos).
+  · Las últimas 2 líneas quedan al 100% de opacidad y más gruesas:
+    juntas forman la "C" de Christian (el espiral no cierra: sigue evolucionando).
+
+  Cómo iterar (todo paramétrico — tocar solo el objeto CONFIG del script)
+  ───────────────────────────────────────────────────────────────────────
+  · geometry   → radios, crecimiento por vuelta, rotación, centro
+  · ramp       → opacidad/grosor inicial y final de las líneas del espiral
+  · cWidth     → grosor de la "C" · colors → paleta (site: teal #00c9c0, oro #c9a84c)
+  · nodeLabels → textos de las 3 disciplinas (vacío = sin etiquetas)
+  · timing     → ritmo de la animación
+
+  Preview: abrir este archivo directo en el navegador (o `npx serve`).
+  Botón "↻ repetir" para re-ver la animación durante la iteración.
+  Accesibilidad: respeta prefers-reduced-motion (renderiza estado final).
+  ═══════════════════════════════════════════════════════════════════════
+-->
+<style>
+  :root{
+    --bg-0:#050810; --bg-1:#0b1120;
+    --teal:#00c9c0; --gold:#c9a84c;
+    --ink:#d6dde8; --ink-dim:#6b7a8d;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;
+    display:grid; place-items:center;
+    background:
+      radial-gradient(1100px 780px at 50% 38%, var(--bg-1) 0%, var(--bg-0) 62%);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;
+    color:var(--ink);
+  }
+  .stage{position:relative; width:min(92vmin,620px); aspect-ratio:1;}
+  .stage::before{ /* halo suave detrás del logo */
+    content:""; position:absolute; inset:-6%;
+    background:radial-gradient(closest-side, rgba(0,201,192,.07), transparent 72%);
+    pointer-events:none;
+  }
+  svg{width:100%; height:100%; display:block; position:relative}
+
+  .seg{fill:none; stroke-linecap:round; stroke-linejoin:round}
+  .ghost{fill:none; stroke:var(--gold); stroke-width:1.4;
+         stroke-dasharray:3 9; stroke-linecap:round; opacity:0}
+
+  .node{transform-box:fill-box; transform-origin:center}
+  .node .halo{fill:var(--teal); opacity:.12}
+  .node .ring{fill:none; stroke:var(--gold); stroke-width:2}
+  .node .core{fill:var(--teal); transform-box:fill-box; transform-origin:center;
+              transition:transform .35s cubic-bezier(.34,1.56,.64,1)}
+  .node:hover .core{transform:scale(1.45)}
+  .node text{
+    fill:var(--ink); opacity:.78; font-size:15px; letter-spacing:.14em;
+    text-transform:uppercase; text-anchor:middle; font-weight:500;
+  }
+  .settle-on .core{animation:pulse 3.4s ease-in-out infinite}
+  @keyframes pulse{0%,100%{transform:scale(1)} 50%{transform:scale(1.16)}}
+
+  .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
+  .settle-on .c-glow{animation:breathe 3.6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.30} 50%{opacity:.55}}
+
+  .captions{
+    position:absolute; left:0; right:0; bottom:-64px; text-align:center; user-select:none;
+  }
+  .captions .name{
+    font-size:13px; letter-spacing:.42em; text-transform:uppercase;
+    color:var(--gold); opacity:.9; padding-left:.42em;
+  }
+  .captions .meta{margin-top:9px; font-size:11px; letter-spacing:.18em;
+                  color:var(--ink-dim); opacity:.8}
+
+  #replay{
+    position:fixed; right:22px; bottom:22px;
+    font:inherit; font-size:12px; letter-spacing:.12em;
+    color:var(--gold); background:transparent;
+    border:1px solid rgba(201,168,76,.38); border-radius:999px;
+    padding:9px 18px; cursor:pointer; transition:.25s;
+  }
+  #replay:hover{background:rgba(201,168,76,.12); box-shadow:0 0 18px rgba(201,168,76,.25)}
+  @media (prefers-reduced-motion: reduce){ #replay{display:none} }
+</style>
+</head>
+<body>
+  <main class="stage">
+    <svg id="logo" viewBox="0 0 800 800" role="img"
+         aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
+      <title>Christian Luciani — espiral de conocimiento</title>
+      <defs>
+        <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="8"/>
+        </filter>
+      </defs>
+    </svg>
+    <div class="captions">
+      <div class="name">Christian Luciani</div>
+      <div class="meta">propuesta v1 · triángulo espiral del conocimiento</div>
+    </div>
+  </main>
+  <button id="replay" type="button" title="Repetir animación">↻ repetir</button>
+
+<script>
+"use strict";
+
+/* ───────────────────────── CONFIG (única fuente de parámetros) ───────── */
+const CONFIG = {
+  geometry: {
+    center: { x: 400, y: 418 },   // centro del espiral
+    R: 250,                       // radio del vértice final (punta de la C)
+    scalePerLoop: 1.5,            // crecimiento de radio por vuelta (>1 = espiral)
+    rotPerLoop: -6,               // rotación extra por vuelta (0 = triángulos rectos)
+    vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
+    baseAngles: { A: -90, B: 30, C: 150 }, // A=arriba, B=abajo-der, C=abajo-izq
+  },
+
+  ramp: { from: 0.10, to: 0.72 },         // opacidad creciente del espiral
+  rampWidth: { from: 2.2, to: 4.2 },      // grosor creciente del espiral
+  cWidth: 10,                             // grosor de la "C" (últimas 2 líneas, opacidad 1)
+
+  colors: {
+    spiralFrom: "#16324f",   // espiral nace en azul profundo…
+    spiralTo:   "#00c9c0",   // …y sube hasta el teal del sitio
+    c: "#c9a84c",            // la "C" de Christian en oro (brand)
+  },
+
+  nodeLabels: [],          // p.ej. ["IA aplicada","Ingeniería","Estrategia"]; [] = sin etiquetas
+  ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
+
+  timing: {
+    start: 180,   // ms antes del primer trazo
+    stagger: 260, // ms entre líneas
+    seg: 460,     // duración del trazado de una línea del espiral
+    segC: 640,    // duración del trazado de las líneas de la "C"
+    pop: 520,     // duración del pop de cada nodo
+    settlePad: 420,
+  },
+};
+
+/* ─────────────────────────── utilidades ──────────────────────────────── */
+const NS = "http://www.w3.org/2000/svg";
+const svg = document.getElementById("logo");
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const lerpColor = (h1, h2, t) => {
+  const p = h => [1,3,5].map(i => parseInt(h.slice(i, i+2), 16));
+  const a = p(h1), b = p(h2);
+  return `rgb(${a.map((v,i)=>Math.round(lerp(v, b[i], t))).join(",")})`;
+};
+const el = (tag, attrs = {}) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  return n;
+};
+
+/* ─────────────────────────── geometría del espiral ─────────────────────
+   10 puntos: centro → B0 C0 A0 → B1 C1 A1 → B2 C2 A2  (t = vuelta/fracción)
+   Radio crece exponencialmente → espiral de tramos rectos.
+   El ciclo B→C→A hace que las últimas 2 líneas sean: B2→C2 (base) y
+   C2→A2 (lado izquierdo): triángulo abierto a la derecha = la "C".
+------------------------------------------------------------------------ */
+function buildGeometry(g) {
+  const { x: cx, y: cy } = g.center;
+  const T_MAX = 8 / 3; // últimas 2 líneas de la 3ª vuelta = la "C"
+  const verts = [];
+  for (let k = 0; k <= 8; k++) {
+    const t = k / 3;
+    const v = g.vertexOrder[k % 3];
+    const ang = (g.baseAngles[v] + g.rotPerLoop * t) * Math.PI / 180;
+    const r = g.R * Math.pow(g.scalePerLoop, t - T_MAX);
+    verts.push({ v, x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) });
+  }
+  const all = [{ x: cx, y: cy }, ...verts];
+  const segs = [];
+  for (let i = 0; i < all.length - 1; i++) segs.push({ a: all[i], b: all[i + 1], idx: i });
+  return { segs, verts, outer: verts.slice(6) }; // outer = vértices del triángulo final
+}
+
+function segStyle(idx) {
+  const c = CONFIG, RAMP = 7; // índices 0..6 en rampa; 7 y 8 = "C"
+  if (idx >= RAMP)
+    return { opacity: 1, width: c.cWidth, color: c.colors.c, isC: true };
+  const t = idx / (RAMP - 1);
+  return {
+    opacity: lerp(c.ramp.from, c.ramp.to, t),
+    width: lerp(c.rampWidth.from, c.rampWidth.to, t),
+    color: lerpColor(c.colors.spiralFrom, c.colors.spiralTo, t),
+    isC: false,
+  };
+}
+
+/* ─────────────────────────── render + animación ──────────────────────── */
+let timers = [];
+function render() {
+  timers.forEach(clearTimeout); timers = [];
+  svg.classList.remove("settle-on");
+  while (svg.lastChild && svg.lastChild.tagName !== "DEFS") svg.lastChild.remove();
+
+  const { segs, outer } = buildGeometry(CONFIG.geometry);
+  const T = CONFIG.timing;
+  const maxIdx = segs.length - 1;
+  const segDelay = i => T.start + i * T.stagger;
+  const segDur = i => (i >= 7 ? T.segC : T.seg);
+
+  // halo tenue detrás de la C + arista fantasma del lado abierto
+  const ghost = el("polygon", {
+    class: "ghost",
+    points: outer.map(p => `${p.x},${p.y}`).join(" "),
+  });
+  svg.appendChild(ghost);
+
+  // líneas del espiral (cada una: opacidad/grosor según su posición)
+  const cGlowGroup = el("g", {});
+  const lines = segs.map((s, i) => {
+    const st = segStyle(i);
+    const line = el("line", {
+      class: "seg", x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
+      stroke: st.color, "stroke-width": st.width, opacity: st.opacity,
+    });
+    svg.appendChild(line);
+    if (st.isC) { // copia difuminada de la C para el resplandor
+      cGlowGroup.appendChild(el("line", {
+        x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
+        "stroke-width": st.width + 6, opacity: .5,
+      }));
+    }
+    return line;
+  });
+  svg.appendChild(cGlowGroup);
+
+  // nodos = disciplinas (uno por vértice del triángulo final)
+  outer.forEach((p, n) => {
+    const g = el("g", { class: "node", transform: `translate(${p.x} ${p.y})` });
+    g.appendChild(el("circle", { class: "halo", r: 22 }));
+    g.appendChild(el("circle", { class: "ring", r: 12.5 }));
+    g.appendChild(el("circle", { class: "core", r: 6.5 }));
+    if (CONFIG.nodeLabels.length === 3) {
+      const t = el("text", { x: 0, y: 44, dy: n === 0 ? 0 : 0 });
+      t.textContent = CONFIG.nodeLabels[n];
+      g.appendChild(t);
+    }
+    svg.appendChild(g);
+    return g;
+  });
+
+  // animación
+  const anims = [];
+  lines.forEach((line, i) => {
+    const len = line.getTotalLength();
+    if (reduced) return;
+    line.setAttribute("stroke-dasharray", len);
+    line.setAttribute("stroke-dashoffset", len);
+    anims.push(line.animate(
+      [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.25,.6,.3,1)", fill: "both" }
+    ));
+  });
+
+  const nodes = [...svg.querySelectorAll(".node")];
+  nodes.forEach((node, n) => {
+    const delay = segDelay(6 + n) + segDur(6 + n) - 20; // cuando el espiral pasa por su vértice
+    if (reduced) return;
+    node.style.opacity = 0;
+    anims.push(node.animate(
+      [
+        { transform: "scale(0)", opacity: 0 },
+        { transform: "scale(1.22)", opacity: 1, offset: .68 },
+        { transform: "scale(1)", opacity: 1 },
+      ],
+      { duration: T.pop, delay, easing: "cubic-bezier(.34,1.4,.5,1)", fill: "both" }
+    ));
+  });
+
+  if (reduced) { // estado final directo, sin animación
+    nodes.forEach(node => (node.style.opacity = 1));
+    svg.classList.add("settle-on");
+    return;
+  }
+
+  const end = segDelay(maxIdx) + segDur(maxIdx) + T.pop + T.settlePad;
+  timers.push(setTimeout(() => svg.classList.add("settle-on"), end));
+}
+
+document.getElementById("replay").addEventListener("click", render);
+render();
+</script>
+</body>
+</html>
