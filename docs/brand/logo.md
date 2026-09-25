@@ -6,8 +6,8 @@
 > `tools/logo/verify-dom-fidelity.mjs`). Todos los assets se **generan**;
 > nunca se dibujan ni editan a mano.
 >
-> Estado del ADR D1 (versión canónica): **PROPUESTA — pendiente de
-> ratificación del operador** (ver §9).
+> **ADR D1 RATIFICADO (2026-09-25, PR #58): la versión áurea v16 es el logo
+> oficial.** La base v10 queda como referencia comparativa.
 
 ---
 
@@ -30,8 +30,8 @@ cierre en plena intensidad (triángulo abierto = evolución en curso).
 
 | Versión | Generaciones | Internos | Giro entre internos | Estado |
 |---|---|---|---|---|
-| **base** (v10) | 5 | radio × 1.5 por vuelta | 4°/vuelta | congelada (PR #53) |
-| **áurea** (v16) | 7 (6 internas + C) | distancia = C/φ por generación | 3°×φ = 4.854° | propuesta canónica |
+| **base** (v10) | 5 | radio × 1.5 por vuelta | 4°/vuelta | referencia comparativa |
+| **áurea** (v16) | 7 (6 internas + C) | distancia = C/φ por generación | 3°×φ = 4.854° | **canónica oficial** (ADR D1) |
 
 Hecho geométrico verificado: el triángulo externo (la C) de la versión
 áurea es **idéntico (0.0000 px)** al que la fórmula base produciría con 7
@@ -136,23 +136,24 @@ El **lockup** añade `logo-typography` (viewBox 800×940).
 - ❌ Usar el full en <48px (el ruido de la constelación no se lee; usar
   settled).
 
-## 9. ADR-lite D1 — versión canónica [PROPUESTA]
+## 9. ADR-lite D1 — versión canónica [RATIFICADA]
 
 - **Contexto**: PR #53 dejó dos versiones estables (base v10, áurea v16).
-  Los sub-issues #55 (animación) y #56 (integración) dependen de la decisión.
-- **Decisión propuesta**: **áurea v16** como canónica.
-- **Razones**: ratios φ exactos y verificables por test; el ancla C es
-  invariante (0.0000 px vs fórmula base); cielo sutil + galaxia más ricos
-  pero discretos; arranque explosivo (stagger 110→235ms) mejor narrativa;
+  Los sub-issues #55 (pulir animación) y #56 (integración) dependen de la decisión.
+- **Decisión**: **áurea v16** como logo oficial canónico.
+- **Ratificación**: operador, 2026-09-25 (PR #58, sesión
+  `logo-manual-svg-assets-54` — pi 01a0da49).
+- **Razones de la propuesta**: ratios φ exactos y verificables por test; el
+  ancla C es invariante (0.0000 px vs fórmula base); cielo sutil + galaxia más
+  ricos pero discretos; arranque explosivo (stagger 110→235ms) mejor narrativa;
   7 generaciones dan más profundidad de espiral sin tocar la firma.
-- **Consecuencia si se ratifica**: los assets `logo-aurea-*` quedan como
-  oficiales; `logo-base-*` se conservan como referencia comparativa; #55
-  pule la animación sobre aurea7.html; #56 integra `logo-aurea-lockup` /
-  favicons en el sitio; #57 evalúa la CDN sobre el tag.
-- **Consecuencia si se descarta**: regenerar todo con `--only-base` y
-  re-etiquetar (el pipeline es paramétrico: cambiar el flag, no el código).
-- **Estado**: PROPUESTA — **el flip lo ratifica el operador** (bump de
-  versión/tag v1.0.0 incluido).
+- **Consecuencias**: los assets `logo-aurea-*` son los oficiales;
+  `logo-base-*` se conservan como referencia comparativa; #55 pule la
+  animación sobre aurea7.html; #56 integra `logo-aurea-lockup` / favicons
+  aurea en el sitio; #57 evalúa la CDN. El tag **v1.0.0** se crea
+  **post-merge** sobre el commit de main (bump/tag = operador).
+- **Si algún día se revirtiera**: regenerar con `--only-base` y re-etiquetar
+  (el pipeline es paramétrico: cambiar el flag, no el código).
 
 ## 10. Inventario y regeneración
 
