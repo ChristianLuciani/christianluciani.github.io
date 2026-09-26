@@ -74,7 +74,6 @@ function verify(version, htmlPath) {
   const chrome = CHROME_CANDIDATES.find((c) => { try { accessSync(c); return true; } catch { return false; } });
   if (!chrome) { console.error("❌ Chrome no encontrado"); process.exit(1); }
 
-  const root = resolve(HERE, "../..");
   const g = buildGeometry(cfg.geometry);
   const pts = constellationPoints(g.segs);
   const sky = buildSky(cfg);

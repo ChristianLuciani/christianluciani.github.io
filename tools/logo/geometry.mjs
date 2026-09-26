@@ -74,10 +74,14 @@ export const CONFIG_BASE = {
   ghostOutline: true,
 };
 
-export const config = (version) => (version === "base" ? CONFIG_BASE : CONFIG_AUREA);
+export const config = (version) => {
+  if (version === "base") return CONFIG_BASE;
+  if (version === "aurea") return CONFIG_AUREA;
+  throw new Error(`config: versión desconocida "${version}" (esperadas: base | aurea)`);
+};
 
 /* ── utilidades (verbatim de aurea7.html) ── */
-export const lerp = (a, b, t) => a + (b - a) * t;
+const lerp = (a, b, t) => a + (b - a) * t;
 export const lerpColor = (h1, h2, t) => {
   const p = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
   const a = p(h1), b = p(h2);

@@ -177,6 +177,11 @@ Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs`
 Tests: `npx vitest run tools/logo/geometry.test.mjs`
 
+**Nota sobre los print 300dpi**: el PNG está dimensionado para 300dpi
+(A4 = 2480×3508 px ≙ 210×297 mm; A3 = 3508×4961 ≙ 297×420 mm) pero Chrome
+no embede el metadato pHYs — al importarlo en InDesign/Illustrator setear
+300 dpi manualmente.
+
 QA visual de los exports: Chrome headless (`--headless --screenshot
 --virtual-time-budget=N --window-size=WxH`), el mismo mecanismo que usó la
 sesión de origen (PR #53) — reutilizado aquí para los PNG.

@@ -26,7 +26,8 @@ import {
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../..");
 const OUT = resolve(REPO, process.env.LOGO_OUT || "assets/brand/logo");
-const TMP = join(OUT, ".chrome-tmp");
+// tmp FUERA del árbol commiteado: si Chrome falla a mitad no deja basura en assets/
+const TMP = join(HERE, ".chrome-tmp");
 const NIGHT = "#050810";
 const NAME = "CHRISTIAN LUCIANI";
 const CHROME_CANDIDATES = [
@@ -149,6 +150,7 @@ svg{position:fixed;top:${top}px;left:${left}px;width:${box}px!important;height:$
 /* og-image 1200×630: mark grande a la izquierda + nombre/dominio a la derecha */
 const ogPage = (svgStr) => {
   const inline = unwrapSvg(svgStr).replace(/<svg /, `<svg id="mark" `);
+  const [first, ...rest] = NAME.split(" ");
   return `<!doctype html><html><head><meta charset="utf-8">
 <style>
 html,body{margin:0;padding:0;background:${NIGHT};overflow:hidden}
@@ -157,7 +159,7 @@ html,body{margin:0;padding:0;background:${NIGHT};overflow:hidden}
   font-size:40px;font-weight:600;letter-spacing:16px;line-height:1.55;color:#c9a84c;white-space:nowrap}
 #domain{position:fixed;top:356px;left:706px;font-family:'Fira Code',ui-monospace,monospace;
   font-size:19px;letter-spacing:2px;color:#6b7a8d;white-space:nowrap}
-</style></head><body>${inline}<div id="name">CHRISTIAN<br>LUCIANI</div><div id="domain">christianluciani.github.io</div></body></html>`;
+</style></head><body>${inline}<div id="name">${first}${rest.length ? `<br>${rest.join(" ")}` : ""}</div><div id="domain">christianluciani.github.io</div></body></html>`;
 };
 
 function main() {
