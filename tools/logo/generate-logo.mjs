@@ -9,7 +9,7 @@
  *   · lockup con tipografía (viewBox 800×940)
  *   · PNG 512/1024/2048/4096 (transparente + dark #050810)
  *   · print 300dpi A4/A3 (transparente + dark)
- *   · favicon 16/32 + apple-touch 180 (settled)
+ *   · favicon 16/32 simplificado (C + supernova, legible <24px) + apple-touch 180
  *   · og-image 1200×630 (dark + nombre)
  *
  * Uso: node tools/logo/generate-logo.mjs [--only-aurea|--only-base]
@@ -25,10 +25,13 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../..");
-const OUT = resolve(REPO, process.env.LOGO_OUT || "assets/brand/logo");
+const argv = process.argv.slice(2); // --out se parsea ANTES de fijar OUT
+const OUT = resolve(REPO, (argv.includes("--out") ? argv[argv.indexOf("--out") + 1] : process.env.LOGO_OUT) || "assets/brand/logo");
 // tmp FUERA del árbol commiteado: si Chrome falla a mitad no deja basura en assets/
 const TMP = join(HERE, ".chrome-tmp");
 const NIGHT = "#050810";
+const DEEP = "#0b1120"; // --bg-1 del HTML aprobado (centro del gradiente)
+const HALO = "rgba(0,201,192,.07)"; // halo teal del .stage::before aprobado
 const NAME = "CHRISTIAN LUCIANI";
 const CHROME_CANDIDATES = [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -132,19 +135,34 @@ ${typography ? layerTypography(905) : ""}
 
 const unwrapSvg = (doc) => doc.replace(/^\s*<\?xml[^>]*\?>\s*/, "").replace(/<!--[\s\S]*?-->\s*/, "");
 
-const squarePage = (svgStr, size, bg) => `<!doctype html><html><head><meta charset="utf-8">
-<style>html,body{margin:0;padding:0;background:${bg === "transparent" ? "transparent" : bg}}
-svg{display:block;width:${size}px!important;height:${size}px!important}</style>
-</head><body>${unwrapSvg(svgStr)}</body></html>`;
+/* ambiente night APROBADO del HTML (PR #53): gradiente radial del body
+   (radial 1100×780 sobre stage 620, --bg-1→--bg-0) + halo teal del
+   .stage::before (closest-side rgba(0,201,192,.07)→transparent 72%,
+   inset -6%). Los PNG dark NO son #050810 plano: esto escalado al mark. */
+const nightBody = (markPx, cx = "50%", cy = "50%") =>
+  `background:radial-gradient(${Math.round(markPx * 1100 / 620)}px ${Math.round(markPx * 780 / 620)}px at ${cx} ${cy}, ${DEEP} 0%, ${NIGHT} 62%)`;
+const nightHalo = (left, top, box) =>
+  `#halo{position:fixed;left:${Math.round(left - box * 0.06)}px;top:${Math.round(top - box * 0.06)}px;width:${Math.round(box * 1.12)}px;height:${Math.round(box * 1.12)}px;background:radial-gradient(closest-side, ${HALO}, transparent 72%)}`;
+
+const squarePage = (svgStr, size, bg) => {
+  const night = bg === "night";
+  return `<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;padding:0;${night ? nightBody(size) : "background:transparent"}}
+svg{display:block;position:relative;z-index:1;width:${size}px!important;height:${size}px!important}
+${night ? nightHalo(0, 0, size) : ""}</style>
+</head><body>${night ? '<div id="halo"></div>' : ""}${unwrapSvg(svgStr)}</body></html>`;
+};
 
 /* página print A4/A3 300dpi: logo cuadrado centrado con margen 8% */
 const printPage = (svgStr, w, h, bg) => {
+  const night = bg === "night";
   const box = Math.min(w, h) - Math.round(h * 0.08 * 2);
   const top = Math.round((h - box) / 2), left = Math.round((w - box) / 2);
   return `<!doctype html><html><head><meta charset="utf-8">
-<style>html,body{margin:0;padding:0;background:${bg === "transparent" ? "transparent" : bg}}
-svg{position:fixed;top:${top}px;left:${left}px;width:${box}px!important;height:${box}px!important}</style>
-</head><body>${unwrapSvg(svgStr)}</body></html>`;
+<style>html,body{margin:0;padding:0;${night ? nightBody(box, `${left + box / 2}px`, `${top + box / 2}px`) : "background:transparent"}}
+svg{position:fixed;top:${top}px;left:${left}px;width:${box}px!important;height:${box}px!important;z-index:1}
+${night ? nightHalo(left, top, box) : ""}</style>
+</head><body>${night ? '<div id="halo"></div>' : ""}${unwrapSvg(svgStr)}</body></html>`;
 };
 
 /* og-image 1200×630: mark grande a la izquierda + nombre/dominio a la derecha */
@@ -153,17 +171,50 @@ const ogPage = (svgStr) => {
   const [first, ...rest] = NAME.split(" ");
   return `<!doctype html><html><head><meta charset="utf-8">
 <style>
-html,body{margin:0;padding:0;background:${NIGHT};overflow:hidden}
-#mark{position:fixed;top:35px;left:70px;width:560px!important;height:560px!important}
+html,body{margin:0;padding:0;overflow:hidden;${nightBody(560, "350px", "315px")}}
+#mark{position:fixed;top:35px;left:70px;width:560px!important;height:560px!important;z-index:1}
+${nightHalo(70, 35, 560)}
 #name{position:fixed;top:236px;left:704px;font-family:ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
-  font-size:40px;font-weight:600;letter-spacing:16px;line-height:1.55;color:#c9a84c;white-space:nowrap}
+  font-size:40px;font-weight:600;letter-spacing:16px;line-height:1.55;color:#c9a84c;white-space:nowrap;z-index:1}
 #domain{position:fixed;top:356px;left:706px;font-family:'Fira Code',ui-monospace,monospace;
-  font-size:19px;letter-spacing:2px;color:#6b7a8d;white-space:nowrap}
-</style></head><body>${inline}<div id="name">${first}${rest.length ? `<br>${rest.join(" ")}` : ""}</div><div id="domain">christianluciani.github.io</div></body></html>`;
+  font-size:19px;letter-spacing:2px;color:#6b7a8d;white-space:nowrap;z-index:1}
+</style></head><body><div id="halo"></div>${inline}<div id="name">${first}${rest.length ? `<br>${rest.join(" ")}` : ""}</div><div id="domain">christianluciani.github.io</div></body></html>`;
+};
+
+/* favicon simplificado: la C (firma) + supernova, recortados al bbox con
+   padding — el mark completo es ilegible <24px (review fresco PR #58).
+   viewBox cuadrado computado del contenido real de la C, no hardcodeado. */
+const faviconDoc = (g, cfg) => {
+  const pts = constellationPoints(g.segs);
+  const nums = cPathD(g.segs).match(/-?[\d.]+/g).map(Number);
+  const cPts = [];
+  for (let i = 0; i < nums.length; i += 2) cPts.push({ x: nums[i], y: nums[i + 1] });
+  const all = [pts[0], ...cPts]; // supernova + los 3 puntos de la C
+  const xs = all.map((p) => p.x), ys = all.map((p) => p.y);
+  const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+  const pad = span * 0.14 + 12;
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const side = span + pad * 2;
+  const d = cPathD(g.segs).replace(/\s+/g, " ");
+  const sp = starSpec(0, pts.length, cfg.constellation);
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<!-- GENERADO por tools/logo/generate-logo.mjs — NO EDITAR A MANO -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="${n2(cx - side / 2)} ${n2(cy - side / 2)} ${n2(side)} ${n2(side)}" role="img" aria-label="C de Christian — favicon simplificado">
+  <title>C — espiral de conocimiento (favicon)</title>
+${filterDefs()}
+  <g id="logo-supernova" data-name="Supernova">
+    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 2)}" fill="${sp.color}" opacity="0.2" filter="url(#glow2)"/>
+    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR)}" fill="${sp.color}" opacity="${n4(sp.hiG)}" filter="url(#glow2)"/>
+    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.coreR)}" fill="${sp.color}" opacity="1"/>
+  </g>
+  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.5" filter="url(#glow)"/>
+    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth)}" opacity="1"/>
+  </g>
+</svg>`;
 };
 
 function main() {
-  const argv = process.argv.slice(2);
   const versions = argv.includes("--only-base") ? ["base"] : argv.includes("--only-aurea") ? ["aurea"] : ["aurea", "base"];
   const chrome = pickChrome();
   mkdirSync(OUT, { recursive: true });
@@ -186,10 +237,12 @@ function main() {
     const layersSvg = svgDoc(g, cfg, sky, { settled: false });
     const settledSvg = svgDoc(g, cfg, sky, { settled: true });
     const lockupSvg = svgDoc(g, cfg, sky, { settled: false, typography: true });
+    const favSvg = faviconDoc(g, cfg);
     for (const [name, doc] of [
       [`logo-${version}-layers.svg`, layersSvg],
       [`logo-${version}-settled.svg`, settledSvg],
       [`logo-${version}-lockup.svg`, lockupSvg],
+      [`favicon-${version}.svg`, favSvg],
     ]) {
       writeFileSync(join(OUT, name), doc, "utf8");
       written.push(name);
@@ -198,20 +251,20 @@ function main() {
     /* master PNG 512..4096 (full, transparente + dark) */
     for (const s of [512, 1024, 2048, 4096]) {
       shoot(`logo-${version}-${s}.png`, squarePage(layersSvg, s, "transparent"), { w: s, transparent: true });
-      shoot(`logo-${version}-${s}-dark.png`, squarePage(layersSvg, s, NIGHT), { w: s, transparent: false });
+      shoot(`logo-${version}-${s}-dark.png`, squarePage(layersSvg, s, "night"), { w: s, transparent: false });
     }
 
     /* print 300dpi A4/A3 (transparente + dark) */
     for (const [label, { w, h }] of [["print-a4", { w: 2480, h: 3508 }], ["print-a3", { w: 3508, h: 4961 }]]) {
       shoot(`logo-${version}-${label}.png`, printPage(layersSvg, w, h, "transparent"), { w, h, transparent: true });
-      shoot(`logo-${version}-${label}-dark.png`, printPage(layersSvg, w, h, NIGHT), { w, h, transparent: false });
+      shoot(`logo-${version}-${label}-dark.png`, printPage(layersSvg, w, h, "night"), { w, h, transparent: false });
     }
 
-    /* favicon + apple-touch (settled: limpio en tamaños chicos) */
+    /* favicon simplificado (16/32: legible por diseño, no por suerte) + apple-touch */
     for (const s of [16, 32]) {
-      shoot(`favicon-${version}-${s}.png`, squarePage(settledSvg, s, "transparent"), { w: s, transparent: true });
+      shoot(`favicon-${version}-${s}.png`, squarePage(favSvg, s, "transparent"), { w: s, transparent: true });
     }
-    shoot(`apple-touch-icon-${version}.png`, squarePage(settledSvg, 180, NIGHT), { w: 180, transparent: false });
+    shoot(`apple-touch-icon-${version}.png`, squarePage(settledSvg, 180, "night"), { w: 180, transparent: false });
 
     /* og-image 1200×630 (dark + nombre) — usa el MARK puro (sin typography) */
     shoot(`og-image-${version}.png`, ogPage(layersSvg), { w: 1200, h: 630, transparent: false });

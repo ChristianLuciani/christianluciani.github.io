@@ -13,7 +13,7 @@
 
 ## 1. El símbolo
 
-Espiral de conocimiento acumulativo: un triángulo isósceles que gira y
+Espiral de conocimiento acumulativo: un triángulo que gira y
 decrece hacia el centro en generaciones, con nodos-estrella en cada vértice,
 una **supernova** permanente en el origen y la **"C" de Christian** como
 cierre en plena intensidad (triángulo abierto = evolución en curso).
@@ -54,6 +54,14 @@ diseño aprobado, no un desvío.
 La rampa del espiral interpola `#16324f → #00c9c0` (22 → 0 R, 50 → 201 G,
 79 → 192 B) con opacidad `0.10 → 0.72` y grosor `2.2 → 4.2`.
 
+**Ambiente night aprobado** (no documentado antes — agregado por review
+fresco): el HTML usa `--bg-0 #050810` y `--bg-1 #0b1120` (= `--deep` del
+sitio) con un gradiente radial `radial-gradient(1100×780 @ 50% 38%,
+#0b1120 → #050810 62%)` y un **halo teal** detrás del logo:
+`radial-gradient(closest-side, rgba(0,201,192,.07), transparent 72%)`.
+Los PNG dark (`*-dark`, og, apple-touch) reproducen ese ambiente — no son
+fondo plano. Los tokens del sitio completos: `docs/STYLE_GUIDE.md`.
+
 ## 4. Construcción geométrica
 
 Todos los valores viven en `CONFIG` (`tools/logo/geometry.mjs`):
@@ -62,7 +70,7 @@ Todos los valores viven en `CONFIG` (`tools/logo/geometry.mjs`):
 |---|---|---|
 | `center` | (400, 418) | centro del espiral en el lienzo 800×800 |
 | `R` | 250 | radio de la punta de la C |
-| `baseAngles` | A −90°, B 40°, C 140° | isósceles de ápice ~50°; A arriba |
+| `baseAngles` | A −90°, B 40°, C 140° | ángulos base del espiral; A arriba |
 | `scalePerLoop` | 1.5 | crecimiento radial por vuelta (ancla) |
 | `rotPerLoop` | 3° | giro horario por vuelta (ancla) |
 | `globalRot` | 1° | rotación global del símbolo |
@@ -71,6 +79,11 @@ Todos los valores viven en `CONFIG` (`tools/logo/geometry.mjs`):
 | `twistGolden` | 3°×φ ≈ 4.854° | giro entre internos (áurea) |
 | `extendLast` | 0.01 | la punta se estira 1%: insinúa seguir evolucionando |
 | `cWidth` | 10 | grosor de la C (glow = +6, blur 8, op .5) |
+
+Medición del triángulo final (real, no la del comentario del HTML de
+origen): lados 1.26/1.72/1.60 R, ángulos 44.6°/72.9°/62.6° — isósceles
+aproximado, ápice ~44.6° en A. El comentario de la fuente dice “isósceles
+más agudo: ápice ~50°”; en el manual vale la medición.
 
 La C se dibuja como **un solo path** (`B→C→punta`) con `stroke-linejoin:
 round`: el vértice en C es un join redondeado real, no dos caps montados.
@@ -111,15 +124,18 @@ El **lockup** añade `logo-typography` (viewBox 800×940).
 | Variante | Qué muestra | Uso |
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
-| **settled** | estado final de la animación: sólo supernova + cielo | favicons, apple-touch, contextos pequeños |
+| **settled** | el mark completo (espiral + C + supernova + cielo) SIN las estrellas de vértices — el estado final de la animación | contextos medianos |
+| **favicon** (simplificado) | sólo la C + supernova, recortados al bbox — el mark completo es ilegible <24px | favicon 16/32, contextos <24px |
 
 ## 7. Uso correcto
 
-- **Fondo**: night `#050810` o transparente sobre superficies oscuras ≥
-  `#050810`. Sobre fondos claros NO está diseñado (la rampa azul/teal y el
-  oro se lavan): si es imprescindible, usar la variante print con la C y el
-  espiral intactos y validar contraste.
-- **Tamaño mínimo**: 24 px de alto (favicon 16 usa la variante settled).
+- **Fondo**: night con el ambiente aprobado (gradiente radial `#0b1120 →
+  #050810` + halo teal, ver §3) o transparente. Sobre fondos claros NO está
+  diseñado (la rampa azul/teal y el oro se lavan): si es imprescindible, usar
+  la variante print con la C y el espiral intactos y validar contraste.
+- **Tamaño mínimo**: 24 px de alto para el mark completo. Los favicons 16/32
+  usan la variante **simplificada** (sólo la C + supernova) — no el mark
+  completo, que en <24px se vuelve ilegible.
 - **Zona de respiro**: ≥ 12% del ancho del símbolo a cada lado.
 - **No reemplazar** la tipografía del lockup por otra familia sin decisión
   de marca.

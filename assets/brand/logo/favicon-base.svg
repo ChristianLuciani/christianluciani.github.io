@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- GENERADO por tools/logo/generate-logo.mjs — NO EDITAR A MANO -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="93.04 105.54 532.44 532.44" role="img" aria-label="C de Christian — favicon simplificado">
+  <title>C — espiral de conocimiento (favicon)</title>
+  <defs>
+    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
+    <filter id="glow2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3.5"/></filter>
+  </defs>
+  <g id="logo-supernova" data-name="Supernova">
+    <circle cx="400" cy="418" r="28" fill="#ffb3a0" opacity="0.2" filter="url(#glow2)"/>
+    <circle cx="400" cy="418" r="14" fill="#ffb3a0" opacity="0.3" filter="url(#glow2)"/>
+    <circle cx="400" cy="418" r="4.2" fill="#ffb3a0" opacity="1"/>
+  </g>
+  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#c9a84c" stroke-width="16" opacity="0.5" filter="url(#glow)"/>
+    <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#c9a84c" stroke-width="10" opacity="1"/>
+  </g>
+</svg>

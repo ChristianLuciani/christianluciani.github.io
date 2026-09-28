@@ -78,4 +78,31 @@ La proyección de `premerge-review` verifica publishing (no drift — confirmado
 
 ## Fresh-context reconcile
 
-(completar cuando llegue el reporte del review fresco como comentario del PR)
+Reporte fresco: [comentario en PR #58](https://github.com/ChristianLuciani/christianluciani.github.io/pull/58#issuecomment-5877163304) — veredicto **PASS-CON-RIESGOS** (0 blocker / 4 major / 7 nit), head `1c127eb`. Clasificación de cada finding (precedencia sota-review §10):
+
+**Valid + actionable (4 major → fixeados en la ronda 1 de corrección):**
+
+1. **`--out` documentado y no implementado** — verificado contra el código: el flag no se parseaba; `LOGO_OUT` env sí andaba. FIX: `--out` se parsea antes de fijar `OUT` (argv en scope módulo). Probado: `--out /tmp/x` crea el dir y escribe ahí.
+2. **El gate no puede fallar el build** — real. FIX (2 mitades): (a) golden values congelados del gate DOM en `geometry.test.mjs` (3 tests nuevos: cielo áurea ambient[0]+galaxy[0], starSpec vértice 1 + punta, cielo v10 star[0]) — captan drift de `seeded(20260901)`/`seeded(5150)`/`starSpec` en CI sin Chrome; (b) cableado del gate completo en CI = **issue #59** (implementation-ready, 4 campos) — necesita Chrome en el runner linux, decisión de infra aparte.
+3. **PNG dark planos** — verificado contra el HTML aprobado: body con `radial-gradient(#0b1120→#050810)` + halo teal `rgba(0,201,192,.07)`. FIX: `nightBody`/`nightHalo` en los wrappers (square/print/og/apple-touch), escalado al mark; ambiente documentado en manual §3 (antes no existía en ningún doc).
+4. **Favicon 16 ilegible + contradicción del manual** — verificado visualmente (trazo 0.2px). FIX: variante **favicon simplificado** (`favicon-{ver}.svg` + PNG 16/32): sólo la C + supernova, viewBox cuadrado computado del bbox real (nada hardcodeado); manual §6 (tabla de variantes) y §7 (mínimo 24px aplica al mark completo; <24px usa el simplificado).
+
+**Valid + actionable (nits fixeados en la misma ronda):** N1 medición del triángulo (lados 1.26/1.72/1.60 R, ángulos 44.6/72.9/62.6 — el claim “isósceles ~50°” era del comentario de la fuente, corregido en manual §4/§1) · N2 rewording de `settled` (conserva espiral+C+supernova+cielo, sin estrellas de vértices) · N5 overclaim del body (“todos los entregables” → excepto el tag) · N6 cross-link manual §3 → `docs/STYLE_GUIDE.md` · N7b línea `node_modules` del .gitignore declarada en el body del PR.
+
+**Valid trade-off (riesgos aceptados explícitamente):**
+
+- N3: la C de base como path único (el HTML la dibuja por líneas) — base quedó como referencia comparativa tras D1; si volviera a ser canónica, restaurar el render por líneas.
+- N4: `dist/assets/brand/` no existe tras el build — es premisa de **#56** (integración): jsDelivr (#57) sirve del repo directo; Pages necesita que el build incluya los assets. Anotado como hand-off para #56, no fixeado acá.
+- N7a: `.sota/logo-oficial-54/05-review.md` commiteado en repo público — la sección sin completar (la causa del flag) queda completa con este reconcile; los ids de sesión ya viven en los trailers de los commits. Riesgo aceptado: trazabilidad del pipeline > presentación pública; si public-readiness (community-first) lo pide, se slimmea después con OK del operador.
+
+**Noise:** ninguno — los 11 findings del review fresco fueron verificados contra el diff y todos resultaron reales (0 falsos positivos). El gate fresco refutó más que el review in-session del autor, exactamente su función.
+
+**Contrato mejorado para la próxima ronda:** la spec-issue #54 no pedía “los dark replican el ambiente del HTML” ni “el gate corre en CI” — ambas expectativas eran implícitas. En issues de brand futuros: declarar ambiente de fondo y superficie de enforcement del gate.
+
+### Resultado de la ronda 1 de corrección
+
+- `83 passed | 1 skipped` (19 en geometry.test: 16 + 3 golden) · CI `build-test` pass
+- regeneración determinista re-verificada (los SVG masters y PNG transparentes quedaron byte-idénticos; sólo cambiaron dark y favicons, que es lo corregido)
+- QA visual: favicon 32 legible (C + supernova), dark 1024 con gradiente + halo
+
+Veredicto final de la sesión autora: **listo para merge** — los 4 major del review fresco quedaron resueltos en la branch; los trade-offs aceptados están declarados arriba y en el body del PR.

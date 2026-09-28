@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import {
   CONFIG_AUREA, CONFIG_BASE, config, buildGeometry, buildSky,
-  constellationPoints, segStyle, cPathD, seeded,
+  constellationPoints, segStyle, cPathD, seeded, starSpec,
 } from "./geometry.mjs";
 
 const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
@@ -157,5 +157,50 @@ describe("seeded()", () => {
   it("mismo semillero = misma secuencia", () => {
     const a = seeded(42), b = seeded(42);
     for (let i = 0; i < 5; i++) expect(a()).toBe(b());
+  });
+});
+
+describe("golden values — anclas congeladas del gate DOM (captan drift de seeds sin Chrome)", () => {
+  // Valores congelados de la geometría que verify-dom-fidelity.mjs probó
+  // ≡ DOM aprobado (PR #53). Si cambia una semilla, un orden de rnd() o una
+  // fórmula del cielo/constelación, ESTOS tests fallan en CI sin Chrome.
+  const j2 = (x) => Math.round(x * 100) / 100;
+
+  it("cielo áurea: ambient[0] y galaxy[0] en su posición/radio/color verificados", () => {
+    const sky = buildSky(CONFIG_AUREA);
+    const amb0 = sky.find((s) => s.kind === "ambient");
+    const gal0 = sky.find((s) => s.kind === "galaxy");
+    expect(j2(amb0.cx)).toBe(245.1);
+    expect(j2(amb0.cy)).toBe(284.29);
+    expect(j2(amb0.r)).toBe(1.35);
+    expect(amb0.color).toBe("#ffb49e");
+    expect(j2(amb0.hi)).toBe(0.31);
+    expect(j2(gal0.cx)).toBe(444.03);
+    expect(j2(gal0.cy)).toBe(382.36);
+    expect(j2(gal0.r)).toBe(0.9);
+    expect(gal0.color).toBe("#f6d7c4");
+  });
+
+  it("constelación áurea: starSpec del vértice 1 y de la punta congelados", () => {
+    const _g = buildGeometry(CONFIG_AUREA.geometry);
+    const pts = constellationPoints(_g.segs);
+    const sp1 = starSpec(1, pts.length, CONFIG_AUREA.constellation);
+    expect(j2(pts[1].x)).toBe(409.22);
+    expect(j2(pts[1].y)).toBe(423.3);
+    expect(sp1.color).toBe("#ff6f5e");
+    expect(sp1.coreR).toBe(1.27);
+    expect(sp1.glowR).toBe(3.3);
+    const spT = starSpec(pts.length - 1, pts.length, CONFIG_AUREA.constellation);
+    expect(spT.color).toBe("#ff6f5e");
+    expect(spT.coreR).toBe(2.93);
+    expect(j2(pts.at(-1).x)).toBe(492.54); // punta extendida
+    expect(j2(pts.at(-1).y)).toBe(181.52);
+  });
+
+  it("cielo v10 (base): primera estrella congelada (semilla 20260901 legacy)", () => {
+    const b0 = buildSky(CONFIG_BASE)[0];
+    expect(j2(b0.cx)).toBe(326.15);
+    expect(j2(b0.cy)).toBe(245.1);
+    expect(j2(b0.r)).toBe(1.28);
   });
 });

@@ -10,7 +10,9 @@
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
     "test:watch": "vitest",
-    "build:html": "tsx build.ts"
+    "build:html": "tsx build.ts",
+    "logo:generate": "node tools/logo/generate-logo.mjs",
+    "logo:verify": "node tools/logo/verify-dom-fidelity.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
