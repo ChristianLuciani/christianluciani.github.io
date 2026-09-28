@@ -20,7 +20,7 @@ import { accessSync, mkdirSync, rmSync, writeFileSync, readFileSync } from "node
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  config, buildGeometry, buildSky, constellationPoints, segStyle, cPathD, starSpec,
+  config, buildGeometry, buildSky, constellationPoints, segStyle, cPathD, starSpec, seeded,
 } from "./geometry.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -60,11 +60,33 @@ function chromeScreenshot(chrome, htmlFile, outPng, { w, h, transparent = false 
   execFileSync(chrome, args, { stdio: ["ignore", "ignore", "ignore"] });
 }
 
-/* ── capas SVG (estrellas congeladas en pico: fotograma de máxima intensidad) ── */
+/* ── capas SVG (estrellas congeladas en pico; halo = glifo de marca) ──
+
+   Tratamiento de halo (observación visual del operador, 2026-09-25):
+   · más translúcido y con caída rápida — el halo se difumina con un
+     radialGradient (currentColor ⇒ hereda el color del nodo) en vez de un
+     relleno sólido difuminado;
+   · radio ALEATORIZADO por estrella/nodo con semilla fija (determinista):
+     cada nodo tiene su propio halo, no un múltiplo fijo del core;
+   · color del halo = color característico del nodo — nodo y estrella se
+     integran como una constelación real.
+   La GEOMETRÍA (posiciones de cores) sigue gateada ≡ DOM aprobado; el
+   halo es decisión de marca aplicada al render. */
 
 const filterDefs = () => `  <defs>
-    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
-    <filter id="glow2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3.5"/></filter>
+    <radialGradient id="halo-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
+      <stop offset="30%" stop-color="currentColor" stop-opacity="0.09"/>
+      <stop offset="65%" stop-color="currentColor" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-nova" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
+      <stop offset="40%" stop-color="currentColor" stop-opacity="0.05"/>
+      <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>`;
 
 const layerBackground = (sky) => {
@@ -81,10 +103,16 @@ const layerConstellation = (g, cfg, { settled = false } = {}) => {
   pts.forEach((p, j) => {
     if (settled && j > 0) return; // disueltas al ser tocadas por la línea
     const sp = starSpec(j, pts.length, cfg.constellation);
+    // radio del halo: aleatorizado por nodo con semilla fija (determinista)
+    const rndH = seeded(90210 + j * 977);
+    const haloR = n2(j === 0 ? sp.coreR * 5.4 : sp.glowR > sp.coreR * 3 ? sp.coreR * (3.4 + rndH() * 2.6) : sp.coreR * (2.2 + rndH() * 2.4));
     rows.push(`  <g id="logo-star-${j}" data-name="star ${j}">`);
-    if (j === 0) rows.push(`    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 2)}" fill="${sp.color}" opacity="0.2" filter="url(#glow2)"/>`);
+    if (j === 0) rows.push(
+      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 3.2)}" fill="url(#halo-nova)" color="${sp.color}"/>`,
+      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 1.9)}" fill="url(#halo-nova)" color="${sp.color}"/>`
+    );
     rows.push(
-      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR)}" fill="${sp.color}" opacity="${n4(sp.hiG)}" filter="url(#glow2)"/>`,
+      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${haloR}" fill="url(#halo-star)" color="${sp.color}"/>`,
       `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`,
       `  </g>`
     );
@@ -106,7 +134,7 @@ const layerSpiral = (g, cfg) => {
 const layerC = (g, cfg) => {
   const d = cPathD(g.segs).replace(/\s+/g, " ");
   return `  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.5" filter="url(#glow)"/>
+    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.3" filter="url(#halo-blur)"/>
     <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth)}" opacity="1"/>
   </g>`;
 };
@@ -203,12 +231,12 @@ const faviconDoc = (g, cfg) => {
   <title>C — espiral de conocimiento (favicon)</title>
 ${filterDefs()}
   <g id="logo-supernova" data-name="Supernova">
-    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 2)}" fill="${sp.color}" opacity="0.2" filter="url(#glow2)"/>
-    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR)}" fill="${sp.color}" opacity="${n4(sp.hiG)}" filter="url(#glow2)"/>
+    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 3.2)}" fill="url(#halo-nova)" color="${sp.color}"/>
+    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 1.9)}" fill="url(#halo-nova)" color="${sp.color}"/>
     <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.coreR)}" fill="${sp.color}" opacity="1"/>
   </g>
   <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.5" filter="url(#glow)"/>
+    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.3" filter="url(#halo-blur)"/>
     <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth)}" opacity="1"/>
   </g>
 </svg>`;

@@ -3,8 +3,19 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
   <title>Christian Luciani — espiral de conocimiento</title>
   <defs>
-    <filter id="glow" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
-    <filter id="glow2" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="3.5"/></filter>
+    <radialGradient id="halo-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
+      <stop offset="30%" stop-color="currentColor" stop-opacity="0.09"/>
+      <stop offset="65%" stop-color="currentColor" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-nova" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
+      <stop offset="40%" stop-color="currentColor" stop-opacity="0.05"/>
+      <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>
   <g id="logo-background" data-name="Background">
       <circle cx="326.15" cy="245.1" r="1.275" fill="#ff6f5e" opacity="0.5746"/>
@@ -41,8 +52,9 @@
       <circle cx="731.72" cy="648.9" r="1.2889" fill="#f6d7c4" opacity="0.3438"/>
   </g>
   <g id="logo-star-0" data-name="star 0">
-    <circle cx="400" cy="418" r="28" fill="#ffb3a0" opacity="0.2" filter="url(#glow2)"/>
-    <circle cx="400" cy="418" r="14" fill="#ffb3a0" opacity="0.3" filter="url(#glow2)"/>
+    <circle cx="400" cy="418" r="44.8" fill="url(#halo-nova)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="26.6" fill="url(#halo-nova)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="22.68" fill="url(#halo-star)" color="#ffb3a0"/>
     <circle cx="400" cy="418" r="4.2" fill="#ffb3a0" opacity="1"/>
   </g>
   <g id="logo-spiral" data-name="Spiral" stroke-linecap="round" fill="none">
@@ -61,7 +73,7 @@
       <line x1="433.7" y1="254.78" x2="514.82" y2="570.37" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
   </g>
   <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#c9a84c" stroke-width="16" opacity="0.5" filter="url(#glow)"/>
+    <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#c9a84c" stroke-width="16" opacity="0.3" filter="url(#halo-blur)"/>
     <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#c9a84c" stroke-width="10" opacity="1"/>
   </g>
 

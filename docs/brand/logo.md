@@ -13,16 +13,21 @@
 
 ## 1. El símbolo
 
-Espiral de conocimiento acumulativo: un triángulo que gira y
-decrece hacia el centro en generaciones, con nodos-estrella en cada vértice,
-una **supernova** permanente en el origen y la **"C" de Christian** como
-cierre en plena intensidad (triángulo abierto = evolución en curso).
+Espiral de conocimiento acumulativo: un triángulo que nace en el
+origen —la supernova— y gira creciendo en generaciones hasta la C final en
+plena intensidad (triángulo abierto = evolución en curso). Con
+nodos-estrella en cada vértice: el símbolo es una constelación que se
+expande.
 
-- **Espiral**: opacidad y grosor crecientes hacia afuera — el conocimiento
-  se acumula.
-- **Constelación**: estrellas que preexisten y se disuelven al ser tocadas
-  por la línea (en la animación); la supernova central permanece: es el
-  origen.
+- **Espiral**: nace en el origen y crece hacia afuera — opacidad y grosor
+  crecientes: cada generación acumula más que la anterior. El conocimiento
+  se expande.
+- **Constelación**: cada nodo-estrella tiene su propio halo — radio
+  aleatorizado con semilla fija y color característico heredado del nodo
+  (radialGradient con currentColor: caída rápida, translúcida). Nodo y
+  estrella se integran como una constelación real. En la animación las
+  estrellas preexisten y se disuelven al ser tocadas por la línea; la
+  supernova central permanece: es el origen de todo.
 - **La C**: las dos últimas líneas del espiral, en oro, grosor máximo — la
   firma.
 

@@ -99,6 +99,19 @@ Reporte fresco: [comentario en PR #58](https://github.com/ChristianLuciani/chris
 
 **Contrato mejorado para la próxima ronda:** la spec-issue #54 no pedía “los dark replican el ambiente del HTML” ni “el gate corre en CI” — ambas expectativas eran implícitas. En issues de brand futuros: declarar ambiente de fondo y superficie de enforcement del gate.
 
+### Ronda 2 — observación visual del operador (2026-09-25, post-review-fresco)
+
+Feedback: el halo era demasiado intenso; pedía más translúcidez, difusión
+más rápida (caída pronunciada), radio aleatorizado por estrella/nodo (no
+múltiplo fijo) y color del halo heredado del color característico del nodo
+— nodo y estrella como una constelación real. También: lenguaje expansivo
+en las descripciones (el símbolo nace y crece; nada de "gira y decrece").
+
+FIX: tratamiento de halo como glifo de marca en `generate-logo.mjs`
+(radialGradient + currentColor, radios con semilla fija 90210+j·977,
+centro 0.28/0.16 de caída rápida; halo del oro 0.5→0.3); descripciones
+expansivas en manual §1. La geometría sigue ≡ DOM (gate verde).
+
 ### Resultado de la ronda 1 de corrección
 
 - `83 passed | 1 skipped` (19 en geometry.test: 16 + 3 golden) · CI `build-test` pass
