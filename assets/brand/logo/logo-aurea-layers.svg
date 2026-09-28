@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- GENERADO por tools/logo/generate-logo.mjs — geometry.mjs ≡ DOM aprobado (PR #53). NO EDITAR A MANO -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
+  <title>Christian Luciani — espiral de conocimiento</title>
+  <defs>
+    <radialGradient id="halo-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
+      <stop offset="30%" stop-color="currentColor" stop-opacity="0.09"/>
+      <stop offset="65%" stop-color="currentColor" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-nova" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
+      <stop offset="40%" stop-color="currentColor" stop-opacity="0.05"/>
+      <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <g id="logo-background" data-name="Background">
+      <circle cx="245.1" cy="284.29" r="1.3522" fill="#ffb49e" opacity="0.3099"/>
+      <circle cx="212.09" cy="265.05" r="1.1876" fill="#ff6f5e" opacity="0.2922"/>
+      <circle cx="170.4" cy="399.74" r="1.6813" fill="#f6d7c4" opacity="0.567"/>
+      <circle cx="435.66" cy="384.38" r="0.734" fill="#cfe0ff" opacity="0.5332"/>
+      <circle cx="313.64" cy="388.37" r="1.1001" fill="#ff8a70" opacity="0.3472"/>
+      <circle cx="436.63" cy="582.11" r="1.1405" fill="#f6d7c4" opacity="0.366"/>
+      <circle cx="694.16" cy="198.06" r="1.3179" fill="#ff8a70" opacity="0.3042"/>
+      <circle cx="554.79" cy="480.78" r="0.8176" fill="#ffb49e" opacity="0.4389"/>
+      <circle cx="743.2" cy="511.36" r="0.8928" fill="#f6d7c4" opacity="0.5445"/>
+      <circle cx="51.02" cy="587.7" r="0.9429" fill="#ff8a70" opacity="0.5178"/>
+      <circle cx="480.07" cy="175.95" r="1.4259" fill="#ff6f5e" opacity="0.405"/>
+      <circle cx="241.07" cy="461.62" r="0.7413" fill="#ffb49e" opacity="0.3576"/>
+      <circle cx="223.15" cy="209.11" r="0.9035" fill="#ffb49e" opacity="0.4226"/>
+      <circle cx="654.72" cy="71.82" r="0.9221" fill="#ff6f5e" opacity="0.3877"/>
+      <circle cx="529.22" cy="347.74" r="1.5684" fill="#cfe0ff" opacity="0.5616"/>
+      <circle cx="474.25" cy="348.48" r="1.897" fill="#f6d7c4" opacity="0.7219"/>
+      <circle cx="646.62" cy="730.41" r="1.4629" fill="#ff8a70" opacity="0.4095"/>
+      <circle cx="134.27" cy="245.98" r="1.2339" fill="#ff8a70" opacity="0.3461"/>
+      <circle cx="692.97" cy="84.44" r="0.9035" fill="#ff8a70" opacity="0.4102"/>
+      <circle cx="623.7" cy="241.23" r="1.5384" fill="#f6d7c4" opacity="0.4366"/>
+      <circle cx="191.06" cy="92.19" r="1.1871" fill="#ff6f5e" opacity="0.4908"/>
+      <circle cx="64.21" cy="753.22" r="1.706" fill="#cfe0ff" opacity="0.5686"/>
+      <circle cx="363.15" cy="493.32" r="1.412" fill="#ffb49e" opacity="0.4289"/>
+      <circle cx="654.99" cy="181.72" r="1.1432" fill="#ff8a70" opacity="0.2881"/>
+      <circle cx="338.31" cy="527.55" r="1.5957" fill="#ff6f5e" opacity="0.41"/>
+      <circle cx="213.42" cy="48.22" r="0.9654" fill="#ff8a70" opacity="0.5019"/>
+      <circle cx="214.76" cy="680.96" r="1.2934" fill="#cfe0ff" opacity="0.4198"/>
+      <circle cx="212.58" cy="85.57" r="1.3449" fill="#cfe0ff" opacity="0.3848"/>
+      <circle cx="745.34" cy="193.01" r="1.0484" fill="#f6d7c4" opacity="0.4106"/>
+      <circle cx="643.19" cy="508.65" r="0.9844" fill="#cfe0ff" opacity="0.4684"/>
+      <circle cx="444.03" cy="382.36" r="0.9006" fill="#f6d7c4" opacity="0.2643"/>
+      <circle cx="457.75" cy="396.17" r="1.4385" fill="#ffb49e" opacity="0.4334"/>
+      <circle cx="468.95" cy="413.04" r="0.9037" fill="#f6d7c4" opacity="0.2437"/>
+      <circle cx="472.35" cy="436.26" r="1.4325" fill="#ff8a70" opacity="0.3406"/>
+      <circle cx="467.05" cy="451.58" r="1.3437" fill="#cfe0ff" opacity="0.4546"/>
+      <circle cx="462.42" cy="480.85" r="1.3057" fill="#ff6f5e" opacity="0.3617"/>
+      <circle cx="446.54" cy="485.92" r="1.4413" fill="#f6d7c4" opacity="0.3788"/>
+      <circle cx="442.41" cy="516.53" r="1.1907" fill="#ff6f5e" opacity="0.4343"/>
+      <circle cx="409.94" cy="518.27" r="1.6048" fill="#f6d7c4" opacity="0.3533"/>
+      <circle cx="355.78" cy="531.35" r="1.7224" fill="#cfe0ff" opacity="0.3984"/>
+      <circle cx="334.65" cy="518.1" r="1.045" fill="#ff6f5e" opacity="0.3851"/>
+      <circle cx="293.09" cy="510.17" r="0.7026" fill="#cfe0ff" opacity="0.2522"/>
+      <circle cx="285.08" cy="486.86" r="1.3054" fill="#ff8a70" opacity="0.4069"/>
+      <circle cx="255.33" cy="447.84" r="1.1132" fill="#ffb49e" opacity="0.4062"/>
+      <circle cx="233.98" cy="404.9" r="0.7018" fill="#ffb49e" opacity="0.2913"/>
+      <circle cx="236.24" cy="365.2" r="1.0556" fill="#ff6f5e" opacity="0.2589"/>
+      <circle cx="240.63" cy="280.27" r="0.959" fill="#ffb49e" opacity="0.3461"/>
+      <circle cx="285.09" cy="252.48" r="0.5845" fill="#ff8a70" opacity="0.3714"/>
+      <circle cx="309.07" cy="220.67" r="0.9027" fill="#f6d7c4" opacity="0.3696"/>
+      <circle cx="325.51" cy="155.46" r="1.3768" fill="#ff8a70" opacity="0.3227"/>
+      <circle cx="471.1" cy="151.1" r="0.7265" fill="#ff8a70" opacity="0.3851"/>
+      <circle cx="490.8" cy="172.83" r="1.1492" fill="#ffb49e" opacity="0.4043"/>
+      <circle cx="617.79" cy="187.37" r="0.899" fill="#ff6f5e" opacity="0.4162"/>
+      <circle cx="349.52" cy="443.61" r="2.0814" fill="#f6d7c4" opacity="0.4357"/>
+      <circle cx="344.69" cy="429.09" r="0.8642" fill="#ffb49e" opacity="0.2619"/>
+      <circle cx="334.48" cy="418.19" r="0.7986" fill="#cfe0ff" opacity="0.2588"/>
+      <circle cx="321.53" cy="407.97" r="1.3198" fill="#cfe0ff" opacity="0.231"/>
+      <circle cx="330.33" cy="369.96" r="1.2363" fill="#ff8a70" opacity="0.2337"/>
+      <circle cx="333.99" cy="367.78" r="1.4579" fill="#f6d7c4" opacity="0.4381"/>
+      <circle cx="361.13" cy="344.72" r="1.4373" fill="#f6d7c4" opacity="0.2927"/>
+      <circle cx="369.37" cy="323.1" r="0.8288" fill="#cfe0ff" opacity="0.3377"/>
+      <circle cx="402.37" cy="310.43" r="1.0445" fill="#ff6f5e" opacity="0.4362"/>
+      <circle cx="420.67" cy="302" r="0.9723" fill="#ff8a70" opacity="0.4194"/>
+      <circle cx="450.93" cy="301.71" r="1.1119" fill="#f6d7c4" opacity="0.2672"/>
+      <circle cx="494.63" cy="309.74" r="0.7067" fill="#ff8a70" opacity="0.3035"/>
+      <circle cx="515.2" cy="343.59" r="0.6662" fill="#ff8a70" opacity="0.4466"/>
+      <circle cx="555.96" cy="396.41" r="0.9269" fill="#cfe0ff" opacity="0.435"/>
+      <circle cx="566.69" cy="409.36" r="1.2928" fill="#ffb49e" opacity="0.3077"/>
+      <circle cx="575.8" cy="489.24" r="1.232" fill="#f6d7c4" opacity="0.4196"/>
+      <circle cx="541.55" cy="525.64" r="0.7499" fill="#ff6f5e" opacity="0.2719"/>
+      <circle cx="538.55" cy="605.2" r="1.2083" fill="#ff6f5e" opacity="0.2378"/>
+      <circle cx="476.76" cy="644.1" r="1.3744" fill="#ffb49e" opacity="0.423"/>
+      <circle cx="479.91" cy="684.61" r="1.422" fill="#f6d7c4" opacity="0.2608"/>
+      <circle cx="372.59" cy="676.19" r="1.0666" fill="#ff8a70" opacity="0.2829"/>
+      <circle cx="334.6" cy="680.11" r="0.6318" fill="#f6d7c4" opacity="0.3047"/>
+      <circle cx="189.9" cy="651.58" r="1.1624" fill="#f6d7c4" opacity="0.2659"/>
+  </g>
+  <g id="logo-star-0" data-name="star 0">
+    <circle cx="400" cy="418" r="44.8" fill="url(#halo-nova)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="26.6" fill="url(#halo-nova)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="31" fill="url(#halo-star)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="6.2" fill="#ffb3a0" opacity="1"/>
+  </g>
+  <g id="logo-star-1" data-name="star 1">
+    <circle cx="409.22" cy="423.3" r="4.55" fill="url(#halo-star)" color="#ff6f5e"/>
+    <circle cx="409.22" cy="423.3" r="1.27" fill="#ff6f5e" opacity="0.79"/>
+  </g>
+  <g id="logo-star-2" data-name="star 2">
+    <circle cx="392.03" cy="427.2" r="10.42" fill="url(#halo-star)" color="#ff6f5e"/>
+    <circle cx="392.03" cy="427.2" r="2.32" fill="#ff6f5e" opacity="0.92"/>
+  </g>
+  <g id="logo-star-3" data-name="star 3">
+    <circle cx="398.03" cy="404.21" r="5.58" fill="url(#halo-star)" color="#ff6f5e"/>
+    <circle cx="398.03" cy="404.21" r="1.86" fill="#ff6f5e" opacity="0.64"/>
+  </g>
+  <g id="logo-star-4" data-name="star 4">
+    <circle cx="414.14" cy="427.8" r="5.51" fill="url(#halo-star)" color="#ffb49e"/>
+    <circle cx="414.14" cy="427.8" r="1.41" fill="#ffb49e" opacity="0.76"/>
+  </g>
+  <g id="logo-star-5" data-name="star 5">
+    <circle cx="385.9" cy="431.75" r="5.95" fill="url(#halo-star)" color="#ffb49e"/>
+    <circle cx="385.9" cy="431.75" r="2.46" fill="#ffb49e" opacity="0.89"/>
+  </g>
+  <g id="logo-star-6" data-name="star 6">
+    <circle cx="398.71" cy="395.49" r="10.23" fill="url(#halo-star)" color="#ffb49e"/>
+    <circle cx="398.71" cy="395.49" r="2.61" fill="#ffb49e" opacity="1"/>
+  </g>
+  <g id="logo-star-7" data-name="star 7">
+    <circle cx="421.45" cy="435.74" r="11.07" fill="url(#halo-star)" color="#ffb49e"/>
+    <circle cx="421.45" cy="435.74" r="2.32" fill="#ffb49e" opacity="1"/>
+  </g>
+  <g id="logo-star-8" data-name="star 8">
+    <circle cx="375.38" cy="438.23" r="10.07" fill="url(#halo-star)" color="#f6d7c4"/>
+    <circle cx="375.38" cy="438.23" r="2.97" fill="#f6d7c4" opacity="1"/>
+  </g>
+  <g id="logo-star-9" data-name="star 9">
+    <circle cx="401.01" cy="381.54" r="7.81" fill="url(#halo-star)" color="#f6d7c4"/>
+    <circle cx="401.01" cy="381.54" r="2.14" fill="#f6d7c4" opacity="0.58"/>
+  </g>
+  <g id="logo-star-10" data-name="star 10">
+    <circle cx="432.16" cy="449.54" r="7.66" fill="url(#halo-star)" color="#f6d7c4"/>
+    <circle cx="432.16" cy="449.54" r="1.68" fill="#f6d7c4" opacity="0.7"/>
+  </g>
+  <g id="logo-star-11" data-name="star 11">
+    <circle cx="357.54" cy="447.25" r="3.78" fill="url(#halo-star)" color="#f6d7c4"/>
+    <circle cx="357.54" cy="447.25" r="1.23" fill="#f6d7c4" opacity="0.82"/>
+  </g>
+  <g id="logo-star-12" data-name="star 12">
+    <circle cx="406.62" cy="359.35" r="9.03" fill="url(#halo-star)" color="#cfe0ff"/>
+    <circle cx="406.62" cy="359.35" r="2.27" fill="#cfe0ff" opacity="0.95"/>
+  </g>
+  <g id="logo-star-13" data-name="star 13">
+    <circle cx="447.53" cy="473.24" r="4.53" fill="url(#halo-star)" color="#cfe0ff"/>
+    <circle cx="447.53" cy="473.24" r="1.82" fill="#cfe0ff" opacity="0.67"/>
+  </g>
+  <g id="logo-star-14" data-name="star 14">
+    <circle cx="327.54" cy="459.34" r="4.62" fill="url(#halo-star)" color="#cfe0ff"/>
+    <circle cx="327.54" cy="459.34" r="1.36" fill="#cfe0ff" opacity="0.79"/>
+  </g>
+  <g id="logo-star-15" data-name="star 15">
+    <circle cx="418.7" cy="324.35" r="13.82" fill="url(#halo-star)" color="#cfe0ff"/>
+    <circle cx="418.7" cy="324.35" r="2.86" fill="#cfe0ff" opacity="1"/>
+  </g>
+  <g id="logo-star-16" data-name="star 16">
+    <circle cx="469.07" cy="513.57" r="8.89" fill="url(#halo-star)" color="#ff8a70"/>
+    <circle cx="469.07" cy="513.57" r="2.57" fill="#ff8a70" opacity="1"/>
+  </g>
+  <g id="logo-star-17" data-name="star 17">
+    <circle cx="277.52" cy="474.73" r="5.58" fill="url(#halo-star)" color="#ff8a70"/>
+    <circle cx="277.52" cy="474.73" r="1.5" fill="#ff8a70" opacity="0.76"/>
+  </g>
+  <g id="logo-star-18" data-name="star 18">
+    <circle cx="442.97" cy="269.58" r="5.67" fill="url(#halo-star)" color="#ff8a70"/>
+    <circle cx="442.97" cy="269.58" r="2.54" fill="#ff8a70" opacity="0.88"/>
+  </g>
+  <g id="logo-star-19" data-name="star 19">
+    <circle cx="498.26" cy="581.54" r="6.56" fill="url(#halo-star)" color="#ff8a70"/>
+    <circle cx="498.26" cy="581.54" r="2.09" fill="#ff8a70" opacity="0.61"/>
+  </g>
+  <g id="logo-star-20" data-name="star 20">
+    <circle cx="194.78" cy="492.7" r="6.6" fill="url(#halo-star)" color="#ff6f5e"/>
+    <circle cx="194.78" cy="492.7" r="1.63" fill="#ff6f5e" opacity="0.73"/>
+  </g>
+  <g id="logo-star-21" data-name="star 21">
+    <circle cx="492.54" cy="181.52" r="7.36" fill="url(#halo-star)" color="#ff6f5e"/>
+    <circle cx="492.54" cy="181.52" r="2.29" fill="#ff6f5e" opacity="1"/>
+  </g>
+  <g id="logo-spiral" data-name="Spiral" stroke-linecap="round" fill="none">
+      <line x1="400" y1="418" x2="409.22" y2="423.3" stroke="rgb(22,50,79)" stroke-width="2.2" opacity="0.1"/>
+      <line x1="409.22" y1="423.3" x2="392.03" y2="427.2" stroke="rgb(21,58,85)" stroke-width="2.3111" opacity="0.1344"/>
+      <line x1="392.03" y1="427.2" x2="398.03" y2="404.21" stroke="rgb(20,67,92)" stroke-width="2.4222" opacity="0.1689"/>
+      <line x1="398.03" y1="404.21" x2="414.14" y2="427.8" stroke="rgb(18,75,98)" stroke-width="2.5333" opacity="0.2033"/>
+      <line x1="414.14" y1="427.8" x2="385.9" y2="431.75" stroke="rgb(17,84,104)" stroke-width="2.6444" opacity="0.2378"/>
+      <line x1="385.9" y1="431.75" x2="398.71" y2="395.49" stroke="rgb(16,92,110)" stroke-width="2.7556" opacity="0.2722"/>
+      <line x1="398.71" y1="395.49" x2="421.45" y2="435.74" stroke="rgb(15,100,117)" stroke-width="2.8667" opacity="0.3067"/>
+      <line x1="421.45" y1="435.74" x2="375.38" y2="438.23" stroke="rgb(13,109,123)" stroke-width="2.9778" opacity="0.3411"/>
+      <line x1="375.38" y1="438.23" x2="401.01" y2="381.54" stroke="rgb(12,117,129)" stroke-width="3.0889" opacity="0.3756"/>
+      <line x1="401.01" y1="381.54" x2="432.16" y2="449.54" stroke="rgb(11,126,136)" stroke-width="3.2" opacity="0.41"/>
+      <line x1="432.16" y1="449.54" x2="357.54" y2="447.25" stroke="rgb(10,134,142)" stroke-width="3.3111" opacity="0.4444"/>
+      <line x1="357.54" y1="447.25" x2="406.62" y2="359.35" stroke="rgb(9,142,148)" stroke-width="3.4222" opacity="0.4789"/>
+      <line x1="406.62" y1="359.35" x2="447.53" y2="473.24" stroke="rgb(7,151,154)" stroke-width="3.5333" opacity="0.5133"/>
+      <line x1="447.53" y1="473.24" x2="327.54" y2="459.34" stroke="rgb(6,159,161)" stroke-width="3.6444" opacity="0.5478"/>
+      <line x1="327.54" y1="459.34" x2="418.7" y2="324.35" stroke="rgb(5,167,167)" stroke-width="3.7556" opacity="0.5822"/>
+      <line x1="418.7" y1="324.35" x2="469.07" y2="513.57" stroke="rgb(4,176,173)" stroke-width="3.8667" opacity="0.6167"/>
+      <line x1="469.07" y1="513.57" x2="277.52" y2="474.73" stroke="rgb(2,184,179)" stroke-width="3.9778" opacity="0.6511"/>
+      <line x1="277.52" y1="474.73" x2="442.97" y2="269.58" stroke="rgb(1,193,186)" stroke-width="4.0889" opacity="0.6856"/>
+      <line x1="442.97" y1="269.58" x2="498.26" y2="581.54" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
+  </g>
+  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="16" opacity="0.3" filter="url(#halo-blur)"/>
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="10" opacity="1"/>
+  </g>
+
+</svg>

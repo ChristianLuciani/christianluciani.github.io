@@ -23,3 +23,6 @@ ROADMAP.md
 
 # Local worktrees (AGOS W3)
 .worktrees/
+
+# Worktrees: node_modules compartido por symlink desde el repo madre
+node_modules

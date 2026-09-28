@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- GENERADO por tools/logo/generate-logo.mjs — NO EDITAR A MANO -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="78.51 113.52 536.01 536.01" role="img" aria-label="C de Christian — favicon simplificado">
+  <title>C — espiral de conocimiento (favicon)</title>
+  <defs>
+    <radialGradient id="halo-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
+      <stop offset="30%" stop-color="currentColor" stop-opacity="0.09"/>
+      <stop offset="65%" stop-color="currentColor" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-nova" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
+      <stop offset="40%" stop-color="currentColor" stop-opacity="0.05"/>
+      <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <g id="logo-supernova" data-name="Supernova">
+    <circle cx="400" cy="418" r="44.8" fill="url(#halo-nova)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="26.6" fill="url(#halo-nova)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="6.2" fill="#ffb3a0" opacity="1"/>
+  </g>
+  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="16" opacity="0.3" filter="url(#halo-blur)"/>
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="10" opacity="1"/>
+  </g>
+</svg>
