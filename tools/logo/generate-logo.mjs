@@ -97,6 +97,17 @@ const layerBackground = (sky) => {
   return `  <g id="logo-background" data-name="Background">\n${circles}\n  </g>`;
 };
 
+/* jerarquía de protagonismo (operador, 2026-09-25): la supernova gana
+   presencia (+2pt de core) y las estrellas "bright" de las aristas
+   (la punta de la C + rnd>0.72) bajan un punto — no roban protagonismo
+   al origen. Es tratamiento de render: el spec de la animación (#53) no
+   cambia; #55 puede espejarlo ahí si se quiere. */
+const BRAND = {
+  novaCoreBoost: 2,       // px de core extra para la supernova
+  brightCoreScale: 0.78,  // -22% en las bright de las aristas
+  brightHaloScale: 0.85,  // su halo también baja proporcional
+};
+
 const layerConstellation = (g, cfg, { settled = false } = {}) => {
   const pts = constellationPoints(g.segs);
   const rows = [];
@@ -105,7 +116,11 @@ const layerConstellation = (g, cfg, { settled = false } = {}) => {
     const sp = starSpec(j, pts.length, cfg.constellation);
     // radio del halo: aleatorizado por nodo con semilla fija (determinista)
     const rndH = seeded(90210 + j * 977);
-    const haloR = n2(j === 0 ? sp.coreR * 5.4 : sp.glowR > sp.coreR * 3 ? sp.coreR * (3.4 + rndH() * 2.6) : sp.coreR * (2.2 + rndH() * 2.4));
+    const isBright = j !== 0 && sp.glowR > sp.coreR * 3; // punta + rnd>.72: las grandes de las aristas
+    const coreR = j === 0 ? sp.coreR + BRAND.novaCoreBoost
+      : isBright ? sp.coreR * BRAND.brightCoreScale : sp.coreR;
+    const haloR = n2(j === 0 ? coreR * 5.0
+      : coreR * (isBright ? (3.4 + rndH() * 2.6) * BRAND.brightHaloScale : 2.2 + rndH() * 2.4));
     rows.push(`  <g id="logo-star-${j}" data-name="star ${j}">`);
     if (j === 0) rows.push(
       `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 3.2)}" fill="url(#halo-nova)" color="${sp.color}"/>`,
@@ -113,7 +128,7 @@ const layerConstellation = (g, cfg, { settled = false } = {}) => {
     );
     rows.push(
       `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${haloR}" fill="url(#halo-star)" color="${sp.color}"/>`,
-      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`,
+      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`,
       `  </g>`
     );
   });
@@ -233,7 +248,7 @@ ${filterDefs()}
   <g id="logo-supernova" data-name="Supernova">
     <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 3.2)}" fill="url(#halo-nova)" color="${sp.color}"/>
     <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 1.9)}" fill="url(#halo-nova)" color="${sp.color}"/>
-    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.coreR)}" fill="${sp.color}" opacity="1"/>
+    <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.coreR + BRAND.novaCoreBoost)}" fill="${sp.color}" opacity="1"/>
   </g>
   <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.3" filter="url(#halo-blur)"/>

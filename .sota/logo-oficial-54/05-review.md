@@ -99,6 +99,13 @@ Reporte fresco: [comentario en PR #58](https://github.com/ChristianLuciani/chris
 
 **Contrato mejorado para la próxima ronda:** la spec-issue #54 no pedía “los dark replican el ambiente del HTML” ni “el gate corre en CI” — ambas expectativas eran implícitas. En issues de brand futuros: declarar ambiente de fondo y superficie de enforcement del gate.
 
+### Ronda 3 — jerarquía de protagonismo (operador, 2026-09-25)
+
+Supernova +2pt de core (6.2px) y estrellas bright de las aristas -22%
+(0.78) con halo -15%: el ojo va al origen, la constelación no compite.
+Constantes explícitas `BRAND` en generate-logo.mjs (tratamiento de render,
+no del spec); favicon simplificado consistente.
+
 ### Ronda 2 — observación visual del operador (2026-09-25, post-review-fresco)
 
 Feedback: el halo era demasiado intenso; pedía más translúcidez, difusión

@@ -20,7 +20,7 @@
   <g id="logo-supernova" data-name="Supernova">
     <circle cx="400" cy="418" r="44.8" fill="url(#halo-nova)" color="#ffb3a0"/>
     <circle cx="400" cy="418" r="26.6" fill="url(#halo-nova)" color="#ffb3a0"/>
-    <circle cx="400" cy="418" r="4.2" fill="#ffb3a0" opacity="1"/>
+    <circle cx="400" cy="418" r="6.2" fill="#ffb3a0" opacity="1"/>
   </g>
   <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
     <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#c9a84c" stroke-width="16" opacity="0.3" filter="url(#halo-blur)"/>

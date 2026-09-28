@@ -30,6 +30,11 @@ expande.
   supernova central permanece: es el origen de todo.
 - **La C**: las dos últimas líneas del espiral, en oro, grosor máximo — la
   firma.
+- **Jerarquía** (operador, 2026-09-25): el ojo va primero al origen — la
+  supernova gana +2pt de core y las estrellas grandes de las aristas (la
+  punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
+  tratamiento del render de marca; el spec de la animación (#53) no cambia
+  (#55 puede espejarlo).
 
 ## 2. Versiones
 

@@ -54,8 +54,8 @@
   <g id="logo-star-0" data-name="star 0">
     <circle cx="400" cy="418" r="44.8" fill="url(#halo-nova)" color="#ffb3a0"/>
     <circle cx="400" cy="418" r="26.6" fill="url(#halo-nova)" color="#ffb3a0"/>
-    <circle cx="400" cy="418" r="22.68" fill="url(#halo-star)" color="#ffb3a0"/>
-    <circle cx="400" cy="418" r="4.2" fill="#ffb3a0" opacity="1"/>
+    <circle cx="400" cy="418" r="31" fill="url(#halo-star)" color="#ffb3a0"/>
+    <circle cx="400" cy="418" r="6.2" fill="#ffb3a0" opacity="1"/>
   </g>
   <g id="logo-spiral" data-name="Spiral" stroke-linecap="round" fill="none">
       <line x1="400" y1="418" x2="430.1" y2="440.68" stroke="rgb(22,50,79)" stroke-width="2.2" opacity="0.1"/>
