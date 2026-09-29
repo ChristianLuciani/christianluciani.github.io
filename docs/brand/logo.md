@@ -283,6 +283,15 @@ Umbrales calibrados sobre la medición antes/después (ruido entre corridas con
 fotogramas congelados ≤0.001). `--report` imprime la curva sin veredicto y
 `--frames <dir>` guarda los fotogramas medidos.
 
+Salida: **0** sin hallazgos · **1** violaciones · **2** no se pudo medir (Chrome,
+artefacto o sonda) — el 2 existe para que un fallo de entorno no se lea como
+"limpio".
+
+Reparto: `verify-motion.mjs` adquiere (sesión CDP, fotogramas, máscaras) y
+muestra; **`motion-analysis.mjs`** tiene la política (umbrales, métricas y
+veredicto) en funciones puras, con **17 tests** que corren en CI — la adquisición
+necesita Chrome, el veredicto tiene que estar cubierto siempre.
+
 ![Comparación de la punta: v16 arriba, fix abajo — fotogramas congelados, ganancia ×4](logo-motion-punta.png)
 
 ### Lo que arregló #55 (medido)
