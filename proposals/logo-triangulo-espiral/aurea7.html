@@ -73,8 +73,14 @@
   @keyframes fadeIn{to{opacity:1}}
 
   .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
-  .settle-on .c-glow{animation:breathe 3.6s ease-in-out infinite}
-  @keyframes breathe{0%,100%{opacity:.5} 50%{opacity:.75}}
+  /* La respiración vive en el TRAZO, no en el grupo. El grupo termina su
+     aparición en opacidad 1 (la C "enciende" su glow al trazarse) y ahí se
+     queda: si respirara el grupo, al entrar el settle saltaría de 1 a .5 — el
+     escalón visible que reporta #55. El trazo ya descansa en .5, así que la
+     respiración arranca exactamente en el valor con que el ojo venía viendo. */
+  .c-glow path{opacity:.5}
+  .settle-on .c-glow path{animation:breathe 3.6s ease-in-out infinite}
+  @keyframes breathe{0%,100%{opacity:.5} 50%{opacity:.78}}
 
   .captions{
     position:absolute; left:0; right:0; bottom:-64px; text-align:center; user-select:none;
@@ -160,12 +166,22 @@ const CONFIG = {
   timing: {
     start: 700,   // la constelación se ve primero; el espiral arranca después
     stagger: 235, // ms entre líneas al final (el ritmo de la C se mantiene)
-    staggerFast: 110, // ms entre líneas al arranque (explosivo)
+    staggerFast: 125, // ms entre líneas al arranque (explosivo, con un poco más de aire)
     seg: 460,     // duración del trazado de una línea al final
-    segFast: 260, // duración al arranque (explosivo)
+    segFast: 285, // duración al arranque (explosivo, sin apurarse)
     segC: 640,    // duración del trazado de las líneas de la "C"
     hotFade: 500, // ms en que una línea baja de intensidad al chocar con su nodo
     settlePad: 420,
+    // exponente de la rampa explosivo→ritmo final (v14 lo dejaba implícito en
+    // un `|| 3`): más bajo = el tempo CAMINA hacia el ritmo final en vez de
+    // saltar a él — el contraste del arranque deja de leerse como brusco (#55)
+    accelRamp: 2.2,
+    // curvas, en un solo lugar: el manifiesto de movimiento documenta estos
+    // mismos valores (docs/brand/logo.md §Movimiento)
+    easeDraw: "cubic-bezier(.19,1,.22,1)",     // trazado: expo-out
+    easeDissolve: "cubic-bezier(.3,1.4,.5,1)", // chispa elástica de las estrellas
+    easePunta: "cubic-bezier(.33,.6,.4,1)",    // apagado de la punta: sin overshoot
+    easeGlow: "ease-out",                      // encendido del glow de la C con su trazado
   },
 };
 
@@ -286,9 +302,41 @@ function segStyle(idx, total) {
 }
 
 /* ─────────────────────────── render + animación ──────────────────────── */
-let timers = [];
+/* Generación de render + agenda del cronograma.
+   Todo lo que "pasa después" (limpiar el dash, sacar las líneas de calor, entrar
+   al settle) se aplica sobre el RELOJ DE ANIMACIÓN, no con setTimeout:
+   · un setTimeout depende del reloj de pared y se desincroniza si la pestaña
+     queda en background, donde las animaciones sí se pausan;
+   · y sobre todo, hace la pieza NO medible: el gate de movimiento (#55) mide
+     fotogramas exactos con pause + currentTime, y con setTimeout los efectos
+     posteriores a cada trazado no llegarían nunca en ese estado congelado.
+   Un `finished` tampoco sirve: al fijar currentTime con la animación pausada el
+   estado es 'paused', la promesa no resuelve y el settle no entraría. */
+const jobs = [];
+let ticking = false;
+function tick() {
+  ticking = false;
+  for (let i = jobs.length - 1; i >= 0; i--) {
+    const job = jobs[i];
+    const now = job.anim.currentTime;
+    if (now == null) { jobs.splice(i, 1); continue; } // animación cancelada: nada que limpiar
+    /* 1ms de tolerancia: en una animación terminada currentTime se clampa al fin
+       del efecto, y delay + activeDuration puede quedar unas milésimas por encima
+       (medido: sin la tolerancia, 3 limpiezas no llegaban nunca y la agenda
+       quedaba girando para siempre) */
+    if (now >= job.end - 1) { jobs.splice(i, 1); job.cb(); }
+  }
+  if (jobs.length) { ticking = true; requestAnimationFrame(tick); }
+}
+let gen = 0;
 function render() {
-  timers.forEach(clearTimeout); timers = [];
+  const run = ++gen;
+  jobs.length = 0; // el cronograma anterior muere con su render
+  const after = (anim, cb) => {
+    const t = anim.effect.getComputedTiming();
+    jobs.push({ anim, end: t.delay + t.activeDuration, cb: () => { if (run === gen) cb(); } });
+    if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+  };
   svg.classList.remove("settle-on");
   while (svg.lastChild && svg.lastChild.tagName !== "DEFS") svg.lastChild.remove();
 
@@ -344,7 +392,8 @@ function render() {
     stroke: CONFIG.colors.c, "stroke-width": CONFIG.cWidth, opacity: 1,
   });
   svg.appendChild(cPath);
-  cGlowGroup.appendChild(el("path", { d: cD, "stroke-width": CONFIG.cWidth + 6, opacity: .5 }));
+  // el glow del C: la opacidad de reposo la fija el CSS (.c-glow path), una sola fuente
+  cGlowGroup.appendChild(el("path", { d: cD, "stroke-width": CONFIG.cWidth + 6 }));
 
   // "calor" de formación: cada línea nace más intensa y baja al chocar con su
   // nodo; las 2 últimas no (quedan en plena intensidad: son la C)
@@ -439,9 +488,10 @@ function render() {
       const punta = j === pts.length - 1;
       constellation.children[j].animate(
         punta
-          ? [ // la punta se desvanece SIN destello: nada de flash artificial
+          ? [ // la punta se APAGA: sin escala y sin overshoot — el bloom del
+              // glow escalado era el destello artificial sobre la punta (#55)
               { opacity: .85, transform: "scale(1)" },
-              { opacity: 0, transform: "scale(1.3)" },
+              { opacity: 0, transform: "scale(1)" },
             ]
           : [
               { opacity: .85, transform: "scale(1)" },
@@ -450,46 +500,45 @@ function render() {
             ],
         {
           duration: C.dissolve, delay: touch(j),
-          easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both",
+          easing: punta ? T.easePunta : T.easeDissolve, fill: "both",
         }
       );
     });
   }
 
   // animación
-  const anims = [];
   lines.forEach((line, i) => {
     if (!line) return;
-    const len = line.getTotalLength();
     if (reduced) return;
+    const len = line.getTotalLength();
     line.setAttribute("stroke-dasharray", len);
     line.setAttribute("stroke-dashoffset", len);
-    anims.push(line.animate(
+    const draw = line.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
-    ));
+      { duration: segDur(i), delay: segDelay(i), easing: T.easeDraw, fill: "both" }
+    );
     // blindaje: al terminar el trazado, la línea queda como trazo simple
     // (sin dash) — así no puede desaparecer en ningún motor
-    timers.push(setTimeout(() => {
+    after(draw, () => {
       line.removeAttribute("stroke-dasharray");
       line.removeAttribute("stroke-dashoffset");
-    }, segDelay(i) + segDur(i) + 80));
+    });
   });
   hot.forEach((h, i) => { // el brillo de formación sigue el mismo trazado…
     if (!h) return;
     const len = h.getTotalLength();
     h.setAttribute("stroke-dasharray", len);
     h.setAttribute("stroke-dashoffset", len);
-    anims.push(h.animate(
+    h.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
-    ));
-    anims.push(h.animate( // …y baja de intensidad al chocar con su nodo
+      { duration: segDur(i), delay: segDelay(i), easing: T.easeDraw, fill: "both" }
+    );
+    const cool = h.animate( // …y baja de intensidad al chocar con su nodo
       [{ opacity: .55 }, { opacity: 0 }],
       { duration: T.hotFade, delay: segDelay(i) + segDur(i),
-        easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both" }
-    ));
-    timers.push(setTimeout(() => h.remove(), segDelay(i) + segDur(i) + T.hotFade + 80));
+        easing: T.easeDissolve, fill: "both" }
+    );
+    after(cool, () => h.remove());
   });
 
   // trazado de la C: un solo trazo continuo, y el glow aparece con ella
@@ -499,19 +548,19 @@ function render() {
     const cWin = segDur(cIdx) + segDur(cIdx + 1);
     cPath.setAttribute("stroke-dasharray", cLen);
     cPath.setAttribute("stroke-dashoffset", cLen);
-    anims.push(cPath.animate(
+    const cDraw = cPath.animate(
       [{ strokeDashoffset: cLen }, { strokeDashoffset: 0 }],
-      { duration: cWin, delay: segDelay(cIdx), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
-    ));
-    timers.push(setTimeout(() => {
+      { duration: cWin, delay: segDelay(cIdx), easing: T.easeDraw, fill: "both" }
+    );
+    after(cDraw, () => {
       cPath.removeAttribute("stroke-dasharray");
       cPath.removeAttribute("stroke-dashoffset");
-    }, segDelay(cIdx) + cWin + 80));
+    });
     cGlowGroup.style.opacity = 0;
-    anims.push(cGlowGroup.animate(
+    cGlowGroup.animate(
       [{ opacity: 0 }, { opacity: 1 }],
-      { duration: cWin, delay: segDelay(cIdx), easing: "ease-out", fill: "both" }
-    ));
+      { duration: cWin, delay: segDelay(cIdx), easing: T.easeGlow, fill: "both" }
+    );
   }
 
   if (reduced) { // estado final directo, sin animación
@@ -521,7 +570,14 @@ function render() {
   }
 
   const end = segDelay(maxIdx) + segDur(maxIdx) + T.settlePad;
-  timers.push(setTimeout(() => svg.classList.add("settle-on"), end));
+  // Reloj de la pieza: un grupo vacío cuya animación dura EXACTAMENTE el
+  // cronograma. El settle entra cuando el reloj de animación llega al final —
+  // y no antes. Además publica el fin del cronograma en el DOM: es el tiempo
+  // que los gates leen para medir la entrada del settle.
+  const clock = el("g", { class: "clock" });
+  svg.appendChild(clock);
+  after(clock.animate([{ opacity: 1 }, { opacity: 1 }], { duration: end, fill: "both" }),
+    () => svg.classList.add("settle-on"));
 }
 
 document.getElementById("replay").addEventListener("click", render);

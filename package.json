@@ -12,7 +12,8 @@
     "test:watch": "vitest",
     "build:html": "tsx build.ts",
     "logo:generate": "node tools/logo/generate-logo.mjs",
-    "logo:verify": "node tools/logo/verify-dom-fidelity.mjs"
+    "logo:verify": "node tools/logo/verify-dom-fidelity.mjs",
+    "logo:motion": "node tools/logo/verify-motion.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
