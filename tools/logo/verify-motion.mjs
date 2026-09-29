@@ -37,12 +37,18 @@
  *   node tools/logo/verify-motion.mjs             # gate (exit 1 si viola)
  *   node tools/logo/verify-motion.mjs --report     # curva, sin veredicto
  *   --html <path> --frames <dir> --step <ms>
+ *
+ * Salida: 0 sin hallazgos · 1 violaciones · 2 no se pudo medir (Chrome, artefacto
+ * o sonda) — el 2 existe para que un fallo de entorno no se lea como "limpio".
  */
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { session } from "./chrome.mjs";
 import { decodePng, sampleRegion, differenceStats, redness } from "./png.mjs";
+/* la política (umbrales y veredicto) vive en un módulo puro y testeado en CI;
+   acá sólo se adquiere (CDP + fotogramas) y se muestra */
+import { THRESHOLDS, analyze } from "./motion-analysis.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
@@ -84,9 +90,8 @@ const PROBE = `(() => {
         .map((r) => r.selectorText),
     };
   })();
-  return JSON.stringify({ timing: CONFIG.timing, anims, breathe,
-    cPath: cpath ? cpath.getAttribute('d') : null, dpr: devicePixelRatio,
-    viewport: { w: innerWidth, h: innerHeight } });
+  /* sólo lo que el gate lee: cronograma de animaciones, respiración y la C */
+  return JSON.stringify({ anims, breathe, cPath: cpath ? cpath.getAttribute('d') : null });
 })()`;
 
 /** congelador: mueve el cronograma al tiempo T (función del tiempo, no del reloj) */
@@ -159,11 +164,16 @@ function haloOutside(img, ref, mask) {
   return sum;
 }
 
-/** mapa SVG (0..800) → píxeles del fotograma (centrado, regla del artefacto) */
-function mapper(img) {
-  const side = Math.min(0.92 * Math.min(img.width, img.height), 620);
-  const s = side / 800;
-  return (x, y) => ({ x: (img.width - side) / 2 + x * s, y: (img.height - side) / 2 + y * s });
+/**
+ * Mapa SVG (0..800) → píxeles del fotograma, con el rectángulo MEDIDO en la
+ * misma sesión CDP que produce los fotogramas. Antes se derivaba de la regla de
+ * layout del artefacto (92vmin, tope 620px): funcionaba, pero duplicaba una
+ * constante ajena — si el artefacto cambia su stage, el muestreo se corre en
+ * silencio. El rect y el PNG comparten viewport, así que la medición manda.
+ */
+function mapper(rect) {
+  const s = rect.width / 800;
+  return (x, y) => ({ x: rect.left + x * s, y: rect.top + y * s });
 }
 
 function landmarks(probe) {
@@ -191,9 +201,15 @@ async function measure(html, plan, framesDir) {
   try {
     const probe = JSON.parse(await s.eval(PROBE));
     const L = landmarks(probe);
+    /* el stage: mismo viewport que los fotogramas (misma sesión) */
+    const stage = await s.eval(`(() => { const r = document.getElementById('logo').getBoundingClientRect();
+      return { left: r.left, top: r.top, width: r.width, height: r.height }; })()`);
+    if (!(stage.width > 0)) throw new Error(`el SVG del logo mide ${stage.width}px: no puedo encuadrar la punta`);
     const times = plan(L);
     await s.eval(LZ(L.settle));
     const rows = [];
+    /* se retienen los fotogramas decodificados para la pasada de diferencia: la
+       cantidad está acotada por el plan (~15-40 fotogramas) */
     const frames = [];
     let px = null;
     for (const T of times) {
@@ -205,14 +221,13 @@ async function measure(html, plan, framesDir) {
       const png = await s.capture();
       if (framesDir) writeFileSync(join(framesDir, `frame-${String(T).padStart(5, "0")}.png`), png);
       const img = decodePng(png);
-      px ??= mapper(img);
+      px ??= mapper(stage);
       const tipRed = sampleRegion(img, { ...px(L.C.tip.x, L.C.tip.y), r: L.r, metric: redness });
       const tipLum = sampleRegion(img, { ...px(L.C.tip.x, L.C.tip.y), r: L.r });
       const glow = sampleRegion(img, { ...px((L.C.a.x + L.C.b.x) / 2, (L.C.a.y + L.C.b.y) / 2), r: L.r });
-      const frame = sampleRegion(img, { x: img.width / 2, y: img.height / 2, r: Math.min(img.width, img.height) / 2 });
       frames.push(img);
       rows.push({ T, t, tipRed: tipRed.mean, tipRedMax: tipRed.max, tipMax: tipLum.max,
-        tip: tipLum.mean, body: glow.mean, frame: frame.mean });
+        tip: tipLum.mean, body: glow.mean });
     }
     /* La referencia es el último fotograma: la pieza settled, sin la estrella de
        la punta. Restarla deja SÓLO la luz de esa estrella (cancela el cielo, las
@@ -224,168 +239,55 @@ async function measure(html, plan, framesDir) {
       rows[i].light = halo.light;   // luz propia de la estrella (canal estrella)
       rows[i].halo = haloOutside(frames[i], ref, outside); // glow que se abre fuera del trazo
     }
-    return { probe, L, rows, times, size: { w: ref.width, h: ref.height } };
+    return { probe, L, rows, stage };
   } finally {
     s.close();
   }
 }
 
-/* ─────────────────────────────── análisis ────────────────────────────── */
-const median = (xs) => [...xs].sort((a, b) => a - b)[Math.floor(xs.length / 2)];
-
-const maxRise = (rows, key, from, to) => {
-  let best = { delta: -Infinity, t: null };
-  for (let i = 1; i < rows.length; i++) {
-    if (rows[i].T < from || rows[i].T > to || rows[i - 1].T < from) continue;
-    if (rows[i].T - rows[i - 1].T > stepMs * 2) continue; // no comparar saltos entre ventanas
-    const delta = rows[i][key] - rows[i - 1][key];
-    if (delta > best.delta) best = { delta, t: rows[i].T };
-  }
-  return best;
-};
-
-/** suba sobre el mínimo previo: una luz que se apaga nunca debería subir */
-const bloomOver = (rows, key, from, to) => {
-  let min = Infinity, best = { delta: -Infinity, t: null };
-  for (const r of rows) {
-    if (r.T < from) min = Math.min(min, r[key]);
-    if (r.T < from || r.T > to) continue;
-    if (r[key] - min > best.delta) best = { delta: r[key] - min, t: r.T };
-  }
-  return best;
-};
-
-/** suba sostenida: mediana del último tercio menos mediana del primero */
-const sustainedRise = (rows, key, from, to) => {
-  const inWin = rows.filter((r) => r.T >= from && r.T <= to);
-  const k = Math.max(1, Math.floor(inWin.length / 3));
-  const head = median(inWin.slice(0, k).map((r) => r[key]));
-  const tail = median(inWin.slice(-k).map((r) => r[key]));
-  return { head, tail, delta: tail - head };
-};
-
-function settleStep(rows, settle) {
-  const before = rows.filter((r) => r.T < settle).reduce((best, r) => (best == null || r.T > best.T ? r : best), null);
-  const after = rows.filter((r) => r.T > settle).reduce((best, r) => (best == null || r.T < best.T ? r : best), null);
-  return before && after ? { before, after, delta: after.body - before.body } : null;
-}
-
-/** escala de un `transform: scale(x)` serializado; 1 si no hay transform */
-function scaleOf(transform) {
-  if (!transform || transform === "none") return 1;
-  const m = /scale\(([-\d.]+)(?:,\s*([-\d.]+))?\)/.exec(transform);
-  return m ? Number(m[1]) : 1;
-}
-
-/** controles verticales de una cubic-bezier: y1 e y2 (overshoot si > 1) */
-function bezierY(easing) {
-  const m = /cubic-bezier\(([^)]+)\)/.exec(easing ?? "");
-  if (!m) return null;
-  const n = m[1].split(",").map((v) => Number(v.trim()));
-  return n.length === 4 ? [n[1], n[3]] : null;
-}
-
-/** invariantes del cronograma: son las que hacen imposible un pico de brillo */
-function checkStructure(probe, L) {
-  const fails = [];
-  const punta = L.punta;
-
-  /* 1. opacidad monótona y escala que no crece en la disolución de la punta */
-  if (!punta) fails.push("no encontré la animación de disolución de la punta");
-  else {
-    let last = Infinity;
-    for (const k of punta.kf) {
-      const o = Number(k.opacity);
-      if (o > last + EPS) fails.push(`la punta se re-enciende: opacidad ${last} → ${o} en la disolución (un pico de brillo)`);
-      last = o;
-    }
-    const scales = punta.kf.map((k) => scaleOf(k.transform));
-    if (Math.max(...scales) > scales[0] + EPS)
-      fails.push(`el glow de la punta se agranda al apagarse (escala ${scales.join(" → ")}): el bloom era el destello`);
-  }
-
-  /* 2. la curva de la punta no puede tener overshoot (y > 1) */
-  const ys = bezierY(punta?.easing);
-  if (ys && Math.max(...ys) > 1 + EPS)
-    fails.push(`la curva de la punta (${punta.easing}) tiene overshoot: el valor intermedio supera el inicial`);
-
-  /* 3. la respiración tiene que vivir en el TRAZO y arrancar en su valor de reposo */
-  const b = probe.breathe;
-  if (!b) fails.push("no encontré @keyframes breathe en el artefacto");
-  else {
-    /* Chrome fusiona los keyframes con la misma declaración: "0%, 100%" */
-    const hasKey = (frame, wanted) => frame.key.split(",")
-      .some((k) => { const v = k.trim(); return wanted.includes(v); });
-    const rest = Number(b.rest);
-    for (const [label, wanted] of [["inicial", ["0%", "from"]], ["final", ["100%", "to"]]]) {
-      const frame = b.frames.find((f) => hasKey(f, wanted));
-      if (!frame) fails.push(`la respiración no declara su fotograma ${label}`);
-      else if (Number(frame.opacity) !== rest)
-        fails.push(`la respiración ${label === "inicial" ? "arranca" : "termina"} en ${frame.opacity} y el trazo descansa en ${rest}: eso ES el escalón del settle`);
-    }
-    const targets = b.targets ?? [];
-    if (!targets.length) fails.push("ninguna regla aplica la respiración");
-    for (const sel of targets)
-      if (!/path\s*$/.test(sel.trim()))
-        fails.push(`la respiración se aplica a "${sel}" y no al TRAZO: sobre el grupo la tapa la animación del trazado (en v16 nunca respiraba)`);
-  }
-  return fails;
-}
-
-function report({ probe, L, rows }, verdict, framesDir) {
-  const d0 = L.punta.delay, d1 = L.punta.delay + L.punta.duration;
-  /* La ventana es la disolución COMPLETA de la punta. Se mide la luz PROPIA de
-     la estrella (exceso sobre el estado settled, canal estrella: el oro de la C
-     no lo tiene) y el glow que se abre FUERA del trazo. */
-  const from = d0 - 100, to = d1 + 150;
-  const flash = maxRise(rows, "light", from, to);
-  const bloom = bloomOver(rows, "light", from, to);
-  const sustain = sustainedRise(rows, "light", from, to);
-  const haloUp = maxRise(rows, "halo", from, to);
-  const settle = settleStep(rows, L.settle);
-  /* el fotograma más cercano a cada instante pedido: el plan los incluye, pero
-     los T van redondeados y un `>=` estricto los perdería (y el chequeo de la
-     respiración se saltaría en silencio) */
-  const nearest = (t) => rows.reduce((best, r) => (Math.abs(r.T - t) < Math.abs(best.T - t) ? r : best), rows[0]);
-  const breatheFrames = { a: nearest(L.settle + 40), b: nearest(L.settle + 900) };
-  const breathe = { ...breatheFrames, delta: breatheFrames.b.body - breatheFrames.a.body,
-    ok: Math.abs(breatheFrames.a.T - (L.settle + 40)) <= stepMs && Math.abs(breatheFrames.b.T - (L.settle + 900)) <= stepMs };
-  const starBefore = rows.filter((r) => r.T <= d0).at(-1);
-  const starAfter = rows.at(-1);
-  const starSeen = starBefore ? starBefore.tipRedMax - starAfter.tipRedMax : NaN;
-  const drift = Math.max(...rows.map((r) => Math.abs((r.t ?? r.T) - r.T)));
-
+/* ─────────────────────────────── presentación ─────────────────────────
+   El veredicto vive en motion-analysis.mjs (puro, testeado en CI). Acá sólo se
+   imprime: primero la curva, después las métricas con sus umbrales, y al final
+   los hallazgos. La tabla tiene que alcanzar para auditar a mano sin volver a
+   correr nada. */
+function printReport({ probe, L, rows }, out, framesDir) {
+  const { from, to, peak } = out;
   console.log(`artefacto: ${probe.anims.length} animaciones · C = 1 path · respiración en ${probe.breathe?.targets?.join(" / ")}`);
-  console.log(`punta se apaga ${d0.toFixed(0)}→${d1.toFixed(0)}ms (${L.punta.duration}ms, ${L.punta.easing})`);
-  console.log(`C trazada hasta ${L.drawEnd.toFixed(0)}ms · settle ${L.settle.toFixed(0)}ms · deriva del congelado ≤${drift.toFixed(0)}ms`);
+  console.log(`punta se apaga ${out.d0.toFixed(0)}→${out.d1.toFixed(0)}ms (${L.punta.duration}ms, ${L.punta.easing})`);
+  console.log(`C trazada hasta ${L.drawEnd.toFixed(0)}ms · settle ${L.settle.toFixed(0)}ms · deriva del congelado ≤${out.drift.toFixed(0)}ms`);
   console.log("");
   console.log("    t(ms)   luz estrella   glow fuera   rojoMax   punta   glow");
-  const peak = Math.max(...rows.filter((r) => r.T >= from && r.T <= to).map((r) => r.light));
   for (const r of rows) {
-    const rel = peak > 0 && r.T >= from && r.T <= to ? ` (${((r.light / peak) * 100).toFixed(0)}%)` : "";
+    const inWin = r.T >= from && r.T <= to;
+    const rel = inWin && peak > 0 ? ` (${((r.light / peak) * 100).toFixed(0)}%)` : "";
     console.log(`${String(r.T).padStart(9)}  ${r.light.toFixed(2).padStart(8)}${rel.padEnd(7)}  ${r.halo.toFixed(1).padStart(9)}   ${r.tipRedMax.toFixed(3)}    ${r.tip.toFixed(4)}  ${r.body.toFixed(4)}`);
   }
   console.log("");
-  console.log(`autochequeo punta: rojoMax antes=${starBefore?.tipRedMax.toFixed(3)} vs settled=${starAfter.tipRedMax.toFixed(3)} (Δ=${starSeen.toFixed(3)}) · píxel más brillante settled=${starAfter.tipMax.toFixed(3)}`);
-  console.log(`destello — luz de la estrella: suba máx ${flash.delta >= 0 ? "+" : ""}${flash.delta.toFixed(3)} (máx ${FLASH_MAX}) · bloom ${bloom.delta >= 0 ? "+" : ""}${bloom.delta.toFixed(3)} · sostenida ${sustain.delta.toFixed(3)} · glow fuera del trazo: suba máx ${haloUp.delta >= 0 ? "+" : ""}${haloUp.delta.toFixed(2)} (máx ${HALO_MAX})`);
-  if (settle) console.log(`settle (${L.settle.toFixed(0)}ms): cuerpo ${settle.before.body.toFixed(4)} → ${settle.after.body.toFixed(4)} = ${settle.delta >= 0 ? "+" : ""}${settle.delta.toFixed(4)} (máx ${SETTLE_MAX})`);
-  console.log(`respiración: glow ${breathe.a.body.toFixed(4)} → ${breathe.b.body.toFixed(4)} = ${breathe.delta >= 0 ? "+" : ""}${breathe.delta.toFixed(4)} (mín ${BREATHE_MIN})`);
+  console.log(`ventana del destello: ${from.toFixed(0)}→${to.toFixed(0)}ms`);
+  console.log(`autochequeo punta: rojoMax antes=${rows.filter((r) => r.T <= out.d0).at(-1)?.tipRedMax.toFixed(3)}`
+    + ` vs settled=${rows.at(-1).tipRedMax.toFixed(3)} (Δ=${out.starSeen.toFixed(3)})`
+    + ` · píxel más brillante settled=${out.tipMaxSettled.toFixed(3)}`);
+  console.log(`destello — luz de la estrella: suba máx ${sign(out.flash.delta, 3)} (máx ${THRESHOLDS.flash})`
+    + ` · bloom ${sign(out.bloom.delta, 3)} · sostenida ${sign(out.sustain.delta, 3)}`
+    + ` · glow fuera del trazo: suba máx ${sign(out.haloUp.delta, 2)} (máx ${THRESHOLDS.halo})`);
+  if (out.settle)
+    console.log(`settle (${L.settle.toFixed(0)}ms): cuerpo ${out.settle.before.body.toFixed(4)} → ${out.settle.after.body.toFixed(4)}`
+      + ` = ${sign(out.settle.delta, 4)} (máx ${THRESHOLDS.settle})`);
+  console.log(`respiración: glow ${out.breathe.a.body.toFixed(4)} → ${out.breathe.b.body.toFixed(4)}`
+    + ` = ${sign(out.breathe.delta, 4)} (mín ${THRESHOLDS.breathe})`);
   if (framesDir) console.log(`fotogramas: ${framesDir}`);
-  if (!verdict) return;
+}
 
-  const fails = [...checkStructure(probe, L)];
-  if (flash.delta > FLASH_MAX) fails.push(`destello: la luz de la estrella sube +${flash.delta.toFixed(3)} en ${flash.t}ms mientras se apaga (máx ${FLASH_MAX})`);
-  if (bloom.delta > BLOOM_MAX) fails.push(`bloom: la luz de la estrella sube +${bloom.delta.toFixed(3)} sobre el mínimo previo en ${bloom.t}ms (máx ${BLOOM_MAX})`);
-  if (sustain.delta > FLASH_MAX) fails.push(`suba sostenida de la estrella de +${sustain.delta.toFixed(3)} mientras se apaga (máx ${FLASH_MAX})`);
-  if (haloUp.delta > HALO_MAX) fails.push(`el glow fuera del trazo sube +${haloUp.delta.toFixed(2)} en ${haloUp.t}ms mientras la punta se apaga (máx ${HALO_MAX})`);
-  if (settle && Math.abs(settle.delta) > SETTLE_MAX) fails.push(`salto al entrar el settle: ${settle.delta.toFixed(4)} (máx ${SETTLE_MAX})`);
-  if (!breathe.ok) fails.push(`no hay fotogramas en el settle para medir la respiración (settle=${L.settle.toFixed(0)}ms, paso=${stepMs}ms)`);
-  else if (Math.abs(breathe.delta) < BREATHE_MIN) fails.push(`el glow no respira: entre ${breathe.a.T}ms y ${breathe.b.T}ms cambia ${breathe.delta.toFixed(4)} (mín ${BREATHE_MIN})`);
-  if (!(starSeen > STAR_MIN)) fails.push(`autochequeo: la estrella de la punta no se ve antes y no se apaga después (Δ=${starSeen.toFixed(3)})`);
-  if (!(starAfter.tipMax >= 0.3)) fails.push(`autochequeo: la punta settled no tiene píxel brillante (máx=${starAfter.tipMax.toFixed(3)})`);
-  if (drift > 5) fails.push(`el congelado deriva ${drift.toFixed(0)}ms del tiempo pedido`);
-  if (fails.length) { for (const f of fails) console.error(`❌ MOVIMIENTO: ${f}`); process.exitCode = 1; return; }
-  console.log("🏆 MOVIMIENTO: la punta se apaga sin pico de brillo, el glow respira y el settle no pega salto");
+const sign = (v, digits) => `${v >= 0 ? "+" : ""}${v.toFixed(digits)}`;
+
+function printVerdict(out, verdict) {
+  if (!verdict) return;
+  if (!out.fails.length) {
+    console.log("🏆 MOVIMIENTO: la punta se apaga sin pico de brillo, el glow respira y el settle no pega salto");
+    return;
+  }
+  for (const f of out.fails) console.error(`❌ MOVIMIENTO: ${f}`);
+  process.exitCode = 1;
 }
 
 /* ─────────────────────────────── CLI ────────────────────────────────── */
@@ -396,8 +298,7 @@ const arg = (name, dflt) => {
 const html = resolve(arg("html", join(ROOT, "proposals/logo-triangulo-espiral/aurea7.html")));
 const stepMs = Number(arg("step", 100));
 const framesDir = arg("frames", null);
-
-if (framesDir) mkdirSync(framesDir, { recursive: true });
+const verdict = !process.argv.includes("--report");
 
 /** instantes a muestrear, derivados del cronograma real del artefacto */
 function plan(L) {
@@ -411,10 +312,19 @@ function plan(L) {
   return [...new Set(times)].sort((a, b) => a - b);
 }
 
-console.log("midiendo fotogramas congelados…");
-const data = await measure(html, (L) => {
-  const times = plan(L);
-  console.log(`${times.length} fotogramas: ${times[0]}→${times.at(-1)}ms (paso ${stepMs})`);
-  return times;
-}, framesDir);
-report(data, !process.argv.includes("--report"), framesDir);
+try {
+  if (framesDir) mkdirSync(framesDir, { recursive: true });
+  console.log("midiendo fotogramas congelados…");
+  const data = await measure(html, (L) => {
+    const times = plan(L);
+    console.log(`${times.length} fotogramas: ${times[0]}→${times.at(-1)}ms (paso ${stepMs})`);
+    return times;
+  }, framesDir);
+  const out = analyze(data, { stepMs });
+  printReport(data, out, framesDir);
+  printVerdict(out, verdict);
+} catch (err) {
+  /* 2 = no se pudo medir: sin Chrome (o sin artefacto/sonda) el gate NO pasa */
+  console.error(`❌ MOVIMIENTO: no pude medir — ${err.message}`);
+  process.exitCode = 2;
+}

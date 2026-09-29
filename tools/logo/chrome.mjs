@@ -2,25 +2,29 @@
  * chrome.mjs — Chrome headless compartido por los gates del logo (issue #55).
  *
  * Dos primitivas, un solo lugar donde vive el binario y la forma de invocarlo:
- *   · dumpDom(...)     — el DOM tal como quedó en un instante virtual (lo usan
- *                        el gate de fidelidad geométrica y el de movimiento
- *                        para leer el cronograma real de animaciones).
- *   · screenshot(...)  — el fotograma REAL (lo que el ojo ve): es la única
- *                        fuente válida para juzgar un destello o un salto.
+ *   · dumpDom(...)   — el DOM tal como quedó en un instante virtual (lo usa el
+ *                      gate de fidelidad geométrica).
+ *   · session(...)   — una sesión CDP sobre la página viva: el gate de movimiento
+ *                      congela fotogramas exactos con `pause` + `currentTime` y
+ *                      los captura. Es el único camino con el que se puede juzgar
+ *                      un destello o un salto (ver `verify-motion.mjs`).
  *
  * Hechos medidos en esta máquina (2026-09-29), que explican las decisiones:
  *   · `--virtual-time-budget=0` NO expira nunca ⇒ Chrome no cierra ni escribe
  *     el PNG (cuelga hasta que lo maten). Se clampea a ≥1 ms.
  *   · un `--user-data-dir` propio deja a Chrome vivo tras el screenshot
- *     (onboarding/registración en background) ⇒ se usa el perfil por defecto y
- *     un `timeout` convierte cualquier cuelgue en error explícito, nunca en un
- *     gate colgado.
+ *     (onboarding/registración en background) ⇒ `dumpDom` usa el perfil por
+ *     defecto y un `timeout` convierte cualquier cuelgue en error explícito.
+ *   · una sesión CDP, en cambio, SÍ usa perfil propio: es la única forma de que
+ *     no la bloquee otro Chrome sobre el perfil por defecto (un headless colgado
+ *     de una corrida anterior deja el gate sin puerto CDP y el error no dice por
+ *     qué). Matar el proceso y borrar el perfil lo hace la propia sesión.
  *
  * Resolución del binario: candidato fijo de macOS → CHROME_PATH del entorno.
  * Sin binario ⇒ error explícito, nunca un gate que "pasa" por no poder medir.
  */
 import { execFileSync, spawn } from "node:child_process";
-import { accessSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { accessSync, mkdtempSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -49,6 +53,7 @@ const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scro
  */
 const FRAME_ARGS = ["--run-all-compositor-stages-before-draw", "--deterministic-mode"];
 const RUN_TIMEOUT_MS = 60_000;
+const CALL_TIMEOUT_MS = 30_000;
 
 const run = (args, { capture = false } = {}) =>
   execFileSync(chromePath(), [...BASE_ARGS, ...args], {
@@ -65,25 +70,6 @@ export function dumpDom(file, { reduced = false, budget = 1500, size } = {}) {
   args.push("--dump-dom", `file://${file}`);
   if (reduced) args.push("--force-prefers-reduced-motion");
   return run(args, { capture: true });
-}
-
-/**
- * screenshot(file, { timeMs, width, height }) → Buffer PNG del fotograma en
- * `timeMs` de tiempo virtual. Pasa por archivo temporal porque Chrome sólo
- * escribe el PNG en disco.
- */
-export function screenshot(file, { timeMs = 0, width = 800, height = 800 } = {}) {
-  const dir = mkdtempSync(join(tmpdir(), "logo-shot-"));
-  const out = join(dir, "frame.png");
-  try {
-    run([
-      `--virtual-time-budget=${Math.max(1, timeMs)}`, ...FRAME_ARGS,
-      `--window-size=${width},${height}`, `--screenshot=${out}`, `file://${file}`,
-    ]);
-    return readFileSync(out);
-  } finally {
-    rmSync(dir, { recursive: true, force: true });
-  }
 }
 
 /* ─────────────── sesión CDP: un Chrome, muchos fotogramas ───────────────
@@ -129,7 +115,19 @@ export async function session(file, { width = 800, height = 800 } = {}) {
   const child = spawn(chromePath(), [
     ...BASE_ARGS, `--user-data-dir=${profile}`, `--remote-debugging-port=${port}`,
     `--window-size=${width},${height}`, `file://${file}`,
-  ], { stdio: "ignore" });
+  ], { stdio: ["ignore", "ignore", "pipe"] });
+
+  /* Chrome puede morir sin abrir el puerto (colisión de puerto, perfil trabado).
+     Sin su stderr el error dice sólo "CDP no responde", que no orienta a nadie. */
+  const chromeLog = [];
+  child.stderr.on("data", (chunk) => {
+    chromeLog.push(String(chunk));
+    if (chromeLog.length > 20) chromeLog.shift();
+  });
+  const why = () => {
+    const lines = chromeLog.join("").split("\n").filter((l) => l.trim() && !/CVDisplayLink|allocator multiple/.test(l));
+    return lines.length ? ` · chrome: ${lines.slice(-2).join(" | ")}` : "";
+  };
 
   const close = () => {
     try { child.kill("SIGKILL"); } catch { /* ya murió */ }
@@ -159,9 +157,19 @@ export async function session(file, { width = 800, height = 800 } = {}) {
       pending.delete(msg.id);
       msg.error ? slot.rej(new Error(`CDP ${msg.error.message}`)) : slot.res(msg.result);
     });
+    /* Toda llamada CDP vence: un renderer clavado no puede dejar el gate colgado
+       esperando una respuesta que no va a llegar (el `timeout` de run() sólo
+       cubre los caminos de un solo disparo). */
     const send = (method, params = {}) => new Promise((res, rej) => {
       const myId = ++id;
-      pending.set(myId, { res, rej });
+      const timer = setTimeout(() => {
+        pending.delete(myId);
+        rej(new Error(`CDP ${method}: sin respuesta en ${CALL_TIMEOUT_MS}ms`));
+      }, CALL_TIMEOUT_MS);
+      pending.set(myId, {
+        res: (v) => { clearTimeout(timer); res(v); },
+        rej: (e) => { clearTimeout(timer); rej(e); },
+      });
       ws.send(JSON.stringify({ id: myId, method, params }));
     });
 
@@ -194,6 +202,6 @@ export async function session(file, { width = 800, height = 800 } = {}) {
     };
   } catch (err) {
     close();
-    throw err;
+    throw new Error(`${err.message}${why()}`);
   }
 }

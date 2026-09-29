@@ -113,7 +113,7 @@ export function redness(r, g, b) {
 }
 
 /**
- * sampleRegion(img, { x, y, r }) → { n, mean, max, min }
+ * sampleRegion(img, { x, y, r }) → { n, mean, max }
  * Promedio de la métrica sobre el disco (centro x,y, radio r) en píxeles de la
  * imagen. r=0 ⇒ un solo píxel. Fuera de los límites ⇒ sólo lo que cae dentro.
  * `metric` permite medir otro canal (p. ej. `redness`).
@@ -122,7 +122,7 @@ export function sampleRegion(img, { x, y, r = 0, metric = luminance }) {
   const { width, height, rgba } = img;
   const x0 = Math.max(0, Math.floor(x - r)), x1 = Math.min(width - 1, Math.ceil(x + r));
   const y0 = Math.max(0, Math.floor(y - r)), y1 = Math.min(height - 1, Math.ceil(y + r));
-  let n = 0, sum = 0, max = -Infinity, min = Infinity;
+  let n = 0, sum = 0, max = -Infinity;
   for (let py = y0; py <= y1; py++) {
     for (let px = x0; px <= x1; px++) {
       if (r > 0 && (px - x) ** 2 + (py - y) ** 2 > r * r) continue;
@@ -130,21 +130,20 @@ export function sampleRegion(img, { x, y, r = 0, metric = luminance }) {
       const lum = metric(rgba[i], rgba[i + 1], rgba[i + 2]);
       n++; sum += lum;
       if (lum > max) max = lum;
-      if (lum < min) min = lum;
     }
   }
-  if (!n) return { n: 0, mean: NaN, max: NaN, min: NaN };
-  return { n, mean: sum / n, max, min };
+  if (!n) return { n: 0, mean: NaN, max: NaN };
+  return { n, mean: sum / n, max };
 }
 
 /**
- * differenceStats(img, ref, { x, y, r, metric }) → { light, mean, spread, n, area }
+ * differenceStats(img, ref, { x, y, r, metric }) → { light, mean, n, area }
  *
  * Aísla lo que la imagen AGREGA respecto de una referencia (el estado settled,
- * sin la estrella) dentro del disco, y devuelve dos cosas:
- *   · light  — suma del exceso de la métrica (la luz propia de la estrella);
- *   · mean   — ese exceso repartido sobre todo el disco (comparable a `sampleRegion`);
- *   · spread — radio de giro de esa luz (cuánto se ABRE el halo).
+ * sin la estrella) dentro del disco:
+ *   · light — suma del exceso de la métrica (la luz propia de la estrella);
+ *   · mean  — ese exceso repartido sobre todo el disco (comparable a `sampleRegion`);
+ *   · n     — píxeles que aportan exceso; area — píxeles del disco.
  *
  * Es la medición del defecto de #55: la estrella de la punta se apagaba
  * agrandándose, y eso no se ve en la intensidad (baja) sino en el reparto: la
@@ -157,7 +156,7 @@ export function differenceStats(img, ref, { x, y, r = 0, metric = luminance }) {
   const { width, height, rgba } = img;
   const x0 = Math.max(0, Math.floor(x - r)), x1 = Math.min(width - 1, Math.ceil(x + r));
   const y0 = Math.max(0, Math.floor(y - r)), y1 = Math.min(height - 1, Math.ceil(y + r));
-  let light = 0, moment = 0, n = 0, area = 0;
+  let light = 0, n = 0, area = 0;
   for (let py = y0; py <= y1; py++) {
     for (let px = x0; px <= x1; px++) {
       const d2 = (px - x) ** 2 + (py - y) ** 2;
@@ -166,12 +165,13 @@ export function differenceStats(img, ref, { x, y, r = 0, metric = luminance }) {
       const i = (py * width + px) * 4;
       const excess = metric(rgba[i], rgba[i + 1], rgba[i + 2])
         - metric(ref.rgba[i], ref.rgba[i + 1], ref.rgba[i + 2]);
+      /* d2 ya no se usa: el radio de giro se probó como métrica del bloom y no
+         discriminaba (lo dominaba el ruido del halo lejano) — la métrica que sí
+         discrimina es el glow fuera del trazo, en verify-motion.mjs */
       if (excess <= 0) continue; // sólo lo que la estrella agrega
       light += excess;
-      moment += excess * d2;
       n++;
     }
   }
-  return { light, mean: area ? light / area : 0,
-    spread: light > 0 ? Math.sqrt(moment / light) : 0, n, area };
+  return { light, mean: area ? light / area : 0, n, area };
 }

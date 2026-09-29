@@ -73,11 +73,12 @@
   @keyframes fadeIn{to{opacity:1}}
 
   .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
-  /* La respiración vive en el TRAZO, no en el grupo. El grupo termina su
-     aparición en opacidad 1 (la C "enciende" su glow al trazarse) y ahí se
-     queda: si respirara el grupo, al entrar el settle saltaría de 1 a .5 — el
-     escalón visible que reporta #55. El trazo ya descansa en .5, así que la
-     respiración arranca exactamente en el valor con que el ojo venía viendo. */
+  /* La respiración vive en el TRAZO, no en el grupo. El grupo es el objetivo de
+     la animación del trazado: con fill:both esa animación lo deja fijo en 1 y le
+     gana en la cascada, así que una respiración sobre el grupo NUNCA se ve
+     (medido en v16: el cuerpo de la C cambiaba 0,0000 al entrar el settle). El
+     trazo descansa en .5, y la respiración arranca exactamente en ese valor: se
+     ve, y sin escalón al entrar. */
   .c-glow path{opacity:.5}
   .settle-on .c-glow path{animation:breathe 3.6s ease-in-out infinite}
   @keyframes breathe{0%,100%{opacity:.5} 50%{opacity:.78}}

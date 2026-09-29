@@ -184,17 +184,14 @@ describe("png — diferencia contra una referencia (el halo de la estrella, #55)
     const s = differenceStats(compacta, settled, { x: 2, y: 0, r: 4 });
     expect(s.n).toBe(1);
     expect(s.light).toBeCloseTo(luminance(200, 200, 200), 4); // el fondo no suma
-    expect(s.spread).toBeCloseTo(0, 6);                        // luz en el centro
     expect(s.area).toBe(5);                                    // el disco entero (5×1)
-    expect(s.mean).toBeCloseTo(s.light / 5, 6);                 // repartida en el disco
+    expect(s.mean).toBeCloseTo(s.light / 5, 6);                // repartida en el disco
   });
 
-  it("la misma luz abierta tiene MÁS radio de giro (el bloom de #55)", () => {
+  it("la misma luz abierta reparte más luz en el disco sin cambiar la suma", () => {
     const a = differenceStats(compacta, settled, { x: 2, y: 0, r: 4 });
     const b = differenceStats(abierta, settled, { x: 2, y: 0, r: 4 });
-    expect(a.spread).toBeCloseTo(0, 6);
-    expect(b.spread).toBeCloseTo(Math.sqrt(2 / 3), 6); // luz en x=1,2,3 ⇒ rms
-    expect(b.spread).toBeGreaterThan(a.spread);
+    expect(b.mean).toBeGreaterThan(a.mean); // misma luz, más repartida
   });
 
   it("no acepta imágenes de distinto tamaño", () => {
