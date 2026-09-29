@@ -184,6 +184,7 @@ function landmarks(probe) {
   const punta = stars.reduce((best, a) => (best && best.delay > a.delay ? best : a), null);
   const clock = probe.anims.find((a) => a.cls === "clock");
   if (!clock) throw new Error("el artefacto no tiene el reloj de la pieza (g.clock)");
+  if (!punta) throw new Error("el artefacto no tiene la disolución de la estrella de la punta (¿sin constelación?)");
   const drawEnd = probe.anims.filter((a) => a.tag === "path" && a.cls === "seg")
     .reduce((max, a) => Math.max(max, a.delay + a.duration), 0);
   return {
@@ -229,6 +230,7 @@ async function measure(html, plan, framesDir) {
       rows.push({ T, t, tipRed: tipRed.mean, tipRedMax: tipRed.max, tipMax: tipLum.max,
         tip: tipLum.mean, body: glow.mean });
     }
+    if (!rows.length) throw new Error(`el plan no produjo fotogramas (¿--step=${stepMs}?)`);
     /* La referencia es el último fotograma: la pieza settled, sin la estrella de
        la punta. Restarla deja SÓLO la luz de esa estrella (cancela el cielo, las
        estrellas de fondo y el oro de la C, que no tienen canal estrella). */
@@ -310,6 +312,12 @@ function plan(L) {
   /* autocontrol: la estrella de la punta existe al arrancar la pieza */
   times.push(Math.round(d0 - 800));
   return [...new Set(times)].sort((a, b) => a - b);
+}
+
+if (!Number.isFinite(stepMs) || stepMs <= 0) {
+  /* el contrato dice: 2 = no pude medir. Un argumento inválido no es una violación */
+  console.error(`❌ MOVIMIENTO: no pude medir — --step inválido: ${JSON.stringify(arg("step"))} (espero ms > 0)`);
+  process.exit(2);
 }
 
 try {
