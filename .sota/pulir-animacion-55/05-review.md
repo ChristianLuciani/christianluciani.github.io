@@ -62,30 +62,42 @@ preexistente de utilidades DOM entre los dos gates.
 
 Superficie resuelta en el canónico de skills-studio
 (`registry/authored/premerge-review/SKILL.md`, §Anti-trim pass): la copia
-proyectada hermana **no existe** en `.pi/skills/` de este repo (no hay
-`premerge-review/` proyectado acá), y el canónico sí tiene la sección → se usó
-ese criterio, no memoria.
+proyectada hermana **no existe** en `.pi/skills/` de este repo, y el canónico sí
+tiene la sección → se usó ese criterio, no memoria.
 
-Scan sobre `git diff main...HEAD`: **36 líneas borradas**, **1 coincidencia de
-marcador** — `[A-Z][A-Z_]{4,}` sobre `CONFIG` en la línea de código
-`cGlowGroup.appendChild(el("path", { … CONFIG.cWidth + 6, opacity: .5 }))`,
-donde el token **sobrevive** en la línea que la reemplaza
-(`… CONFIG.cWidth + 6 }))` — el atributo redundante salió porque la opacidad de
-reposo la fija el CSS). Cero coincidencias de palabras normativas
-(`NUNCA|jamás|obligator|prohibid`), de códigos `E_*` o de claves de payload.
+**Corrección del scan (F5 del review fresco):** mi primera pasada ancló el patrón
+de payload (`^[a-z_]+ =`) y reportó 1 coincidencia. El criterio lo define **sin
+anclar** — re-corrido con los regex exactos sobre el diff final
+(`main...HEAD`, 60 líneas borradas) da **12 coincidencias**: 8 del patrón payload
+(`timers =`, `anims =`, `len =`, `reduced =`, `args =`, `dump =`) y 4 de forma
+env-var (`CONFIG` ×2, `CHROME_CANDIDATES` ×2, `CHROME_PATH`). **Cero** de palabra
+normativa y **cero** de código `E_*`.
 
-Las dos únicas líneas de **superficie documental** borradas **sobreviven
-reformuladas en el mismo archivo** (verificado por grep, no por memoria):
-`docs/brand/logo.md:37` (`#55 puede espejarlo` → `→ **Ya espejado**: …`) y
-`docs/brand/logo.md:216` (el párrafo de QA visual, reubicado al mover §11).
+Resolución de cada token (trace 1 — "sobrevive en una superficie del repo",
+verificado por grep):
+
+| Token borrado | ¿Dónde sobrevive? |
+|---|---|
+| `CONFIG` | el artefacto y `motion-analysis.mjs` (5 archivos) — la línea del `\|\| 3` se eliminó justamente para que no haya default silencioso |
+| `CHROME_CANDIDATES` / `process.env.CHROME_PATH` | `chrome.mjs` (renombrado `CANDIDATES`, misma lista + `CHROME_PATH`) y `generate-logo.mjs` |
+| `reduced =` / `args =` / `dump =` | `chrome.mjs`: el `dumpDom` que el gate de fidelidad ahora **importa** (era la copia local que se borró) |
+| `anims =` / `len =` | siguen vivos como identificadores en el arnés |
+| `timers =` (×2) | **no sobrevive y es deliberado**: la agenda `setTimeout` fue reemplazada por la agenda sobre el reloj de animación (`jobs`/`tick`), declarado en `logo.md §11` y en el body del PR |
 
 **Traces disponibles en este repo — declarado explícitamente**, como pide el
-criterio: (1) *registry*: **no aplica** — este repo no es studio ni tiene
-registry; (2) *sidecar de provenance*: **no existe** para `docs/brand/logo.md`
-(sin ADR-011 → hatch no disponible); (3) *PR body*: disponible y **usado** —
-`Trim:` agregado al body del PR #61 con el puntero a las dos líneas.
+criterio: (1) *registry*: **no aplica** (este repo no es studio ni tiene
+registry); (2) *sidecar de provenance*: **no existe** para `docs/brand/logo.md`
+(sin ADR-011 → hatch no disponible); (3) *PR body*: disponible y **usado** — el
+bloque `Trim:` del PR #61 lista las 12 coincidencias y las dos líneas de la
+superficie documental.
 
-**Veredicto del pass:** sin trims no declarados.
+Las dos únicas líneas de **superficie documental** borradas **sobreviven
+reformuladas en el mismo archivo** (grep, no memoria): `docs/brand/logo.md:37`
+(`#55 puede espejarlo` → `→ **Ya espejado**: …`) y `logo.md:216` (el párrafo de QA
+visual, reubicado al mover §11).
+
+**Veredicto del pass:** sin trims no declarados; 12 coincidencias mecánicas, todas
+código o declaradas (no hay cláusula normativa entre ellas).
 
 ## Findings
 
@@ -96,6 +108,7 @@ registry; (2) *sidecar de provenance*: **no existe** para `docs/brand/logo.md`
 | F3 | NIT | `tools/logo/verify-motion.mjs:measure` | Un plan sin fotogramas terminaba en `TypeError` al imprimir la respiración | ✅ round 1 |
 | F4 | NIT | `verify-motion.mjs` vs `verify-dom-fidelity.mjs` | Los dos gates comparten necesidad (lanzar Chrome, parsear DOM) pero no un helper común; el de fidelidad tiene sus propios `round`/`parseAttrs`. Deuda **preexistente**, no de este branch: no se acoplan ahora (uno usa `--dump-dom`, el otro CDP) | sin acción (documentado) |
 | F5 | Contrato | `docs/brand/logo.md §11` + issue #55 §ADR-lite | La hipótesis "el destello combina 3 efectos solapados" es **parcialmente falsa** por medición: **no había pico de brillo** (la luz sólo decrecía) y el `breathe` del grupo era **inerte**, no una fuente de salto. Causa medida: caída rápida del núcleo (32% en 100ms) + halo desprendido | ✅ contrato corregido (comentario en el issue + §11) |
+| F5b | MAJOR (del review fresco) | Pass 4 de este archivo | El scan anti-trim estaba **anclado**: reportaba 1 coincidencia cuando el criterio (sin anclar) da **12**. Sub-reporte de evidencia en el reporte y en el PR | ✅ round 2 (Pass 4 reescrito + bloque `Trim:` corregido) |
 | F6 | Ninguna (revisado sin cambio) | `CONFIG.timing.hotFade` | Nombrado como sospechoso por el issue: sus fades terminan **antes** de la ventana de la punta y la medición del tip es monótona ⇒ valor intacto (500ms). Lo que sí cambió: su curva salió del código a `CONFIG.timing.easeDissolve` | cerrado |
 
 ### Corrections round 1 (aplicado en esta sesión, sin swarm)
@@ -119,18 +132,94 @@ v16 → `1` · HTML inexistente → `2`.
 - **R4 — tag `v1.0.0`**: sigue pendiente del operador sobre main (heredado de
   #54; este PR no lo toca).
 
+## Fresh-context reconcile (reporte del gate fresco)
+
+El `premerge-review` en sesión fresca **corrió** y publicó su veredicto:
+**PASS-CON-RIESGOS · 0 BLOCKER · 6 MAJOR · 3 NIT**, todo medido (reprodujo el gate,
+mutó el artefacto para v16 y verificó que la política dispara). Re-leí el diff
+contra cada finding antes de clasificar — ninguno se descartó de memoria.
+
+### Bucket 1 — Contract misread
+
+**Ninguno.** Los 9 hallazgos apuntan a código o a evidencia, no a una cláusula
+ambigua del contrato. (El contrato *sí* tenía un error, pero no lo detectó este
+reporte: lo detectó la medición — es F5.)
+
+### Bucket 2 — Valid + actionable (10) → `## Corrections round 2` (`ced690f`)
+
+| Finding | Qué era | Corrección |
+|---|---|---|
+| F1 MAJOR | 6 umbrales declarados y nunca leídos en el gate (el knob más visible no hacía nada) | umbrales sólo en `motion-analysis.mjs`; el gate importa `THRESHOLDS` |
+| F2 MAJOR | **autocontrol de deriva vacuo**: al pausar, `startTime` queda null ⇒ el reloj devolvía null y la deriva siempre 0 ("aprobar en silencio") | se mide el `currentTime` efectivo contra el esperado de cada animación; si no es medible, **falla** |
+| F3 MAJOR | la reproducción de la v16 exigía parchearla (el gate pedía `g.clock`) y el parche no estaba commiteado | sin reloj, el settle se aproxima con el fin de la última animación y el reporte **declara la fuente**; la v16 cruda de `main` se mide directo → **5 violaciones** |
+| F4 MAJOR | `dumpDom`/`run`/`FRAME_ARGS` muertos y docblock que afirmaba una compartición inexistente | el gate de fidelidad **importa** el lanzador compartido (fidelidad sigue verde); `FRAME_ARGS` fuera (el congelado es `pause`+`currentTime`) |
+| F5 MAJOR | scan anti-trim anclado: 1 coincidencia reportada vs **12** reales | Pass 4 reescrito + bloque `Trim:` del PR corregido, con resolución por token |
+| F6 MAJOR | el criterio 2 del issue ("el arranque conserva su fuerza") se afirmaba **sin instrumento** | el artefacto publica su cronograma (`svg.dataset.schedule`) y el gate lo mide: piso objetivo (monotonía, concurrencia ≥2, contraste ≤60%, extremos == CONFIG) + perfil reportado |
+| F7 NIT | `--step 5000` aprobaba con 5 fotogramas | piso de muestreo de la disolución → **exit 2** |
+| F8 NIT | la figura comparaba instantes no equivalentes | regenerada **alineada por fase** (d0 / +200 / +400ms) con el rótulo explícito; la comparación matched confirma el hallazgo |
+| F9 NIT | el `\|\| 3` de `accelRamp` seguía en el código | eliminado + guarda explícita (sin defaults silenciosos) |
+| F5b | (derivado) evidencia sub-reportada en el PR | bloque `Trim:` corregido en el body del PR |
+
+Verificación post-round: `npm test` **121 passed / 1 skipped** · `logo:verify` 🏆 ·
+`build` ✓ · gate artefacto **exit 0** · gate v16 cruda **exit 1** (5 violaciones) ·
+`--step 5000` **exit 2** · reproducción real limpia (respira, 0 restos).
+
+Extra del round (no pedido por el review, sí necesario): la sesión CDP **reintenta
+una vez**. Lo medí dos veces en esta sesión: Chrome se lanza sin abrir el puerto y
+el gate quedaba en "CDP no responde" — un fallo transitorio de entorno no debe
+leerse como "no se pudo medir".
+
+### Bucket 3 — Valid trade-off (aceptados, visibles)
+
+- **R5 — reproducibilidad *same-machine*.** El gate necesita Chrome: en CI no corre.
+  Acepto el riesgo porque el veredicto *sí* está cubierto en CI (121 tests, de los
+  cuales 34 son de la política y del decoder) y el wiring de Chrome en CI es #59.
+- **R6 — el modo `prefers-reduced-motion` no publica `g.clock`**, así que el gate de
+  movimiento no puede verlo (sale **exit 2**, no un aprobado silencioso — que es el
+  comportamiento correcto). Ese modo lo cubre el gate de fidelidad
+  (`--force-prefers-reduced-motion`: espiral y C exactos, sin hot-lines ni
+  constelación). Se suma a R1 (el glow respira en modo reducido: decisión de marca).
+
+### Bucket 4 — Noise
+
+**Ninguno.** Dos notas informativas quedan registradas: (a) el `behind` stale de la
+API (la base real era `main`); (b) al validar F8, el revisor midió instantes
+*matched* con un mutante de la punta y el hallazgo se sostuvo (halo 6,2 vs 5,0) —
+eso no fue ruido, fue evidencia a favor del fix y a la vez prueba de que la figura
+rotulaba mal la fase.
+
+### Guarda de "doubt theater"
+
+Las dos pasadas encontraron cosas **accionables** y **disjuntas**: la del autor, 7
+(5 bloqueantes del código + 2 agujeros de política); la fresca, 9 — y **6 de sus 6
+MAJOR son del instrumento**, justo lo que el autor no puede ver desde su propio
+contexto (el valor de la sesión limpia). 17 hallazgos accionables en total, 3
+riesgos aceptados explícitos, 0 descartados por conveniencia.
+
 ## Veredicto
 
-**PASS-CON-RIESGOS** — 0 BLOCKER · 1 MAJOR (F1, corregido en round 1) · 0 MAJOR
-abierto · 3 NIT (2 corregidos, 1 documentado como deuda preexistente) · 1
-hallazgo de contrato (F5, corregido en el issue) · 1 parámetro revisado sin
-cambio (F6). **Rounds: 1** (ciclo de corrección dentro de la sesión; no hubo
-rebuild por swarm porque no hubo swarm).
+**PASS-CON-RIESGOS** — 0 BLOCKER · 0 MAJOR abierto (1 en round 1 + 6 del gate
+fresco, todos cerrados) · 0 NIT abierto (3 + 3, cerrados o documentados) · 1
+hallazgo de contrato corregido (F5) · 1 parámetro revisado sin cambio.
+**Rounds: 2** (round 1 = correcciones del autor; round 2 = reconciliación del gate
+fresco). Loop bound cumplido: no queda BLOCKER ni MAJOR, y no hace falta una
+segunda invocación fresca (el skill la pide sólo si sobrevive un BLOCKER
+sustantivo).
 
-El `PASS` **no** está condicionado a los riesgos R1/R4 (decisiones del
-operador) ni a R2/R3 (límites de esta pasada: los cubre el gate fresco).
+El `PASS` **no** está condicionado a los riesgos R1/R4 (decisiones del operador)
+ni a R2/R3 (límites de esta pasada: los cubre el gate fresco, ya corrido) ni a
+R5/R6 (aceptados y declarados).
 
-## Fresh-context gate (lo pide el operador, no lo corre esta sesión)
+## Fresh-context gate — YA CORRIDO (reporte reconciliado arriba)
+
+`premerge-review` corrió en sesión fresca y publicó su veredicto como comentario
+en el PR: **PASS-CON-RIESGOS · 6 MAJOR · 3 NIT**, todo medido. Los 10 findings
+accionables se cerraron en round 2 (`ced690f`). La política de publicación se
+cumplió: el reporte es un comentario del PR, no un texto pegado.
+
+Si querés una **segunda** pasada fresca (opcional: el skill sólo la exige si
+sobrevive un BLOCKER), este es el bloque; con la ronda 2 conviene apuntarla al
+head nuevo (`ced690f`):
 
 `premerge-review` es la pasada terminal de duda de este phase: READ-ONLY sobre
 el código y **publica su veredicto como comentario en el PR**.
