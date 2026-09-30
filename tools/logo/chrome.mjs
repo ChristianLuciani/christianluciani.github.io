@@ -2,12 +2,15 @@
  * chrome.mjs — Chrome headless compartido por los gates del logo (issue #55).
  *
  * Dos primitivas, un solo lugar donde vive el binario y la forma de invocarlo:
- *   · dumpDom(...)   — el DOM tal como quedó en un instante virtual (lo usa el
- *                      gate de fidelidad geométrica).
+ *   · dumpDom(...)   — el DOM tal como quedó tras un presupuesto de tiempo
+ *                      virtual (lo usa el gate de fidelidad geométrica).
  *   · session(...)   — una sesión CDP sobre la página viva: el gate de movimiento
- *                      congela fotogramas exactos con `pause` + `currentTime` y
+ *                      congela fotogramas EXACTOS con `pause` + `currentTime` y
  *                      los captura. Es el único camino con el que se puede juzgar
- *                      un destello o un salto (ver `verify-motion.mjs`).
+ *                      un destello o un salto (ver `verify-motion.mjs`): el
+ *                      presupuesto de tiempo virtual NO gobierna las animaciones
+ *                      (medido: dos corridas del mismo instante dan estados
+ *                      distintos), así que el congelado es explícito, no por flags.
  *
  * Hechos medidos en esta máquina (2026-09-29), que explican las decisiones:
  *   · `--virtual-time-budget=0` NO expira nunca ⇒ Chrome no cierra ni escribe
@@ -44,14 +47,6 @@ export function chromePath() {
 
 const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars"];
 
-/**
- * Flags de los fotogramas: sin ellos el tiempo virtual NO manda sobre las
- * animaciones (se mide el reloj de pared y dos corridas del "mismo" instante
- * dan fotogramas distintos). Medido: `--run-all-compositor-stages-before-draw`
- * + `--deterministic-mode` hacen que el presupuesto virtual sí gobierne el
- * render (t=800 y t=6700 dan estados distintos y correctos).
- */
-const FRAME_ARGS = ["--run-all-compositor-stages-before-draw", "--deterministic-mode"];
 const RUN_TIMEOUT_MS = 60_000;
 const CALL_TIMEOUT_MS = 30_000;
 
@@ -109,7 +104,23 @@ async function json(url, tries = 60) {
  * session(file, { width, height }) → { eval, capture, close }
  * Devuelve una sesión viva sobre la página cargada; el llamador hace `close()`.
  */
-export async function session(file, { width = 800, height = 800 } = {}) {
+/**
+ * Sesión CDP con un reintento: el arranque de Chrome no siempre abre el puerto
+ * (medido dos veces en esta máquina: se lanza, no imprime error y el puerto nunca
+ * aparece — probablemente colisión del puerto efímero con algo del sistema). Un
+ * fallo transitorio de entorno no debe leerse como "el gate no midió": se reintenta
+ * una vez con perfil y puerto nuevos, y recién ahí se reporta el error.
+ */
+export async function session(file, opts = {}) {
+  try {
+    return await openSession(file, opts);
+  } catch (err) {
+    if (!/CDP no responde/.test(err.message)) throw err;
+    return await openSession(file, opts);
+  }
+}
+
+async function openSession(file, { width = 800, height = 800 } = {}) {
   const profile = mkdtempSync(join(tmpdir(), "logo-cdp-"));
   const port = await freePort();
   const child = spawn(chromePath(), [

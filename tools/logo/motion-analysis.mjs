@@ -14,6 +14,9 @@
  */
 
 export const THRESHOLDS = {
+  /* arranque (criterio 2 de #55): piso objetivo de "sigue siendo un estallido" */
+  burstFloor: 2,      // tramos trazando a la vez en el pico del arranque
+  burstContrast: 0.6, // el primer stagger tiene que ser ≤ 60% del final (hay contraste)
   flash: 1.0,      // suba máxima tolerada de la luz de la estrella por paso (suma en el halo)
   bloom: 2.0,      // suba máxima tolerada sobre el mínimo previo
   halo: 1.0,       // suba máxima tolerada del glow fuera del trazo por paso
@@ -164,11 +167,17 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
   const haloUp = maxRise(rows, "halo", from, to, { stepMs });
   const settle = settleStep(rows, L.settle);
   const breathe = breatheFrames(rows, L.settle, { stepMs });
+  /* arranque (criterio 2 de #55): sin cronograma publicado no hay instrumento */
+  const startup = probe.schedule?.delays?.length
+    ? startupProfile(probe.schedule.delays, probe.schedule.durs)
+    : null;
   const starBefore = rows.filter((r) => r.T <= d0).at(-1);
   const starAfter = rows.at(-1);
   const starSeen = starBefore ? starBefore.tipRedMax - starAfter.tipRedMax : NaN;
   const tipMaxSettled = starAfter.tipMax;
-  const drift = Math.max(...rows.map((r) => Math.abs((r.t ?? r.T) - r.T)));
+  /* deriva REAL del congelado: cada fila trae cuánto se desvió cada animación del
+     instante pedido al fijarle `currentTime` (null ⇒ no se pudo verificar) */
+  const drift = rows.some((r) => !Number.isFinite(r.drift)) ? Infinity : Math.max(...rows.map((r) => r.drift));
   const peak = Math.max(...rows.filter((r) => r.T >= from && r.T <= to).map((r) => r.light));
 
   const fails = [...checkStructure(probe, L)];
@@ -190,8 +199,68 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
     fails.push(`autochequeo: la estrella de la punta no se ve antes y no se apaga después (Δ=${starSeen.toFixed(3)})`);
   if (!(tipMaxSettled >= thresholds.tipBright))
     fails.push(`autochequeo: la punta settled no tiene píxel brillante (máx=${tipMaxSettled.toFixed(3)})`);
-  if (drift > thresholds.drift)
+  if (!Number.isFinite(drift))
+    fails.push("el congelado no pudo verificar el instante de algún fotograma (drift no medible)");
+  else if (drift > thresholds.drift)
     fails.push(`el congelado deriva ${drift.toFixed(0)}ms del tiempo pedido`);
+  if (!startup) fails.push("el artefacto no publica su cronograma (svg.dataset.schedule): no puedo medir el arranque (criterio 2 de #55)");
+  else fails.push(...checkStartup(startup, { timing: probe.timing, thresholds }));
 
-  return { from, to, d0, d1, peak, flash, bloom, sustain, haloUp, settle, breathe, starSeen, tipMaxSettled, drift, fails };
+  return { from, to, d0, d1, peak, flash, bloom, sustain, haloUp, settle, breathe,
+    startup, starSeen, tipMaxSettled, drift, fails };
+}
+
+
+/* ───────────────────────── arranque (criterio 2 de #55) ─────────────────────
+   El gate nació mirando sólo la punta, así que "el arranque explosivo conserva
+   su fuerza sin sentirse apurado" quedaba AFIRMADO sin instrumento. Acá se
+   computa del cronograma real (las mismas delays/durs que dibuja el artefacto):
+   cuántos tramos se trazan a la vez, cuántos aterrizaron por tramo de tiempo y
+   la forma de la rampa. "Apurado" es juicio del ojo ⇒ el gate fija el piso
+   objetivo (sigue habiendo estallido, el tempo camina hacia el ritmo final y el
+   ritmo final declarado no se altera) y REPORTA el perfil para comparar versiones.
+────────────────────────────────────────────────────────────────────────────── */
+
+/** perfil del arranque desde las delays/durs por tramo */
+export function startupProfile(delays, durs, { windowMs = 2500, stepMs = 10 } = {}) {
+  if (!delays.length || delays.length !== durs.length)
+    return { n: delays.length, staggers: [], peakConcurrency: { n: 0, t: null }, monotone: true, landed: {} };
+  const staggers = delays.slice(1).map((d, i) => d - delays[i]);
+  const concurrencyAt = (t) => durs.reduce((c, dur, i) => c + (delays[i] <= t && t < delays[i] + dur ? 1 : 0), 0);
+  const peak = { n: 0, t: null };
+  for (let t = delays[0]; t <= delays[0] + windowMs; t += stepMs) {
+    const c = concurrencyAt(t);
+    if (c > peak.n) { peak.n = c; peak.t = t; }
+  }
+  const landedBy = (t) => delays.filter((d, i) => d + durs[i] <= t).length;
+  const t0 = delays[0];
+  return {
+    n: delays.length, staggers, t0,
+    firstStagger: staggers[0] ?? NaN, lastStagger: staggers.at(-1) ?? NaN,
+    peakConcurrency: peak, monotone: staggers.every((v, i) => i === 0 || v >= staggers[i - 1] - 1e-6),
+    landed: { "1.0s": landedBy(t0 + 1000), "1.5s": landedBy(t0 + 1500), "2.0s": landedBy(t0 + 2000) },
+    windowMs,
+  };
+}
+
+/** invariantes del arranque: fuerza conservada + endpoints declarados respetados */
+export function checkStartup(profile, { timing, thresholds = THRESHOLDS } = {}) {
+  const fails = [];
+  const { firstStagger, lastStagger, peakConcurrency, monotone } = profile;
+  if (!Number.isFinite(firstStagger) || !Number.isFinite(lastStagger))
+    return ["el arranque no tiene tramos medibles (¿sin cronograma?)"];
+  if (!monotone) fails.push("el tempo del arranque no es monótono: la rampa vuelve a acelerar (el contraste se lee brusco)");
+  if (peakConcurrency.n < thresholds.burstFloor)
+    fails.push(`el arranque perdió el estallido: ${peakConcurrency.n} tramo(s) trazando a la vez en el pico (piso ${thresholds.burstFloor})`);
+  if (!(firstStagger <= lastStagger * thresholds.burstContrast))
+    fails.push(`el arranque perdió el contraste: primer stagger ${firstStagger.toFixed(0)}ms vs ${lastStagger.toFixed(0)}ms final (tiene que ser ≤ ${(thresholds.burstContrast * 100).toFixed(0)}%)`);
+  if (timing) {
+    /* los extremos declarados en CONFIG son el contrato del artefacto: si la rampa
+       no llega al ritmo final declarado (o no arranca en el rápido), algo se movió */
+    if (Math.abs(lastStagger - timing.stagger) > 1)
+      fails.push(`la rampa no termina en el ritmo final declarado: ${lastStagger.toFixed(0)}ms vs CONFIG ${timing.stagger}ms`);
+    if (Math.abs(firstStagger - timing.staggerFast) > 1)
+      fails.push(`la rampa no arranca en el stagger rápido declarado: ${firstStagger.toFixed(0)}ms vs CONFIG ${timing.staggerFast}ms`);
+  }
+  return fails;
 }

@@ -276,8 +276,24 @@ estado settled) y el glow **fuera del trazo** nunca suben mientras se apaga;
 - **settle sin salto y respirando** — el cuerpo de la C no pega escalón a
 ±40ms del settle y el glow cambia al respirar (en v16 cambiaba 0.0000: no
 respiraba);
+- **arranque (criterio 2 del issue)** — piso objetivo: el tempo es monótono
+camina hacia el ritmo final, el pico de concurrencia ≥2 tramos trazando a la vez,
+y el primer stagger ≤60% del final (hay contraste). Reporta el perfil medido:
+pico, stagger extremos y tramos aterrizados a 1,0/1,5/2,0s. Lee el cronograma
+**declarado** (`svg.dataset.schedule`, los arrays `delays[]/durs[]` del ADR-lite),
+no lo infiere de las animaciones — donde las líneas de calor comparten delay con
+su tramo;
 - **autochequeos** — la estrella existe antes y no después, hay píxel brillante
-en el settled, y el congelado no deriva del instante pedido.
+en el settled, y el congelado no deriva del instante pedido (la deriva se mide
+sobre el `currentTime` efectivo contra el esperado de cada animación: al pausar,
+`startTime` queda en null y el reloj no sirve para eso);
+- **piso del plan** — si el plan no muestrea la disolución (p. ej. `--step 5000`)
+el gate sale **2**, no aprueba con 5 fotogramas.
+
+Los umbrales viven **sólo** en `motion-analysis.mjs` (`THRESHOLDS`); el gate los
+importa. El settle se lee de `g.clock`; en artefactos viejos que no lo publican se
+aproxima con el fin de la última animación y el reporte lo dice (`settle (…ms)`
+con su fuente).
 
 Umbrales calibrados sobre la medición antes/después (ruido entre corridas con
 fotogramas congelados ≤0.001). `--report` imprime la curva sin veredicto y
@@ -292,7 +308,30 @@ muestra; **`motion-analysis.mjs`** tiene la política (umbrales, métricas y
 veredicto) en funciones puras, con **17 tests** que corren en CI — la adquisición
 necesita Chrome, el veredicto tiene que estar cubierto siempre.
 
-![Comparación de la punta: v16 arriba, fix abajo — fotogramas congelados, ganancia ×4](logo-motion-punta.png)
+![Comparación de la punta: v16 arriba, fix abajo — fotogramas congelados alineados por fase (d0 / d0+200ms / d0+400ms de la disolución), ganancia ×4](logo-motion-punta.png)
+
+### Arranque (criterio 2 del issue) — el instrumento que faltaba
+
+El gate nació mirando sólo la punta, así que *"el arranque explosivo conserva su
+fuerza sin sentirse apurado"* quedaba **afirmado sin medirlo** (revisión fresca,
+F6). Ahora el artefacto publica su cronograma en `svg.dataset.schedule` y el gate
+lo mide y lo reporta:
+
+| Medición (artefacto actual) | Valor |
+|---|---|
+| pico de concurrencia | **3 tramos** trazando a la vez (@970ms) |
+| stagger del arranque → final | **125 → 235ms**, monótono (camina, no salta) |
+| tramos aterrizados | **5** @1,0s · **8** @1,5s · **10** @2,0s |
+
+Qué se afirma y qué no: el gate fija el **piso objetivo** (sigue habiendo
+estallido, el tempo no vuelve a acelerar, los extremos son los declarados en
+`CONFIG.timing` — o sea el ritmo final no se movió) y **reporta** el perfil. Si
+*"se siente apurado"* es juicio del ojo: el operador lo mira con
+`--frames <dir>`, que ahora también incluye fotogramas del estallido
+(`start + 200/800/1400ms`). La v16 **no** publica su cronograma, así que el gate
+la marca como no medible en este punto a propósito: derivarlo de sus animaciones
+exigiría deduplicar las líneas de calor, y una inferencia silenciosa es peor que
+una limitación declarada.
 
 ### Lo que arregló #55 (medido)
 
@@ -306,15 +345,17 @@ saliendo juntos.
 2. **Respiración inerte**: el `breathe` sobre el grupo nunca se veía (el cuerpo
 de la C cambiaba **0,0000** entre settle+40 y settle+900). Ahora respira sobre
 el trazo: **0,2182 → 0,2270 (+0,0088)**.
-3. **Rampa del arranque**: `accelRamp` estaba implícito en un `|| 3`; ahora es
-   parámetro declarado y bajó a **2,2**, y el arranque abrió un poco
-(`staggerFast` 110 → 125ms, `segFast` 260 → 285ms): el tempo camina hacia el
-ritmo final en vez de saltar a él — el contraste deja de leerse como brusco sin
-perder el estallido (2 líneas trazando a la vez). El ritmo final (235/460ms) no
-se tocó y la pieza dura lo mismo (fin de la disolución de la punta: 6031ms →
-5976ms; settle 5771ms → 5716ms).
+3. **Rampa del arranque**: `accelRamp` está declarado (bajó a **2,2**) y el
+   arranque abrió un poco (`staggerFast` 110 → 125ms, `segFast` 260 → 285ms): el
+tempo camina hacia el ritmo final en vez de saltar a él, sin perder el estallido
+(**3** tramos trazando a la vez; ver §Arranque). El `|| 3` que lo dejaba implícito
+se eliminó: si falta el parámetro, el artefacto **falla fuerte** en vez de asumir
+un default. El ritmo final (235/460ms) no se tocó y la pieza dura lo mismo (fin de
+la disolución: 6031ms → 5976ms; settle 5771ms → 5716ms).
 
-> La columna *v16* se reproduce corriendo el gate contra la versión de PR #53
-> con el mismo plumbing del cronograma:
-> `node tools/logo/verify-motion.mjs --html <v16.html>` → 4 violaciones;
-> con el artefacto actual → 0.
+> La columna *v16* se reproduce **sin parchear nada**, directo de `main`:
+> `git show main:proposals/logo-triangulo-espiral/aurea7.html > /tmp/v16.html`
+> y `node tools/logo/verify-motion.mjs --html /tmp/v16.html` → **5 violaciones**
+> (escala que crece, curva con overshoot, respiración en el grupo, respiración
+> inerte, y "no publica su cronograma" ⇒ no medible el arranque). Con el
+> artefacto actual → **0**.

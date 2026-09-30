@@ -54,16 +54,8 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
 const WIN = { width: 800, height: 800 };
 
-/* Umbrales, calibrados contra la medición antes/después del fix (ver
-   docs/brand/logo.md §Movimiento). Con fotogramas congelados el ruido entre
-   corridas es ~0.0005; los defectos de #55 son 0.005-0.017 ⇒ hay margen. */
-const FLASH_MAX = 1.0;     // suba máxima tolerada de la luz de la estrella por paso
-const BLOOM_MAX = 2.0;     // suba máxima tolerada sobre el mínimo previo
-const HALO_MAX = 1.0;      // suba máxima del glow FUERA del trazo por paso
-const SETTLE_MAX = 0.004;  // escalón máximo tolerado al entrar el settle
-const BREATHE_MIN = 0.004; // cambio mínimo del glow cuando respira (si no, no respira)
-const STAR_MIN = 0.002;    // la estrella de la punta tiene que verse antes y no después
-const EPS = 1e-6;
+/* Los umbrales viven en `motion-analysis.mjs` (THRESHOLDS): acá había copias que
+   nadie leía — el knobs más visible del gate no hacía nada. Una sola fuente. */
 
 /* La sonda no toca el artefacto: lo lee (cronograma, geometría, respiración). */
 const PROBE = `(() => {
@@ -90,8 +82,11 @@ const PROBE = `(() => {
         .map((r) => r.selectorText),
     };
   })();
-  /* sólo lo que el gate lee: cronograma de animaciones, respiración y la C */
-  return JSON.stringify({ anims, breathe, cPath: cpath ? cpath.getAttribute('d') : null });
+  /* sólo lo que el gate lee: animaciones, respiración, la C, el cronograma
+     declarado (delays[]/durs[] → perfil del arranque) y los parámetros */
+  return JSON.stringify({ anims, breathe, cPath: cpath ? cpath.getAttribute('d') : null,
+    schedule: svg.dataset.schedule ? JSON.parse(svg.dataset.schedule) : null
+  , timing: CONFIG.timing });
 })()`;
 
 /** congelador: mueve el cronograma al tiempo T (función del tiempo, no del reloj) */
@@ -106,24 +101,29 @@ const LZ = (settleAt) => `(() => {
       return list.length ? document.timeline.currentTime - Math.max(...list) : null;
     },
     seek: (T) => {
+      const deviation = [];
       for (const a of document.getAnimations()) {
         a.pause();
-        /* El titileo del cielo (y el fade de entrada) NO son parte del cronograma
-           del espiral: son loops decorativos. Si se dejan en T, la fase de cada
-           estrella cambia entre el fotograma y la referencia settled y su
-           parpadeo se cuela en la diferencia de la punta (contamina el radio del
-           halo y la medición del glow). Se congelan en un mismo instante. */
-        if (a.animationName === 'twinkle') {
+        const css = a.animationName;
+        /* valor ESPERADO de cada animación en el instante T. El titileo y el fade
+           de entrada son loops decorativos (se congelan en un punto fijo); la
+           respiración nace con el settle, así que su tiempo es T - settleAt. */
+        let want;
+        if (css === 'twinkle') {
           /* en su PICO (mitad del período propio de cada estrella): así todas las
              estrellas están a su máximo y estables, en vez de apagadas en fase 0 */
           const d = a.effect.getComputedTiming().duration;
-          a.currentTime = typeof d === 'number' ? d / 2 : 0;
-        } else if (a.animationName === 'fadeIn') a.currentTime = 1e6; // cielo ya visible
-        /* la respiración nace con el settle: su tiempo es el del settle, no 0 */
-        else if (a.animationName === 'breathe') a.currentTime = Math.max(0, T - window.__lz.settleAt);
-        else a.currentTime = T;
+          want = typeof d === 'number' ? d / 2 : 0;
+        } else if (css === 'fadeIn') want = 1e6; // cielo ya visible (y no vuelve a latir)
+        else if (css === 'breathe') want = Math.max(0, T - window.__lz.settleAt);
+        else want = T;
+        a.currentTime = want;
+        /* verificación del congelado: al pausar, startTime queda null, así que la
+           deriva NO se puede calcular con el reloj — se mide sobre el currentTime
+           efectivo contra el esperado (null = no quedó congelada) */
+        deviation.push(a.currentTime == null ? Infinity : Math.abs(a.currentTime - want));
       }
-      return window.__lz.clock();
+      return deviation.length ? Math.max(...deviation) : Infinity;
     },
   };
   return true;
@@ -183,13 +183,18 @@ function landmarks(probe) {
   const stars = probe.anims.filter((a) => a.cls === "star" && a.tag === "g");
   const punta = stars.reduce((best, a) => (best && best.delay > a.delay ? best : a), null);
   const clock = probe.anims.find((a) => a.cls === "clock");
-  if (!clock) throw new Error("el artefacto no tiene el reloj de la pieza (g.clock)");
   if (!punta) throw new Error("el artefacto no tiene la disolución de la estrella de la punta (¿sin constelación?)");
+  /* El reloj (`g.clock`) publica el fin exacto del cronograma. Sin él —versiones
+     anteriores a #55— se aproxima con el fin de la última animación: el gate sigue
+     midiendo esa versión, pero el reporte dice de dónde salió el settle. */
+  const lastEnd = probe.anims.reduce((max, a) => Math.max(max, a.delay + a.duration), 0);
   const drawEnd = probe.anims.filter((a) => a.tag === "path" && a.cls === "seg")
     .reduce((max, a) => Math.max(max, a.delay + a.duration), 0);
   return {
     C: { a: { x: ax, y: ay }, b: { x: bx, y: by }, tip: { x: tx, y: ty } },
-    punta, drawEnd, settle: clock.delay + clock.duration,
+    punta, drawEnd, timing: probe.timing ?? null,
+    settle: clock ? clock.delay + clock.duration : lastEnd,
+    settleSource: clock ? "g.clock" : `fin de la última animación (${Math.round(lastEnd)}ms): el artefacto no publica g.clock`,
     /* dos discos: el ajustado mide la intensidad de la estrella, el amplio mide
        el HALO — el destello de #55 es el glow que se agranda al apagarse, y eso
        se ve en la luz total del halo, no en el pico del centro */
@@ -218,7 +223,7 @@ async function measure(html, plan, framesDir) {
       /* el settle aplica la clase desde el fin del reloj: un frame para que
          corran los microtasks y aparezca la respiración, y re-seek con ella */
       await s.eval(`new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(() => r(1))))`);
-      const t = await s.eval(`__lz.seek(${T})`);
+      const drift = await s.eval(`__lz.seek(${T})`);
       const png = await s.capture();
       if (framesDir) writeFileSync(join(framesDir, `frame-${String(T).padStart(5, "0")}.png`), png);
       const img = decodePng(png);
@@ -227,7 +232,7 @@ async function measure(html, plan, framesDir) {
       const tipLum = sampleRegion(img, { ...px(L.C.tip.x, L.C.tip.y), r: L.r });
       const glow = sampleRegion(img, { ...px((L.C.a.x + L.C.b.x) / 2, (L.C.a.y + L.C.b.y) / 2), r: L.r });
       frames.push(img);
-      rows.push({ T, t, tipRed: tipRed.mean, tipRedMax: tipRed.max, tipMax: tipLum.max,
+      rows.push({ T, drift, tipRed: tipRed.mean, tipRedMax: tipRed.max, tipMax: tipLum.max,
         tip: tipLum.mean, body: glow.mean });
     }
     if (!rows.length) throw new Error(`el plan no produjo fotogramas (¿--step=${stepMs}?)`);
@@ -256,7 +261,7 @@ function printReport({ probe, L, rows }, out, framesDir) {
   const { from, to, peak } = out;
   console.log(`artefacto: ${probe.anims.length} animaciones · C = 1 path · respiración en ${probe.breathe?.targets?.join(" / ")}`);
   console.log(`punta se apaga ${out.d0.toFixed(0)}→${out.d1.toFixed(0)}ms (${L.punta.duration}ms, ${L.punta.easing})`);
-  console.log(`C trazada hasta ${L.drawEnd.toFixed(0)}ms · settle ${L.settle.toFixed(0)}ms · deriva del congelado ≤${out.drift.toFixed(0)}ms`);
+  console.log(`C trazada hasta ${L.drawEnd.toFixed(0)}ms · settle ${L.settle.toFixed(0)}ms (${L.settleSource}) · deriva del congelado ${Number.isFinite(out.drift) ? `≤${out.drift.toFixed(0)}ms` : "NO MEDIBLE"}`);
   console.log("");
   console.log("    t(ms)   luz estrella   glow fuera   rojoMax   punta   glow");
   for (const r of rows) {
@@ -275,6 +280,12 @@ function printReport({ probe, L, rows }, out, framesDir) {
   if (out.settle)
     console.log(`settle (${L.settle.toFixed(0)}ms): cuerpo ${out.settle.before.body.toFixed(4)} → ${out.settle.after.body.toFixed(4)}`
       + ` = ${sign(out.settle.delta, 4)} (máx ${THRESHOLDS.settle})`);
+  if (out.startup) {
+    const s = out.startup;
+    console.log(`arranque: pico ${s.peakConcurrency.n} tramo(s) trazando a la vez en ${Math.round(s.peakConcurrency.t)}ms`
+      + ` · stagger ${s.firstStagger.toFixed(0)}→${s.lastStagger.toFixed(0)}ms${s.monotone ? " (monótono)" : " (NO monótono)"}`
+      + ` · aterrizados ${Object.entries(s.landed).map(([k, v]) => `${v}@${k}`).join(" ")}`);
+  }
   console.log(`respiración: glow ${out.breathe.a.body.toFixed(4)} → ${out.breathe.b.body.toFixed(4)}`
     + ` = ${sign(out.breathe.delta, 4)} (mín ${THRESHOLDS.breathe})`);
   if (framesDir) console.log(`fotogramas: ${framesDir}`);
@@ -311,7 +322,16 @@ function plan(L) {
   for (const t of [L.settle - 40, L.settle + 40, L.settle + 900]) times.push(Math.round(t));
   /* autocontrol: la estrella de la punta existe al arrancar la pieza */
   times.push(Math.round(d0 - 800));
+  /* el arranque (criterio 2 de #55) se MIRA, no sólo se computa: fotogramas del
+     estallido para el strip de --frames */
+  if (L.timing?.start != null) for (const dt of [200, 800, 1400]) times.push(Math.round(L.timing.start + dt));
   return [...new Set(times)].sort((a, b) => a - b);
+}
+
+/** el plan tiene que muestrear la disolución: con un paso enorme "no mide" (exit 2) */
+function planQuality(L, times) {
+  const inWindow = times.filter((t) => t >= L.punta.delay - 100 && t <= L.punta.delay + L.punta.duration + 150).length;
+  return inWindow >= 5 ? null : `el plan muestrea ${inWindow} fotograma(s) de la disolución: --step ${stepMs} es demasiado grueso`;
 }
 
 if (!Number.isFinite(stepMs) || stepMs <= 0) {
@@ -325,6 +345,8 @@ try {
   console.log("midiendo fotogramas congelados…");
   const data = await measure(html, (L) => {
     const times = plan(L);
+    const bad = planQuality(L, times);
+    if (bad) throw new Error(bad);
     console.log(`${times.length} fotogramas: ${times[0]}→${times.at(-1)}ms (paso ${stepMs})`);
     return times;
   }, framesDir);

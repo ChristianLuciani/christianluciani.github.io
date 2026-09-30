@@ -9,18 +9,29 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  THRESHOLDS, analyze, bezierY, bloomOver, breatheFrames, checkStructure,
-  maxRise, scaleOf, settleStep, sustainedRise,
+  THRESHOLDS, analyze, bezierY, bloomOver, breatheFrames, checkStartup,
+  checkStructure, maxRise, scaleOf, settleStep, startupProfile, sustainedRise,
 } from "./motion-analysis.mjs";
 
-/** filas sintéticas: {T, light, halo, tipRedMax, tipMax, body} */
+/** filas sintéticas: {T, light, halo, body, tipRedMax, tipMax, drift} */
 const rows = (spec) => spec.map(([T, light, halo, body, tipRedMax = 0.3, tipMax = 0.66]) =>
-  ({ T, light, halo, body, tipRedMax, tipMax }));
+  ({ T, light, halo, body, tipRedMax, tipMax, drift: 0 }));
+
+/** cronograma sintético con la forma del artefacto: ramp explosivo→final.
+    No replica la fórmula (eso es del artefacto): sólo la FORMA que la política mira. */
+const schedule = ({ n = 21, first = 125, last = 235, t0 = 700, durFast = 285, durEnd = 460 } = {}) => {
+  const staggers = Array.from({ length: n - 1 }, (_, i) => first + ((last - first) * i) / (n - 2));
+  const delays = [t0];
+  for (const s of staggers) delays.push(delays.at(-1) + s);
+  const durs = delays.map((_, i) => (i >= n - 2 ? 640 : durFast + ((durEnd - durFast) * i) / (n - 1)));
+  return { delays, durs };
+};
 
 /* ── sonda mínima: la punta y la respiración, como las lee el gate ───────── */
-const probe = ({ scales = [1, 1], easing = "cubic-bezier(0.33, 0.6, 0.4, 1)", keys = [["0%, 100%", "0.5"], ["50%", "0.78"]], rest = "0.5", targets = [".settle-on .c-glow path"] } = {}) => ({
+const timing = { start: 700, stagger: 235, staggerFast: 125, seg: 460, segFast: 285, segC: 640, accelRamp: 2.2 };
+const probe = ({ scales = [1, 1], easing = "cubic-bezier(0.33, 0.6, 0.4, 1)", keys = [["0%, 100%", "0.5"], ["50%", "0.78"]], rest = "0.5", targets = [".settle-on .c-glow path"], sched = schedule(), tmg = timing } = {}) => ({
   breathe: { frames: keys.map(([key, opacity]) => ({ key, opacity })), rest, targets },
-  anims: [],
+  schedule: sched, timing: tmg, anims: [],
 });
 const landmark = ({ easing = "cubic-bezier(0.33, 0.6, 0.4, 1)", scales = [1, 1] } = {}) => ({
   punta: { delay: 1000, duration: 680, easing, kf: scales.map((s, i) => ({ offset: i, opacity: i === 0 ? "0.85" : "0", transform: `scale(${s})` })) },
@@ -151,7 +162,7 @@ describe("motion-analysis — veredicto completo (analyze)", () => {
   it("falla si el encuadre no ve la estrella o si el congelado deriva (no aprueba en silencio)", () => {
     const sinEstrella = clean.map((r) => ({ ...r, tipRedMax: 0.15 }));
     expect(analyzeClean(sinEstrella).fails.join("\n")).toMatch(/no se ve antes y no se apaga después/);
-    const derivado = clean.map((r) => ({ ...r, t: r.T + 40 }));
+    const derivado = clean.map((r) => ({ ...r, drift: 40 }));
     expect(analyzeClean(derivado).fails.join("\n")).toMatch(/deriva 40ms/);
   });
 
@@ -160,5 +171,54 @@ describe("motion-analysis — veredicto completo (analyze)", () => {
     expect(out.from).toBe(900);      // d0 - 100
     expect(out.to).toBe(1830);       // d1 + 150
     expect(out.peak).toBeCloseTo(20, 6);
+  });
+});
+
+
+describe("motion-analysis — arranque (criterio 2 de #55)", () => {
+  it("startupProfile mide pico de concurrencia, forma de la rampa y aterrizajes", () => {
+    const { delays, durs } = schedule();
+    const p = startupProfile(delays, durs, { windowMs: 2000 });
+    expect(p.n).toBe(21);
+    expect(p.firstStagger).toBeCloseTo(125, 1);
+    expect(p.lastStagger).toBeCloseTo(235, 1);
+    expect(p.monotone).toBe(true);
+    expect(p.peakConcurrency.n).toBeGreaterThanOrEqual(2);   // el estallido existe
+    expect(p.landed["1.0s"]).toBeGreaterThan(0);
+    expect(p.landed["2.0s"]).toBeGreaterThan(p.landed["1.0s"]);
+  });
+
+  it("un cronograma vacío no rompe: devuelve un perfil inocuo", () => {
+    const p = startupProfile([], []);
+    expect(p.n).toBe(0);
+    expect(p.peakConcurrency.n).toBe(0);
+    expect(checkStartup(p, { timing })).toEqual(["el arranque no tiene tramos medibles (¿sin cronograma?)"]);
+  });
+
+  it("el arranque sano pasa; el que perdió el estallido no", () => {
+    expect(checkStartup(startupProfile(...Object.values(schedule()).slice(0, 2)), { timing })).toEqual([]);
+    /* tempo plano: mismo stagger al principio y al final ⇒ sin contraste ni pico */
+    const plano = schedule({ first: 235, last: 235, durFast: 460, durEnd: 460 });
+    const fails = checkStartup(startupProfile(plano.delays, plano.durs), { timing });
+    expect(fails.join("\n")).toMatch(/perdió el contraste/);
+  });
+
+  it("atrapa una rampa no monótona y unos extremos que no son los declarados", () => {
+    const { delays, durs } = schedule();
+    const conRebote = [...delays];
+    conRebote[3] = conRebote[2] + 40;   // acelera de nuevo
+    for (let i = 4; i < conRebote.length; i++) conRebote[i] = conRebote[i - 1] + 235;
+    expect(checkStartup(startupProfile(conRebote, durs), { timing }).join("\n")).toMatch(/no es monótono/);
+    const otroFinal = checkStartup(startupProfile(...Object.values(schedule({ last: 300 })).slice(0, 2)), { timing });
+    expect(otroFinal.join("\n")).toMatch(/no termina en el ritmo final declarado/);
+  });
+
+  it("analyze exige el cronograma publicado y un congelado verificable", () => {
+    const limpio = rows([[1000, 20, 8, 0.2, 0.32], [1100, 12, 5, 0.2, 0.25], [1200, 6, 2.5, 0.2, 0.18], [1300, 2, 1, 0.2, 0.15], [1400, 0.6, 0.3, 0.2, 0.15], [1500, 0.1, 0.1, 0.2, 0.15], [1590, 0, 0, 0.2, 0.15], [1610, 0, 0, 0.2, 0.15], [2500, 0, 0, 0.21, 0.15]]);
+    const sinCronograma = analyze({ probe: probe({ sched: null }), L: landmark(), rows: limpio }, { stepMs: 100 });
+    expect(sinCronograma.fails.join("\n")).toMatch(/no publica su cronograma/);
+    const sinDrift = { probe: probe(), L: landmark(), rows: limpio.map((r) => ({ ...r, drift: Infinity })) };
+    expect(analyze(sinDrift, { stepMs: 100 }).fails.join("\n")).toMatch(/no pudo verificar el instante/);
+    expect(analyze({ probe: probe(), L: landmark(), rows: limpio }, { stepMs: 100 }).fails).toEqual([]);
   });
 });

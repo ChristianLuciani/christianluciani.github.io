@@ -347,7 +347,9 @@ function render() {
   // arranque explosivo: los primeros tramos van rápido y el ritmo decae
   // hasta el ritmo final — el de la C, que se mantiene
   const n = segs.length;
-  const ramp = i => 1 - Math.pow(1 - i / (n - 1), CONFIG.timing.accelRamp || 3);
+  const accelRamp = T.accelRamp;
+  if (!(accelRamp > 0)) throw new Error("CONFIG.timing.accelRamp debe ser un número > 0");
+  const ramp = i => 1 - Math.pow(1 - i / (n - 1), accelRamp);
   const delays = [], durs = [];
   let acc = T.start;
   for (let i = 0; i < n; i++) {
@@ -357,6 +359,13 @@ function render() {
   }
   const segDelay = i => delays[i];
   const segDur = i => durs[i];
+  /* El cronograma se PUBLICA: estos arrays delays[]/durs[] son los que gobiernan
+     el tempo (y el ADR-lite de #55 pide preservarlos). Publicarlos deja que el
+     gate mida el arranque leyendo el cronograma declarado en vez de inferirlo de
+     las animaciones — donde las líneas de calor comparten delay con su tramo. */
+  svg.dataset.schedule = JSON.stringify({
+    delays: delays.map(v => +v.toFixed(1)), durs: durs.map(v => +v.toFixed(1)),
+  });
 
   // halo tenue detrás de la C + arista fantasma del lado abierto
   const ghost = el("polygon", {
