@@ -34,7 +34,9 @@ expande.
   supernova gana +2pt de core y las estrellas grandes de las aristas (la
   punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
   tratamiento del render de marca; el spec de la animación (#53) no cambia
-  (#55 puede espejarlo).
+  (#55 puede espejarlo). → **Ya espejado**: `starSpec()` del artefacto y de
+  `geometry.mjs` tienen los mismos valores, en el mismo orden (verificado al
+  medir #55); el gate de fidelidad lo sigue cubriendo.
 
 ## 2. Versiones
 
@@ -201,6 +203,7 @@ Regenerar todo: `node tools/logo/generate-logo.mjs`
 Sólo áurea/base: `--only-aurea` / `--only-base`
 Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs`
+Gate de movimiento: `node tools/logo/verify-motion.mjs` (ver §11)
 Tests: `npx vitest run tools/logo/geometry.test.mjs`
 
 **Nota sobre los print 300dpi**: el PNG está dimensionado para 300dpi
@@ -211,3 +214,148 @@ no embede el metadato pHYs — al importarlo en InDesign/Illustrator setear
 QA visual de los exports: Chrome headless (`--headless --screenshot
 --virtual-time-budget=N --window-size=WxH`), el mismo mecanismo que usó la
 sesión de origen (PR #53) — reutilizado aquí para los PNG.
+
+---
+
+## 11. Movimiento (issue #55)
+
+El cronograma vive **paramétrico** en `CONFIG.timing` de
+`proposals/logo-triangulo-espiral/aurea7.html` — una sola fuente, y el gate de
+movimiento lo **lee del artefacto** (no lo duplica).
+
+### Cronograma y curvas
+
+| Parámetro | Valor | Qué gobierna |
+|---|---|---|
+| `start` | 700ms | la constelación se ve primero; el espiral arranca después |
+| `stagger` / `seg` | 235 / 460ms | ritmo **final** (el de la C) — *no se toca* (aprobado en #53) |
+| `staggerFast` / `segFast` | 125 / 285ms | arranque explosivo (con un poco más de aire que en v16: 110/260) |
+| `accelRamp` | 2.2 | exponente de la rampa explosivo→ritmo final |
+| `segC` | 640ms | trazado de cada tramo de la C |
+| `hotFade` | 500ms | el brillo de formación baja al chocar con su nodo |
+| `settlePad` | 420ms | colchón entre el último trazo y la entrada del settle |
+| `easeDraw` | `cubic-bezier(.19,1,.22,1)` | trazado (expo-out) |
+| `easeDissolve` | `cubic-bezier(.3,1.4,.5,1)` | chispa elástica de las estrellas de las aristas |
+| `easePunta` | `cubic-bezier(.33,.6,.4,1)` | apagado de la punta: **sin overshoot** |
+| `easeGlow` | `ease-out` | encendido del glow de la C junto con su trazado |
+| `constellation.dissolve` | 680ms | disolución de cada estrella al ser tocada |
+
+**Regla de pico de brillo**: una transición de apagado no puede tener overshoot
+(`y > 1` en su cubic-bezier) ni crecer en escala. `easeDissolve` sí tiene
+overshoot: es la chispa de las aristas, decisión de diseño de #53. La **punta**
+no lo tiene — es el cierre de la pieza y va limpio.
+
+### El glow respira sobre el trazo, no sobre el grupo
+
+`.settle-on .c-glow path` anima la respiración (`@keyframes breathe`, 3.6s,
+`0,5 → 0,78`), y arranca exactamente en el valor con que el trazo venía
+viéndose (0,5) ⇒ **no hay escalón al entrar el settle**. Sobre el grupo no
+funciona: el grupo es el objetivo de la animación de trazado (que con
+`fill: both` lo deja en 1 y le gana en la cascada), así que la respiración
+quedaba **inerte** en v16.
+
+### Cronograma sobre el reloj de animación
+
+Los efectos posteriores (limpiar el `dash`, retirar las líneas de calor,
+entrar al settle) se agendan con una micro-agenda sobre `requestAnimationFrame`
+que compara `currentTime` de cada animación — **nunca con `setTimeout`**: un
+timer de reloj de pared se desincroniza si la pestaña queda en background (donde
+las animaciones sí se pausan) y, sobre todo, deja la pieza sin poder congelarse
+(un fotograma con `pause + currentTime` no dispararía los efectos).
+El fin del cronograma se publica como `g.clock`.
+
+### Cómo se verifica
+
+`node tools/logo/verify-motion.mjs` (o `npm run logo:motion`) — congela
+fotogramas exactos con una sesión CDP (`pause` + `currentTime`) y mide:
+
+- **sin pico de brillo** — estructural: opacidad monótona, escala que no crece,
+sin overshoot en la curva de la punta;
+- **sin bloom** — medido: la luz propia de la estrella (canal rojo sobre el
+estado settled) y el glow **fuera del trazo** nunca suben mientras se apaga;
+- **settle sin salto y respirando** — el cuerpo de la C no pega escalón a
+±40ms del settle y el glow cambia al respirar (en v16 cambiaba 0.0000: no
+respiraba);
+- **arranque (criterio 2 del issue)** — piso objetivo: el tempo es monótono
+camina hacia el ritmo final, el pico de concurrencia ≥2 tramos trazando a la vez,
+y el primer stagger ≤60% del final (hay contraste). Reporta el perfil medido:
+pico, stagger extremos y tramos aterrizados a 1,0/1,5/2,0s. Lee el cronograma
+**declarado** (`svg.dataset.schedule`, los arrays `delays[]/durs[]` del ADR-lite),
+no lo infiere de las animaciones — donde las líneas de calor comparten delay con
+su tramo;
+- **autochequeos** — la estrella existe antes y no después, hay píxel brillante
+en el settled, y el congelado no deriva del instante pedido (la deriva se mide
+sobre el `currentTime` efectivo contra el esperado de cada animación: al pausar,
+`startTime` queda en null y el reloj no sirve para eso);
+- **piso del plan** — si el plan no muestrea la disolución (p. ej. `--step 5000`)
+el gate sale **2**, no aprueba con 5 fotogramas.
+
+Los umbrales viven **sólo** en `motion-analysis.mjs` (`THRESHOLDS`); el gate los
+importa. El settle se lee de `g.clock`; en artefactos viejos que no lo publican se
+aproxima con el fin de la última animación y el reporte lo dice (`settle (…ms)`
+con su fuente).
+
+Umbrales calibrados sobre la medición antes/después (ruido entre corridas con
+fotogramas congelados ≤0.001). `--report` imprime la curva sin veredicto y
+`--frames <dir>` guarda los fotogramas medidos.
+
+Salida: **0** sin hallazgos · **1** violaciones · **2** no se pudo medir (Chrome,
+artefacto o sonda) — el 2 existe para que un fallo de entorno no se lea como
+"limpio".
+
+Reparto: `verify-motion.mjs` adquiere (sesión CDP, fotogramas, máscaras) y
+muestra; **`motion-analysis.mjs`** tiene la política (umbrales, métricas y
+veredicto) en funciones puras, con **17 tests** que corren en CI — la adquisición
+necesita Chrome, el veredicto tiene que estar cubierto siempre.
+
+![Comparación de la punta: v16 arriba, fix abajo — fotogramas congelados alineados por fase (d0 / d0+200ms / d0+400ms de la disolución), ganancia ×4](logo-motion-punta.png)
+
+### Arranque (criterio 2 del issue) — el instrumento que faltaba
+
+El gate nació mirando sólo la punta, así que *"el arranque explosivo conserva su
+fuerza sin sentirse apurado"* quedaba **afirmado sin medirlo** (revisión fresca,
+F6). Ahora el artefacto publica su cronograma en `svg.dataset.schedule` y el gate
+lo mide y lo reporta:
+
+| Medición (artefacto actual) | Valor |
+|---|---|
+| pico de concurrencia | **3 tramos** trazando a la vez (@970ms) |
+| stagger del arranque → final | **125 → 235ms**, monótono (camina, no salta) |
+| tramos aterrizados | **5** @1,0s · **8** @1,5s · **10** @2,0s |
+
+Qué se afirma y qué no: el gate fija el **piso objetivo** (sigue habiendo
+estallido, el tempo no vuelve a acelerar, los extremos son los declarados en
+`CONFIG.timing` — o sea el ritmo final no se movió) y **reporta** el perfil. Si
+*"se siente apurado"* es juicio del ojo: el operador lo mira con
+`--frames <dir>`, que ahora también incluye fotogramas del estallido
+(`start + 200/800/1400ms`). La v16 **no** publica su cronograma, así que el gate
+la marca como no medible en este punto a propósito: derivarlo de sus animaciones
+exigiría deduplicar las líneas de calor, y una inferencia silenciosa es peor que
+una limitación declarada.
+
+### Lo que arregló #55 (medido)
+
+1. **Destello sobre la punta**: la estrella de la punta se disolvía con
+   `escala 1 → 1,3` y un easing con overshoot. A los 100ms de empezar ya había
+caído al **32%** de su luz y a los 200ms al **12%**, dejando un halo rosado
+*desprendido* sobre la C (columna de arriba de la imagen): eso es lo que se leía
+como destello. Ahora el apagado es un fade puro y parejo — **52% a los 100ms,
+18% a los 200ms, 8% a los 300ms**, monótono hasta 0, con núcleo y halo
+saliendo juntos.
+2. **Respiración inerte**: el `breathe` sobre el grupo nunca se veía (el cuerpo
+de la C cambiaba **0,0000** entre settle+40 y settle+900). Ahora respira sobre
+el trazo: **0,2182 → 0,2270 (+0,0088)**.
+3. **Rampa del arranque**: `accelRamp` está declarado (bajó a **2,2**) y el
+   arranque abrió un poco (`staggerFast` 110 → 125ms, `segFast` 260 → 285ms): el
+tempo camina hacia el ritmo final en vez de saltar a él, sin perder el estallido
+(**3** tramos trazando a la vez; ver §Arranque). El `|| 3` que lo dejaba implícito
+se eliminó: si falta el parámetro, el artefacto **falla fuerte** en vez de asumir
+un default. El ritmo final (235/460ms) no se tocó y la pieza dura lo mismo (fin de
+la disolución: 6031ms → 5976ms; settle 5771ms → 5716ms).
+
+> La columna *v16* se reproduce **sin parchear nada**, directo de `main`:
+> `git show main:proposals/logo-triangulo-espiral/aurea7.html > /tmp/v16.html`
+> y `node tools/logo/verify-motion.mjs --html /tmp/v16.html` → **5 violaciones**
+> (escala que crece, curva con overshoot, respiración en el grupo, respiración
+> inerte, y "no publica su cronograma" ⇒ no medible el arranque). Con el
+> artefacto actual → **0**.

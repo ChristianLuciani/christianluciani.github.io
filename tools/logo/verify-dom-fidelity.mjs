@@ -13,20 +13,15 @@
  *
  * Uso: node tools/logo/verify-dom-fidelity.mjs
  */
-import { execFileSync } from "node:child_process";
-import { accessSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { dumpDom } from "./chrome.mjs";
 import {
   CONFIG_AUREA, CONFIG_BASE, buildGeometry, buildSky, constellationPoints,
   segStyle, cPathD, lerpColor,
 } from "./geometry.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const CHROME_CANDIDATES = [
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  process.env.CHROME_PATH,
-].filter(Boolean);
 
 const round = (n) => Math.round(n * 100) / 100;
 const num = (s) => (s == null ? null : parseFloat(s));
@@ -35,18 +30,6 @@ const parseAttrs = (tag) => {
   for (const m of tag.matchAll(/([\w:-]+)="([^"]*)"/g)) attrs[m[1]] = m[2];
   return attrs;
 };
-
-function dumpDom(chrome, file, { reduced = false } = {}) {
-  const args = [
-    "--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars",
-    "--virtual-time-budget=1500", "--dump-dom", `file://${file}`,
-  ];
-  if (reduced) args.push("--force-prefers-reduced-motion");
-  return execFileSync(chrome, args, {
-    encoding: "utf8", maxBuffer: 64 * 1024 * 1024,
-    stdio: ["ignore", "pipe", "ignore"],
-  });
-}
 
 const extractTags = (dump, tagName) =>
   [...dump.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "g"))].map((m) => parseAttrs(m[0]));
@@ -71,9 +54,6 @@ const normColor = (c) => c?.replace(/\s+/g, "");
 /* chrome serializa colores como rgb(r,g,b); mi expected ya es rgb(...) */
 function verify(version, htmlPath) {
   const cfg = version === "base" ? CONFIG_BASE : CONFIG_AUREA;
-  const chrome = CHROME_CANDIDATES.find((c) => { try { accessSync(c); return true; } catch { return false; } });
-  if (!chrome) { console.error("❌ Chrome no encontrado"); process.exit(1); }
-
   const g = buildGeometry(cfg.geometry);
   const pts = constellationPoints(g.segs);
   const sky = buildSky(cfg);
@@ -81,7 +61,7 @@ function verify(version, htmlPath) {
   const file = resolve(htmlPath);
 
   /* ── modo reduced: geometría + estilos, sin hot-lines ── */
-  const dumpR = dumpDom(chrome, file, { reduced: true });
+  const dumpR = dumpDom(file, { reduced: true });
   const linesR = extractTags(dumpR, "line").filter((a) => a.x1 != null);
   const expected = new Map();
   for (const s of g.segs) {
@@ -121,7 +101,7 @@ function verify(version, htmlPath) {
   }
 
   /* ── modo normal: cielo + constelación ── */
-  const dump = dumpDom(chrome, file);
+  const dump = dumpDom(file);
   const circles = extractTags(dump, "circle");
   const coreCircles = circles.filter((a) => a.class?.includes("core"));
   const domCores = new Set(coreCircles.map((a) => `${round(num(a.cx))},${round(num(a.cy))}`));
