@@ -10,6 +10,32 @@
  * (compara contra el DOM real renderizado por Chrome).
  */
 
+/* Acabado de la C (cuarto color de marca: cobre).
+   La C deja de ser un trazo plano de oro: se dibuja como una barra con
+   bisel transversal (gradiente perpendicular al tramo: sombra abajo, luz
+   arriba) y un barrido de color a lo largo de la firma (cobre en B → oro
+   en el vértice C → luz en la punta A). Es tratamiento de render: la
+   geometría (cPathD, centros, anchos) no cambia.
+   `bloom` es el halo del fondo oscuro; sobre superficies claras NO se usa
+   (el oro translúcido sobre blanco vira a verdoso) y en su lugar se aplica
+   `shadow`: una sombra cálida neutra. */
+export const C_FINISH = {
+  perp: [ // gradiente a través del grosor: borde iluminado → borde en sombra
+    { offset: 0, color: "#f6e3a8" },
+    { offset: 0.16, color: "#e6c874" },
+    { offset: 0.5, color: "#c9a84c" },
+    { offset: 0.84, color: "#9c6428" },
+    { offset: 1, color: "#713114" },
+  ],
+  tint: { // barrido a lo largo de la C (se superpone al bisel)
+    copper: "#8f4a22", copperOpacity: 0.6, // en B: la firma nace cobriza
+    light: "#fff3c0", lightOpacity: 0.28,  // en A: la punta recibe la luz
+  },
+  caps: { base: "#a8672c", join: "#c9a84c", tip: "#f0d68c" },
+  bloom: { color: "#b05a28", opacity: 0.28, width: 6, blur: 8 },
+  shadow: { color: "#6b3f1f", opacity: 0.22, dy: 2.2, blur: 2.4 },
+};
+
 /* CONFIG de aurea7.html (base v10 = misma sin mode/galaxy/timing fast) */
 export const CONFIG_AUREA = {
   geometry: {
@@ -33,7 +59,10 @@ export const CONFIG_AUREA = {
     spiralFrom: "#16324f",
     spiralTo: "#00c9c0",
     c: "#c9a84c",
+    copper: "#8f4a22", // cuarto color: cobre de la base de la C
+    cLight: "#f6e3a8", // luz del bisel (no es color de marca: es el brillo)
   },
+  cFinish: C_FINISH,
   constellation: {
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,
@@ -64,7 +93,10 @@ export const CONFIG_BASE = {
     spiralFrom: "#16324f",
     spiralTo: "#00c9c0",
     c: "#c9a84c",
+    copper: "#8f4a22",
+    cLight: "#f6e3a8",
   },
+  cFinish: C_FINISH,
   constellation: {
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,
@@ -194,6 +226,39 @@ export function cPathD(segs) {
   const cIdx = segs.length - 2;
   const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
   return `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
+}
+
+/* ── la C como BARRA con bisel (acabado cobre→oro→luz) ──
+   Misma silueta y mismos centros que el trazo de ancho `width`: cada tramo
+   se convierte en un cuadrilátero de ancho width centrado en la línea, con
+   la normal orientada "hacia arriba" (luz cenital). Los quads son la base
+   del gradiente transversal (bisel); las tapas son los extremos con cap
+   redondo. La geometría de referencia (cPathD) no se toca. */
+export function cBand(segs, width) {
+  const cIdx = segs.length - 2;
+  const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
+  const h = width / 2;
+  const normal = (p, q) => {
+    const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
+    let nx = -dy / len, ny = dx / len;
+    if (ny > 0) { nx = -nx; ny = -ny; } // normal siempre hacia arriba (y−)
+    return { x: nx, y: ny };
+  };
+  const quad = (p, q) => {
+    const n = normal(p, q);
+    const a = { x: p.x + n.x * h, y: p.y + n.y * h };
+    const b = { x: q.x + n.x * h, y: q.y + n.y * h };
+    const c = { x: q.x - n.x * h, y: q.y - n.y * h };
+    const d = { x: p.x - n.x * h, y: p.y - n.y * h };
+    const path = `M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y} Z`;
+    return { path, a, b, c, d };
+  };
+  return {
+    B, C, A, h,
+    normal,
+    quads: [quad(B, C), quad(C, A)],
+    caps: [{ p: B, role: "base" }, { p: C, role: "join" }, { p: A, role: "tip" }],
+  };
 }
 
 /* ── cielo (verbatim: aurea7.html “sutil” / index.html “v10”) ──

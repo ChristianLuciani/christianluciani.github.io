@@ -20,7 +20,7 @@ import { accessSync, mkdirSync, rmSync, writeFileSync, readFileSync } from "node
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
-  config, buildGeometry, buildSky, constellationPoints, segStyle, cPathD, starSpec, seeded,
+  config, buildGeometry, buildSky, constellationPoints, segStyle, cPathD, cBand, starSpec, seeded,
 } from "./geometry.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -34,8 +34,8 @@ const DEEP = "#0b1120"; // --bg-1 del HTML aprobado (centro del gradiente)
 const HALO = "rgba(0,201,192,.07)"; // halo teal del .stage::before aprobado
 const NAME = "CHRISTIAN LUCIANI";
 const CHROME_CANDIDATES = [
+  process.env.CHROME_PATH, // override explícito (útil en CI/sandbox: wrapper con flags)
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  process.env.CHROME_PATH,
 ].filter(Boolean);
 
 const n2 = (x) => +x.toFixed(2);
@@ -89,6 +89,43 @@ const filterDefs = () => `  <defs>
     <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>`;
 
+/* ── acabado de la C: cuarto color (cobre) + bisel 3D ──
+   La C es una barra, no un trazo plano. Dos gradientes transversales
+   (uno por tramo, eje perpendicular a la línea) dan el volumen —borde
+   iluminado arriba, borde en sombra abajo—; dos barridos longitudinales
+   superpuestos dan el color (cobre en B → oro en C → luz en la punta A).
+   Sobre fondo oscuro, bloom cálido; sobre claro, sombra neutra: el bloom
+   dorado translúcido sobre blanco vira a verdoso (observación del
+   operador, 2026-10-22) y no se usa. */
+const C_IDS = { p1: "c-perp-1", p2: "c-perp-2", t1: "c-tint-1", t2: "c-tint-2" };
+
+const cDefs = (g, cfg, surface) => {
+  const f = cfg.cFinish;
+  const band = cBand(g.segs, cfg.cWidth);
+  const [q1, q2] = band.quads;
+  const stops = (arr) => arr.map((s) =>
+    `<stop offset="${n2(s.offset * 100)}%" stop-color="${s.color}"/>`).join("");
+  const perp = (id, q) =>
+    `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(q.a.x)}" y1="${n2(q.a.y)}" x2="${n2(q.d.x)}" y2="${n2(q.d.y)}">${stops(f.perp)}</linearGradient>`;
+  const tint = (id, from, to, co1, op1, co2, op2) =>
+    `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(from.x)}" y1="${n2(from.y)}" x2="${n2(to.x)}" y2="${n2(to.y)}">
+      <stop offset="0%" stop-color="${co1}" stop-opacity="${n4(op1)}"/>
+      <stop offset="100%" stop-color="${co2}" stop-opacity="${n4(op2)}"/>
+    </linearGradient>`;
+  const shadow = surface === "light"
+    ? `    <filter id="c-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="${n2(f.shadow.dy)}" stdDeviation="${n2(f.shadow.blur)}" flood-color="${f.shadow.color}" flood-opacity="${n4(f.shadow.opacity)}"/>
+    </filter>`
+    : "";
+  return `  <defs>
+${perp(C_IDS.p1, q1)}
+${perp(C_IDS.p2, q2)}
+${tint(C_IDS.t1, q1.a, q1.b, f.tint.copper, f.tint.copperOpacity, f.tint.copper, 0)}
+${tint(C_IDS.t2, q2.a, q2.b, f.tint.light, 0, f.tint.light, f.tint.lightOpacity)}
+${shadow}
+  </defs>`;
+};
+
 const layerBackground = (sky) => {
   if (!sky.length) return "";
   const circles = sky.map((s) =>
@@ -108,7 +145,8 @@ const BRAND = {
   brightHaloScale: 0.85,  // su halo también baja proporcional
 };
 
-const layerConstellation = (g, cfg, { settled = false } = {}) => {
+const layerConstellation = (g, cfg, { settled = false, surface = "night" } = {}) => {
+  const light = surface === "light"; // sobre claro el halo se ve como una mancha gris
   const pts = constellationPoints(g.segs);
   const rows = [];
   pts.forEach((p, j) => {
@@ -122,12 +160,14 @@ const layerConstellation = (g, cfg, { settled = false } = {}) => {
     const haloR = n2(j === 0 ? coreR * 5.0
       : coreR * (isBright ? (3.4 + rndH() * 2.6) * BRAND.brightHaloScale : 2.2 + rndH() * 2.4));
     rows.push(`  <g id="logo-star-${j}" data-name="star ${j}">`);
-    if (j === 0) rows.push(
-      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 3.2)}" fill="url(#halo-nova)" color="${sp.color}"/>`,
-      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 1.9)}" fill="url(#halo-nova)" color="${sp.color}"/>`
-    );
+    if (!light) {
+      if (j === 0) rows.push(
+        `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 3.2)}" fill="url(#halo-nova)" color="${sp.color}"/>`,
+        `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(sp.glowR * 1.9)}" fill="url(#halo-nova)" color="${sp.color}"/>`
+      );
+      rows.push(`    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${haloR}" fill="url(#halo-star)" color="${sp.color}"/>`);
+    }
     rows.push(
-      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${haloR}" fill="url(#halo-star)" color="${sp.color}"/>`,
       `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`,
       `  </g>`
     );
@@ -146,31 +186,47 @@ const layerSpiral = (g, cfg) => {
   return `  <g id="logo-spiral" data-name="Spiral" stroke-linecap="round" fill="none">\n${lines}\n  </g>`;
 };
 
-const layerC = (g, cfg) => {
+const layerC = (g, cfg, { surface = "night" } = {}) => {
+  const f = cfg.cFinish;
+  const band = cBand(g.segs, cfg.cWidth);
+  const [q1, q2] = band.quads;
   const d = cPathD(g.segs).replace(/\s+/g, " ");
-  return `  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.3" filter="url(#halo-blur)"/>
-    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth)}" opacity="1"/>
-  </g>`;
+  const rows = [];
+  if (surface === "night") // bloom cálido del fondo night (nunca sobre claro)
+    rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" filter="url(#halo-blur)"/>`);
+  const filter = surface === "light" ? ' filter="url(#c-shadow)"' : "";
+  rows.push(`  <g id="logo-c-triespiral" data-name="C TriSpiral"${filter}>`);
+  rows.push(
+    `    <path d="${q1.path}" fill="url(#${C_IDS.p1})"/>`,
+    `    <path d="${q2.path}" fill="url(#${C_IDS.p2})"/>`,
+    `    <path d="${q1.path}" fill="url(#${C_IDS.t1})"/>`,
+    `    <path d="${q2.path}" fill="url(#${C_IDS.t2})"/>`
+  );
+  band.caps.forEach(({ p, role }) =>
+    rows.push(`    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(band.h)}" fill="${f.caps[role]}"/>`)
+  );
+  rows.push(`  </g>`);
+  return rows.join("\n");
 };
 
-const layerTypography = (baseline) =>
-  `  <g id="logo-typography" data-name="Typography" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif" font-size="21" font-weight="500" fill="#c9a84c" letter-spacing="8.82">
+const layerTypography = (baseline, { surface = "night" } = {}) =>
+  `  <g id="logo-typography" data-name="Typography" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif" font-size="21" font-weight="500" fill="${surface === "light" ? "#8a5a1c" : "#c9a84c"}" letter-spacing="8.82">
     <text x="400" y="${n2(baseline)}" text-anchor="middle">${NAME}</text>
   </g>`;
 
-const svgDoc = (g, cfg, sky, { settled = false, typography = false } = {}) => {
+const svgDoc = (g, cfg, sky, { settled = false, typography = false, surface = "night" } = {}) => {
   const vbH = typography ? 940 : 800;
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!-- GENERADO por tools/logo/generate-logo.mjs — geometry.mjs ≡ DOM aprobado (PR #53). NO EDITAR A MANO -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 ${vbH}" width="800" height="${vbH}" role="img" aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
   <title>Christian Luciani — espiral de conocimiento</title>
 ${filterDefs()}
-${layerBackground(sky)}
-${layerConstellation(g, cfg, { settled })}
+${cDefs(g, cfg, surface)}
+${surface === "light" ? "" : layerBackground(sky)}
+${layerConstellation(g, cfg, { settled, surface })}
 ${layerSpiral(g, cfg)}
-${layerC(g, cfg)}
-${typography ? layerTypography(905) : ""}
+${layerC(g, cfg, { surface })}
+${typography ? layerTypography(905, { surface }) : ""}
 </svg>`;
 };
 
@@ -189,8 +245,10 @@ const nightHalo = (left, top, box) =>
 
 const squarePage = (svgStr, size, bg) => {
   const night = bg === "night";
+  const light = bg === "light";
+  const body = night ? nightBody(size) : light ? "background:#ffffff" : "background:transparent";
   return `<!doctype html><html><head><meta charset="utf-8">
-<style>html,body{margin:0;padding:0;${night ? nightBody(size) : "background:transparent"}}
+<style>html,body{margin:0;padding:0;${body}}
 svg{display:block;position:relative;z-index:1;width:${size}px!important;height:${size}px!important}
 ${night ? nightHalo(0, 0, size) : ""}</style>
 </head><body>${night ? '<div id="halo"></div>' : ""}${unwrapSvg(svgStr)}</body></html>`;
@@ -199,10 +257,12 @@ ${night ? nightHalo(0, 0, size) : ""}</style>
 /* página print A4/A3 300dpi: logo cuadrado centrado con margen 8% */
 const printPage = (svgStr, w, h, bg) => {
   const night = bg === "night";
+  const light = bg === "light";
+  const body = night ? nightBody(Math.min(w, h), "50%", "50%") : light ? "background:#ffffff" : "background:transparent";
   const box = Math.min(w, h) - Math.round(h * 0.08 * 2);
   const top = Math.round((h - box) / 2), left = Math.round((w - box) / 2);
   return `<!doctype html><html><head><meta charset="utf-8">
-<style>html,body{margin:0;padding:0;${night ? nightBody(box, `${left + box / 2}px`, `${top + box / 2}px`) : "background:transparent"}}
+<style>html,body{margin:0;padding:0;${night ? nightBody(box, `${left + box / 2}px`, `${top + box / 2}px`) : body}}
 svg{position:fixed;top:${top}px;left:${left}px;width:${box}px!important;height:${box}px!important;z-index:1}
 ${night ? nightHalo(left, top, box) : ""}</style>
 </head><body>${night ? '<div id="halo"></div>' : ""}${unwrapSvg(svgStr)}</body></html>`;
@@ -276,31 +336,39 @@ function main() {
       written.push(name);
     };
 
-    /* SVG masters */
+    /* SVG masters (night = hero/animation; light = superficies claras) */
     const layersSvg = svgDoc(g, cfg, sky, { settled: false });
     const settledSvg = svgDoc(g, cfg, sky, { settled: true });
     const lockupSvg = svgDoc(g, cfg, sky, { settled: false, typography: true });
+    const layersLightSvg = svgDoc(g, cfg, sky, { settled: false, surface: "light" });
+    const settledLightSvg = svgDoc(g, cfg, sky, { settled: true, surface: "light" });
+    const lockupLightSvg = svgDoc(g, cfg, sky, { settled: false, typography: true, surface: "light" });
     const favSvg = faviconDoc(g, cfg);
     for (const [name, doc] of [
       [`logo-${version}-layers.svg`, layersSvg],
       [`logo-${version}-settled.svg`, settledSvg],
       [`logo-${version}-lockup.svg`, lockupSvg],
+      [`logo-${version}-layers-light.svg`, layersLightSvg],
+      [`logo-${version}-settled-light.svg`, settledLightSvg],
+      [`logo-${version}-lockup-light.svg`, lockupLightSvg],
       [`favicon-${version}.svg`, favSvg],
     ]) {
       writeFileSync(join(OUT, name), doc, "utf8");
       written.push(name);
     }
 
-    /* master PNG 512..4096 (full, transparente + dark) */
+    /* master PNG 512..4096 (full: transparente + dark + light) */
     for (const s of [512, 1024, 2048, 4096]) {
       shoot(`logo-${version}-${s}.png`, squarePage(layersSvg, s, "transparent"), { w: s, transparent: true });
       shoot(`logo-${version}-${s}-dark.png`, squarePage(layersSvg, s, "night"), { w: s, transparent: false });
+      shoot(`logo-${version}-${s}-light.png`, squarePage(layersLightSvg, s, "light"), { w: s, transparent: false });
     }
 
-    /* print 300dpi A4/A3 (transparente + dark) */
+    /* print 300dpi A4/A3 (transparente + dark + light) */
     for (const [label, { w, h }] of [["print-a4", { w: 2480, h: 3508 }], ["print-a3", { w: 3508, h: 4961 }]]) {
       shoot(`logo-${version}-${label}.png`, printPage(layersSvg, w, h, "transparent"), { w, h, transparent: true });
       shoot(`logo-${version}-${label}-dark.png`, printPage(layersSvg, w, h, "night"), { w, h, transparent: false });
+      shoot(`logo-${version}-${label}-light.png`, printPage(layersLightSvg, w, h, "light"), { w, h, transparent: false });
     }
 
     /* favicon simplificado (16/32: legible por diseño, no por suerte) + apple-touch */

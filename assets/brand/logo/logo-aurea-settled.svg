@@ -17,6 +17,19 @@
     </radialGradient>
     <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>
+  <defs>
+    <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="496.86" y2="586.33"><stop offset="0%" stop-color="#f6e3a8"/><stop offset="16%" stop-color="#e6c874"/><stop offset="50%" stop-color="#c9a84c"/><stop offset="84%" stop-color="#9c6428"/><stop offset="100%" stop-color="#713114"/></linearGradient>
+    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="191.16" y1="489.24" x2="198.39" y2="496.15"><stop offset="0%" stop-color="#f6e3a8"/><stop offset="16%" stop-color="#e6c874"/><stop offset="50%" stop-color="#c9a84c"/><stop offset="84%" stop-color="#9c6428"/><stop offset="100%" stop-color="#713114"/></linearGradient>
+    <linearGradient id="c-tint-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="196.18" y2="487.9">
+      <stop offset="0%" stop-color="#8f4a22" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#8f4a22" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="c-tint-2" gradientUnits="userSpaceOnUse" x1="191.16" y1="489.24" x2="488.93" y2="178.07">
+      <stop offset="0%" stop-color="#fff3c0" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#fff3c0" stop-opacity="0.28"/>
+    </linearGradient>
+
+  </defs>
   <g id="logo-background" data-name="Background">
       <circle cx="245.1" cy="284.29" r="1.3522" fill="#ffb49e" opacity="0.3099"/>
       <circle cx="212.09" cy="265.05" r="1.1876" fill="#ff6f5e" opacity="0.2922"/>
@@ -122,9 +135,15 @@
       <line x1="277.52" y1="474.73" x2="442.97" y2="269.58" stroke="rgb(1,193,186)" stroke-width="4.0889" opacity="0.6856"/>
       <line x1="442.97" y1="269.58" x2="498.26" y2="581.54" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
   </g>
-  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="16" opacity="0.3" filter="url(#halo-blur)"/>
-    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="10" opacity="1"/>
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#b05a28" stroke-width="16" opacity="0.28" fill="none" filter="url(#halo-blur)"/>
+  <g id="logo-c-triespiral" data-name="C TriSpiral">
+    <path d="M 499.6666084855308 576.7366444092511 L 196.18042609054322 487.89690378737066 L 193.37101572174464 497.4941540904359 L 496.8571981167322 586.3338947123164 Z" fill="url(#c-perp-1)"/>
+    <path d="M 191.16321965902938 489.2386756386321 L 488.9276488040124 178.06713371979635 L 496.1526512982415 184.9808403203387 L 198.38822215325848 496.1523822391745 Z" fill="url(#c-perp-2)"/>
+    <path d="M 499.6666084855308 576.7366444092511 L 196.18042609054322 487.89690378737066 L 193.37101572174464 497.4941540904359 L 496.8571981167322 586.3338947123164 Z" fill="url(#c-tint-1)"/>
+    <path d="M 191.16321965902938 489.2386756386321 L 488.9276488040124 178.06713371979635 L 496.1526512982415 184.9808403203387 L 198.38822215325848 496.1523822391745 Z" fill="url(#c-tint-2)"/>
+    <circle cx="498.26" cy="581.54" r="5" fill="#a8672c"/>
+    <circle cx="194.78" cy="492.7" r="5" fill="#c9a84c"/>
+    <circle cx="492.54" cy="181.52" r="5" fill="#f0d68c"/>
   </g>
 
 </svg>

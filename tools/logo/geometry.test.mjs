@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import {
   CONFIG_AUREA, CONFIG_BASE, config, buildGeometry, buildSky,
-  constellationPoints, segStyle, cPathD, seeded, starSpec,
+  constellationPoints, segStyle, cPathD, cBand, seeded, starSpec,
 } from "./geometry.mjs";
 
 const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
@@ -141,6 +141,55 @@ describe("config()", () => {
   it("base y aurea devuelven sus CONFIG canónicos", () => {
     expect(config("base")).toBe(CONFIG_BASE);
     expect(config("aurea")).toBe(CONFIG_AUREA);
+  });
+});
+
+describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", () => {
+  const g = buildGeometry(CONFIG_AUREA.geometry);
+
+  it("conserva los centros de cPathD: B, C y punta A", () => {
+    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
+    const cIdx = g.segs.length - 2;
+    expect(band.B).toEqual(g.segs[cIdx].a);
+    expect(band.C).toEqual(g.segs[cIdx].b);
+    expect(band.A).toEqual(g.segs[cIdx + 1].b);
+    expect(band.h).toBe(CONFIG_AUREA.cWidth / 2);
+  });
+
+  it("cada quad mide exactamente el ancho de la C (sin cambiar el grosor)", () => {
+    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
+    for (const q of band.quads) {
+      // a y d son los dos bordes de un mismo extremo: separación = width
+      expect(dist(q.a, q.d)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
+      expect(dist(q.b, q.c)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
+      // el quad es paralelo al tramo: lados opuestos iguales
+      expect(dist(q.a, q.b)).toBeCloseTo(dist(q.d, q.c), 6);
+    }
+  });
+
+  it("la normal apunta siempre hacia arriba (luz cenital) y es perpendicular", () => {
+    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
+    const cIdx = g.segs.length - 2;
+    for (const [p, q] of [[band.B, band.C], [band.C, band.A]]) {
+      const n = band.normal(p, q);
+      expect(n.y).toBeLessThanOrEqual(0);
+      const dx = q.x - p.x, dy = q.y - p.y;
+      expect(dx * n.x + dy * n.y).toBeCloseTo(0, 6);
+      expect(Math.hypot(n.x, n.y)).toBeCloseTo(1, 6);
+    }
+  });
+
+  it("determinista y con 3 tapas (base, vértice, punta)", () => {
+    const a = cBand(g.segs, CONFIG_AUREA.cWidth);
+    const b = cBand(g.segs, CONFIG_AUREA.cWidth);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+    expect(a.caps.map((c) => c.role)).toEqual(["base", "join", "tip"]);
+  });
+
+  it("el cuarto color (cobre) está declarado en ambas versiones", () => {
+    expect(CONFIG_AUREA.colors.copper).toBe("#8f4a22");
+    expect(CONFIG_BASE.colors.copper).toBe("#8f4a22");
+    expect(CONFIG_AUREA.cFinish.tint.copper).toBe("#8f4a22");
   });
 });
 

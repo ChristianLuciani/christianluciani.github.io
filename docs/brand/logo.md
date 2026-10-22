@@ -28,8 +28,10 @@ expande.
   estrella se integran como una constelación real. En la animación las
   estrellas preexisten y se disuelven al ser tocadas por la línea; la
   supernova central permanece: es el origen de todo.
-- **La C**: las dos últimas líneas del espiral, en oro, grosor máximo — la
-  firma.
+- **La C**: las dos últimas líneas del espiral, grosor máximo — la firma.
+  Desde 2026-10-22 es una **barra metálica**, no un trazo plano: cobre en su
+  nacimiento (B), oro de marca en el vértice y luz en la punta, con bisel
+  transversal que le da volumen (ver §3.1).
 - **Jerarquía** (operador, 2026-09-25): el ojo va primero al origen — la
   supernova gana +2pt de core y las estrellas grandes de las aristas (la
   punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
@@ -55,7 +57,9 @@ diseño aprobado, no un desvío.
 | Token | Hex | Uso |
 |---|---|---|
 | Teal (marca) | `#00c9c0` | punta del espiral (=`--teal` del sitio) |
-| Oro (firma) | `#c9a84c` | la C y la tipografía (=`--gold`) |
+| Oro (firma) | `#c9a84c` | la C (centro del bisel) y la tipografía (=`--gold`) |
+| **Cobre (cuarto color)** | `#8f4a22` | nacimiento de la C (B), sombra del bisel y bloom cálido |
+| Luz de bisel | `#f6e3a8` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
 | Night | `#050810` | fondo oscuro (=`--night`) |
 | Espectro estelar | `#ff8a70` `#ff6f5e` `#ffb49e` `#f6d7c4` `#cfe0ff` | estrellas: rojizos dominantes + blancos cálidos + un azulado |
@@ -63,6 +67,34 @@ diseño aprobado, no un desvío.
 
 La rampa del espiral interpola `#16324f → #00c9c0` (22 → 0 R, 50 → 201 G,
 79 → 192 B) con opacidad `0.10 → 0.72` y grosor `2.2 → 4.2`.
+
+### 3.1 Acabado de la C — cuarto color y volumen
+
+La C se dibuja con `cBand()` (`geometry.mjs`) como una barra de ancho
+`cWidth` (misma silueta que el trazo anterior, mismos centros). Encima se
+aplican dos capas de gradiente:
+
+1. **Bisel transversal** (`cFinish.perp`, por tramo): eje perpendicular a la
+   línea — borde superior iluminado `#f6e3a8`, centro oro `#c9a84c`, borde
+   inferior en sombra `#713114`. Es lo que produce el volumen de barra
+   metálica; la luz se asume cenital.
+2. **Barrido longitudinal** (`cFinish.tint`): cobre `#8f4a22` naciendo en B
+   (la firma arranca cobriza) que se disuelve hacia el vértice, y un velo de
+   luz `#fff3c0` en la punta A. Las tapas redondas toman el color del
+   extremo (`#a8672c` / `#c9a84c` / `#f0d68c`).
+
+Superficies:
+
+- **Night**: bloom cálido `#b05a28` (nunca oro translúcido: sobre blanco
+  vira a verdoso).
+- **Light**: sin bloom. Sombra cálida neutra (`feDropShadow #6b3f1f`, 22%)
+  que despega la C del fondo blanco sin halo de color. En esta superficie
+  además se omiten el cielo de fondo y los halos de la constelación (se
+  leían como polvo/manchas grises sobre blanco); los núcleos de las
+  estrellas se conservan.
+
+Todo esto es **tratamiento de render**: `cPathD`, centros, radios y anchos
+siguen siendo la fuente de verdad y el gate de fidelidad no cambia.
 
 **Ambiente night aprobado** (no documentado antes — agregado por review
 fresco): el HTML usa `--bg-0 #050810` y `--bg-1 #0b1120` (= `--deep` del
@@ -107,7 +139,7 @@ exacto por generación, twist = 3°×φ, determinismo, y fidelidad DOM
 
 | Elemento | Fuente | Tamaño (lienzo 800) | Tracking | Color |
 |---|---|---|---|---|
-| Nombre (lockup) | `ui-sans-serif, system-ui…` (idém proposal) | 21px | 0.42em = 8.82px | oro `#c9a84c` |
+| Nombre (lockup) | `ui-sans-serif, system-ui…` (idém proposal) | 21px | 0.42em = 8.82px | oro `#c9a84c` (light: oro profundo `#8a5a1c`) |
 | Caption meta | ídem | — | 0.18em | `--ink-dim` |
 
 En MAYÚSCULAS siempre. El sitio usa Playfair Display (display), Fira Code
@@ -125,9 +157,13 @@ técnica.
 2. **`logo-constellation`** — 22 estrellas de vértices (1 supernova central
    + 21 nodos); congeladas en pico (fotograma de máxima intensidad).
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
-4. **`logo-c-triespiral`** — la C en oro: glow difuminado + trazo firme.
+4. **`logo-c-triespiral`** — la C con acabado cobre→oro→luz: bisel
+   transversal + barrido longitudinal (night: bloom cálido; light: sombra
+   neutra). Ver §3.1.
 
-El **lockup** añade `logo-typography` (viewBox 800×940).
+El **lockup** añade `logo-typography` (viewBox 800×940). En la variante
+light, además, se omite `logo-background` y los halos de la constelación
+(§3.1).
 
 ### Variantes de estrellas
 
@@ -140,9 +176,11 @@ El **lockup** añade `logo-typography` (viewBox 800×940).
 ## 7. Uso correcto
 
 - **Fondo**: night con el ambiente aprobado (gradiente radial `#0b1120 →
-  #050810` + halo teal, ver §3) o transparente. Sobre fondos claros NO está
-  diseñado (la rampa azul/teal y el oro se lavan): si es imprescindible, usar
-  la variante print con la C y el espiral intactos y validar contraste.
+  #050810` + halo teal, ver §3) o transparente. Para **superficies claras**
+  usar la variante **light** (`*-light`): mismo símbolo, sin bloom y con
+  sombra neutra — la versión night sobre blanco dejaba un halo verdoso
+  (observación del operador, 2026-10-22). No usar el bloom night sobre
+  blanco.
 - **Tamaño mínimo**: 24 px de alto para el mark completo. Los favicons 16/32
   usan la variante **simplificada** (sólo la C + supernova) — no el mark
   completo, que en <24px se vuelve ilegible.
@@ -155,7 +193,8 @@ El **lockup** añade `logo-typography` (viewBox 800×940).
 ## 8. Usos incorrectos
 
 - ❌ Rotar, estirar o reflectar el símbolo.
-- ❌ Recolorear la C (el oro es la firma) o aplanar el glow.
+- ❌ Recolorear la C a mano o aplanar su bisel (el oro es la firma; el
+  acabado cobre→oro→luz se genera desde `cFinish`).
 - ❌ Dibujar el símbolo a mano: **siempre regenerar** (`node
   tools/logo/generate-logo.mjs`).
 - ❌ Editar los SVG/PNG generados — son OUTPUT; la fuente es `geometry.mjs`.
@@ -188,10 +227,13 @@ assets/brand/logo/
   logo-{aurea|base}-layers.svg        # master por capas (hero)
   logo-{aurea|base}-settled.svg       # estado final (favicons/print)
   logo-{aurea|base}-lockup.svg        # mark + tipografía (800×940)
+  logo-{aurea|base}-*-light.svg       # masters para superficie clara
   logo-{aurea|base}-{512|1024|2048|4096}.png       # transparente
   logo-{aurea|base}-{512|1024|2048|4096}-dark.png  # fondo night
+  logo-{aurea|base}-{512|1024|2048|4096}-light.png # fondo blanco
   logo-{aurea|base}-print-{a4|a3}.png             # 300dpi transparente
   logo-{aurea|base}-print-{a4|a3}-dark.png        # 300dpi night
+  logo-{aurea|base}-print-{a4|a3}-light.png       # 300dpi blanco
   favicon-{aurea|base}-{16|32}.png
   apple-touch-icon-{aurea|base}.png   # 180, fondo night
   og-image-{aurea|base}.png           # 1200×630 dark + nombre

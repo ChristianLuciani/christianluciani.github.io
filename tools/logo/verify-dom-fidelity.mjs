@@ -24,8 +24,8 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHROME_CANDIDATES = [
+  process.env.CHROME_PATH, // override explícito (útil en CI/sandbox: wrapper con flags)
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  process.env.CHROME_PATH,
 ].filter(Boolean);
 
 const round = (n) => Math.round(n * 100) / 100;
