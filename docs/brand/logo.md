@@ -81,8 +81,16 @@ aplican dos capas de gradiente:
    produce el volumen de barra metálica; la luz se asume cenital.
 2. **Barrido longitudinal** (`cFinish.tint`): ámbar `#d99a2b` naciendo en B
    (la firma arranca cálida) que se disuelve hacia el vértice, y un velo de
-   luz `#fffbe6` en la punta A. Las tapas redondas toman el color del
-   extremo (`#c98f26` / `#ddb04a` / `#f0d795`).
+   luz `#fffbe6` en la punta A.
+
+**Terminaciones** (operador, 2026-10-22): los extremos libres —B y la punta
+A— terminan en **corte transversal plano**, sin tapa redonda: la barra no
+debe leerse como un tubo con cara circular. El vértice C se resuelve con un
+**inglete**: los dos tramos comparten la misma línea de corte (intersección
+de los bordes exterior e interior), así encajan sin hueco ni parche. En los
+tres vértices de la C se conserva el **halo** de la estrella pero se omite
+su núcleo: medio núcleo asomaba sobre el corte y se leía como un punto
+suelto.
 
 Superficies:
 
@@ -155,8 +163,10 @@ técnica.
 1. **`logo-background`** — cielo: 30 estrellas ambient + 46 en brazos de
    galaxia espiral (mismo sentido de giro y crecimiento que el logo);
    semilla fija ⇒ idéntico en cada render.
-2. **`logo-constellation`** — 22 estrellas de vértices (1 supernova central
-   + 21 nodos); congeladas en pico (fotograma de máxima intensidad).
+2. **`logo-constellation`** — constelación de vértices (1 supernova central
+   + 21 nodos); congeladas en pico. En los tres vértices de la C (B, C, A)
+   se dibuja el halo pero no el núcleo (ver §3.1): el corte plano de la
+   barra los dejaría medio expuestos.
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
 4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
    transversal + barrido longitudinal (night: bloom cálido; light: sombra

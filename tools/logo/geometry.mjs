@@ -34,7 +34,6 @@ export const C_FINISH = {
     amber: "#d99a2b", amberOpacity: 0.5,   // en B: la firma nace ámbar
     light: "#fffbe6", lightOpacity: 0.32,  // en A: la punta recibe la luz
   },
-  caps: { base: "#c98f26", join: "#ddb04a", tip: "#f0d795" },
   bloom: { color: "#dfa637", opacity: 0.28, width: 6, blur: 8 },
   shadow: { color: "#6b5218", opacity: 0.2, dy: 2.2, blur: 2.4 },
 };
@@ -231,36 +230,86 @@ export function cPathD(segs) {
   return `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
 }
 
-/* ── la C como BARRA con bisel (acabado cobre→oro→luz) ──
+/* ── la C como BARRA con bisel (acabado ámbar→oro→luz) ──
    Misma silueta y mismos centros que el trazo de ancho `width`: cada tramo
    se convierte en un cuadrilátero de ancho width centrado en la línea, con
    la normal orientada "hacia arriba" (luz cenital). Los quads son la base
-   del gradiente transversal (bisel); las tapas son los extremos con cap
-   redondo. La geometría de referencia (cPathD) no se toca. */
+   del gradiente transversal (bisel).
+   Los extremos libres (B y A) terminan en CORTE TRANSVERSAL PLANO: sin cap
+   redondo, para que la barra no lea como un tubo con cara circular
+   (feedback del operador, 2026-10-22).
+   El vértice C se resuelve con un INGLETE: ambos tramos se cortan en la
+   MISMA línea (intersección de los bordes exteriores Xo e interiores Xi),
+   de modo que las dos piezas encajan sin hueco ni solape. No hay tapa
+   circular ni parche en la esquina.
+   La geometría de referencia (cPathD) no se toca. */
 export function cBand(segs, width) {
   const cIdx = segs.length - 2;
   const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
   const h = width / 2;
-  const normal = (p, q) => {
+  const unit = (p, q) => {
     const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
-    let nx = -dy / len, ny = dx / len;
+    return { x: dx / len, y: dy / len };
+  };
+  const normal = (p, q) => {
+    const u = unit(p, q);
+    let nx = -u.y, ny = u.x;
     if (ny > 0) { nx = -nx; ny = -ny; } // normal siempre hacia arriba (y−)
     return { x: nx, y: ny };
   };
-  const quad = (p, q) => {
-    const n = normal(p, q);
-    const a = { x: p.x + n.x * h, y: p.y + n.y * h };
-    const b = { x: q.x + n.x * h, y: q.y + n.y * h };
-    const c = { x: q.x - n.x * h, y: q.y - n.y * h };
-    const d = { x: p.x - n.x * h, y: p.y - n.y * h };
-    const path = `M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y} Z`;
-    return { path, a, b, c, d };
+  const offsetLineIntersection = (p1, u1, p2, u2) => {
+    const cross = (a, b) => a.x * b.y - a.y * b.x;
+    const r = { x: p2.x - p1.x, y: p2.y - p1.y };
+    const den = cross(u1, u2);
+    const t = Math.abs(den) < 1e-9 ? 0 : cross(r, u2) / den;
+    return { x: p1.x + u1.x * t, y: p1.y + u1.y * t };
+  };
+  const n1 = normal(B, C), n2 = normal(C, A);
+  const u1 = unit(B, C), u2 = unit(C, A);
+  // inglete: los dos bordes (exterior +h, interior −h) de ambos tramos
+  const Xo = offsetLineIntersection(
+    { x: B.x + n1.x * h, y: B.y + n1.y * h }, u1,
+    { x: C.x + n2.x * h, y: C.y + n2.y * h }, u2
+  );
+  const Xi = offsetLineIntersection(
+    { x: B.x - n1.x * h, y: B.y - n1.y * h }, u1,
+    { x: C.x - n2.x * h, y: C.y - n2.y * h }, u2
+  );
+  /* cada tramo: borde exterior → corte de inglete → borde interior → extremo
+     plano. Ambos comparten exactamente la línea Xo–Xi: encajan sin hueco. */
+  const quad = (a, b, c, d) => ({
+    path: `M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y} Z`,
+    a, b, c, d,
+  });
+  const q1 = {
+    ...quad(
+      { x: B.x + n1.x * h, y: B.y + n1.y * h }, Xo, Xi,
+      { x: B.x - n1.x * h, y: B.y - n1.y * h }
+    ),
+    // eje del bisel: perpendicular REAL al tramo (el corte de inglete no lo es)
+    perp: [
+      { x: B.x + n1.x * h, y: B.y + n1.y * h },
+      { x: B.x - n1.x * h, y: B.y - n1.y * h },
+    ],
+  };
+  const q2 = {
+    ...quad(
+      Xo,
+      { x: A.x + n2.x * h, y: A.y + n2.y * h },
+      { x: A.x - n2.x * h, y: A.y - n2.y * h },
+      Xi
+    ),
+    perp: [
+      { x: A.x + n2.x * h, y: A.y + n2.y * h },
+      { x: A.x - n2.x * h, y: A.y - n2.y * h },
+    ],
   };
   return {
     B, C, A, h,
     normal,
-    quads: [quad(B, C), quad(C, A)],
-    caps: [{ p: B, role: "base" }, { p: C, role: "join" }, { p: A, role: "tip" }],
+    quads: [q1, q2],
+    ends: [{ p: B, role: "base" }, { p: A, role: "tip" }], // corte plano, sin cap
+    miter: { Xo, Xi }, // la línea Xo–Xi es el corte compartido del vértice
   };
 }
 

@@ -159,12 +159,12 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
   it("cada quad mide exactamente el ancho de la C (sin cambiar el grosor)", () => {
     const band = cBand(g.segs, CONFIG_AUREA.cWidth);
     for (const q of band.quads) {
-      // a y d son los dos bordes de un mismo extremo: separación = width
-      expect(dist(q.a, q.d)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
-      expect(dist(q.b, q.c)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
-      // el quad es paralelo al tramo: lados opuestos iguales
-      expect(dist(q.a, q.b)).toBeCloseTo(dist(q.d, q.c), 6);
+      // el eje del bisel es perpendicular al tramo y mide width
+      expect(dist(q.perp[0], q.perp[1])).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
     }
+    // los extremos libres son cortes planos de ancho width
+    expect(dist(band.quads[0].a, band.quads[0].d)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
+    expect(dist(band.quads[1].b, band.quads[1].c)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
   });
 
   it("la normal apunta siempre hacia arriba (luz cenital) y es perpendicular", () => {
@@ -179,11 +179,36 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
     }
   });
 
-  it("determinista y con 3 tapas (base, vértice, punta)", () => {
+  it("extremos con corte transversal (sin tapa) + inglete en el vértice", () => {
+    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
+    // B y A terminan planos: no hay círculos de tapa en el SVG
+    expect(band.ends.map((e) => e.role)).toEqual(["base", "tip"]);
+    expect(band).not.toHaveProperty("caps");
+    // el inglete es una línea (Xo–Xi), no un parche triangular
+    expect(band.miter).toEqual({ Xo: expect.any(Object), Xi: expect.any(Object) });
+  });
+
+  it("el inglete es una sola línea compartida por los dos tramos (sin hueco)", () => {
+    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
+    const [q1, q2] = band.quads;
+    // la arista de corte es la misma en ambos: Xo = q1.b = q2.a, Xi = q1.c = q2.d
+    expect(dist(q1.b, q2.a)).toBeCloseTo(0, 9);
+    expect(dist(q1.c, q2.d)).toBeCloseTo(0, 9);
+    expect(band.miter.Xo).toEqual(q1.b);
+    expect(band.miter.Xi).toEqual(q1.c); // c es el borde interior en el vértice
+    // Xo y Xi equidistan h de las líneas centrales
+    const distLine = (p, a, b) => {
+      const dx = b.x - a.x, dy = b.y - a.y;
+      return Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx) / Math.hypot(dx, dy);
+    };
+    expect(distLine(band.miter.Xo, band.B, band.C)).toBeCloseTo(band.h, 6);
+    expect(distLine(band.miter.Xi, band.B, band.C)).toBeCloseTo(band.h, 6);
+  });
+
+  it("determinista", () => {
     const a = cBand(g.segs, CONFIG_AUREA.cWidth);
     const b = cBand(g.segs, CONFIG_AUREA.cWidth);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
-    expect(a.caps.map((c) => c.role)).toEqual(["base", "join", "tip"]);
   });
 
   it("el cuarto color (ámbar dorado) está declarado en ambas versiones", () => {

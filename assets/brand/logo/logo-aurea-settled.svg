@@ -19,12 +19,12 @@
   </defs>
   <defs>
     <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="496.86" y2="586.33"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
-    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="191.16" y1="489.24" x2="198.39" y2="496.15"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
-    <linearGradient id="c-tint-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="196.18" y2="487.9">
+    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="488.93" y1="178.07" x2="496.15" y2="184.98"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
+    <linearGradient id="c-tint-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="193.26" y2="487.04">
       <stop offset="0%" stop-color="#d99a2b" stop-opacity="0.5"/>
       <stop offset="100%" stop-color="#d99a2b" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="c-tint-2" gradientUnits="userSpaceOnUse" x1="191.16" y1="489.24" x2="488.93" y2="178.07">
+    <linearGradient id="c-tint-2" gradientUnits="userSpaceOnUse" x1="193.26" y1="487.04" x2="488.93" y2="178.07">
       <stop offset="0%" stop-color="#fffbe6" stop-opacity="0"/>
       <stop offset="100%" stop-color="#fffbe6" stop-opacity="0.32"/>
     </linearGradient>
@@ -137,13 +137,10 @@
   </g>
     <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#dfa637" stroke-width="16" opacity="0.28" fill="none" filter="url(#halo-blur)"/>
   <g id="logo-c-triespiral" data-name="C TriSpiral">
-    <path d="M 499.6666084855308 576.7366444092511 L 196.18042609054322 487.89690378737066 L 193.37101572174464 497.4941540904359 L 496.8571981167322 586.3338947123164 Z" fill="url(#c-perp-1)"/>
-    <path d="M 191.16321965902938 489.2386756386321 L 488.9276488040124 178.06713371979635 L 496.1526512982415 184.9808403203387 L 198.38822215325848 496.1523822391745 Z" fill="url(#c-perp-2)"/>
-    <path d="M 499.6666084855308 576.7366444092511 L 196.18042609054322 487.89690378737066 L 193.37101572174464 497.4941540904359 L 496.8571981167322 586.3338947123164 Z" fill="url(#c-tint-1)"/>
-    <path d="M 191.16321965902938 489.2386756386321 L 488.9276488040124 178.06713371979635 L 496.1526512982415 184.9808403203387 L 198.38822215325848 496.1523822391745 Z" fill="url(#c-tint-2)"/>
-    <circle cx="498.26" cy="581.54" r="5" fill="#c98f26"/>
-    <circle cx="194.78" cy="492.7" r="5" fill="#ddb04a"/>
-    <circle cx="492.54" cy="181.52" r="5" fill="#f0d795"/>
+    <path d="M 499.6666084855308 576.7366444092511 L 193.26409687797855 487.0432045224893 L 196.28734493430932 498.3478533553173 L 496.8571981167322 586.3338947123164 Z" fill="url(#c-perp-1)"/>
+    <path d="M 193.26409687797855 487.0432045224893 L 488.9276488040124 178.06713371979635 L 496.1526512982415 184.9808403203387 L 196.28734493430932 498.3478533553173 Z" fill="url(#c-perp-2)"/>
+    <path d="M 499.6666084855308 576.7366444092511 L 193.26409687797855 487.0432045224893 L 196.28734493430932 498.3478533553173 L 496.8571981167322 586.3338947123164 Z" fill="url(#c-tint-1)"/>
+    <path d="M 193.26409687797855 487.0432045224893 L 488.9276488040124 178.06713371979635 L 496.1526512982415 184.9808403203387 L 196.28734493430932 498.3478533553173 Z" fill="url(#c-tint-2)"/>
   </g>
 
 </svg>

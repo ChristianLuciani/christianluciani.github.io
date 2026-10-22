@@ -109,7 +109,7 @@ const cDefs = (g, cfg, surface) => {
   const stops = (arr) => arr.map((s) =>
     `<stop offset="${n2(s.offset * 100)}%" stop-color="${s.color}"/>`).join("");
   const perp = (id, q) =>
-    `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(q.a.x)}" y1="${n2(q.a.y)}" x2="${n2(q.d.x)}" y2="${n2(q.d.y)}">${stops(f.perp)}</linearGradient>`;
+    `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(q.perp[0].x)}" y1="${n2(q.perp[0].y)}" x2="${n2(q.perp[1].x)}" y2="${n2(q.perp[1].y)}">${stops(f.perp)}</linearGradient>`;
   const tint = (id, from, to, co1, op1, co2, op2) =>
     `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(from.x)}" y1="${n2(from.y)}" x2="${n2(to.x)}" y2="${n2(to.y)}">
       <stop offset="0%" stop-color="${co1}" stop-opacity="${n4(op1)}"/>
@@ -170,10 +170,15 @@ const layerConstellation = (g, cfg, { settled = false, surface = "night" } = {})
       );
       rows.push(`    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${haloR}" fill="url(#halo-star)" color="${sp.color}"/>`);
     }
-    rows.push(
-      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`,
-      `  </g>`
+    /* B, C y A son los vértices de la C (últimos 3 puntos): el núcleo de la
+       estrella quedaba medio expuesto sobre el corte plano de la barra y se
+       leía como un punto suelto. El halo se conserva (la estrella sigue
+       presente como brillo en el extremo); el núcleo se omite ahí. */
+    const onC = j >= pts.length - 3;
+    if (!onC) rows.push(
+      `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`
     );
+    rows.push(`  </g>`);
   });
   return rows.join("\n");
 };
@@ -204,9 +209,6 @@ const layerC = (g, cfg, { surface = "night" } = {}) => {
     `    <path d="${q2.path}" fill="url(#${C_IDS.p2})"/>`,
     `    <path d="${q1.path}" fill="url(#${C_IDS.t1})"/>`,
     `    <path d="${q2.path}" fill="url(#${C_IDS.t2})"/>`
-  );
-  band.caps.forEach(({ p, role }) =>
-    rows.push(`    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(band.h)}" fill="${f.caps[role]}"/>`)
   );
   rows.push(`  </g>`);
   return rows.join("\n");
