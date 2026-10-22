@@ -44,7 +44,7 @@ function dumpDom(chrome, file, { reduced = false } = {}) {
   if (reduced) args.push("--force-prefers-reduced-motion");
   return execFileSync(chrome, args, {
     encoding: "utf8", maxBuffer: 64 * 1024 * 1024,
-    stdio: ["ignore", "pipe", "ignore"],
+    stdio: ["ignore", "pipe", "ignore"], timeout: 180_000,
   });
 }
 

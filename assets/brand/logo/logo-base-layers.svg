@@ -18,15 +18,15 @@
     <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>
   <defs>
-    <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="515.71" y1="565.45" x2="513.92" y2="575.29"><stop offset="0%" stop-color="#f6e3a8"/><stop offset="16%" stop-color="#e6c874"/><stop offset="50%" stop-color="#c9a84c"/><stop offset="84%" stop-color="#9c6428"/><stop offset="100%" stop-color="#713114"/></linearGradient>
-    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="199.75" y1="510.68" x2="207.66" y2="516.8"><stop offset="0%" stop-color="#f6e3a8"/><stop offset="16%" stop-color="#e6c874"/><stop offset="50%" stop-color="#c9a84c"/><stop offset="84%" stop-color="#9c6428"/><stop offset="100%" stop-color="#713114"/></linearGradient>
+    <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="515.71" y1="565.45" x2="513.92" y2="575.29"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
+    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="199.75" y1="510.68" x2="207.66" y2="516.8"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
     <linearGradient id="c-tint-1" gradientUnits="userSpaceOnUse" x1="515.71" y1="565.45" x2="204.6" y2="508.82">
-      <stop offset="0%" stop-color="#8f4a22" stop-opacity="0.6"/>
-      <stop offset="100%" stop-color="#8f4a22" stop-opacity="0"/>
+      <stop offset="0%" stop-color="#d99a2b" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#d99a2b" stop-opacity="0"/>
     </linearGradient>
     <linearGradient id="c-tint-2" gradientUnits="userSpaceOnUse" x1="199.75" y1="510.68" x2="463.36" y2="170.09">
-      <stop offset="0%" stop-color="#fff3c0" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#fff3c0" stop-opacity="0.28"/>
+      <stop offset="0%" stop-color="#fffbe6" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#fffbe6" stop-opacity="0.32"/>
     </linearGradient>
 
   </defs>
@@ -145,15 +145,15 @@
       <line x1="273.49" y1="490.06" x2="433.7" y2="254.78" stroke="rgb(2,188,183)" stroke-width="4.0333" opacity="0.6683"/>
       <line x1="433.7" y1="254.78" x2="514.82" y2="570.37" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
   </g>
-    <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#b05a28" stroke-width="16" opacity="0.28" fill="none" filter="url(#halo-blur)"/>
+    <path d="M 514.8177047307854 570.3682404933301 L 203.70776983293882 513.7381175347466 L 467.3147311900571 173.14634768666278" stroke="#dfa637" stroke-width="16" opacity="0.28" fill="none" filter="url(#halo-blur)"/>
   <g id="logo-c-triespiral" data-name="C TriSpiral">
     <path d="M 515.7131218803206 565.4490710381966 L 204.60318698247403 508.8189480796131 L 202.81235268340362 518.65728698988 L 513.9222875812502 575.2874099484635 Z" fill="url(#c-perp-1)"/>
     <path d="M 199.75371868241913 510.6778104424642 L 463.36068003953744 170.08604059438036 L 471.26878234057676 176.2066547789452 L 207.6618209834585 516.798424627029 Z" fill="url(#c-perp-2)"/>
     <path d="M 515.7131218803206 565.4490710381966 L 204.60318698247403 508.8189480796131 L 202.81235268340362 518.65728698988 L 513.9222875812502 575.2874099484635 Z" fill="url(#c-tint-1)"/>
     <path d="M 199.75371868241913 510.6778104424642 L 463.36068003953744 170.08604059438036 L 471.26878234057676 176.2066547789452 L 207.6618209834585 516.798424627029 Z" fill="url(#c-tint-2)"/>
-    <circle cx="514.82" cy="570.37" r="5" fill="#a8672c"/>
-    <circle cx="203.71" cy="513.74" r="5" fill="#c9a84c"/>
-    <circle cx="467.31" cy="173.15" r="5" fill="#f0d68c"/>
+    <circle cx="514.82" cy="570.37" r="5" fill="#c98f26"/>
+    <circle cx="203.71" cy="513.74" r="5" fill="#ddb04a"/>
+    <circle cx="467.31" cy="173.15" r="5" fill="#f0d795"/>
   </g>
 
 </svg>

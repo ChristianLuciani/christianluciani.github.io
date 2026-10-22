@@ -57,7 +57,8 @@ function chromeScreenshot(chrome, htmlFile, outPng, { w, h, transparent = false 
     `file://${htmlFile}`,
   ];
   if (transparent) args.push("--default-background-color=00000000");
-  execFileSync(chrome, args, { stdio: ["ignore", "ignore", "ignore"] });
+  // timeout: un Chrome headless colgado no debe colgar el pipeline entero
+  execFileSync(chrome, args, { stdio: ["ignore", "ignore", "ignore"], timeout: 180_000 });
 }
 
 /* ── capas SVG (estrellas congeladas en pico; halo = glifo de marca) ──
@@ -89,11 +90,13 @@ const filterDefs = () => `  <defs>
     <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>`;
 
-/* ── acabado de la C: cuarto color (cobre) + bisel 3D ──
+/* ── acabado de la C: cuarto color (ámbar dorado) + bisel 3D ──
    La C es una barra, no un trazo plano. Dos gradientes transversales
    (uno por tramo, eje perpendicular a la línea) dan el volumen —borde
    iluminado arriba, borde en sombra abajo—; dos barridos longitudinales
-   superpuestos dan el color (cobre en B → oro en C → luz en la punta A).
+   superpuestos dan el color (ámbar en B → oro en C → luz en la punta A).
+   Todo queda dentro de la familia del oro: el cuarto color aporta calidez
+   y volumen, no un metal distinto.
    Sobre fondo oscuro, bloom cálido; sobre claro, sombra neutra: el bloom
    dorado translúcido sobre blanco vira a verdoso (observación del
    operador, 2026-10-22) y no se usa. */
@@ -120,7 +123,7 @@ const cDefs = (g, cfg, surface) => {
   return `  <defs>
 ${perp(C_IDS.p1, q1)}
 ${perp(C_IDS.p2, q2)}
-${tint(C_IDS.t1, q1.a, q1.b, f.tint.copper, f.tint.copperOpacity, f.tint.copper, 0)}
+${tint(C_IDS.t1, q1.a, q1.b, f.tint.amber, f.tint.amberOpacity, f.tint.amber, 0)}
 ${tint(C_IDS.t2, q2.a, q2.b, f.tint.light, 0, f.tint.light, f.tint.lightOpacity)}
 ${shadow}
   </defs>`;

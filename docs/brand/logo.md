@@ -29,9 +29,10 @@ expande.
   estrellas preexisten y se disuelven al ser tocadas por la línea; la
   supernova central permanece: es el origen de todo.
 - **La C**: las dos últimas líneas del espiral, grosor máximo — la firma.
-  Desde 2026-10-22 es una **barra metálica**, no un trazo plano: cobre en su
-  nacimiento (B), oro de marca en el vértice y luz en la punta, con bisel
-  transversal que le da volumen (ver §3.1).
+  Desde 2026-10-22 es una **barra metálica**, no un trazo plano: ámbar cálido
+  en su nacimiento (B), oro de marca en el vértice y luz en la punta, con
+  bisel transversal que le da volumen (ver §3.1). Todo el acabado vive en la
+  familia del oro: el cuarto color suma calidez, no cambia de metal.
 - **Jerarquía** (operador, 2026-09-25): el ojo va primero al origen — la
   supernova gana +2pt de core y las estrellas grandes de las aristas (la
   punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
@@ -58,8 +59,8 @@ diseño aprobado, no un desvío.
 |---|---|---|
 | Teal (marca) | `#00c9c0` | punta del espiral (=`--teal` del sitio) |
 | Oro (firma) | `#c9a84c` | la C (centro del bisel) y la tipografía (=`--gold`) |
-| **Cobre (cuarto color)** | `#8f4a22` | nacimiento de la C (B), sombra del bisel y bloom cálido |
-| Luz de bisel | `#f6e3a8` | brillo del borde iluminado de la C (no es color de marca) |
+| **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B), barrido cálido y bloom |
+| Luz de bisel | `#fffbe6` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
 | Night | `#050810` | fondo oscuro (=`--night`) |
 | Espectro estelar | `#ff8a70` `#ff6f5e` `#ffb49e` `#f6d7c4` `#cfe0ff` | estrellas: rojizos dominantes + blancos cálidos + un azulado |
@@ -75,19 +76,19 @@ La C se dibuja con `cBand()` (`geometry.mjs`) como una barra de ancho
 aplican dos capas de gradiente:
 
 1. **Bisel transversal** (`cFinish.perp`, por tramo): eje perpendicular a la
-   línea — borde superior iluminado `#f6e3a8`, centro oro `#c9a84c`, borde
-   inferior en sombra `#713114`. Es lo que produce el volumen de barra
-   metálica; la luz se asume cenital.
-2. **Barrido longitudinal** (`cFinish.tint`): cobre `#8f4a22` naciendo en B
-   (la firma arranca cobriza) que se disuelve hacia el vértice, y un velo de
-   luz `#fff3c0` en la punta A. Las tapas redondas toman el color del
-   extremo (`#a8672c` / `#c9a84c` / `#f0d68c`).
+   línea — borde superior iluminado `#fffbe6`, centro oro `#ddb04a`, borde
+   inferior en sombra `#8f661c` (oro profundo, nunca marrón). Es lo que
+   produce el volumen de barra metálica; la luz se asume cenital.
+2. **Barrido longitudinal** (`cFinish.tint`): ámbar `#d99a2b` naciendo en B
+   (la firma arranca cálida) que se disuelve hacia el vértice, y un velo de
+   luz `#fffbe6` en la punta A. Las tapas redondas toman el color del
+   extremo (`#c98f26` / `#ddb04a` / `#f0d795`).
 
 Superficies:
 
-- **Night**: bloom cálido `#b05a28` (nunca oro translúcido: sobre blanco
-  vira a verdoso).
-- **Light**: sin bloom. Sombra cálida neutra (`feDropShadow #6b3f1f`, 22%)
+- **Night**: bloom cálido ámbar `#dfa637` (nunca oro translúcido: sobre
+  blanco vira a verdoso).
+- **Light**: sin bloom. Sombra cálida neutra (`feDropShadow #6b5218`, 20%)
   que despega la C del fondo blanco sin halo de color. En esta superficie
   además se omiten el cielo de fondo y los halos de la constelación (se
   leían como polvo/manchas grises sobre blanco); los núcleos de las
@@ -157,7 +158,7 @@ técnica.
 2. **`logo-constellation`** — 22 estrellas de vértices (1 supernova central
    + 21 nodos); congeladas en pico (fotograma de máxima intensidad).
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
-4. **`logo-c-triespiral`** — la C con acabado cobre→oro→luz: bisel
+4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
    transversal + barrido longitudinal (night: bloom cálido; light: sombra
    neutra). Ver §3.1.
 
@@ -194,7 +195,7 @@ light, además, se omite `logo-background` y los halos de la constelación
 
 - ❌ Rotar, estirar o reflectar el símbolo.
 - ❌ Recolorear la C a mano o aplanar su bisel (el oro es la firma; el
-  acabado cobre→oro→luz se genera desde `cFinish`).
+  acabado ámbar→oro→luz se genera desde `cFinish`).
 - ❌ Dibujar el símbolo a mano: **siempre regenerar** (`node
   tools/logo/generate-logo.mjs`).
 - ❌ Editar los SVG/PNG generados — son OUTPUT; la fuente es `geometry.mjs`.

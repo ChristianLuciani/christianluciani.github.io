@@ -10,30 +10,33 @@
  * (compara contra el DOM real renderizado por Chrome).
  */
 
-/* Acabado de la C (cuarto color de marca: cobre).
+/* Acabado de la C (cuarto color de marca: ámbar dorado).
    La C deja de ser un trazo plano de oro: se dibuja como una barra con
    bisel transversal (gradiente perpendicular al tramo: sombra abajo, luz
-   arriba) y un barrido de color a lo largo de la firma (cobre en B → oro
-   en el vértice C → luz en la punta A). Es tratamiento de render: la
+   arriba) y un barrido de color a lo largo de la firma (ámbar cálido en B
+   → oro en el vértice C → luz en la punta A). Es tratamiento de render: la
    geometría (cPathD, centros, anchos) no cambia.
+   TODO el acabado vive en la familia del oro: el cuarto color suma
+   calidez, no reemplaza el metal (feedback del operador, 2026-10-22:
+   "el cobre es muy oscuro, la idea es oro").
    `bloom` es el halo del fondo oscuro; sobre superficies claras NO se usa
    (el oro translúcido sobre blanco vira a verdoso) y en su lugar se aplica
    `shadow`: una sombra cálida neutra. */
 export const C_FINISH = {
   perp: [ // gradiente a través del grosor: borde iluminado → borde en sombra
-    { offset: 0, color: "#f6e3a8" },
-    { offset: 0.16, color: "#e6c874" },
-    { offset: 0.5, color: "#c9a84c" },
-    { offset: 0.84, color: "#9c6428" },
-    { offset: 1, color: "#713114" },
+    { offset: 0, color: "#fffbe6" },
+    { offset: 0.16, color: "#f8e4a8" },
+    { offset: 0.5, color: "#ddb04a" },
+    { offset: 0.84, color: "#b1852c" },
+    { offset: 1, color: "#8f661c" }, // sombra: oro profundo, nunca marrón
   ],
   tint: { // barrido a lo largo de la C (se superpone al bisel)
-    copper: "#8f4a22", copperOpacity: 0.6, // en B: la firma nace cobriza
-    light: "#fff3c0", lightOpacity: 0.28,  // en A: la punta recibe la luz
+    amber: "#d99a2b", amberOpacity: 0.5,   // en B: la firma nace ámbar
+    light: "#fffbe6", lightOpacity: 0.32,  // en A: la punta recibe la luz
   },
-  caps: { base: "#a8672c", join: "#c9a84c", tip: "#f0d68c" },
-  bloom: { color: "#b05a28", opacity: 0.28, width: 6, blur: 8 },
-  shadow: { color: "#6b3f1f", opacity: 0.22, dy: 2.2, blur: 2.4 },
+  caps: { base: "#c98f26", join: "#ddb04a", tip: "#f0d795" },
+  bloom: { color: "#dfa637", opacity: 0.28, width: 6, blur: 8 },
+  shadow: { color: "#6b5218", opacity: 0.2, dy: 2.2, blur: 2.4 },
 };
 
 /* CONFIG de aurea7.html (base v10 = misma sin mode/galaxy/timing fast) */
@@ -59,8 +62,8 @@ export const CONFIG_AUREA = {
     spiralFrom: "#16324f",
     spiralTo: "#00c9c0",
     c: "#c9a84c",
-    copper: "#8f4a22", // cuarto color: cobre de la base de la C
-    cLight: "#f6e3a8", // luz del bisel (no es color de marca: es el brillo)
+    amber: "#d99a2b", // cuarto color: ámbar dorado (calidez, no otro metal)
+    cLight: "#fffbe6", // luz del bisel (no es color de marca: es el brillo)
   },
   cFinish: C_FINISH,
   constellation: {
@@ -93,8 +96,8 @@ export const CONFIG_BASE = {
     spiralFrom: "#16324f",
     spiralTo: "#00c9c0",
     c: "#c9a84c",
-    copper: "#8f4a22",
-    cLight: "#f6e3a8",
+    amber: "#d99a2b",
+    cLight: "#fffbe6",
   },
   cFinish: C_FINISH,
   constellation: {

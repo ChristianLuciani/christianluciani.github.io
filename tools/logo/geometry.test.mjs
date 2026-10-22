@@ -186,10 +186,18 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
     expect(a.caps.map((c) => c.role)).toEqual(["base", "join", "tip"]);
   });
 
-  it("el cuarto color (cobre) está declarado en ambas versiones", () => {
-    expect(CONFIG_AUREA.colors.copper).toBe("#8f4a22");
-    expect(CONFIG_BASE.colors.copper).toBe("#8f4a22");
-    expect(CONFIG_AUREA.cFinish.tint.copper).toBe("#8f4a22");
+  it("el cuarto color (ámbar dorado) está declarado en ambas versiones", () => {
+    expect(CONFIG_AUREA.colors.amber).toBe("#d99a2b");
+    expect(CONFIG_BASE.colors.amber).toBe("#d99a2b");
+    expect(CONFIG_AUREA.cFinish.tint.amber).toBe("#d99a2b");
+  });
+
+  it("el acabado se queda en la familia del oro (sin marrones de cobre)", () => {
+    // el feedback del operador fue explícito: el cuarto color suma calidez,
+    // no reemplaza el metal. Techo de saturación/rojura para la sombra.
+    const deep = CONFIG_AUREA.cFinish.perp.at(-1).color;
+    expect(deep).toBe("#8f661c");
+    expect(CONFIG_AUREA.cFinish.bloom.color).toBe("#dfa637");
   });
 });
 
