@@ -146,57 +146,57 @@ describe("config()", () => {
 
 describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", () => {
   const g = buildGeometry(CONFIG_AUREA.geometry);
+  const W = CONFIG_AUREA.cWidth;
 
   it("conserva los centros de cPathD: B, C y punta A", () => {
-    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
+    const band = cBand(g.segs, W);
     const cIdx = g.segs.length - 2;
     expect(band.B).toEqual(g.segs[cIdx].a);
     expect(band.C).toEqual(g.segs[cIdx].b);
     expect(band.A).toEqual(g.segs[cIdx + 1].b);
-    expect(band.h).toBe(CONFIG_AUREA.cWidth / 2);
+    expect(band.h).toBe(W / 2);
   });
 
-  it("cada quad mide exactamente el ancho de la C (sin cambiar el grosor)", () => {
-    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
-    for (const q of band.quads) {
-      // el eje del bisel es perpendicular al tramo y mide width
-      expect(dist(q.perp[0], q.perp[1])).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
-    }
-    // los extremos libres son cortes planos de ancho width
-    expect(dist(band.quads[0].a, band.quads[0].d)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
-    expect(dist(band.quads[1].b, band.quads[1].c)).toBeCloseTo(CONFIG_AUREA.cWidth, 6);
+  it("el ancho de la barra es exactamente cWidth, en base y punta", () => {
+    const band = cBand(g.segs, W);
+    expect(dist(band.perp[0][0], band.perp[0][1])).toBeCloseTo(W, 6);
+    expect(dist(band.perp[1][0], band.perp[1][1])).toBeCloseTo(W, 6);
   });
 
-  it("la normal apunta siempre hacia arriba (luz cenital) y es perpendicular", () => {
-    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
-    const cIdx = g.segs.length - 2;
-    for (const [p, q] of [[band.B, band.C], [band.C, band.A]]) {
-      const n = band.normal(p, q);
-      expect(n.y).toBeLessThanOrEqual(0);
-      const dx = q.x - p.x, dy = q.y - p.y;
-      expect(dx * n.x + dy * n.y).toBeCloseTo(0, 6);
-      expect(Math.hypot(n.x, n.y)).toBeCloseTo(1, 6);
-    }
+  it("el contorno es único, cerrado y con las 6 esquinas redondeadas", () => {
+    const band = cBand(g.segs, W);
+    expect(band.outline.startsWith("M ")).toBe(true);
+    expect(band.outline.trim().endsWith("Z")).toBe(true);
+    expect((band.outline.match(/ Q /g) || []).length).toBe(6);
   });
 
-  it("extremos con corte transversal (sin tapa) + inglete en el vértice", () => {
-    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
-    // B y A terminan planos: no hay círculos de tapa en el SVG
+  it("extremos con corte transversal (sin tapa) y sin caps", () => {
+    const band = cBand(g.segs, W);
     expect(band.ends.map((e) => e.role)).toEqual(["base", "tip"]);
     expect(band).not.toHaveProperty("caps");
-    // el inglete es una línea (Xo–Xi), no un parche triangular
-    expect(band.miter).toEqual({ Xo: expect.any(Object), Xi: expect.any(Object) });
+    expect(band).not.toHaveProperty("quads");
   });
 
-  it("el inglete es una sola línea compartida por los dos tramos (sin hueco)", () => {
-    const band = cBand(g.segs, CONFIG_AUREA.cWidth);
-    const [q1, q2] = band.quads;
-    // la arista de corte es la misma en ambos: Xo = q1.b = q2.a, Xi = q1.c = q2.d
-    expect(dist(q1.b, q2.a)).toBeCloseTo(0, 9);
-    expect(dist(q1.c, q2.d)).toBeCloseTo(0, 9);
-    expect(band.miter.Xo).toEqual(q1.b);
-    expect(band.miter.Xi).toEqual(q1.c); // c es el borde interior en el vértice
-    // Xo y Xi equidistan h de las líneas centrales
+  it("los dos clips separan los brazos por la bisectriz del vértice", () => {
+    const band = cBand(g.segs, W);
+    const [c1, c2] = band.clip;
+    // ambos semiplanos arrancan en el mismo punto de la bisectriz (C − w·L)
+    const num = (d) => d.match(/-?[\d.]+/g).map(Number);
+    expect(num(c1).slice(0, 2)).toEqual(num(c2).slice(0, 2));
+    // el punto lejano de cada clip cae del lado de su brazo (B o A)
+    const uB = { x: band.B.x - band.C.x, y: band.B.y - band.C.y };
+    const uA = { x: band.A.x - band.C.x, y: band.A.y - band.C.y };
+    const nB = Math.hypot(uB.x, uB.y), nA = Math.hypot(uA.x, uA.y);
+    const w = { x: uB.x / nB + uA.x / nA, y: uB.y / nB + uA.y / nA };
+    const side = (p) => Math.sign(w.x * (p.y - band.C.y) - w.y * (p.x - band.C.x));
+    const far = (d) => { const n = num(d); return { x: n[4], y: n[5] }; };
+    expect(side(far(c1))).toBe(side(band.B));
+    expect(side(far(c2))).toBe(side(band.A));
+    expect(side(band.B)).not.toBe(side(band.A));
+  });
+
+  it("el inglete equidista h de ambas líneas centrales", () => {
+    const band = cBand(g.segs, W);
     const distLine = (p, a, b) => {
       const dx = b.x - a.x, dy = b.y - a.y;
       return Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx) / Math.hypot(dx, dy);
@@ -206,8 +206,8 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
   });
 
   it("determinista", () => {
-    const a = cBand(g.segs, CONFIG_AUREA.cWidth);
-    const b = cBand(g.segs, CONFIG_AUREA.cWidth);
+    const a = cBand(g.segs, W);
+    const b = cBand(g.segs, W);
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 
@@ -218,8 +218,6 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
   });
 
   it("el acabado se queda en la familia del oro (sin marrones de cobre)", () => {
-    // el feedback del operador fue explícito: el cuarto color suma calidez,
-    // no reemplaza el metal. Techo de saturación/rojura para la sombra.
     const deep = CONFIG_AUREA.cFinish.perp.at(-1).color;
     expect(deep).toBe("#8f661c");
     expect(CONFIG_AUREA.cFinish.bloom.color).toBe("#dfa637");

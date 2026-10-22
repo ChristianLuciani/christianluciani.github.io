@@ -36,6 +36,8 @@ export const C_FINISH = {
   },
   bloom: { color: "#dfa637", opacity: 0.28, width: 6, blur: 8 },
   shadow: { color: "#6b5218", opacity: 0.2, dy: 2.2, blur: 2.4 },
+  corner: 2.4, // radio de las esquinas del contorno (suaviza el corte)
+  node: { coreR: 3.8, haloR: 14 }, // nodo estrella sobre la intersección (C)
 };
 
 /* CONFIG de aurea7.html (base v10 = misma sin mode/galaxy/timing fast) */
@@ -231,19 +233,19 @@ export function cPathD(segs) {
 }
 
 /* ── la C como BARRA con bisel (acabado ámbar→oro→luz) ──
-   Misma silueta y mismos centros que el trazo de ancho `width`: cada tramo
-   se convierte en un cuadrilátero de ancho width centrado en la línea, con
-   la normal orientada "hacia arriba" (luz cenital). Los quads son la base
-   del gradiente transversal (bisel).
-   Los extremos libres (B y A) terminan en CORTE TRANSVERSAL PLANO: sin cap
-   redondo, para que la barra no lea como un tubo con cara circular
-   (feedback del operador, 2026-10-22).
-   El vértice C se resuelve con un INGLETE: ambos tramos se cortan en la
-   MISMA línea (intersección de los bordes exteriores Xo e interiores Xi),
-   de modo que las dos piezas encajan sin hueco ni solape. No hay tapa
-   circular ni parche en la esquina.
+   Misma silueta y mismos centros que el trazo de ancho `width`: la barra se
+   construye como un contorno único (borde exterior → corte de punta → borde
+   interior → corte de base) con las esquinas REDONDEADAS con radio `corner`.
+   Los extremos libres (B y punta A) son cortes transversales planos —sin
+   cap redondo, para que no lean como tubos— pero con las esquinas del corte
+   suavizadas.
+   El vértice C NO tiene tapa: los dos tramos se cortan en la MISMA línea de
+   inglete (intersección de bordes exterior Xo e interior Xi) y el contorno
+   resultante se redondea; no hay hueco, solape ni parche.
+   El bisel se pinta con dos regiones recortadas por esa línea de inglete,
+   cada una con su gradiente perpendicular real.
    La geometría de referencia (cPathD) no se toca. */
-export function cBand(segs, width) {
+export function cBand(segs, width, { corner = 2.2 } = {}) {
   const cIdx = segs.length - 2;
   const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
   const h = width / 2;
@@ -251,11 +253,16 @@ export function cBand(segs, width) {
     const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
     return { x: dx / len, y: dy / len };
   };
+  /* normal IZQUIERDA del sentido de avance: consistente para construir el
+     contorno (la normal "arriba" cambia de lado entre tramos y rompía el
+     vértice). Para el bisel se usa `normalUp` aparte. */
   const normal = (p, q) => {
     const u = unit(p, q);
-    let nx = -u.y, ny = u.x;
-    if (ny > 0) { nx = -nx; ny = -ny; } // normal siempre hacia arriba (y−)
-    return { x: nx, y: ny };
+    return { x: -u.y, y: u.x };
+  };
+  const normalUp = (p, q) => {
+    const n = normal(p, q);
+    return n.y > 0 ? { x: -n.x, y: -n.y } : n; // hacia arriba (y−)
   };
   const offsetLineIntersection = (p1, u1, p2, u2) => {
     const cross = (a, b) => a.x * b.y - a.y * b.x;
@@ -265,6 +272,7 @@ export function cBand(segs, width) {
     return { x: p1.x + u1.x * t, y: p1.y + u1.y * t };
   };
   const n1 = normal(B, C), n2 = normal(C, A);
+  const up1 = normalUp(B, C), up2 = normalUp(C, A);
   const u1 = unit(B, C), u2 = unit(C, A);
   // inglete: los dos bordes (exterior +h, interior −h) de ambos tramos
   const Xo = offsetLineIntersection(
@@ -275,41 +283,67 @@ export function cBand(segs, width) {
     { x: B.x - n1.x * h, y: B.y - n1.y * h }, u1,
     { x: C.x - n2.x * h, y: C.y - n2.y * h }, u2
   );
-  /* cada tramo: borde exterior → corte de inglete → borde interior → extremo
-     plano. Ambos comparten exactamente la línea Xo–Xi: encajan sin hueco. */
-  const quad = (a, b, c, d) => ({
-    path: `M ${a.x} ${a.y} L ${b.x} ${b.y} L ${c.x} ${c.y} L ${d.x} ${d.y} Z`,
-    a, b, c, d,
+  const BP = { x: B.x + n1.x * h, y: B.y + n1.y * h };
+  const BM = { x: B.x - n1.x * h, y: B.y - n1.y * h };
+  const AP = { x: A.x + n2.x * h, y: A.y + n2.y * h };
+  const AM = { x: A.x - n2.x * h, y: A.y - n2.y * h };
+
+  /* contorno hexagonal: B+ → Xo (exterior) → A+ → A− → Xi → B− (interior).
+     Se redondean las 6 esquinas con quadratics de radio `corner`. */
+  const pts = [BP, Xo, AP, AM, Xi, BM];
+  const n = pts.length;
+  const dAt = pts.map((P, i) => {
+    const Aprev = pts[(i - 1 + n) % n], Bnext = pts[(i + 1) % n];
+    const uIn = unit(Aprev, P), uOut = unit(P, Bnext);
+    const r = Math.min(corner, Math.hypot(Aprev.x - P.x, Aprev.y - P.y) / 2,
+      Math.hypot(Bnext.x - P.x, Bnext.y - P.y) / 2);
+    return {
+      p1: { x: P.x - uIn.x * r, y: P.y - uIn.y * r },
+      p2: { x: P.x + uOut.x * r, y: P.y + uOut.y * r },
+      P,
+    };
   });
-  const q1 = {
-    ...quad(
-      { x: B.x + n1.x * h, y: B.y + n1.y * h }, Xo, Xi,
-      { x: B.x - n1.x * h, y: B.y - n1.y * h }
-    ),
-    // eje del bisel: perpendicular REAL al tramo (el corte de inglete no lo es)
-    perp: [
-      { x: B.x + n1.x * h, y: B.y + n1.y * h },
-      { x: B.x - n1.x * h, y: B.y - n1.y * h },
-    ],
+  let outline = `M ${dAt[0].p2.x} ${dAt[0].p2.y}`;
+  for (let i = 1; i <= n; i++) {
+    const c = dAt[i % n];
+    outline += ` L ${c.p1.x} ${c.p1.y} Q ${c.P.x} ${c.P.y} ${c.p2.x} ${c.p2.y}`;
+  }
+  outline += " Z";
+
+  /* clips: los dos brazos se separan por la BISECTRIZ del vértice C (ambos
+     brazos están del mismo lado de la línea de inglete, así que esa línea no
+     sirve de separador). w es la bisectriz (apunta a la abertura de la V) y
+     m su normal; cada clip es un semiplano a un lado de w. */
+  const uB = unit(C, B), uA = unit(C, A);
+  const wsum = { x: uB.x + uA.x, y: uB.y + uA.y };
+  const wlen = Math.hypot(wsum.x, wsum.y);
+  const w = { x: wsum.x / wlen, y: wsum.y / wlen };
+  const m = { x: -w.y, y: w.x };
+  const sideB = Math.sign(m.x * (B.x - C.x) + m.y * (B.y - C.y)) || 1;
+  // L acotado al lienzo (800): con coordenadas gigantes Chrome pierde
+  // precisión en el clip al rasterizar a 4096 y abre una muesca en el vértice.
+  const L = 1200;
+  const poly = (sx) => {
+    const s = (sideB * sx) * L;
+    return `M ${C.x - w.x * L} ${C.y - w.y * L} L ${C.x + w.x * L} ${C.y + w.y * L} L ${C.x + w.x * L + m.x * s} ${C.y + w.y * L + m.y * s} L ${C.x - w.x * L + m.x * s} ${C.y - w.y * L + m.y * s} Z`;
   };
-  const q2 = {
-    ...quad(
-      Xo,
-      { x: A.x + n2.x * h, y: A.y + n2.y * h },
-      { x: A.x - n2.x * h, y: A.y - n2.y * h },
-      Xi
-    ),
-    perp: [
-      { x: A.x + n2.x * h, y: A.y + n2.y * h },
-      { x: A.x - n2.x * h, y: A.y - n2.y * h },
-    ],
-  };
+
   return {
-    B, C, A, h,
+    B, C, A, h, corner,
     normal,
-    quads: [q1, q2],
+    outline,
+    clip: [poly(1), poly(-1)],
+    miter: { Xo, Xi },
     ends: [{ p: B, role: "base" }, { p: A, role: "tip" }], // corte plano, sin cap
-    miter: { Xo, Xi }, // la línea Xo–Xi es el corte compartido del vértice
+    // eje del bisel: perpendicular REAL a cada tramo, del lado iluminado (arriba)
+    perp: [
+      [{ x: B.x + up1.x * h, y: B.y + up1.y * h }, { x: B.x - up1.x * h, y: B.y - up1.y * h }],
+      [{ x: A.x + up2.x * h, y: A.y + up2.y * h }, { x: A.x - up2.x * h, y: A.y - up2.y * h }],
+    ],
+    tint: [
+      [BP, Xo],
+      [Xo, AP],
+    ],
   };
 }
 

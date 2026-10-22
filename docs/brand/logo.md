@@ -86,11 +86,21 @@ aplican dos capas de gradiente:
 **Terminaciones** (operador, 2026-10-22): los extremos libres —B y la punta
 A— terminan en **corte transversal plano**, sin tapa redonda: la barra no
 debe leerse como un tubo con cara circular. El vértice C se resuelve con un
-**inglete**: los dos tramos comparten la misma línea de corte (intersección
-de los bordes exterior e interior), así encajan sin hueco ni parche. En los
-tres vértices de la C se conserva el **halo** de la estrella pero se omite
-su núcleo: medio núcleo asomaba sobre el corte y se leía como un punto
-suelto.
+**inglete**: los dos tramos se cortan en la misma línea (intersección de los
+bordes exterior e interior), así encajan sin hueco ni parche, y el contorno
+resultante es **una sola pieza** con las 6 esquinas redondeadas con radio
+`cFinish.corner` (2.4): el ángulo recto no debe leerse tosco (operador,
+2026-10-22). El bisel se pinta en dos regiones separadas por la **bisectriz
+del vértice**, no por la línea de inglete: los dos brazos están del mismo
+lado de esa línea.
+
+**Nodo de la intersección** (operador, 2026-10-22): sobre el vértice C se
+dibuja una **estrella-nodo** (`logo-c-node`, `cFinish.node`), encima de la
+barra —halo, núcleo y brillo—, como un nodo de la constelación posado en la
+intersección. En los tres vértices de la C se conserva el **halo** de la
+constelación de fondo pero se omite su núcleo (medio núcleo asomaba sobre el
+corte y se leía como un punto suelto); el nodo visible del vértice es este
+`logo-c-node`.
 
 Superficies:
 
@@ -169,8 +179,9 @@ técnica.
    barra los dejaría medio expuestos.
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
 4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
-   transversal + barrido longitudinal (night: bloom cálido; light: sombra
-   neutra). Ver §3.1.
+   transversal + barrido longitudinal, contorno redondeado (night: bloom
+   cálido; light: sombra neutra), más `logo-c-node`: la estrella-nodo sobre
+   la intersección. Ver §3.1.
 
 El **lockup** añade `logo-typography` (viewBox 800×940). En la variante
 light, además, se omite `logo-background` y los halos de la constelación

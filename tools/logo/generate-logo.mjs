@@ -104,12 +104,11 @@ const C_IDS = { p1: "c-perp-1", p2: "c-perp-2", t1: "c-tint-1", t2: "c-tint-2" }
 
 const cDefs = (g, cfg, surface) => {
   const f = cfg.cFinish;
-  const band = cBand(g.segs, cfg.cWidth);
-  const [q1, q2] = band.quads;
+  const band = cBand(g.segs, cfg.cWidth, { corner: f.corner });
   const stops = (arr) => arr.map((s) =>
     `<stop offset="${n2(s.offset * 100)}%" stop-color="${s.color}"/>`).join("");
-  const perp = (id, q) =>
-    `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(q.perp[0].x)}" y1="${n2(q.perp[0].y)}" x2="${n2(q.perp[1].x)}" y2="${n2(q.perp[1].y)}">${stops(f.perp)}</linearGradient>`;
+  const perp = (id, axis) =>
+    `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(axis[0].x)}" y1="${n2(axis[0].y)}" x2="${n2(axis[1].x)}" y2="${n2(axis[1].y)}">${stops(f.perp)}</linearGradient>`;
   const tint = (id, from, to, co1, op1, co2, op2) =>
     `    <linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${n2(from.x)}" y1="${n2(from.y)}" x2="${n2(to.x)}" y2="${n2(to.y)}">
       <stop offset="0%" stop-color="${co1}" stop-opacity="${n4(op1)}"/>
@@ -121,10 +120,15 @@ const cDefs = (g, cfg, surface) => {
     </filter>`
     : "";
   return `  <defs>
-${perp(C_IDS.p1, q1)}
-${perp(C_IDS.p2, q2)}
-${tint(C_IDS.t1, q1.a, q1.b, f.tint.amber, f.tint.amberOpacity, f.tint.amber, 0)}
-${tint(C_IDS.t2, q2.a, q2.b, f.tint.light, 0, f.tint.light, f.tint.lightOpacity)}
+${perp(C_IDS.p1, band.perp[0])}
+${perp(C_IDS.p2, band.perp[1])}
+${tint(C_IDS.t1, band.tint[0][0], band.tint[0][1], f.tint.amber, f.tint.amberOpacity, f.tint.amber, 0)}
+${tint(C_IDS.t2, band.tint[1][0], band.tint[1][1], f.tint.light, 0, f.tint.light, f.tint.lightOpacity)}
+    <clipPath id="c-clip-1"><path d="${band.clip[0]}"/></clipPath>
+    <clipPath id="c-clip-2"><path d="${band.clip[1]}"/></clipPath>
+    <filter id="c-node-glow" x="-200%" y="-200%" width="500%" height="500%">
+      <feGaussianBlur stdDeviation="1.6"/>
+    </filter>
 ${shadow}
   </defs>`;
 };
@@ -196,20 +200,37 @@ const layerSpiral = (g, cfg) => {
 
 const layerC = (g, cfg, { surface = "night" } = {}) => {
   const f = cfg.cFinish;
-  const band = cBand(g.segs, cfg.cWidth);
-  const [q1, q2] = band.quads;
+  const band = cBand(g.segs, cfg.cWidth, { corner: f.corner });
   const d = cPathD(g.segs).replace(/\s+/g, " ");
   const rows = [];
   if (surface === "night") // bloom cálido del fondo night (nunca sobre claro)
     rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" filter="url(#halo-blur)"/>`);
   const filter = surface === "light" ? ' filter="url(#c-shadow)"' : "";
   rows.push(`  <g id="logo-c-triespiral" data-name="C TriSpiral"${filter}>`);
-  rows.push(
-    `    <path d="${q1.path}" fill="url(#${C_IDS.p1})"/>`,
-    `    <path d="${q2.path}" fill="url(#${C_IDS.p2})"/>`,
-    `    <path d="${q1.path}" fill="url(#${C_IDS.t1})"/>`,
-    `    <path d="${q2.path}" fill="url(#${C_IDS.t2})"/>`
-  );
+  for (const k of [1, 2]) {
+    rows.push(
+      `    <g clip-path="url(#c-clip-${k})">`,
+      `      <path d="${band.outline}" fill="url(#${C_IDS["p" + k]})"/>`,
+      `      <path d="${band.outline}" fill="url(#${C_IDS["t" + k]})"/>`,
+      `    </g>`
+    );
+  }
+  /* nodo estrella SOBRE la intersección (encima de la barra, feedback del
+     operador 2026-10-22): mismo lenguaje que la constelación —halo + núcleo
+     con brillo—, dimensionado para leerse sobre el oro. */
+  if (f.node) {
+    const pts = constellationPoints(g.segs);
+    const sp = starSpec(pts.length - 2, pts.length, cfg.constellation); // nodo del vértice C
+    const r = f.node.coreR;
+    rows.push(
+      `    <g id="logo-c-node" data-name="C node">`,
+      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(f.node.haloR)}" fill="url(#halo-star)" color="${sp.color}"/>`,
+      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(r + 1.2)}" fill="${sp.color}" opacity="0.28" filter="url(#c-node-glow)"/>`,
+      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(r)}" fill="${sp.color}"/>`,
+      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(r * 0.25)}" fill="#fff6dc" opacity="0.85"/>`,
+      `    </g>`
+    );
+  }
   rows.push(`  </g>`);
   return rows.join("\n");
 };
