@@ -15,7 +15,6 @@
       <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
       <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
     </radialGradient>
-    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>
   <defs>
     <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="496.86" y2="586.33"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
@@ -30,6 +29,7 @@
     </linearGradient>
     <clipPath id="c-clip-1"><path d="M -964.5877737279827 802.3347501460123 L 1353.932531779432 182.2834676299585 L 1663.958173037459 1341.543620383666 L -654.5621324699558 1961.5949028997197 Z"/></clipPath>
     <clipPath id="c-clip-2"><path d="M -964.5877737279827 802.3347501460123 L 1353.932531779432 182.2834676299585 L 1043.9068905214053 -976.9766851237489 L -1274.6134149860095 -356.9254026076951 Z"/></clipPath>
+
     <filter id="c-shadow" x="-15%" y="-15%" width="130%" height="130%">
       <feDropShadow dx="0" dy="2.2" stdDeviation="2.4" flood-color="#6b5218" flood-opacity="0.2"/>
     </filter>

@@ -15,7 +15,6 @@
       <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
       <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
     </radialGradient>
-    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>
   <defs>
     <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="496.86" y2="586.33"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
@@ -30,6 +29,7 @@
     </linearGradient>
     <clipPath id="c-clip-1"><path d="M -964.5877737279827 802.3347501460123 L 1353.932531779432 182.2834676299585 L 1663.958173037459 1341.543620383666 L -654.5621324699558 1961.5949028997197 Z"/></clipPath>
     <clipPath id="c-clip-2"><path d="M -964.5877737279827 802.3347501460123 L 1353.932531779432 182.2834676299585 L 1043.9068905214053 -976.9766851237489 L -1274.6134149860095 -356.9254026076951 Z"/></clipPath>
+    <filter id="c-bloom" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
 
   </defs>
   <g id="logo-background" data-name="Background">
@@ -218,7 +218,7 @@
       <line x1="277.52" y1="474.73" x2="442.97" y2="269.58" stroke="rgb(1,193,186)" stroke-width="4.0889" opacity="0.6856"/>
       <line x1="442.97" y1="269.58" x2="498.26" y2="581.54" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
   </g>
-    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#dfa637" stroke-width="16" opacity="0.28" fill="none" filter="url(#halo-blur)"/>
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#dfa637" stroke-width="16" opacity="0.28" fill="none" filter="url(#c-bloom)"/>
   <g id="logo-c-triespiral" data-name="C TriSpiral">
     <g clip-path="url(#c-clip-1)">
       <path d="M 499.6666084855308 576.7366444092511 L 206.37958370188645 490.88251093957416 Q 204.07624362915078 490.2082524510625 205.73553321328095 488.4742518524475 L 496.1526512982415 184.9808403203387 A 5 5 0 0 0 488.9276488040124 178.06713371979635 L 187.1344877672673 493.4488048281291 Q 185.47519818313714 495.1828054267441 187.7785382558728 495.85706391525576 L 496.8571981167322 586.3338947123164 A 5 5 0 0 0 499.6666084855308 576.7366444092511 Z" fill="url(#c-perp-1)"/>

@@ -215,10 +215,12 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
   });
 
-  it("el cuarto color (ámbar dorado) está declarado en ambas versiones", () => {
-    expect(CONFIG_AUREA.colors.amber).toBe("#d99a2b");
-    expect(CONFIG_BASE.colors.amber).toBe("#d99a2b");
+  it("el cuarto color (ámbar dorado) vive en el acabado, una sola fuente", () => {
+    // el acabado es la única fuente: no hay tokens duplicados en `colors`
     expect(CONFIG_AUREA.cFinish.tint.amber).toBe("#d99a2b");
+    expect(CONFIG_BASE.cFinish.tint.amber).toBe("#d99a2b");
+    expect(CONFIG_AUREA.colors).not.toHaveProperty("amber");
+    expect(CONFIG_AUREA.colors).not.toHaveProperty("cLight");
   });
 
   it("el acabado se queda en la familia del oro (sin marrones de cobre)", () => {

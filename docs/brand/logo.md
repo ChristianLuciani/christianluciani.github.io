@@ -59,7 +59,7 @@ diseño aprobado, no un desvío.
 |---|---|---|
 | Teal (marca) | `#00c9c0` | punta del espiral (=`--teal` del sitio) |
 | Oro (firma) | `#c9a84c` | tipografía y ancla de marca (=`--gold`); el bisel de la C deriva de acá (§3.1) |
-| **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B), barrido cálido y bloom |
+| **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B), barrido cálido y bloom (valor en `cFinish.tint.amber`) |
 | Luz de bisel | `#fffbe6` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
 | Night | `#050810` | fondo oscuro (=`--night`) |
@@ -130,15 +130,18 @@ Todos los valores viven en `CONFIG` (`tools/logo/geometry.mjs`):
 | `phi` | 1.618 | ratio áureo entre triángulos internos |
 | `twistGolden` | 3°×φ ≈ 4.854° | giro entre internos (áurea) |
 | `extendLast` | 0.01 | la punta se estira 1%: insinúa seguir evolucionando |
-| `cWidth` | 10 | grosor de la C (glow = +6, blur 8, op .5) |
+| `cWidth` | 10 | ancho de la barra de la C (bloom night: +6 de ancho; blur/opacidad en `cFinish.bloom`) |
 
 Medición del triángulo final (real, no la del comentario del HTML de
 origen): lados 1.26/1.72/1.60 R, ángulos 44.6°/72.9°/62.6° — isósceles
 aproximado, ápice ~44.6° en A. El comentario de la fuente dice “isósceles
 más agudo: ápice ~50°”; en el manual vale la medición.
 
-La C se dibuja como **un solo path** (`B→C→punta`) con `stroke-linejoin:
-round`: el vértice en C es un join redondeado real, no dos caps montados.
+La C se dibuja como un **contorno único** (`cBand()`): una barra de ancho
+`cWidth` con inglete tipo marco en C —esquinas redondeadas, radio
+`cFinish.corner`— y terminales circulares en B y A. No hay caps montados:
+los dos tramos comparten el corte del marco y el bisel se pinta en dos
+regiones separadas por la bisectriz del vértice.
 
 **Verificación** (tests automáticos, `npx vitest run tools/logo/`):
 ancla C ≡ fórmula base a 7 generaciones (0.0000 px), ratios internos = φ
@@ -165,9 +168,10 @@ técnica.
    galaxia espiral (mismo sentido de giro y crecimiento que el logo);
    semilla fija ⇒ idéntico en cada render.
 2. **`logo-constellation`** — constelación de vértices (1 supernova central
-   + 21 nodos); congeladas en pico. En los tres vértices de la C (B, C, A)
-   se dibuja el halo pero no el núcleo (ver §3.1): la barra los cubre y el
-   núcleo asomaba en los bordes.
+   + 21 nodos); congeladas en pico. En night, en los tres vértices de la C
+   (B, C, A) se dibuja el halo pero no el núcleo (la barra los cubre y el
+   núcleo asomaba en los bordes); en light no se dibujan halos (se leían
+   como manchas grises, ver §3.1).
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
 4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
    transversal + barrido longitudinal, contorno con marco redondeado y
@@ -184,7 +188,7 @@ light, además, se omite `logo-background` y los halos de la constelación
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
 | **settled** | el mark completo (espiral + C + supernova + cielo) SIN las estrellas de vértices — el estado final de la animación | contextos medianos |
-| **favicon** (simplificado) | sólo la C + supernova, recortados al bbox — el mark completo es ilegible <24px | favicon 16/32, contextos <24px |
+| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox | favicon 16/32, contextos <24px |
 
 ## 7. Uso correcto
 
@@ -193,7 +197,9 @@ light, además, se omite `logo-background` y los halos de la constelación
   usar la variante **light** (`*-light`): mismo símbolo, sin bloom y con
   sombra neutra — la versión night sobre blanco dejaba un halo verdoso
   (observación del operador, 2026-10-22). No usar el bloom night sobre
-  blanco.
+  blanco. Sobre blanco el oro del bisel tiene contraste bajo por diseño
+  (marca gráfica, no texto): validar el contraste sobre el soporte final
+  cuando el logo conviva con texto u otros elementos de información.
 - **Tamaño mínimo**: 24 px de alto para el mark completo. Los favicons 16/32
   usan la variante **simplificada** (sólo la C + supernova) — no el mark
   completo, que en <24px se vuelve ilegible.

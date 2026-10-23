@@ -87,7 +87,6 @@ const filterDefs = () => `  <defs>
       <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
       <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
     </radialGradient>
-    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
   </defs>`;
 
 /* ── acabado de la C: cuarto color (ámbar dorado) + bisel 3D ──
@@ -114,6 +113,9 @@ const cDefs = (g, cfg, surface) => {
       <stop offset="0%" stop-color="${co1}" stop-opacity="${n4(op1)}"/>
       <stop offset="100%" stop-color="${co2}" stop-opacity="${n4(op2)}"/>
     </linearGradient>`;
+  const bloom = surface === "night"
+    ? `    <filter id="c-bloom" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="${n2(f.bloom.blur)}"/></filter>`
+    : "";
   const shadow = surface === "light"
     ? `    <filter id="c-shadow" x="-15%" y="-15%" width="130%" height="130%">
       <feDropShadow dx="0" dy="${n2(f.shadow.dy)}" stdDeviation="${n2(f.shadow.blur)}" flood-color="${f.shadow.color}" flood-opacity="${n4(f.shadow.opacity)}"/>
@@ -126,6 +128,7 @@ ${tint(C_IDS.t1, band.tint[0][0], band.tint[0][1], f.tint.amber, f.tint.amberOpa
 ${tint(C_IDS.t2, band.tint[1][0], band.tint[1][1], f.tint.light, 0, f.tint.light, f.tint.lightOpacity)}
     <clipPath id="c-clip-1"><path d="${band.clip[0]}"/></clipPath>
     <clipPath id="c-clip-2"><path d="${band.clip[1]}"/></clipPath>
+${bloom}
 ${shadow}
   </defs>`;
 };
@@ -200,7 +203,7 @@ const layerC = (g, cfg, { surface = "night" } = {}) => {
   const rows = [];
   if (surface === "night") { // bloom cálido del fondo night (nunca sobre claro)
     const d = cPathD(g.segs).replace(/\s+/g, " ");
-    rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" filter="url(#halo-blur)"/>`);
+    rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" filter="url(#c-bloom)"/>`);
   }
   const filter = surface === "light" ? ' filter="url(#c-shadow)"' : "";
   rows.push(`  <g id="logo-c-triespiral" data-name="C TriSpiral"${filter}>`);
@@ -304,7 +307,7 @@ const faviconDoc = (g, cfg) => {
   const pad = span * 0.14 + 12;
   const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
   const side = span + pad * 2;
-  const d = cPathD(g.segs).replace(/\s+/g, " ");
+  const band = cBand(g.segs, cfg.cWidth, { corner: cfg.cFinish.corner });
   const sp = starSpec(0, pts.length, cfg.constellation);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!-- GENERADO por tools/logo/generate-logo.mjs — NO EDITAR A MANO -->
@@ -316,9 +319,8 @@ ${filterDefs()}
     <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.glowR * 1.9)}" fill="url(#halo-nova)" color="${sp.color}"/>
     <circle cx="${n2(pts[0].x)}" cy="${n2(pts[0].y)}" r="${n2(sp.coreR + BRAND.novaCoreBoost)}" fill="${sp.color}" opacity="1"/>
   </g>
-  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth + 6)}" opacity="0.3" filter="url(#halo-blur)"/>
-    <path d="${d}" stroke="${cfg.colors.c}" stroke-width="${n2(cfg.cWidth)}" opacity="1"/>
+  <g id="logo-c-triespiral" data-name="C TriSpiral">
+    <path d="${band.outline}" fill="${cfg.colors.c}"/>
   </g>
 </svg>`;
 };

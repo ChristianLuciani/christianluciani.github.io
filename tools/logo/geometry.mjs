@@ -62,8 +62,6 @@ export const CONFIG_AUREA = {
     spiralFrom: "#16324f",
     spiralTo: "#00c9c0",
     c: "#c9a84c",
-    amber: "#d99a2b", // cuarto color: ámbar dorado (calidez, no otro metal)
-    cLight: "#fffbe6", // luz del bisel (no es color de marca: es el brillo)
   },
   cFinish: C_FINISH,
   constellation: {
@@ -96,8 +94,6 @@ export const CONFIG_BASE = {
     spiralFrom: "#16324f",
     spiralTo: "#00c9c0",
     c: "#c9a84c",
-    amber: "#d99a2b",
-    cLight: "#fffbe6",
   },
   cFinish: C_FINISH,
   constellation: {
@@ -312,10 +308,11 @@ export function cBand(segs, width, { corner = 2.2 } = {}) {
     + `L ${xi.p1.x} ${xi.p1.y} Q ${Xi.x} ${Xi.y} ${xi.p2.x} ${xi.p2.y} `
     + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 0 ${BP.x} ${BP.y} Z`;
 
-  /* clips: los dos brazos se separan por la BISECTRIZ del vértice C (ambos
-     brazos están del mismo lado de la línea de inglete, así que esa línea no
-     sirve de separador). w es la bisectriz (apunta a la abertura de la V) y
-     m su normal; cada clip es un semiplano a un lado de w. */
+  /* clips: los dos brazos se separan por la BISECTRIZ del vértice C: es un
+     corte estable en el marco (cada brazo queda de un lado) y el bisel de
+     cada mitad usa el eje perpendicular de su tramo. w es la bisectriz
+     (apunta a la abertura de la V) y m su normal; cada clip es un semiplano
+     a un lado de w. */
   const uB = unit(C, B), uA = unit(C, A);
   const wsum = { x: uB.x + uA.x, y: uB.y + uA.y };
   const wlen = Math.hypot(wsum.x, wsum.y);
