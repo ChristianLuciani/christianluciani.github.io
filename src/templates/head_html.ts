@@ -798,6 +798,10 @@ body {
 /* ══════════════════════════════════════════════
    COMPONENTE: CONTACTO
 ══════════════════════════════════════════════ */
+.contact-grid { display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,.85fr); gap:3rem; align-items:center; width:100%; }
+.contact-grid .contact-links { margin-top:0; align-content:flex-start; }
+.koch-buzon { height:320px; }
+@media (max-width:900px) { .contact-grid { grid-template-columns:1fr; gap:2rem; } .koch-buzon { height:260px; } }
 .contact-links { display:flex; flex-wrap:wrap; gap:1rem; margin-top:2.5rem; }
 .contact-link {
   font-family:var(--font-mono); font-size:.72rem; color:var(--muted);

@@ -703,7 +703,8 @@ export const ROOM_BODY: Record<string, string> = {
 
 `,
   contacto: `
-    <div class="contact-links" data-scroll="from-center" data-delay="2">
+    <div class="contact-grid">
+      <div class="contact-links" data-scroll="from-center" data-delay="2">
       <a class="contact-link" href="mailto:cluciani@gmail.com"><img class="ci" src="assets/icons/gmail.svg" alt="" width="16" height="16">cluciani@gmail.com</a>
       <a class="contact-link" href="https://wa.me/593993716335" target="_blank"><img class="ci" src="assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp (+593) 99 371 6335</a>
       <a class="contact-link" href="https://orcid.org/0000-0002-6955-5384" target="_blank"><img class="ci" src="assets/icons/orcid.svg" alt="" width="16" height="16">ORCID 0000-0002-6955-5384</a>
@@ -714,6 +715,14 @@ export const ROOM_BODY: Record<string, string> = {
       <a class="contact-link" href="https://x.com/cluciani_ve" target="_blank"><img class="ci" src="assets/icons/x.svg" alt="" width="16" height="16">X @cluciani_ve</a>
       <a class="contact-link" href="https://www.instagram.com/clucianitoledo" target="_blank"><img class="ci" src="assets/icons/instagram.svg" alt="" width="16" height="16">Instagram</a>
       <a class="contact-link" href="https://www.patreon.com/cluciani" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/patreon.svg" alt="" width="16" height="16">Patreon</a>
+      </div>
+
+      <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->
+      <div class="illusion-frame koch-buzon" data-scroll="zoom-in" data-delay="3">
+        <canvas id="c-koch-buzon" style="width:100%;height:100%"></canvas>
+        <div class="illusion-label">COPO DE KOCH · 1904</div>
+        <a class="illusion-link" href="https://es.wikipedia.org/wiki/Copo_de_nieve_de_Koch" target="_blank" rel="noopener">↗ wikipedia</a>
+      </div>
     </div>
 
     <div data-scroll="up" data-delay="4" style="margin-top:5rem;font-family:var(--font-mono);font-size:.56rem;color:var(--muted);letter-spacing:.3em">
