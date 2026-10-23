@@ -13,6 +13,7 @@ import { initUI } from "./ts/app/ui";
 import { mountGrafo } from "./ts/graph/grafo";
 
 import { mountBrandLogo } from "./ts/brand/logoAnim.js";
+import { mountKochArt } from "./ts/fractals/koch";
 import { id as neckerBgId, mountNeckerBg } from "./ts/illusions/neckerBg";
 import { id as neckerIllId, mountNeckerIll } from "./ts/illusions/neckerIll";
 import { id as heroCubesId, mount as mountHeroCubes } from "./ts/illusions/heroCubes";
@@ -76,6 +77,9 @@ function init() {
     };
     window.setTimeout(minimize, reduceMotion ? REDUCED_MINIMIZE_DELAY_MS : SAFETY_MINIMIZE_DELAY_MS);
   }
+  // Koch del Buzón: pieza visual de la sala de contacto.
+  const kochBuzon = document.getElementById("c-koch-buzon");
+  if (kochBuzon instanceof HTMLCanvasElement) mountKochArt(kochBuzon);
 }
 
 // UI global, i18n e intro (el DOM ya está parseado: módulos = deferred).
