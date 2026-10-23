@@ -303,11 +303,14 @@ export function cBand(segs, width, { corner = 2.2 } = {}) {
   };
   const xo = cut(Xo, BP, AP, corner);
   const xi = cut(Xi, AM, BM, corner);
-  // semicírculos: A usa sweep 0 y B sweep 1 para abombar hacia afuera
+  /* semicírculos: las dos puntas usan sweep 0 para abombar HACIA AFUERA.
+     En B el recorrido del contorno llega por el lado interior (no por el
+     exterior como en A), así que el mismo sweep produce el bulbo convexo;
+     con sweep 1 el arco se invertía y "comía" la barra (operador, 2026-10-22). */
   const outline = `M ${BP.x} ${BP.y} L ${xo.p1.x} ${xo.p1.y} Q ${Xo.x} ${Xo.y} ${xo.p2.x} ${xo.p2.y} `
     + `L ${AP.x} ${AP.y} A ${h} ${h} 0 0 0 ${AM.x} ${AM.y} `
     + `L ${xi.p1.x} ${xi.p1.y} Q ${Xi.x} ${Xi.y} ${xi.p2.x} ${xi.p2.y} `
-    + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 1 ${BP.x} ${BP.y} Z`;
+    + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 0 ${BP.x} ${BP.y} Z`;
 
   /* clips: los dos brazos se separan por la BISECTRIZ del vértice C (ambos
      brazos están del mismo lado de la línea de inglete, así que esa línea no

@@ -170,9 +170,8 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
     // 2 esquinas de marco (inglete redondeado) + 2 semicírculos de terminal
     expect((band.outline.match(/ Q /g) || []).length).toBe(2);
     expect((band.outline.match(/ A /g) || []).length).toBe(2);
-    // los arcos tienen radio h (terminal circular del ancho de la barra)
-    expect(band.outline).toContain(`A ${band.h} ${band.h} 0 0 0`);
-    expect(band.outline).toContain(`A ${band.h} ${band.h} 0 0 1`);
+    // los dos arcos son convexos (sweep 0): terminal circular hacia afuera
+    expect((band.outline.match(new RegExp(`A ${band.h} ${band.h} 0 0 0`, "g")) || []).length).toBe(2);
   });
 
   it("extremos con terminal circular y sin caps/tapas sueltas", () => {
