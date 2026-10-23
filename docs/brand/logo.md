@@ -28,8 +28,14 @@ expande.
   estrella se integran como una constelación real. En la animación las
   estrellas preexisten y se disuelven al ser tocadas por la línea; la
   supernova central permanece: es el origen de todo.
-- **La C**: las dos últimas líneas del espiral, en oro, grosor máximo — la
-  firma.
+- **La C**: las dos últimas líneas del espiral, grosor máximo — la firma.
+  Desde 2026-10-22 es una **barra metálica**, no un trazo plano: ámbar cálido
+  en su nacimiento (B), oro de marca en el vértice y luz en la punta, con
+  bisel transversal que le da volumen (ver §3.1). Todo el acabado vive en la
+  familia del oro: el cuarto color suma calidez, no cambia de metal.
+  **La animación aprobada (#53) todavía dibuja la C plana**: este acabado es
+  el de los assets; espejarlo en la animación es trabajo de #55 y de #56 al
+  integrarla.
 - **Jerarquía** (operador, 2026-09-25): el ojo va primero al origen — la
   supernova gana +2pt de core y las estrellas grandes de las aristas (la
   punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
@@ -55,7 +61,11 @@ diseño aprobado, no un desvío.
 | Token | Hex | Uso |
 |---|---|---|
 | Teal (marca) | `#00c9c0` | punta del espiral (=`--teal` del sitio) |
-| Oro (firma) | `#c9a84c` | la C y la tipografía (=`--gold`) |
+| Oro (firma) | `#c9a84c` | tipografía y ancla de marca (=`--gold`); el bisel de la C deriva de acá (§3.1) |
+| **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B) y barrido cálido (`cFinish.tint.amber`) |
+| Ámbar de bloom | `#dfa637` | bloom de la C sobre night (`cFinish.bloom`) |
+| Oro profundo (wordmark light) | `#8a5a1c` | tipografía del lockup en light (`cFinish.lightWordmark`) |
+| Luz de bisel | `#fffbe6` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
 | Night | `#050810` | fondo oscuro (=`--night`) |
 | Espectro estelar | `#ff8a70` `#ff6f5e` `#ffb49e` `#f6d7c4` `#cfe0ff` | estrellas: rojizos dominantes + blancos cálidos + un azulado |
@@ -63,6 +73,44 @@ diseño aprobado, no un desvío.
 
 La rampa del espiral interpola `#16324f → #00c9c0` (22 → 0 R, 50 → 201 G,
 79 → 192 B) con opacidad `0.10 → 0.72` y grosor `2.2 → 4.2`.
+
+### 3.1 Acabado de la C — cuarto color y volumen
+
+La C se dibuja con `cBand()` (`geometry.mjs`) como una barra de ancho
+`cWidth`, con los mismos centros que el trazo anterior. El contorno **no**
+es idéntico: el vértice pasa de join redondo a marco de inglete y las puntas
+a terminal circular. Encima se aplican dos capas de gradiente:
+
+1. **Bisel transversal** (`cFinish.perp`, por tramo): eje perpendicular a la
+   línea — borde superior iluminado `#fffbe6`, centro oro `#ddb04a`, borde
+   inferior en sombra `#8f661c` (oro profundo, nunca marrón). Es lo que
+   produce el volumen de barra metálica; la luz se asume cenital.
+2. **Barrido longitudinal** (`cFinish.tint`): ámbar `#d99a2b` naciendo en B
+   (la firma arranca cálida) que se disuelve hacia el vértice, y un velo de
+   luz `#fffbe6` en la punta A.
+
+**Terminaciones** (operador, 2026-10-22): los extremos libres —B y la punta
+A— terminan en **terminal circular**: un semicírculo de radio `cWidth/2`
+fundido al contorno, que se lee como el remate redondo de la barra **contra
+el plano**, no como la cara de un tubo (no hay círculo de color sólido
+encima). El vértice C conserva la unión **tipo marco de cuadro**: inglete
+con las esquinas redondeadas (recorte `cFinish.cornerCut` = 2.4 por lado, unido con quadratic). El contorno es una
+sola pieza, sin huecos ni parches; el bisel se pinta en dos regiones
+separadas por la **bisectriz del vértice** (los dos brazos están del mismo
+lado de la línea de inglete).
+
+Superficies:
+
+- **Night**: bloom cálido ámbar `#dfa637` (nunca oro translúcido: sobre
+  blanco vira a verdoso).
+- **Light**: sin bloom. Sombra cálida neutra (`feDropShadow #6b5218`, 20%)
+  que despega la C del fondo blanco sin halo de color. En esta superficie
+  además se omiten el cielo de fondo y los halos de la constelación (se
+  leían como polvo/manchas grises sobre blanco); los núcleos de las
+  estrellas se conservan.
+
+Todo esto es **tratamiento de render**: `cPathD`, centros, radios y anchos
+siguen siendo la fuente de verdad y el gate de fidelidad no cambia.
 
 **Ambiente night aprobado** (no documentado antes — agregado por review
 fresco): el HTML usa `--bg-0 #050810` y `--bg-1 #0b1120` (= `--deep` del
@@ -88,26 +136,32 @@ Todos los valores viven en `CONFIG` (`tools/logo/geometry.mjs`):
 | `phi` | 1.618 | ratio áureo entre triángulos internos |
 | `twistGolden` | 3°×φ ≈ 4.854° | giro entre internos (áurea) |
 | `extendLast` | 0.01 | la punta se estira 1%: insinúa seguir evolucionando |
-| `cWidth` | 10 | grosor de la C (glow = +6, blur 8, op .5) |
+| `cWidth` | 10 | ancho de la barra de la C (bloom night: +6 de ancho; blur/opacidad en `cFinish.bloom`) |
 
 Medición del triángulo final (real, no la del comentario del HTML de
 origen): lados 1.26/1.72/1.60 R, ángulos 44.6°/72.9°/62.6° — isósceles
 aproximado, ápice ~44.6° en A. El comentario de la fuente dice “isósceles
 más agudo: ápice ~50°”; en el manual vale la medición.
 
-La C se dibuja como **un solo path** (`B→C→punta`) con `stroke-linejoin:
-round`: el vértice en C es un join redondeado real, no dos caps montados.
+La C se dibuja como un **contorno único** (`cBand()`): una barra de ancho
+`cWidth` con inglete tipo marco en C —esquinas redondeadas, radio
+recorte `cFinish.cornerCut`— y terminales circulares en B y A. No hay caps montados:
+los dos tramos comparten el corte del marco y el bisel se pinta en dos
+regiones separadas por la bisectriz del vértice.
 
 **Verificación** (tests automáticos, `npx vitest run tools/logo/`):
 ancla C ≡ fórmula base a 7 generaciones (0.0000 px), ratios internos = φ
 exacto por generación, twist = 3°×φ, determinismo, y fidelidad DOM
-(`node tools/logo/verify-dom-fidelity.mjs`).
+(`node tools/logo/verify-dom-fidelity.mjs`). El gate de fidelidad compara la
+**geometría de referencia** (centros, segmentos, cielo y constelación) contra
+el DOM aprobado; **no** cubre el contorno nuevo de la barra (marco y
+terminales), que se verifica con los tests de `cBand`.
 
 ## 5. Tipografía
 
 | Elemento | Fuente | Tamaño (lienzo 800) | Tracking | Color |
 |---|---|---|---|---|
-| Nombre (lockup) | `ui-sans-serif, system-ui…` (idém proposal) | 21px | 0.42em = 8.82px | oro `#c9a84c` |
+| Nombre (lockup) | `ui-sans-serif, system-ui…` (idém proposal) | 21px | 0.42em = 8.82px | oro `#c9a84c` (light: `cFinish.lightWordmark`) |
 | Caption meta | ídem | — | 0.18em | `--ink-dim` |
 
 En MAYÚSCULAS siempre. El sitio usa Playfair Display (display), Fira Code
@@ -122,12 +176,21 @@ técnica.
 1. **`logo-background`** — cielo: 30 estrellas ambient + 46 en brazos de
    galaxia espiral (mismo sentido de giro y crecimiento que el logo);
    semilla fija ⇒ idéntico en cada render.
-2. **`logo-constellation`** — 22 estrellas de vértices (1 supernova central
-   + 21 nodos); congeladas en pico (fotograma de máxima intensidad).
+2. **`logo-constellation`** — constelación de vértices (1 supernova central
+   + 21 nodos); congeladas en pico. En night, en los tres vértices de la C
+   (B, C, A) se dibuja el halo pero no el núcleo (la barra los cubre y el
+   núcleo asomaba en los bordes); en light no se dibujan halos (se leían
+   como manchas grises, ver §3.1) y los núcleos de B/C/A se omiten en ambas
+   superficies.
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
-4. **`logo-c-triespiral`** — la C en oro: glow difuminado + trazo firme.
+4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
+   transversal + barrido longitudinal, contorno con marco redondeado y
+   terminales circulares (night: bloom cálido; light: sombra neutra). Ver
+   §3.1.
 
-El **lockup** añade `logo-typography` (viewBox 800×940).
+El **lockup** añade `logo-typography` (viewBox 800×940). En la variante
+light, además, se omite `logo-background` y los halos de la constelación
+(§3.1).
 
 ### Variantes de estrellas
 
@@ -135,14 +198,18 @@ El **lockup** añade `logo-typography` (viewBox 800×940).
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
 | **settled** | el mark completo (espiral + C + supernova + cielo) SIN las estrellas de vértices — el estado final de la animación | contextos medianos |
-| **favicon** (simplificado) | sólo la C + supernova, recortados al bbox — el mark completo es ilegible <24px | favicon 16/32, contextos <24px |
+| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox | favicon 16/32, contextos <24px |
 
 ## 7. Uso correcto
 
 - **Fondo**: night con el ambiente aprobado (gradiente radial `#0b1120 →
-  #050810` + halo teal, ver §3) o transparente. Sobre fondos claros NO está
-  diseñado (la rampa azul/teal y el oro se lavan): si es imprescindible, usar
-  la variante print con la C y el espiral intactos y validar contraste.
+  #050810` + halo teal, ver §3) o transparente. Para **superficies claras**
+  usar la variante **light** (`*-light`): mismo símbolo, sin bloom y con
+  sombra neutra — la versión night sobre blanco dejaba un halo verdoso
+  (observación del operador, 2026-10-22). No usar el bloom night sobre
+  blanco. Sobre blanco el oro del bisel tiene contraste bajo por diseño
+  (marca gráfica, no texto): validar el contraste sobre el soporte final
+  cuando el logo conviva con texto u otros elementos de información.
 - **Tamaño mínimo**: 24 px de alto para el mark completo. Los favicons 16/32
   usan la variante **simplificada** (sólo la C + supernova) — no el mark
   completo, que en <24px se vuelve ilegible.
@@ -155,7 +222,8 @@ El **lockup** añade `logo-typography` (viewBox 800×940).
 ## 8. Usos incorrectos
 
 - ❌ Rotar, estirar o reflectar el símbolo.
-- ❌ Recolorear la C (el oro es la firma) o aplanar el glow.
+- ❌ Recolorear la C a mano o aplanar su bisel (el oro es la firma; el
+  acabado ámbar→oro→luz se genera desde `cFinish`).
 - ❌ Dibujar el símbolo a mano: **siempre regenerar** (`node
   tools/logo/generate-logo.mjs`).
 - ❌ Editar los SVG/PNG generados — son OUTPUT; la fuente es `geometry.mjs`.
@@ -188,10 +256,13 @@ assets/brand/logo/
   logo-{aurea|base}-layers.svg        # master por capas (hero)
   logo-{aurea|base}-settled.svg       # estado final (favicons/print)
   logo-{aurea|base}-lockup.svg        # mark + tipografía (800×940)
+  logo-{aurea|base}-*-light.svg       # masters para superficie clara
   logo-{aurea|base}-{512|1024|2048|4096}.png       # transparente
   logo-{aurea|base}-{512|1024|2048|4096}-dark.png  # fondo night
+  logo-{aurea|base}-{512|1024|2048|4096}-light.png # fondo blanco
   logo-{aurea|base}-print-{a4|a3}.png             # 300dpi transparente
   logo-{aurea|base}-print-{a4|a3}-dark.png        # 300dpi night
+  logo-{aurea|base}-print-{a4|a3}-light.png       # 300dpi blanco
   favicon-{aurea|base}-{16|32}.png
   apple-touch-icon-{aurea|base}.png   # 180, fondo night
   og-image-{aurea|base}.png           # 1200×630 dark + nombre

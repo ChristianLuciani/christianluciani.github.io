@@ -7,7 +7,7 @@
 import { describe, it, expect } from "vitest";
 import {
   CONFIG_AUREA, CONFIG_BASE, config, buildGeometry, buildSky,
-  constellationPoints, segStyle, cPathD, seeded, starSpec,
+  constellationPoints, segStyle, cPathD, cBand, seeded, starSpec,
 } from "./geometry.mjs";
 
 const dist = (p, q) => Math.hypot(p.x - q.x, p.y - q.y);
@@ -141,6 +141,93 @@ describe("config()", () => {
   it("base y aurea devuelven sus CONFIG canónicos", () => {
     expect(config("base")).toBe(CONFIG_BASE);
     expect(config("aurea")).toBe(CONFIG_AUREA);
+  });
+});
+
+describe("cBand() — la C como barra con bisel (centros y ancho, contorno nuevo)", () => {
+  const g = buildGeometry(CONFIG_AUREA.geometry);
+  const W = CONFIG_AUREA.cWidth;
+
+  it("conserva los centros de cPathD: B, C y punta A", () => {
+    const band = cBand(g.segs, W);
+    const cIdx = g.segs.length - 2;
+    expect(band.B).toEqual(g.segs[cIdx].a);
+    expect(band.C).toEqual(g.segs[cIdx].b);
+    expect(band.A).toEqual(g.segs[cIdx + 1].b);
+    expect(band.h).toBe(W / 2);
+  });
+
+  it("el ancho de la barra es exactamente cWidth, en base y punta", () => {
+    const band = cBand(g.segs, W);
+    expect(band.cornerCut).toBe(CONFIG_AUREA.cFinish.cornerCut); // default = acabado, no 2.2
+    expect(dist(band.perp[0][0], band.perp[0][1])).toBeCloseTo(W, 6);
+    expect(dist(band.perp[1][0], band.perp[1][1])).toBeCloseTo(W, 6);
+  });
+
+  it("el contorno es único, cerrado, con marco redondeado y terminales circulares", () => {
+    const band = cBand(g.segs, W);
+    expect(band.outline.startsWith("M ")).toBe(true);
+    expect(band.outline.trim().endsWith("Z")).toBe(true);
+    // 2 esquinas de marco (inglete redondeado) + 2 semicírculos de terminal
+    expect((band.outline.match(/ Q /g) || []).length).toBe(2);
+    expect((band.outline.match(/ A /g) || []).length).toBe(2);
+    // los dos arcos son convexos (sweep 0): terminal circular hacia afuera
+    expect((band.outline.match(new RegExp(`A ${band.h} ${band.h} 0 0 0`, "g")) || []).length).toBe(2);
+  });
+
+  it("extremos con terminal circular y sin caps/tapas sueltas", () => {
+    const band = cBand(g.segs, W);
+    expect(band.ends.map((e) => e.role)).toEqual(["base", "tip"]);
+    expect(band).not.toHaveProperty("caps");
+    expect(band).not.toHaveProperty("quads");
+  });
+
+  it("los dos clips separan los brazos por la bisectriz del vértice", () => {
+    const band = cBand(g.segs, W);
+    const [c1, c2] = band.clip;
+    // ambos semiplanos arrancan en el mismo punto de la bisectriz (C − w·L)
+    const num = (d) => d.match(/-?[\d.]+/g).map(Number);
+    expect(num(c1).slice(0, 2)).toEqual(num(c2).slice(0, 2));
+    // el punto lejano de cada clip cae del lado de su brazo (B o A)
+    const uB = { x: band.B.x - band.C.x, y: band.B.y - band.C.y };
+    const uA = { x: band.A.x - band.C.x, y: band.A.y - band.C.y };
+    const nB = Math.hypot(uB.x, uB.y), nA = Math.hypot(uA.x, uA.y);
+    const w = { x: uB.x / nB + uA.x / nA, y: uB.y / nB + uA.y / nA };
+    const side = (p) => Math.sign(w.x * (p.y - band.C.y) - w.y * (p.x - band.C.x));
+    const far = (d) => { const n = num(d); return { x: n[4], y: n[5] }; };
+    expect(side(far(c1))).toBe(side(band.B));
+    expect(side(far(c2))).toBe(side(band.A));
+    expect(side(band.B)).not.toBe(side(band.A));
+  });
+
+  it("el inglete equidista h de ambas líneas centrales", () => {
+    const band = cBand(g.segs, W);
+    const distLine = (p, a, b) => {
+      const dx = b.x - a.x, dy = b.y - a.y;
+      return Math.abs((p.x - a.x) * dy - (p.y - a.y) * dx) / Math.hypot(dx, dy);
+    };
+    expect(distLine(band.miter.Xo, band.B, band.C)).toBeCloseTo(band.h, 6);
+    expect(distLine(band.miter.Xi, band.B, band.C)).toBeCloseTo(band.h, 6);
+  });
+
+  it("determinista", () => {
+    const a = cBand(g.segs, W);
+    const b = cBand(g.segs, W);
+    expect(JSON.stringify(a)).toBe(JSON.stringify(b));
+  });
+
+  it("el cuarto color (ámbar dorado) vive en el acabado, una sola fuente", () => {
+    // el acabado es la única fuente: no hay tokens duplicados en `colors`
+    expect(CONFIG_AUREA.cFinish.tint.amber).toBe("#d99a2b");
+    expect(CONFIG_BASE.cFinish.tint.amber).toBe("#d99a2b");
+    expect(CONFIG_AUREA.colors).not.toHaveProperty("amber");
+    expect(CONFIG_AUREA.colors).not.toHaveProperty("cLight");
+  });
+
+  it("el acabado se queda en la familia del oro (sin marrones de cobre)", () => {
+    const deep = CONFIG_AUREA.cFinish.perp.at(-1).color;
+    expect(deep).toBe("#8f661c");
+    expect(CONFIG_AUREA.cFinish.bloom.color).toBe("#dfa637");
   });
 });
 

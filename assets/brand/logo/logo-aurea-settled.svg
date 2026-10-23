@@ -15,7 +15,22 @@
       <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
       <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
     </radialGradient>
-    <filter id="halo-blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
+  </defs>
+  <defs>
+    <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="496.86" y2="586.33"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
+    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="488.93" y1="178.07" x2="496.15" y2="184.98"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
+    <linearGradient id="c-tint-1" gradientUnits="userSpaceOnUse" x1="499.67" y1="576.74" x2="204.08" y2="490.21">
+      <stop offset="0%" stop-color="#d99a2b" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#d99a2b" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="c-tint-2" gradientUnits="userSpaceOnUse" x1="204.08" y1="490.21" x2="496.15" y2="184.98">
+      <stop offset="0%" stop-color="#fffbe6" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#fffbe6" stop-opacity="0.32"/>
+    </linearGradient>
+    <clipPath id="c-clip-1"><path d="M -964.4844318475634 802.7211701969302 L 1354.0358736598514 182.6698876808764 L 1664.0615149178784 1341.9300404345838 L -654.4587905895365 1961.9813229506376 Z"/></clipPath>
+    <clipPath id="c-clip-2"><path d="M -964.4844318475634 802.7211701969302 L 1354.0358736598514 182.6698876808764 L 1044.0102324018244 -976.590265072831 L -1274.5100731055904 -356.5389825567772 Z"/></clipPath>
+    <filter id="c-bloom" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="8"/></filter>
+
   </defs>
   <g id="logo-background" data-name="Background">
       <circle cx="245.1" cy="284.29" r="1.3522" fill="#ffb49e" opacity="0.3099"/>
@@ -122,9 +137,16 @@
       <line x1="277.52" y1="474.73" x2="442.97" y2="269.58" stroke="rgb(1,193,186)" stroke-width="4.0889" opacity="0.6856"/>
       <line x1="442.97" y1="269.58" x2="498.26" y2="581.54" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
   </g>
-  <g id="logo-c-triespiral" data-name="C TriSpiral" fill="none" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="16" opacity="0.3" filter="url(#halo-blur)"/>
-    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#c9a84c" stroke-width="10" opacity="1"/>
+    <path d="M 498.2619033011315 581.5352695607837 L 194.77572090614393 492.6955289389033 L 492.54015005112694 181.52398702006752" stroke="#dfa637" stroke-width="16" opacity="0.28" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#c-bloom)"/>
+  <g id="logo-c-triespiral" data-name="C TriSpiral">
+    <g clip-path="url(#c-clip-1)">
+      <path d="M 499.6666084855308 576.7366444092511 L 206.37958370188645 490.88251093957416 Q 204.07624362915078 490.2082524510625 205.73553321328095 488.4742518524475 L 496.1526512982415 184.9808403203387 A 5 5 0 0 0 488.9276488040124 178.06713371979635 L 187.1344877672673 493.4488048281291 Q 185.47519818313714 495.1828054267441 187.7785382558728 495.85706391525576 L 496.8571981167322 586.3338947123164 A 5 5 0 0 0 499.6666084855308 576.7366444092511 Z" fill="url(#c-perp-1)"/>
+      <path d="M 499.6666084855308 576.7366444092511 L 206.37958370188645 490.88251093957416 Q 204.07624362915078 490.2082524510625 205.73553321328095 488.4742518524475 L 496.1526512982415 184.9808403203387 A 5 5 0 0 0 488.9276488040124 178.06713371979635 L 187.1344877672673 493.4488048281291 Q 185.47519818313714 495.1828054267441 187.7785382558728 495.85706391525576 L 496.8571981167322 586.3338947123164 A 5 5 0 0 0 499.6666084855308 576.7366444092511 Z" fill="url(#c-tint-1)"/>
+    </g>
+    <g clip-path="url(#c-clip-2)">
+      <path d="M 499.6666084855308 576.7366444092511 L 206.37958370188645 490.88251093957416 Q 204.07624362915078 490.2082524510625 205.73553321328095 488.4742518524475 L 496.1526512982415 184.9808403203387 A 5 5 0 0 0 488.9276488040124 178.06713371979635 L 187.1344877672673 493.4488048281291 Q 185.47519818313714 495.1828054267441 187.7785382558728 495.85706391525576 L 496.8571981167322 586.3338947123164 A 5 5 0 0 0 499.6666084855308 576.7366444092511 Z" fill="url(#c-perp-2)"/>
+      <path d="M 499.6666084855308 576.7366444092511 L 206.37958370188645 490.88251093957416 Q 204.07624362915078 490.2082524510625 205.73553321328095 488.4742518524475 L 496.1526512982415 184.9808403203387 A 5 5 0 0 0 488.9276488040124 178.06713371979635 L 187.1344877672673 493.4488048281291 Q 185.47519818313714 495.1828054267441 187.7785382558728 495.85706391525576 L 496.8571981167322 586.3338947123164 A 5 5 0 0 0 499.6666084855308 576.7366444092511 Z" fill="url(#c-tint-2)"/>
+    </g>
   </g>
 
 </svg>
