@@ -16,7 +16,7 @@
  *      [--out assets/brand/logo] (o LOGO_OUT env)
  */
 import { execFileSync } from "node:child_process";
-import { accessSync, mkdirSync, rmSync, writeFileSync, readFileSync } from "node:fs";
+import { accessSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -171,10 +171,9 @@ const layerConstellation = (g, cfg, { settled = false, surface = "night" } = {})
       );
       rows.push(`    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${haloR}" fill="url(#halo-star)" color="${sp.color}"/>`);
     }
-    /* B, C y A son los vértices de la C (últimos 3 puntos): el núcleo de la
-       estrella quedaba medio expuesto sobre el corte plano de la barra y se
-       leía como un punto suelto. El halo se conserva (la estrella sigue
-       presente como brillo en el extremo); el núcleo se omite ahí. */
+    /* B, C y A son los vértices de la C (últimos 3 puntos): la barra los
+       cubre, así que el núcleo no aporta y asomaba en los bordes. El halo se
+       conserva (la estrella sigue presente como brillo en el extremo). */
     const onC = j >= pts.length - 3;
     if (!onC) rows.push(
       `    <circle cx="${n2(p.x)}" cy="${n2(p.y)}" r="${n2(coreR)}" fill="${sp.color}" opacity="${n4(sp.hi)}"/>`
@@ -198,10 +197,11 @@ const layerSpiral = (g, cfg) => {
 const layerC = (g, cfg, { surface = "night" } = {}) => {
   const f = cfg.cFinish;
   const band = cBand(g.segs, cfg.cWidth, { corner: f.corner });
-  const d = cPathD(g.segs).replace(/\s+/g, " ");
   const rows = [];
-  if (surface === "night") // bloom cálido del fondo night (nunca sobre claro)
+  if (surface === "night") { // bloom cálido del fondo night (nunca sobre claro)
+    const d = cPathD(g.segs).replace(/\s+/g, " ");
     rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" filter="url(#halo-blur)"/>`);
+  }
   const filter = surface === "light" ? ' filter="url(#c-shadow)"' : "";
   rows.push(`  <g id="logo-c-triespiral" data-name="C TriSpiral"${filter}>`);
   for (const k of [1, 2]) {
@@ -264,12 +264,11 @@ ${night ? nightHalo(0, 0, size) : ""}</style>
 /* página print A4/A3 300dpi: logo cuadrado centrado con margen 8% */
 const printPage = (svgStr, w, h, bg) => {
   const night = bg === "night";
-  const light = bg === "light";
-  const body = night ? nightBody(Math.min(w, h), "50%", "50%") : light ? "background:#ffffff" : "background:transparent";
+  const pageBg = bg === "light" ? "background:#ffffff" : "background:transparent";
   const box = Math.min(w, h) - Math.round(h * 0.08 * 2);
   const top = Math.round((h - box) / 2), left = Math.round((w - box) / 2);
   return `<!doctype html><html><head><meta charset="utf-8">
-<style>html,body{margin:0;padding:0;${night ? nightBody(box, `${left + box / 2}px`, `${top + box / 2}px`) : body}}
+<style>html,body{margin:0;padding:0;${night ? nightBody(box, `${left + box / 2}px`, `${top + box / 2}px`) : pageBg}}
 svg{position:fixed;top:${top}px;left:${left}px;width:${box}px!important;height:${box}px!important;z-index:1}
 ${night ? nightHalo(left, top, box) : ""}</style>
 </head><body>${night ? '<div id="halo"></div>' : ""}${unwrapSvg(svgStr)}</body></html>`;

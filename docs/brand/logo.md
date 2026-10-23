@@ -58,7 +58,7 @@ diseño aprobado, no un desvío.
 | Token | Hex | Uso |
 |---|---|---|
 | Teal (marca) | `#00c9c0` | punta del espiral (=`--teal` del sitio) |
-| Oro (firma) | `#c9a84c` | la C (centro del bisel) y la tipografía (=`--gold`) |
+| Oro (firma) | `#c9a84c` | tipografía y ancla de marca (=`--gold`); el bisel de la C deriva de acá (§3.1) |
 | **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B), barrido cálido y bloom |
 | Luz de bisel | `#fffbe6` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
@@ -167,7 +167,7 @@ técnica.
 2. **`logo-constellation`** — constelación de vértices (1 supernova central
    + 21 nodos); congeladas en pico. En los tres vértices de la C (B, C, A)
    se dibuja el halo pero no el núcleo (ver §3.1): la barra los cubre y el
-   núcleo asomaba como un punto suelto.
+   núcleo asomaba en los bordes.
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
 4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
    transversal + barrido longitudinal, contorno con marco redondeado y
