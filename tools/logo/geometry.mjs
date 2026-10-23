@@ -36,7 +36,8 @@ export const C_FINISH = {
   },
   bloom: { color: "#dfa637", opacity: 0.28, width: 6, blur: 8 },
   shadow: { color: "#6b5218", opacity: 0.2, dy: 2.2, blur: 2.4 },
-  corner: 2.4, // radio de las esquinas del contorno (suaviza el corte)
+  lightWordmark: "#8a5a1c", // tipografía del lockup sobre superficie clara
+  cornerCut: 2.4, // recorte de cada lado de la esquina (se une con quadratic; no es un radio)
 };
 
 /* CONFIG de aurea7.html (base v10 = misma sin mode/galaxy/timing fast) */
@@ -232,7 +233,7 @@ export function cPathD(segs) {
    idéntico al del trazo anterior: el vértice pasa de join redondo a un
    marco de inglete (más extendido) y las puntas pasan a terminal circular.
    La barra se construye como un contorno único con las esquinas redondeadas
-   con radio `corner`.
+   con recorte `cornerCut` por lado (quadratic, no radio de arco).
    Los extremos libres (B y punta A) son cortes transversales planos —sin
    cap redondo, para que no lean como tubos— pero con las esquinas del corte
    suavizadas.
@@ -242,7 +243,7 @@ export function cPathD(segs) {
    El bisel se pinta con dos regiones recortadas por esa línea de inglete,
    cada una con su gradiente perpendicular real.
    La geometría de referencia (cPathD) no se toca. */
-export function cBand(segs, width, { corner = C_FINISH.corner } = {}) {
+export function cBand(segs, width, { cornerCut = C_FINISH.cornerCut } = {}) {
   const cIdx = segs.length - 2;
   const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
   const h = width / 2;
@@ -299,8 +300,8 @@ export function cBand(segs, width, { corner = C_FINISH.corner } = {}) {
       P,
     };
   };
-  const xo = cut(Xo, BP, AP, corner);
-  const xi = cut(Xi, AM, BM, corner);
+  const xo = cut(Xo, BP, AP, cornerCut);
+  const xi = cut(Xi, AM, BM, cornerCut);
   /* semicírculos: las dos puntas usan sweep 0 para abombar HACIA AFUERA.
      En B el recorrido del contorno llega por el lado interior (no por el
      exterior como en A), así que el mismo sweep produce el bulbo convexo;
@@ -332,7 +333,7 @@ export function cBand(segs, width, { corner = C_FINISH.corner } = {}) {
   };
 
   return {
-    B, C, A, h, corner,
+    B, C, A, h, cornerCut,
     normal,
     outline,
     clip: [poly(1), poly(-1)],

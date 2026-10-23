@@ -64,6 +64,7 @@ diseño aprobado, no un desvío.
 | Oro (firma) | `#c9a84c` | tipografía y ancla de marca (=`--gold`); el bisel de la C deriva de acá (§3.1) |
 | **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B) y barrido cálido (`cFinish.tint.amber`) |
 | Ámbar de bloom | `#dfa637` | bloom de la C sobre night (`cFinish.bloom`) |
+| Oro profundo (wordmark light) | `#8a5a1c` | tipografía del lockup en light (`cFinish.lightWordmark`) |
 | Luz de bisel | `#fffbe6` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
 | Night | `#050810` | fondo oscuro (=`--night`) |
@@ -93,7 +94,7 @@ A— terminan en **terminal circular**: un semicírculo de radio `cWidth/2`
 fundido al contorno, que se lee como el remate redondo de la barra **contra
 el plano**, no como la cara de un tubo (no hay círculo de color sólido
 encima). El vértice C conserva la unión **tipo marco de cuadro**: inglete
-con las esquinas redondeadas (`cFinish.corner` = 2.4). El contorno es una
+con las esquinas redondeadas (recorte `cFinish.cornerCut` = 2.4 por lado, unido con quadratic). El contorno es una
 sola pieza, sin huecos ni parches; el bisel se pinta en dos regiones
 separadas por la **bisectriz del vértice** (los dos brazos están del mismo
 lado de la línea de inglete).
@@ -144,7 +145,7 @@ más agudo: ápice ~50°”; en el manual vale la medición.
 
 La C se dibuja como un **contorno único** (`cBand()`): una barra de ancho
 `cWidth` con inglete tipo marco en C —esquinas redondeadas, radio
-`cFinish.corner`— y terminales circulares en B y A. No hay caps montados:
+recorte `cFinish.cornerCut`— y terminales circulares en B y A. No hay caps montados:
 los dos tramos comparten el corte del marco y el bisel se pinta en dos
 regiones separadas por la bisectriz del vértice.
 
@@ -160,7 +161,7 @@ terminales), que se verifica con los tests de `cBand`.
 
 | Elemento | Fuente | Tamaño (lienzo 800) | Tracking | Color |
 |---|---|---|---|---|
-| Nombre (lockup) | `ui-sans-serif, system-ui…` (idém proposal) | 21px | 0.42em = 8.82px | oro `#c9a84c` (light: oro profundo `#8a5a1c`) |
+| Nombre (lockup) | `ui-sans-serif, system-ui…` (idém proposal) | 21px | 0.42em = 8.82px | oro `#c9a84c` (light: `cFinish.lightWordmark`) |
 | Caption meta | ídem | — | 0.18em | `--ink-dim` |
 
 En MAYÚSCULAS siempre. El sitio usa Playfair Display (display), Fira Code

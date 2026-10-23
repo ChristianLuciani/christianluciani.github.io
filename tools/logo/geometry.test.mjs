@@ -159,7 +159,7 @@ describe("cBand() — la C como barra con bisel (centros y ancho, contorno nuevo
 
   it("el ancho de la barra es exactamente cWidth, en base y punta", () => {
     const band = cBand(g.segs, W);
-    expect(band.corner).toBe(CONFIG_AUREA.cFinish.corner); // default = acabado, no 2.2
+    expect(band.cornerCut).toBe(CONFIG_AUREA.cFinish.cornerCut); // default = acabado, no 2.2
     expect(dist(band.perp[0][0], band.perp[0][1])).toBeCloseTo(W, 6);
     expect(dist(band.perp[1][0], band.perp[1][1])).toBeCloseTo(W, 6);
   });

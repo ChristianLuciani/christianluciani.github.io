@@ -103,7 +103,7 @@ const C_IDS = { p1: "c-perp-1", p2: "c-perp-2", t1: "c-tint-1", t2: "c-tint-2" }
 
 const cDefs = (g, cfg, surface) => {
   const f = cfg.cFinish;
-  const band = cBand(g.segs, cfg.cWidth, { corner: f.corner });
+  const band = cBand(g.segs, cfg.cWidth, { cornerCut: f.cornerCut });
   const stops = (arr) => arr.map((s) =>
     `<stop offset="${n2(s.offset * 100)}%" stop-color="${s.color}"/>`).join("");
   const perp = (id, axis) =>
@@ -199,7 +199,7 @@ const layerSpiral = (g, cfg) => {
 
 const layerC = (g, cfg, { surface = "night" } = {}) => {
   const f = cfg.cFinish;
-  const band = cBand(g.segs, cfg.cWidth, { corner: f.corner });
+  const band = cBand(g.segs, cfg.cWidth, { cornerCut: f.cornerCut });
   const rows = [];
   if (surface === "night") { // bloom cálido del fondo night (nunca sobre claro)
     const d = cPathD(g.segs).replace(/\s+/g, " ");
@@ -219,8 +219,8 @@ const layerC = (g, cfg, { surface = "night" } = {}) => {
   return rows.join("\n");
 };
 
-const layerTypography = (baseline, { surface = "night" } = {}) =>
-  `  <g id="logo-typography" data-name="Typography" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif" font-size="21" font-weight="500" fill="${surface === "light" ? "#8a5a1c" : "#c9a84c"}" letter-spacing="8.82">
+const layerTypography = (baseline, cfg, { surface = "night" } = {}) =>
+  `  <g id="logo-typography" data-name="Typography" font-family="ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif" font-size="21" font-weight="500" fill="${surface === "light" ? cfg.cFinish.lightWordmark : cfg.colors.c}" letter-spacing="8.82">
     <text x="400" y="${n2(baseline)}" text-anchor="middle">${NAME}</text>
   </g>`;
 
@@ -236,7 +236,7 @@ ${surface === "light" ? "" : layerBackground(sky)}
 ${layerConstellation(g, cfg, { settled, surface })}
 ${layerSpiral(g, cfg)}
 ${layerC(g, cfg, { surface })}
-${typography ? layerTypography(905, { surface }) : ""}
+${typography ? layerTypography(905, cfg, { surface }) : ""}
 </svg>`;
 };
 
@@ -307,7 +307,7 @@ const faviconDoc = (g, cfg) => {
   const pad = span * 0.14 + 12;
   const cx = (Math.min(...xs) + Math.max(...xs)) / 2, cy = (Math.min(...ys) + Math.max(...ys)) / 2;
   const side = span + pad * 2;
-  const band = cBand(g.segs, cfg.cWidth, { corner: cfg.cFinish.corner });
+  const band = cBand(g.segs, cfg.cWidth, { corner: cfg.cFinish.cornerCut });
   const sp = starSpec(0, pts.length, cfg.constellation);
   return `<?xml version="1.0" encoding="UTF-8"?>
 <!-- GENERADO por tools/logo/generate-logo.mjs — NO EDITAR A MANO -->
