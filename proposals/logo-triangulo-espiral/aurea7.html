@@ -72,7 +72,7 @@
   @keyframes twinkle{0%,100%{opacity:var(--lo,.4)} 50%{opacity:var(--hi,1)}}
   @keyframes fadeIn{to{opacity:1}}
 
-  .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
+  .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round}
   .settle-on .c-glow{animation:breathe 3.6s ease-in-out infinite}
   @keyframes breathe{0%,100%{opacity:.5} 50%{opacity:.75}}
 
@@ -103,9 +103,6 @@
          aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
       <title>Christian Luciani — espiral de conocimiento</title>
       <defs>
-        <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="8"/>
-        </filter>
         <filter id="soft2" x="-80%" y="-80%" width="260%" height="260%">
           <feGaussianBlur stdDeviation="3.5"/>
         </filter>
@@ -285,12 +282,144 @@ function segStyle(idx, total) {
   };
 }
 
+/* ── acabado de la C: barra con bisel (puerto de tools/logo/geometry.mjs) ──
+   Mismos centros y ancho que el trazo anterior; el vértice es un marco de
+   inglete con esquinas redondeadas y las puntas son terminales circulares.
+   La barra se pinta con dos regiones recortadas por la bisectriz del vértice
+   (un gradiente perpendicular por tramo) y se revela con una máscara que
+   traza el path central, así la animación de trazado se conserva.
+   MANTENER SINCRONIZADO con tools/logo/geometry.mjs (cBand + C_FINISH). */
+const CFINISH = {
+  perp: [
+    { offset: 0, color: "#fffbe6" },
+    { offset: .16, color: "#f8e4a8" },
+    { offset: .5, color: "#ddb04a" },
+    { offset: .84, color: "#b1852c" },
+    { offset: 1, color: "#8f661c" },
+  ],
+  tint: { amber: "#d99a2b", amberOpacity: .5, light: "#fffbe6", lightOpacity: .32 },
+  bloom: { color: "#dfa637", opacity: .28, width: 6, blur: 8 },
+  cornerCut: 2.4,
+};
+
+function buildCBand(segs, width, cornerCut) {
+  const cIdx = segs.length - 2;
+  const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
+  const h = width / 2;
+  const unit = (p, q) => {
+    const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
+    return { x: dx / len, y: dy / len };
+  };
+  const normal = (p, q) => { const u = unit(p, q); return { x: -u.y, y: u.x }; };
+  const normalUp = (p, q) => { const n = normal(p, q); return n.y > 0 ? { x: -n.x, y: -n.y } : n; };
+  const intersect = (p1, u1, p2, u2) => {
+    const cross = (a, b) => a.x * b.y - a.y * b.x;
+    const r = { x: p2.x - p1.x, y: p2.y - p1.y };
+    const den = cross(u1, u2);
+    const t = Math.abs(den) < 1e-9 ? 0 : cross(r, u2) / den;
+    return { x: p1.x + u1.x * t, y: p1.y + u1.y * t };
+  };
+  const n1 = normal(B, C), n2 = normal(C, A);
+  const up1 = normalUp(B, C), up2 = normalUp(C, A);
+  const u1 = unit(B, C), u2 = unit(C, A);
+  const Xo = intersect(
+    { x: B.x + n1.x * h, y: B.y + n1.y * h }, u1,
+    { x: C.x + n2.x * h, y: C.y + n2.y * h }, u2
+  );
+  const Xi = intersect(
+    { x: B.x - n1.x * h, y: B.y - n1.y * h }, u1,
+    { x: C.x - n2.x * h, y: C.y - n2.y * h }, u2
+  );
+  const BP = { x: B.x + n1.x * h, y: B.y + n1.y * h };
+  const BM = { x: B.x - n1.x * h, y: B.y - n1.y * h };
+  const AP = { x: A.x + n2.x * h, y: A.y + n2.y * h };
+  const AM = { x: A.x - n2.x * h, y: A.y - n2.y * h };
+  const cut = (P, Aprev, Bnext, r) => {
+    const uIn = unit(Aprev, P), uOut = unit(P, Bnext);
+    return {
+      p1: { x: P.x - uIn.x * r, y: P.y - uIn.y * r },
+      p2: { x: P.x + uOut.x * r, y: P.y + uOut.y * r },
+    };
+  };
+  const xo = cut(Xo, BP, AP, cornerCut);
+  const xi = cut(Xi, AM, BM, cornerCut);
+  const outline = `M ${BP.x} ${BP.y} L ${xo.p1.x} ${xo.p1.y} Q ${Xo.x} ${Xo.y} ${xo.p2.x} ${xo.p2.y} `
+    + `L ${AP.x} ${AP.y} A ${h} ${h} 0 0 0 ${AM.x} ${AM.y} `
+    + `L ${xi.p1.x} ${xi.p1.y} Q ${Xi.x} ${Xi.y} ${xi.p2.x} ${xi.p2.y} `
+    + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 0 ${BP.x} ${BP.y} Z`;
+  const uB = unit(C, B), uA = unit(C, A);
+  const wsum = { x: uB.x + uA.x, y: uB.y + uA.y };
+  const wlen = Math.hypot(wsum.x, wsum.y);
+  const w = { x: wsum.x / wlen, y: wsum.y / wlen };
+  const m = { x: -w.y, y: w.x };
+  const sideB = Math.sign(m.x * (B.x - C.x) + m.y * (B.y - C.y)) || 1;
+  const L = 1200;
+  const poly = (sx) => {
+    const s = (sideB * sx) * L;
+    const x0 = C.x - w.x * L, y0 = C.y - w.y * L;
+    const x1 = C.x + w.x * L, y1 = C.y + w.y * L;
+    return `M ${x0} ${y0} L ${x1} ${y1} L ${x1 + m.x * s} ${y1 + m.y * s} L ${x0 + m.x * s} ${y0 + m.y * s} Z`;
+  };
+  return {
+    B, C, A, h, outline,
+    clip: [poly(1), poly(-1)],
+    perp: [
+      [{ x: B.x + up1.x * h, y: B.y + up1.y * h }, { x: B.x - up1.x * h, y: B.y - up1.y * h }],
+      [{ x: A.x + up2.x * h, y: A.y + up2.y * h }, { x: A.x - up2.x * h, y: A.y - up2.y * h }],
+    ],
+    tint: [[BP, Xo], [Xo, AP]],
+  };
+}
+
+/* defs (gradientes, clips) + máscara de revelado; devuelve el path a animar */
+function buildCDefs(svg, band, cD) {
+  const defs = el("defs", { id: "c-defs" });
+  const ramp = (id, axis) => {
+    const g = el("linearGradient", {
+      id, gradientUnits: "userSpaceOnUse",
+      x1: axis[0].x, y1: axis[0].y, x2: axis[1].x, y2: axis[1].y,
+    });
+    CFINISH.perp.forEach(s => g.appendChild(el("stop", { offset: `${s.offset * 100}%`, "stop-color": s.color })));
+    defs.appendChild(g);
+  };
+  const tint = (id, seg, c1, o1, c2, o2) => {
+    const g = el("linearGradient", {
+      id, gradientUnits: "userSpaceOnUse",
+      x1: seg[0].x, y1: seg[0].y, x2: seg[1].x, y2: seg[1].y,
+    });
+    g.appendChild(el("stop", { offset: "0%", "stop-color": c1, "stop-opacity": o1 }));
+    g.appendChild(el("stop", { offset: "100%", "stop-color": c2, "stop-opacity": o2 }));
+    defs.appendChild(g);
+  };
+  ramp("c-perp-1", band.perp[0]);
+  ramp("c-perp-2", band.perp[1]);
+  tint("c-tint-1", band.tint[0], CFINISH.tint.amber, CFINISH.tint.amberOpacity, CFINISH.tint.amber, 0);
+  tint("c-tint-2", band.tint[1], CFINISH.tint.light, 0, CFINISH.tint.light, CFINISH.tint.lightOpacity);
+  [1, 2].forEach(k => {
+    const cp = el("clipPath", { id: `c-clip-${k}` });
+    cp.appendChild(el("path", { d: band.clip[k - 1] }));
+    defs.appendChild(cp);
+  });
+  const bloom = el("filter", { id: "c-bloom", x: "-80%", y: "-80%", width: "260%", height: "260%" });
+  bloom.appendChild(el("feGaussianBlur", { stdDeviation: CFINISH.bloom.blur }));
+  defs.appendChild(bloom);
+  const mask = el("mask", { id: "c-reveal", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 800, height: 800 });
+  const reveal = el("path", {
+    d: cD, fill: "none", stroke: "#fff",
+    "stroke-width": CONFIG.cWidth + 2, "stroke-linecap": "round", "stroke-linejoin": "round",
+  });
+  mask.appendChild(reveal);
+  defs.appendChild(mask);
+  return { defs, reveal };
+}
+
 /* ─────────────────────────── render + animación ──────────────────────── */
 let timers = [];
 function render() {
   timers.forEach(clearTimeout); timers = [];
   svg.classList.remove("settle-on");
-  while (svg.lastChild && svg.lastChild.tagName !== "DEFS") svg.lastChild.remove();
+  const baseDefs = svg.querySelector("defs");
+  while (svg.lastChild && svg.lastChild !== baseDefs) svg.lastChild.remove();
 
   const { segs, outer } = buildGeometry(CONFIG.geometry);
   const T = CONFIG.timing;
@@ -331,20 +460,27 @@ function render() {
   });
   svg.appendChild(cGlowGroup);
 
-  // la C como UN solo path: el vértice en C4 es un join redondeado real
-  // (nada de caps semicirculares montadas) y arranca ~6px antes de B4,
-  // sobre la última verde, para tragar su remate redondo: la unión se lee
-  // como un engrosamiento suave de la línea, no como dos caps chocando
+  // la C es una barra: contorno con marco de inglete + terminales circulares,
+  // dos regiones de gradiente (bisectriz) y una máscara que traza el path
+  // central para conservar la animación de revelado.
   const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
-  // arranca exacto en B4: el cap dorado (r≈5) cubre de sobra el remate
-  // verde (r≈2) — sin solape no hay desborde por los lados
   const cD = `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
-  const cPath = el("path", {
-    class: "seg", d: cD,
-    stroke: CONFIG.colors.c, "stroke-width": CONFIG.cWidth, opacity: 1,
+  const band = buildCBand(segs, CONFIG.cWidth, CFINISH.cornerCut);
+  const cDefs = buildCDefs(svg, band, cD);
+  svg.appendChild(cDefs.defs);
+  const cGroup = el("g", { class: "c-band" });
+  if (!reduced) cGroup.setAttribute("mask", "url(#c-reveal)");
+  [1, 2].forEach(k => {
+    const g = el("g", { "clip-path": `url(#c-clip-${k})` });
+    g.appendChild(el("path", { d: band.outline, fill: `url(#c-perp-${k})` }));
+    g.appendChild(el("path", { d: band.outline, fill: `url(#c-tint-${k})` }));
+    cGroup.appendChild(g);
   });
-  svg.appendChild(cPath);
-  cGlowGroup.appendChild(el("path", { d: cD, "stroke-width": CONFIG.cWidth + 6, opacity: .5 }));
+  svg.appendChild(cGroup);
+  cGlowGroup.appendChild(el("path", {
+    d: cD, stroke: CFINISH.bloom.color, filter: "url(#c-bloom)",
+    "stroke-width": CONFIG.cWidth + CFINISH.bloom.width, opacity: CFINISH.bloom.opacity,
+  }));
 
   // "calor" de formación: cada línea nace más intensa y baja al chocar con su
   // nodo; las 2 últimas no (quedan en plena intensidad: son la C)
@@ -495,17 +631,18 @@ function render() {
   // trazado de la C: un solo trazo continuo, y el glow aparece con ella
   // (antes el glow preexistía visible desde el arranque)
   if (!reduced) {
-    const cLen = cPath.getTotalLength();
+    const reveal = cDefs.reveal;
+    const cLen = reveal.getTotalLength();
     const cWin = segDur(cIdx) + segDur(cIdx + 1);
-    cPath.setAttribute("stroke-dasharray", cLen);
-    cPath.setAttribute("stroke-dashoffset", cLen);
-    anims.push(cPath.animate(
+    reveal.setAttribute("stroke-dasharray", cLen);
+    reveal.setAttribute("stroke-dashoffset", cLen);
+    anims.push(reveal.animate(
       [{ strokeDashoffset: cLen }, { strokeDashoffset: 0 }],
       { duration: cWin, delay: segDelay(cIdx), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
     ));
     timers.push(setTimeout(() => {
-      cPath.removeAttribute("stroke-dasharray");
-      cPath.removeAttribute("stroke-dashoffset");
+      reveal.removeAttribute("stroke-dasharray");
+      reveal.removeAttribute("stroke-dashoffset");
     }, segDelay(cIdx) + cWin + 80));
     cGlowGroup.style.opacity = 0;
     anims.push(cGlowGroup.animate(
