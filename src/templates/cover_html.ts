@@ -1,5 +1,5 @@
 /**
- * COVER: botones flotantes, cursor, barra de progreso, loader + fractal y nav
+ * COVER: botones flotantes, cursor, barra de progreso, loader + mark animado y nav
  * lateral. Los .nav-dot se generan desde SALAS (la numeración/labels viven en
  * src/cv/salas.ts); en runtime render.ts los vuelve a regenerar (idempotente).
  */
@@ -34,9 +34,11 @@ const COVER_TOP = `<button id="btn-lang" type="button" aria-label="Switch langua
 <!-- ── BARRA DE PROGRESO ───────────────────────────── -->
 <div id="progress"></div>
 
-<!-- ── FRACTAL LOGO / LOADER ───────────────────────── -->
-<!-- Este canvas es tanto el loader como el logo permanente -->
-<canvas id="fractal-logo"></canvas>
+<!-- ── MARK DE MARCA / LOADER ─────────────────────── -->
+<!-- SVG animado (src/ts/brand/logoAnim.js): loader y logo permanente.
+     Es un botón (Ir al inicio) habilitado al minimizarse; en el loader está
+     deshabilitado y no es focusable. -->
+<button id="brand-logo" type="button" aria-label="Ir al inicio" disabled></button>
 
 <div id="loader">
   <div id="intro-block">

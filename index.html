@@ -208,7 +208,7 @@
 ║  · .room-content → contenido principal                           ║
 ║                                                                   ║
 ║  FRACTAL LOGO                                                     ║
-║  Koch snowflake animado en canvas #fractal-logo                  ║
+║  Mark animado de marca (SVG) #brand-logo                         ║
 ║  Durante carga: centrado, grande (120px), girando                ║
 ║  Después: esquina sup-izq, 42px, estático con hover glow         ║
 ║  Transición controlada por JS: minimizeLogo()                    ║
@@ -314,12 +314,18 @@ body {
 }
 #loader.hidden { opacity:0; visibility:hidden; }
 
-#fractal-logo {
-  /* comienza centrado en el loader; se sube para dejar espacio al texto */
+#brand-logo {
+  /* loader: mark animado grande, centrado verticalmente sobre el texto */
+  --brand-size: min(50vmin, 440px);
   position:fixed;
   z-index:1001;
-  width:120px; height:120px;
-  top:calc(50vh - 250px) !important;   /* fractal más arriba: deja espacio al texto del intro (fix superposición) */
+  width:var(--brand-size);
+  height:var(--brand-size);
+  top:calc(50vh - var(--brand-size));
+  left:50%;
+  transform:translateX(-50%);
+  border:0; padding:0; margin:0; background:none; font:inherit; color:inherit;
+  appearance:none;
   transition:
     top    1s cubic-bezier(.16,1,.3,1),
     left   1s cubic-bezier(.16,1,.3,1),
@@ -327,20 +333,38 @@ body {
     height 1s cubic-bezier(.16,1,.3,1),
     transform 1s cubic-bezier(.16,1,.3,1),
     filter 1s;
-  /* el left lo define JS (centrado horizontal) */
+  pointer-events:none;
+}
+#brand-logo svg { display:block; width:100%; height:100%; overflow:visible; }
+#brand-logo:focus-visible { outline:2px solid var(--teal); outline-offset:4px; border-radius:8px; }
+#brand-logo .brand-mini { display:none; }
+#brand-logo.minimized {
+  top:18px;
+  left:22px;
+  width:42px;
+  height:42px;
+  transform:none;
+  filter:brightness(.9);
+  pointer-events:auto;
   cursor:pointer;
 }
-#fractal-logo.minimized {
-  top:18px !important;
-  left:22px !important;
-  width:42px !important;
-  height:42px !important;
-  transform:none !important;
-  filter:brightness(.8);
-}
-#fractal-logo.minimized:hover {
-  filter:brightness(1.3) drop-shadow(0 0 6px var(--teal));
-}
+#brand-logo.minimized .brand-full { display:none; }
+#brand-logo.minimized .brand-mini { display:block; }
+#brand-logo.minimized:hover { filter:brightness(1.3) drop-shadow(0 0 6px var(--teal)); }
+
+/* clases internas del SVG animado (scopeadas al logo) */
+#brand-logo .seg { fill:none; stroke-linecap:round; stroke-linejoin:round; }
+#brand-logo .ghost { fill:none; stroke:var(--gold); stroke-width:1.4; stroke-dasharray:3 9; stroke-linecap:round; opacity:0; }
+#brand-logo .constellation, #brand-logo .sky { opacity:0; animation:brandFadeIn .8s ease forwards; }
+#brand-logo .star { transform-box:fill-box; transform-origin:center; }
+#brand-logo .star .core { animation:brandTwinkle var(--dc,2.7s) ease-in-out infinite; }
+#brand-logo .star .glow { opacity:.16; filter:url(#soft2); animation:brandTwinkle var(--dg,3.4s) ease-in-out infinite; }
+#brand-logo .ambient { animation:brandTwinkle var(--da,4.2s) ease-in-out infinite; }
+#brand-logo .c-glow { fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft); }
+#brand-logo .settle-on .c-glow { animation:brandBreathe 3.6s ease-in-out infinite; }
+@keyframes brandTwinkle { 0%,100%{opacity:var(--lo,.4)} 50%{opacity:var(--hi,1)} }
+@keyframes brandFadeIn { to { opacity:1 } }
+@keyframes brandBreathe { 0%,100%{opacity:.5} 50%{opacity:.75} }
 
 /* Introducción: frase rotando debajo del fractal (dentro del loader) */
 #intro-block {
@@ -355,7 +379,10 @@ body {
 /* Pantallas bajas: vuelve a los valores originales para que el fractal no se
    salga del viewport ni el texto quede cortado. */
 @media (max-height: 600px) {
-  #fractal-logo { top:calc(50vh - 200px) !important; }
+  #brand-logo {
+    --brand-size: min(46vmin, 320px);
+    top:calc(50vh - var(--brand-size));
+  }
   #intro-block { margin-top:190px; }
 }
 /* Una sola línea que rota el texto en la misma posición; altura reservada para no brincar */
@@ -1050,9 +1077,11 @@ body {
 <!-- ── BARRA DE PROGRESO ───────────────────────────── -->
 <div id="progress"></div>
 
-<!-- ── FRACTAL LOGO / LOADER ───────────────────────── -->
-<!-- Este canvas es tanto el loader como el logo permanente -->
-<canvas id="fractal-logo"></canvas>
+<!-- ── MARK DE MARCA / LOADER ─────────────────────── -->
+<!-- SVG animado (src/ts/brand/logoAnim.js): loader y logo permanente.
+     Es un botón (Ir al inicio) habilitado al minimizarse; en el loader está
+     deshabilitado y no es focusable. -->
+<button id="brand-logo" type="button" aria-label="Ir al inicio" disabled></button>
 
 <div id="loader">
   <div id="intro-block">

@@ -1,0 +1,39 @@
+/**
+ * logoAnim.js — GENERADO por tools/brand/sync-logo-anim.mjs.
+ * Fuente: proposals/logo-triangulo-espiral/aurea7.html (acabado #55).
+ * NO EDITAR A MANO: editá la animación y corré `npm run brand:sync`.
+ *
+ * El módulo monta dos SVG dentro de #brand-logo:
+ *   · .brand-full  — animación completa (loader)
+ *   · .brand-mini  — favicon simplificado (estado .minimized)
+ * El CSS de las clases (.seg, .star, .c-glow, keyframes) vive en el head
+ * del sitio, scopeado a #brand-logo.
+ */
+
+export function mountBrandLogo(host) {
+  if (!host || host.dataset.mounted === "1") return;
+  host.dataset.mounted = "1";
+
+  const NSU = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs = {}) => {
+    const n = document.createElementNS(NSU, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  };
+
+  const svg = mk("svg", {
+    class: "brand-full",
+    viewBox: "0 0 800 800",
+    "aria-hidden": "true",
+  });
+  const baseDefs = mk("defs");
+  const f1 = mk("filter", { id: "soft", x: "-60%", y: "-60%", width: "220%", height: "220%" });
+  f1.appendChild(mk("feGaussianBlur", { stdDeviation: "8" }));
+  const f2 = mk("filter", { id: "soft2", x: "-80%", y: "-80%", width: "260%", height: "260%" });
+  f2.appendChild(mk("feGaussianBlur", { stdDeviation: "3.5" }));
+  baseDefs.appendChild(f1);
+  baseDefs.appendChild(f2);
+  svg.appendChild(baseDefs);
+  host.appendChild(svg);
+
+
