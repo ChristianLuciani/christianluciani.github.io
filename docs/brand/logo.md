@@ -286,3 +286,60 @@ no embede el metadato pHYs — al importarlo en InDesign/Illustrator setear
 QA visual de los exports: Chrome headless (`--headless --screenshot
 --virtual-time-budget=N --window-size=WxH`), el mismo mecanismo que usó la
 sesión de origen (PR #53) — reutilizado aquí para los PNG.
+---
+
+## 11. Movimiento (instrumento) — issue #67, herencia de #55/#61
+
+El cronograma de la animación vive paramétrico en `CONFIG.timing` de
+`proposals/logo-triangulo-espiral/aurea7.html`. Este apartado documenta el
+**instrumento** que lo mide y el estado medido del artefacto; el pulido visual
+pendiente (track B) está en el issue **#67**.
+
+### Hooks que publica el artefacto (no cambian el render)
+
+| Hook | Qué publica | Para qué |
+|---|---|---|
+| `svg.dataset.schedule` | `delays[]` / `durs[]` — el cronograma declarado, el array del ADR-lite de #55 | perfil del arranque y ventana de trazado, **sin inferirlos** del DOM |
+| `svg.dataset.c` | anclajes de la C (vértice y punta) | encuadrar la medición: desde el acabado (#64) la C es una **banda con máscara**, no un `path.seg` |
+| `g.clock` | un grupo vacío cuya animación dura exactamente el cronograma | el fin del cronograma, y con él la entrada del settle |
+| agenda `jobs`/`tick` | — | los efectos posteriores (limpiar dash, retirar líneas de calor, entrar al settle) corren sobre el **reloj de animación**, no `setTimeout`: así la pieza se puede congelar fotograma a fotograma |
+
+### Cómo se mide
+
+`npm run logo:motion` (o `node tools/logo/verify-motion.mjs`) — carga la página en
+una sesión CDP, **congela** el estado con `pause` + `currentTime` (el presupuesto de
+tiempo virtual no gobierna las animaciones: medido) y mide:
+
+- **destello** — estructural (opacidad monótona, escala que no crece, curva sin
+  overshoot) + medido (la luz propia de la estrella y el glow fuera del trazo nunca
+  suben mientras se apaga);
+- **settle** — sin escalón a ±40 ms y la respiración efectivamente viva;
+- **arranque** — piso objetivo (tempo monótono, pico de concurrencia ≥2, primer
+  stagger ≤60% del final, extremos == `CONFIG`) + perfil reportado;
+- **autochequeos** — la estrella existe antes y no después, píxel brillante en el
+  settled, y la deriva del congelado (medida sobre el `currentTime` efectivo de
+  cada animación: al pausar, `startTime` queda en `null` y el reloj no sirve).
+
+Salida: **0** limpio · **1** violaciones · **2** no se pudo medir (sin Chrome, sin
+hooks, o plan demasiado grueso). La política (umbrales y veredicto) vive en
+`tools/logo/motion-analysis.mjs`, con **tests en CI**; la adquisición (CDP) necesita
+Chrome y queda fuera de CI (wiring: issue #59).
+
+### Estado medido del artefacto (track A, 2026-10-23)
+
+El artefacto conserva el pulido de #55 **sin aplicar** (track B, a ratificar por el
+operador). El gate lo reporta:
+
+```
+❌ el glow de la punta se agranda al apagarse (escala 1 → 1.3): el bloom era el destello
+❌ la curva de la punta (cubic-bezier(0.3, 1.4, 0.5, 1)) tiene overshoot
+❌ la respiración arranca en 0.5 y el trazo descansa en 0.28  (y lo mismo al terminar)
+❌ la respiración se aplica a ".settle-on .c-glow" y no al TRAZO
+❌ el glow no respira: 0.0000 entre settle+40ms y settle+900ms
+```
+
+Y el arranque medido: **pico 3 tramos trazando a la vez @940 ms · stagger
+110 → 235 ms (monótono) · 5/8/10 tramos aterrizados @1,0/1,5/2,0 s**.
+
+Rojo **por diseño**: es la evidencia de lo que el track B tiene que cerrar, no una
+falla del instrumento.
