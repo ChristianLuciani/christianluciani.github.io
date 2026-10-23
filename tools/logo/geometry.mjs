@@ -228,9 +228,11 @@ export function cPathD(segs) {
 }
 
 /* ── la C como BARRA con bisel (acabado ámbar→oro→luz) ──
-   Misma silueta y mismos centros que el trazo de ancho `width`: la barra se
-   construye como un contorno único (borde exterior → corte de punta → borde
-   interior → corte de base) con las esquinas REDONDEADAS con radio `corner`.
+   Mismos centros y ancho que el trazo de `width`, pero el contorno NO es
+   idéntico al del trazo anterior: el vértice pasa de join redondo a un
+   marco de inglete (más extendido) y las puntas pasan a terminal circular.
+   La barra se construye como un contorno único con las esquinas redondeadas
+   con radio `corner`.
    Los extremos libres (B y punta A) son cortes transversales planos —sin
    cap redondo, para que no lean como tubos— pero con las esquinas del corte
    suavizadas.
@@ -240,7 +242,7 @@ export function cPathD(segs) {
    El bisel se pinta con dos regiones recortadas por esa línea de inglete,
    cada una con su gradiente perpendicular real.
    La geometría de referencia (cPathD) no se toca. */
-export function cBand(segs, width, { corner = 2.2 } = {}) {
+export function cBand(segs, width, { corner = C_FINISH.corner } = {}) {
   const cIdx = segs.length - 2;
   const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
   const h = width / 2;
@@ -324,11 +326,8 @@ export function cBand(segs, width, { corner = 2.2 } = {}) {
   const L = 1200;
   const poly = (sx) => {
     const s = (sideB * sx) * L;
-    // solape 0.4: las dos mitades se pisan un pelo en la bisectriz para que
-    // el antialiasing no deje una línea clara en el vértice al rasterizar
-    const ox = -m.x * sideB * 0.4, oy = -m.y * sideB * 0.4;
-    const x0 = C.x - w.x * L + ox, y0 = C.y - w.y * L + oy;
-    const x1 = C.x + w.x * L + ox, y1 = C.y + w.y * L + oy;
+    const x0 = C.x - w.x * L, y0 = C.y - w.y * L;
+    const x1 = C.x + w.x * L, y1 = C.y + w.y * L;
     return `M ${x0} ${y0} L ${x1} ${y1} L ${x1 + m.x * s} ${y1 + m.y * s} L ${x0 + m.x * s} ${y0 + m.y * s} Z`;
   };
 

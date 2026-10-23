@@ -33,6 +33,9 @@ expande.
   en su nacimiento (B), oro de marca en el vértice y luz en la punta, con
   bisel transversal que le da volumen (ver §3.1). Todo el acabado vive en la
   familia del oro: el cuarto color suma calidez, no cambia de metal.
+  **La animación aprobada (#53) todavía dibuja la C plana**: este acabado es
+  el de los assets; espejarlo en la animación es trabajo de #55 y de #56 al
+  integrarla.
 - **Jerarquía** (operador, 2026-09-25): el ojo va primero al origen — la
   supernova gana +2pt de core y las estrellas grandes de las aristas (la
   punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
@@ -59,7 +62,8 @@ diseño aprobado, no un desvío.
 |---|---|---|
 | Teal (marca) | `#00c9c0` | punta del espiral (=`--teal` del sitio) |
 | Oro (firma) | `#c9a84c` | tipografía y ancla de marca (=`--gold`); el bisel de la C deriva de acá (§3.1) |
-| **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B), barrido cálido y bloom (valor en `cFinish.tint.amber`) |
+| **Ámbar (cuarto color)** | `#d99a2b` | nacimiento de la C (B) y barrido cálido (`cFinish.tint.amber`) |
+| Ámbar de bloom | `#dfa637` | bloom de la C sobre night (`cFinish.bloom`) |
 | Luz de bisel | `#fffbe6` | brillo del borde iluminado de la C (no es color de marca) |
 | Azul profundo | `#16324f` | nacimiento del espiral |
 | Night | `#050810` | fondo oscuro (=`--night`) |
@@ -72,8 +76,9 @@ La rampa del espiral interpola `#16324f → #00c9c0` (22 → 0 R, 50 → 201 G,
 ### 3.1 Acabado de la C — cuarto color y volumen
 
 La C se dibuja con `cBand()` (`geometry.mjs`) como una barra de ancho
-`cWidth` (misma silueta que el trazo anterior, mismos centros). Encima se
-aplican dos capas de gradiente:
+`cWidth`, con los mismos centros que el trazo anterior. El contorno **no**
+es idéntico: el vértice pasa de join redondo a marco de inglete y las puntas
+a terminal circular. Encima se aplican dos capas de gradiente:
 
 1. **Bisel transversal** (`cFinish.perp`, por tramo): eje perpendicular a la
    línea — borde superior iluminado `#fffbe6`, centro oro `#ddb04a`, borde
@@ -146,7 +151,10 @@ regiones separadas por la bisectriz del vértice.
 **Verificación** (tests automáticos, `npx vitest run tools/logo/`):
 ancla C ≡ fórmula base a 7 generaciones (0.0000 px), ratios internos = φ
 exacto por generación, twist = 3°×φ, determinismo, y fidelidad DOM
-(`node tools/logo/verify-dom-fidelity.mjs`).
+(`node tools/logo/verify-dom-fidelity.mjs`). El gate de fidelidad compara la
+**geometría de referencia** (centros, segmentos, cielo y constelación) contra
+el DOM aprobado; **no** cubre el contorno nuevo de la barra (marco y
+terminales), que se verifica con los tests de `cBand`.
 
 ## 5. Tipografía
 
@@ -171,7 +179,8 @@ técnica.
    + 21 nodos); congeladas en pico. En night, en los tres vértices de la C
    (B, C, A) se dibuja el halo pero no el núcleo (la barra los cubre y el
    núcleo asomaba en los bordes); en light no se dibujan halos (se leían
-   como manchas grises, ver §3.1).
+   como manchas grises, ver §3.1) y los núcleos de B/C/A se omiten en ambas
+   superficies.
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
 4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
    transversal + barrido longitudinal, contorno con marco redondeado y

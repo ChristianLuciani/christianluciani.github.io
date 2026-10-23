@@ -203,7 +203,7 @@ const layerC = (g, cfg, { surface = "night" } = {}) => {
   const rows = [];
   if (surface === "night") { // bloom cálido del fondo night (nunca sobre claro)
     const d = cPathD(g.segs).replace(/\s+/g, " ");
-    rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" filter="url(#c-bloom)"/>`);
+    rows.push(`    <path d="${d}" stroke="${f.bloom.color}" stroke-width="${n2(cfg.cWidth + f.bloom.width)}" opacity="${n4(f.bloom.opacity)}" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#c-bloom)"/>`);
   }
   const filter = surface === "light" ? ' filter="url(#c-shadow)"' : "";
   rows.push(`  <g id="logo-c-triespiral" data-name="C TriSpiral"${filter}>`);
