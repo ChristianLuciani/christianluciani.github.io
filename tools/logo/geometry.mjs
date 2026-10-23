@@ -10,6 +10,36 @@
  * (compara contra el DOM real renderizado por Chrome).
  */
 
+/* Acabado de la C (cuarto color de marca: ámbar dorado).
+   La C deja de ser un trazo plano de oro: se dibuja como una barra con
+   bisel transversal (gradiente perpendicular al tramo: sombra abajo, luz
+   arriba) y un barrido de color a lo largo de la firma (ámbar cálido en B
+   → oro en el vértice C → luz en la punta A). Es tratamiento de render: la
+   geometría (cPathD, centros, anchos) no cambia.
+   TODO el acabado vive en la familia del oro: el cuarto color suma
+   calidez, no reemplaza el metal (feedback del operador, 2026-10-22:
+   "el cobre es muy oscuro, la idea es oro").
+   `bloom` es el halo del fondo oscuro; sobre superficies claras NO se usa
+   (el oro translúcido sobre blanco vira a verdoso) y en su lugar se aplica
+   `shadow`: una sombra cálida neutra. */
+export const C_FINISH = {
+  perp: [ // gradiente a través del grosor: borde iluminado → borde en sombra
+    { offset: 0, color: "#fffbe6" },
+    { offset: 0.16, color: "#f8e4a8" },
+    { offset: 0.5, color: "#ddb04a" },
+    { offset: 0.84, color: "#b1852c" },
+    { offset: 1, color: "#8f661c" }, // sombra: oro profundo, nunca marrón
+  ],
+  tint: { // barrido a lo largo de la C (se superpone al bisel)
+    amber: "#d99a2b", amberOpacity: 0.5,   // en B: la firma nace ámbar
+    light: "#fffbe6", lightOpacity: 0.32,  // en A: la punta recibe la luz
+  },
+  bloom: { color: "#dfa637", opacity: 0.28, width: 6, blur: 8 },
+  shadow: { color: "#6b5218", opacity: 0.2, dy: 2.2, blur: 2.4 },
+  lightWordmark: "#8a5a1c", // tipografía del lockup sobre superficie clara
+  cornerCut: 2.4, // recorte de cada lado de la esquina (se une con quadratic; no es un radio)
+};
+
 /* CONFIG de aurea7.html (base v10 = misma sin mode/galaxy/timing fast) */
 export const CONFIG_AUREA = {
   geometry: {
@@ -34,6 +64,7 @@ export const CONFIG_AUREA = {
     spiralTo: "#00c9c0",
     c: "#c9a84c",
   },
+  cFinish: C_FINISH,
   constellation: {
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,
@@ -65,6 +96,7 @@ export const CONFIG_BASE = {
     spiralTo: "#00c9c0",
     c: "#c9a84c",
   },
+  cFinish: C_FINISH,
   constellation: {
     palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
     dissolve: 680,
@@ -194,6 +226,129 @@ export function cPathD(segs) {
   const cIdx = segs.length - 2;
   const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
   return `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
+}
+
+/* ── la C como BARRA con bisel (acabado ámbar→oro→luz) ──
+   Mismos centros y ancho que el trazo de `width`, pero el contorno NO es
+   idéntico al del trazo anterior: el vértice pasa de join redondo a un
+   marco de inglete (más extendido) y las puntas pasan a terminal circular.
+   La barra se construye como un contorno único con las esquinas redondeadas
+   con recorte `cornerCut` por lado (quadratic, no radio de arco).
+   Los extremos libres (B y punta A) son cortes transversales planos —sin
+   cap redondo, para que no lean como tubos— pero con las esquinas del corte
+   suavizadas.
+   El vértice C NO tiene tapa: los dos tramos se cortan en la MISMA línea de
+   inglete (intersección de bordes exterior Xo e interior Xi) y el contorno
+   resultante se redondea; no hay hueco, solape ni parche.
+   El bisel se pinta con dos regiones recortadas por esa línea de inglete,
+   cada una con su gradiente perpendicular real.
+   La geometría de referencia (cPathD) no se toca. */
+export function cBand(segs, width, { cornerCut = C_FINISH.cornerCut } = {}) {
+  const cIdx = segs.length - 2;
+  const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
+  const h = width / 2;
+  const unit = (p, q) => {
+    const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
+    return { x: dx / len, y: dy / len };
+  };
+  /* normal IZQUIERDA del sentido de avance: consistente para construir el
+     contorno (la normal "arriba" cambia de lado entre tramos y rompía el
+     vértice). Para el bisel se usa `normalUp` aparte. */
+  const normal = (p, q) => {
+    const u = unit(p, q);
+    return { x: -u.y, y: u.x };
+  };
+  const normalUp = (p, q) => {
+    const n = normal(p, q);
+    return n.y > 0 ? { x: -n.x, y: -n.y } : n; // hacia arriba (y−)
+  };
+  const offsetLineIntersection = (p1, u1, p2, u2) => {
+    const cross = (a, b) => a.x * b.y - a.y * b.x;
+    const r = { x: p2.x - p1.x, y: p2.y - p1.y };
+    const den = cross(u1, u2);
+    const t = Math.abs(den) < 1e-9 ? 0 : cross(r, u2) / den;
+    return { x: p1.x + u1.x * t, y: p1.y + u1.y * t };
+  };
+  const n1 = normal(B, C), n2 = normal(C, A);
+  const up1 = normalUp(B, C), up2 = normalUp(C, A);
+  const u1 = unit(B, C), u2 = unit(C, A);
+  // inglete: los dos bordes (exterior +h, interior −h) de ambos tramos
+  const Xo = offsetLineIntersection(
+    { x: B.x + n1.x * h, y: B.y + n1.y * h }, u1,
+    { x: C.x + n2.x * h, y: C.y + n2.y * h }, u2
+  );
+  const Xi = offsetLineIntersection(
+    { x: B.x - n1.x * h, y: B.y - n1.y * h }, u1,
+    { x: C.x - n2.x * h, y: C.y - n2.y * h }, u2
+  );
+  const BP = { x: B.x + n1.x * h, y: B.y + n1.y * h };
+  const BM = { x: B.x - n1.x * h, y: B.y - n1.y * h };
+  const AP = { x: A.x + n2.x * h, y: A.y + n2.y * h };
+  const AM = { x: A.x - n2.x * h, y: A.y - n2.y * h };
+
+  /* contorno: B+ → (inglete redondeado en Xo) → A+ → TERMINAL CIRCULAR en A
+     → A− → (inglete redondeado en Xi) → B− → TERMINAL CIRCULAR en B.
+     Los extremos libres son semicírculos de radio h (cap redondo) fundidos
+     al contorno: leen como terminal circular visto desde el plano, no como
+     una cara de tubo. El vértice es un marco de cuadro: inglete con las
+     esquinas redondeadas. */
+  const cut = (P, Aprev, Bnext, r) => {
+    const uIn = unit(Aprev, P), uOut = unit(P, Bnext);
+    return {
+      p1: { x: P.x - uIn.x * r, y: P.y - uIn.y * r },
+      p2: { x: P.x + uOut.x * r, y: P.y + uOut.y * r },
+      P,
+    };
+  };
+  const xo = cut(Xo, BP, AP, cornerCut);
+  const xi = cut(Xi, AM, BM, cornerCut);
+  /* semicírculos: las dos puntas usan sweep 0 para abombar HACIA AFUERA.
+     En B el recorrido del contorno llega por el lado interior (no por el
+     exterior como en A), así que el mismo sweep produce el bulbo convexo;
+     con sweep 1 el arco se invertía y "comía" la barra (operador, 2026-10-22). */
+  const outline = `M ${BP.x} ${BP.y} L ${xo.p1.x} ${xo.p1.y} Q ${Xo.x} ${Xo.y} ${xo.p2.x} ${xo.p2.y} `
+    + `L ${AP.x} ${AP.y} A ${h} ${h} 0 0 0 ${AM.x} ${AM.y} `
+    + `L ${xi.p1.x} ${xi.p1.y} Q ${Xi.x} ${Xi.y} ${xi.p2.x} ${xi.p2.y} `
+    + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 0 ${BP.x} ${BP.y} Z`;
+
+  /* clips: los dos brazos se separan por la BISECTRIZ del vértice C: es un
+     corte estable en el marco (cada brazo queda de un lado) y el bisel de
+     cada mitad usa el eje perpendicular de su tramo. w es la bisectriz
+     (apunta a la abertura de la V) y m su normal; cada clip es un semiplano
+     a un lado de w. */
+  const uB = unit(C, B), uA = unit(C, A);
+  const wsum = { x: uB.x + uA.x, y: uB.y + uA.y };
+  const wlen = Math.hypot(wsum.x, wsum.y);
+  const w = { x: wsum.x / wlen, y: wsum.y / wlen };
+  const m = { x: -w.y, y: w.x };
+  const sideB = Math.sign(m.x * (B.x - C.x) + m.y * (B.y - C.y)) || 1;
+  // L acotado al lienzo (800): con coordenadas gigantes Chrome pierde
+  // precisión en el clip al rasterizar a 4096 y abre una muesca en el vértice.
+  const L = 1200;
+  const poly = (sx) => {
+    const s = (sideB * sx) * L;
+    const x0 = C.x - w.x * L, y0 = C.y - w.y * L;
+    const x1 = C.x + w.x * L, y1 = C.y + w.y * L;
+    return `M ${x0} ${y0} L ${x1} ${y1} L ${x1 + m.x * s} ${y1 + m.y * s} L ${x0 + m.x * s} ${y0 + m.y * s} Z`;
+  };
+
+  return {
+    B, C, A, h, cornerCut,
+    normal,
+    outline,
+    clip: [poly(1), poly(-1)],
+    miter: { Xo, Xi },
+    ends: [{ p: B, role: "base" }, { p: A, role: "tip" }], // terminales circulares
+    // eje del bisel: perpendicular REAL a cada tramo, del lado iluminado (arriba)
+    perp: [
+      [{ x: B.x + up1.x * h, y: B.y + up1.y * h }, { x: B.x - up1.x * h, y: B.y - up1.y * h }],
+      [{ x: A.x + up2.x * h, y: A.y + up2.y * h }, { x: A.x - up2.x * h, y: A.y - up2.y * h }],
+    ],
+    tint: [
+      [BP, Xo],
+      [Xo, AP],
+    ],
+  };
 }
 
 /* ── cielo (verbatim: aurea7.html “sutil” / index.html “v10”) ──

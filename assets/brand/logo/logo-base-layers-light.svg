@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- GENERADO por tools/logo/generate-logo.mjs — geometry.mjs ≡ DOM aprobado (PR #53). NO EDITAR A MANO -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" width="800" height="800" role="img" aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
+  <title>Christian Luciani — espiral de conocimiento</title>
+  <defs>
+    <radialGradient id="halo-star" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.28"/>
+      <stop offset="30%" stop-color="currentColor" stop-opacity="0.09"/>
+      <stop offset="65%" stop-color="currentColor" stop-opacity="0.02"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="halo-nova" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="currentColor" stop-opacity="0.16"/>
+      <stop offset="40%" stop-color="currentColor" stop-opacity="0.05"/>
+      <stop offset="75%" stop-color="currentColor" stop-opacity="0.01"/>
+      <stop offset="100%" stop-color="currentColor" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <defs>
+    <linearGradient id="c-perp-1" gradientUnits="userSpaceOnUse" x1="515.71" y1="565.45" x2="513.92" y2="575.29"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
+    <linearGradient id="c-perp-2" gradientUnits="userSpaceOnUse" x1="463.36" y1="170.09" x2="471.27" y2="176.21"><stop offset="0%" stop-color="#fffbe6"/><stop offset="16%" stop-color="#f8e4a8"/><stop offset="50%" stop-color="#ddb04a"/><stop offset="84%" stop-color="#b1852c"/><stop offset="100%" stop-color="#8f661c"/></linearGradient>
+    <linearGradient id="c-tint-1" gradientUnits="userSpaceOnUse" x1="515.71" y1="565.45" x2="212.7" y2="510.29">
+      <stop offset="0%" stop-color="#d99a2b" stop-opacity="0.5"/>
+      <stop offset="100%" stop-color="#d99a2b" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="c-tint-2" gradientUnits="userSpaceOnUse" x1="212.7" y1="510.29" x2="471.27" y2="176.21">
+      <stop offset="0%" stop-color="#fffbe6" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#fffbe6" stop-opacity="0.32"/>
+    </linearGradient>
+    <clipPath id="c-clip-1"><path d="M -916.795330654322 943.2410881862143 L 1324.2108703201995 84.23514688327901 L 1753.7138409716672 1204.7382473705397 L -487.2923600028544 2063.744188673475 Z"/></clipPath>
+    <clipPath id="c-clip-2"><path d="M -916.795330654322 943.2410881862143 L 1324.2108703201995 84.23514688327901 L 894.7078996687319 -1036.2679536039818 L -1346.2983013057897 -177.26201230104652 Z"/></clipPath>
+
+    <filter id="c-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="2.2" stdDeviation="2.4" flood-color="#6b5218" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g id="logo-star-0" data-name="star 0">
+    <circle cx="400" cy="418" r="6.2" fill="#ffb3a0" opacity="1"/>
+  </g>
+  <g id="logo-star-1" data-name="star 1">
+    <circle cx="430.1" cy="440.68" r="1.27" fill="#ff6f5e" opacity="0.79"/>
+  </g>
+  <g id="logo-star-2" data-name="star 2">
+    <circle cx="367.77" cy="446.68" r="2.32" fill="#ff6f5e" opacity="0.92"/>
+  </g>
+  <g id="logo-star-3" data-name="star 3">
+    <circle cx="399.71" cy="368.62" r="1.86" fill="#ff6f5e" opacity="0.64"/>
+  </g>
+  <g id="logo-star-4" data-name="star 4">
+    <circle cx="442.66" cy="455.09" r="1.41" fill="#ffb49e" opacity="0.76"/>
+  </g>
+  <g id="logo-star-5" data-name="star 5">
+    <circle cx="348.78" cy="457.54" r="2.46" fill="#ffb49e" opacity="0.89"/>
+  </g>
+  <g id="logo-star-6" data-name="star 6">
+    <circle cx="404.74" cy="344.08" r="2.61" fill="#ffb49e" opacity="1"/>
+  </g>
+  <g id="logo-star-7" data-name="star 7">
+    <circle cx="459.96" cy="477.96" r="2.32" fill="#ffb49e" opacity="1"/>
+  </g>
+  <g id="logo-star-8" data-name="star 8">
+    <circle cx="319.22" cy="471.81" r="2.97" fill="#f6d7c4" opacity="1"/>
+  </g>
+  <g id="logo-star-9" data-name="star 9">
+    <circle cx="414.82" cy="307.88" r="2.14" fill="#f6d7c4" opacity="0.58"/>
+  </g>
+  <g id="logo-star-10" data-name="star 10">
+    <circle cx="483.44" cy="513.99" r="1.68" fill="#f6d7c4" opacity="0.7"/>
+  </g>
+  <g id="logo-star-11" data-name="star 11">
+    <circle cx="273.49" cy="490.06" r="1.23" fill="#f6d7c4" opacity="0.82"/>
+  </g>
+  <g id="logo-star-12" data-name="star 12">
+    <circle cx="433.7" cy="254.78" r="2.27" fill="#cfe0ff" opacity="0.95"/>
+  </g>
+  <g id="logo-star-13" data-name="star 13">
+  </g>
+  <g id="logo-star-14" data-name="star 14">
+  </g>
+  <g id="logo-star-15" data-name="star 15">
+  </g>
+  <g id="logo-spiral" data-name="Spiral" stroke-linecap="round" fill="none">
+      <line x1="400" y1="418" x2="430.1" y2="440.68" stroke="rgb(22,50,79)" stroke-width="2.2" opacity="0.1"/>
+      <line x1="430.1" y1="440.68" x2="367.77" y2="446.68" stroke="rgb(20,63,88)" stroke-width="2.3667" opacity="0.1517"/>
+      <line x1="367.77" y1="446.68" x2="399.71" y2="368.62" stroke="rgb(18,75,98)" stroke-width="2.5333" opacity="0.2033"/>
+      <line x1="399.71" y1="368.62" x2="442.66" y2="455.09" stroke="rgb(17,88,107)" stroke-width="2.7" opacity="0.255"/>
+      <line x1="442.66" y1="455.09" x2="348.78" y2="457.54" stroke="rgb(15,100,117)" stroke-width="2.8667" opacity="0.3067"/>
+      <line x1="348.78" y1="457.54" x2="404.74" y2="344.08" stroke="rgb(13,113,126)" stroke-width="3.0333" opacity="0.3583"/>
+      <line x1="404.74" y1="344.08" x2="459.96" y2="477.96" stroke="rgb(11,126,136)" stroke-width="3.2" opacity="0.41"/>
+      <line x1="459.96" y1="477.96" x2="319.22" y2="471.81" stroke="rgb(9,138,145)" stroke-width="3.3667" opacity="0.4617"/>
+      <line x1="319.22" y1="471.81" x2="414.82" y2="307.88" stroke="rgb(7,151,154)" stroke-width="3.5333" opacity="0.5133"/>
+      <line x1="414.82" y1="307.88" x2="483.44" y2="513.99" stroke="rgb(6,163,164)" stroke-width="3.7" opacity="0.565"/>
+      <line x1="483.44" y1="513.99" x2="273.49" y2="490.06" stroke="rgb(4,176,173)" stroke-width="3.8667" opacity="0.6167"/>
+      <line x1="273.49" y1="490.06" x2="433.7" y2="254.78" stroke="rgb(2,188,183)" stroke-width="4.0333" opacity="0.6683"/>
+      <line x1="433.7" y1="254.78" x2="514.82" y2="570.37" stroke="rgb(0,201,192)" stroke-width="4.2" opacity="0.72"/>
+  </g>
+  <g id="logo-c-triespiral" data-name="C TriSpiral" filter="url(#c-shadow)">
+    <g clip-path="url(#c-clip-1)">
+      <path d="M 515.7131218803206 565.4490710381966 L 215.05855346880753 510.72209749170935 Q 212.69735213034346 510.29229725993247 214.16629953463902 508.394352707683 L 471.26878234057676 176.2066547789452 A 5 5 0 0 0 463.36068003953744 170.08604059438036 L 196.18713493982975 515.2859932573114 Q 194.71818753553418 517.1839378095608 197.07938887399825 517.6137380413377 L 513.9222875812502 575.2874099484635 A 5 5 0 0 0 515.7131218803206 565.4490710381966 Z" fill="url(#c-perp-1)"/>
+      <path d="M 515.7131218803206 565.4490710381966 L 215.05855346880753 510.72209749170935 Q 212.69735213034346 510.29229725993247 214.16629953463902 508.394352707683 L 471.26878234057676 176.2066547789452 A 5 5 0 0 0 463.36068003953744 170.08604059438036 L 196.18713493982975 515.2859932573114 Q 194.71818753553418 517.1839378095608 197.07938887399825 517.6137380413377 L 513.9222875812502 575.2874099484635 A 5 5 0 0 0 515.7131218803206 565.4490710381966 Z" fill="url(#c-tint-1)"/>
+    </g>
+    <g clip-path="url(#c-clip-2)">
+      <path d="M 515.7131218803206 565.4490710381966 L 215.05855346880753 510.72209749170935 Q 212.69735213034346 510.29229725993247 214.16629953463902 508.394352707683 L 471.26878234057676 176.2066547789452 A 5 5 0 0 0 463.36068003953744 170.08604059438036 L 196.18713493982975 515.2859932573114 Q 194.71818753553418 517.1839378095608 197.07938887399825 517.6137380413377 L 513.9222875812502 575.2874099484635 A 5 5 0 0 0 515.7131218803206 565.4490710381966 Z" fill="url(#c-perp-2)"/>
+      <path d="M 515.7131218803206 565.4490710381966 L 215.05855346880753 510.72209749170935 Q 212.69735213034346 510.29229725993247 214.16629953463902 508.394352707683 L 471.26878234057676 176.2066547789452 A 5 5 0 0 0 463.36068003953744 170.08604059438036 L 196.18713493982975 515.2859932573114 Q 194.71818753553418 517.1839378095608 197.07938887399825 517.6137380413377 L 513.9222875812502 575.2874099484635 A 5 5 0 0 0 515.7131218803206 565.4490710381966 Z" fill="url(#c-tint-2)"/>
+    </g>
+  </g>
+
+</svg>

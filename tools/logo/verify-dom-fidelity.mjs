@@ -24,8 +24,8 @@ import {
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CHROME_CANDIDATES = [
+  process.env.CHROME_PATH, // override explícito (útil en CI/sandbox: wrapper con flags)
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  process.env.CHROME_PATH,
 ].filter(Boolean);
 
 const round = (n) => Math.round(n * 100) / 100;
@@ -44,7 +44,7 @@ function dumpDom(chrome, file, { reduced = false } = {}) {
   if (reduced) args.push("--force-prefers-reduced-motion");
   return execFileSync(chrome, args, {
     encoding: "utf8", maxBuffer: 64 * 1024 * 1024,
-    stdio: ["ignore", "pipe", "ignore"],
+    stdio: ["ignore", "pipe", "ignore"], timeout: 180_000,
   });
 }
 
