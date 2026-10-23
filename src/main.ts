@@ -12,7 +12,7 @@ import { initAmbientSound } from "./ts/app/ambient";
 import { initUI } from "./ts/app/ui";
 import { mountGrafo } from "./ts/graph/grafo";
 
-import { id as kochId, mountKochLogo } from "./ts/fractals/koch";
+import { mountBrandLogo } from "./ts/brand/logoAnim.js";
 import { id as neckerBgId, mountNeckerBg } from "./ts/illusions/neckerBg";
 import { id as neckerIllId, mountNeckerIll } from "./ts/illusions/neckerIll";
 import { id as heroCubesId, mount as mountHeroCubes } from "./ts/illusions/heroCubes";
@@ -36,19 +36,10 @@ const reduceMotion =
   window.matchMedia &&
   window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-const INTRO_MINIMIZE_DELAY_MS = 60000; // normal: lo resuelve la intro (~10s)
+const SAFETY_MINIMIZE_DELAY_MS = 60000; // red de seguridad: la intro lo resuelve (~10s)
 const REDUCED_MINIMIZE_DELAY_MS = 300; // reduced-motion: ocultar ya
 
 const CANVAS_MODULES: CanvasModule[] = [
-  {
-    id: kochId,
-    mount: (c) =>
-      mountKochLogo(c, {
-        minimizeDelayMs: reduceMotion
-          ? REDUCED_MINIMIZE_DELAY_MS
-          : INTRO_MINIMIZE_DELAY_MS
-      })
-  },
   { id: neckerBgId, mount: (c) => mountNeckerBg(c) },
   { id: neckerIllId, mount: (c) => mountNeckerIll(c) },
   { id: heroCubesId, mount: mountHeroCubes },
@@ -66,10 +57,24 @@ function init() {
   mountSalas();
   // Mapa de conexiones (física de fuerzas).
   mountGrafo();
-  // Canvas de ilusiones + fractal logo.
+  // Canvas de ilusiones + mark de marca.
   for (const mod of CANVAS_MODULES) {
     const el = document.getElementById(mod.id);
     if (el instanceof HTMLCanvasElement) mod.mount(el);
+  }
+  // Mark animado de marca: loader y logo permanente (reemplaza el Koch).
+  const brand = document.getElementById("brand-logo");
+  if (brand) {
+    mountBrandLogo(brand);
+    brand.addEventListener("click", () => {
+      document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+    });
+    const minimize = () => {
+      document.getElementById("loader")?.classList.add("hidden");
+      brand.classList.add("minimized");
+      if (brand instanceof HTMLButtonElement) brand.disabled = false;
+    };
+    window.setTimeout(minimize, reduceMotion ? REDUCED_MINIMIZE_DELAY_MS : SAFETY_MINIMIZE_DELAY_MS);
   }
 }
 

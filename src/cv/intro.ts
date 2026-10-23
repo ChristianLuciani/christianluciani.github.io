@@ -57,11 +57,11 @@ export function initIntro(): void {
   if (reduceMotion) {
     const ib = document.getElementById("intro-block");
     if (ib) ib.remove();
-    return; // el loader lo oculta el fractal normalmente (minimizeDelayMs corto)
+    return; // el loader lo oculta el logo en reduced-motion (delay corto en main.ts)
   }
 
   const loader = document.getElementById("loader");
-  const fractal = document.getElementById("fractal-logo");
+  const brand = document.getElementById("brand-logo");
   const phrase = document.getElementById("intro-phrase");
   const block = document.getElementById("intro-block");
   if (!loader || !block || !phrase) return;
@@ -73,7 +73,10 @@ export function initIntro(): void {
 
   function hideLoader() {
     loaderEl.classList.add("hidden");
-    if (fractal) fractal.classList.add("minimized");
+    if (brand) {
+      brand.classList.add("minimized");
+      if (brand instanceof HTMLButtonElement) brand.disabled = false;
+    }
   }
 
   /** Lectura guiada: enfoca una palabra a la vez (intervalo según longitud, lento). */

@@ -5,7 +5,6 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 jobs:
@@ -19,4 +18,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
+      # el módulo del logo se genera desde la animación: sin drift
+      - run: npm run brand:sync
+      - run: git diff --exit-code -- src/ts/brand/logoAnim.js
       - run: npm run build

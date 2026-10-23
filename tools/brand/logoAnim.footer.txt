@@ -1,0 +1,27 @@
+  /* ── mini mark (favicon simplificado) para el estado minimizado ── */
+  const gGeo = buildGeometry(CONFIG.geometry);
+  const pts = [gGeo.segs[0].a, ...gGeo.segs.map((s) => s.b)];
+  const cIdx = gGeo.segs.length - 2;
+  const cA = gGeo.segs[cIdx].a, cB = gGeo.segs[cIdx].b, cTip = gGeo.segs[cIdx + 1].b;
+  const boxPts = [pts[0], cA, cB, cTip];
+  const xs = boxPts.map((p) => p.x), ys = boxPts.map((p) => p.y);
+  const spanMini = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+  const pad = spanMini * 0.14 + 12;
+  const mcx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const mcy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const side = spanMini + pad * 2;
+  const miniBand = buildCBand(gGeo.segs, CONFIG.cWidth, CFINISH.cornerCut);
+  const sp0 = starSpec(0, pts.length, CONFIG.constellation);
+  const mini = mk("svg", {
+    class: "brand-mini",
+    viewBox: `${mcx - side / 2} ${mcy - side / 2} ${side} ${side}`,
+    "aria-hidden": "true",
+  });
+  mini.appendChild(mk("circle", { cx: pts[0].x, cy: pts[0].y, r: sp0.glowR * 3.2, fill: sp0.color, opacity: ".16" }));
+  mini.appendChild(mk("circle", { cx: pts[0].x, cy: pts[0].y, r: sp0.glowR * 1.9, fill: sp0.color, opacity: ".24" }));
+  mini.appendChild(mk("path", { d: miniBand.outline, fill: CONFIG.colors.c }));
+  mini.appendChild(mk("circle", { cx: pts[0].x, cy: pts[0].y, r: sp0.coreR + 2, fill: sp0.color }));
+  host.appendChild(mini);
+
+  render();
+}

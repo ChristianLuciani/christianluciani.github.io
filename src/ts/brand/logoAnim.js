@@ -1,0 +1,609 @@
+/**
+ * logoAnim.js — GENERADO por tools/brand/sync-logo-anim.mjs.
+ * Fuente: proposals/logo-triangulo-espiral/aurea7.html (acabado #55).
+ * NO EDITAR A MANO: editá la animación y corré `npm run brand:sync`.
+ *
+ * El módulo monta dos SVG dentro de #brand-logo:
+ *   · .brand-full  — animación completa (loader)
+ *   · .brand-mini  — favicon simplificado (estado .minimized)
+ * El CSS de las clases (.seg, .star, .c-glow, keyframes) vive en el head
+ * del sitio, scopeado a #brand-logo.
+ */
+
+export function mountBrandLogo(host) {
+  if (!host || host.dataset.mounted === "1") return;
+  host.dataset.mounted = "1";
+
+  const NSU = "http://www.w3.org/2000/svg";
+  const mk = (tag, attrs = {}) => {
+    const n = document.createElementNS(NSU, tag);
+    for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+    return n;
+  };
+
+  const svg = mk("svg", {
+    class: "brand-full",
+    viewBox: "0 0 800 800",
+    "aria-hidden": "true",
+  });
+  const baseDefs = mk("defs");
+  const f1 = mk("filter", { id: "soft", x: "-60%", y: "-60%", width: "220%", height: "220%" });
+  f1.appendChild(mk("feGaussianBlur", { stdDeviation: "8" }));
+  const f2 = mk("filter", { id: "soft2", x: "-80%", y: "-80%", width: "260%", height: "260%" });
+  f2.appendChild(mk("feGaussianBlur", { stdDeviation: "3.5" }));
+  baseDefs.appendChild(f1);
+  baseDefs.appendChild(f2);
+  svg.appendChild(baseDefs);
+  host.appendChild(svg);
+
+
+
+/* ───────────────────────── CONFIG (única fuente de parámetros) ───────── */
+const CONFIG = {
+  geometry: {
+    center: { x: 400, y: 418 },   // centro del espiral
+    R: 250,                       // radio del vértice final (punta de la C)
+    mode: "aurea",                // internos áureos respecto a la C (la C no se toca)
+    phi: 1.618,                   // proporción dorada
+    twistGolden: 4.854,           // 3°×φ — giro entre triángulos internos (áureo respecto al externo)
+    scalePerLoop: 1.5,            // ancla de la C: igual que la base (v10)
+    rotPerLoop: 3,                // + = horario; 3° de giro entre cada triángulo subsecuente
+    globalRot: 1,                 // todo el triángulo espiral girado 1° horario
+    generations: 7,               // 6 internas + la C (el ancla es invariante: C fija)
+    extendLast: 0.01,             // ancla de la C: igual que la base (v10)
+    vertexOrder: ["B","C","A"],   // ciclo de vértices: el espiral termina en A (arriba)
+    baseAngles: { A: -90, B: 40, C: 140 }, // ancla de la C: igual que la base (v10)
+  },
+
+  ramp: { from: 0.10, to: 0.72 },         // opacidad creciente del espiral
+  rampWidth: { from: 2.2, to: 4.2 },      // grosor creciente del espiral
+  cWidth: 10,                             // grosor de la "C" (últimas 2 líneas, opacidad 1)
+
+  colors: {
+    spiralFrom: "#16324f",   // espiral nace en azul profundo…
+    spiralTo:   "#00c9c0",   // …y sube hasta el teal del sitio
+    c: "#c9a84c",            // la "C" de Christian en oro (brand)
+  },
+
+  constellation: {
+    // espectro estelar: mezcla rojiza dominante + blancos cálidos + un azulado
+    palette: ["#ff8a70", "#ff6f5e", "#ffb49e", "#f6d7c4", "#cfe0ff"],
+    dissolve: 680,     // ms del desvanecimiento al ser tocada por la línea
+    ambient: 30,       // estrellas de fondo dispersas (nunca se disuelven); 0 = sin ellas
+    galaxy: 46,        // estrellas en brazos de galaxia espiral — sutiles, es background
+  },
+  ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
+
+  timing: {
+    start: 700,   // la constelación se ve primero; el espiral arranca después
+    stagger: 235, // ms entre líneas al final (el ritmo de la C se mantiene)
+    staggerFast: 110, // ms entre líneas al arranque (explosivo)
+    seg: 460,     // duración del trazado de una línea al final
+    segFast: 260, // duración al arranque (explosivo)
+    segC: 640,    // duración del trazado de las líneas de la "C"
+    hotFade: 500, // ms en que una línea baja de intensidad al chocar con su nodo
+    settlePad: 420,
+  },
+};
+
+/* ─────────────────────────── utilidades ──────────────────────────────── */
+const NS = "http://www.w3.org/2000/svg";
+const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const lerp = (a, b, t) => a + (b - a) * t;
+const lerpColor = (h1, h2, t) => {
+  const p = h => [1,3,5].map(i => parseInt(h.slice(i, i+2), 16));
+  const a = p(h1), b = p(h2);
+  return `rgb(${a.map((v,i)=>Math.round(lerp(v, b[i], t))).join(",")})`;
+};
+const el = (tag, attrs = {}) => {
+  const n = document.createElementNS(NS, tag);
+  for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
+  return n;
+};
+// pseudo-azar con semilla fija: misma constelación en cada replay
+const seeded = s => () => (s = (s * 1664525 + 1013904223) >>> 0) / 4294967296;
+// varianza de constelación real: tamaño, color e intensidad por estrella
+function starSpec(j, total, C) {
+  if (j === 0) return { // supernova central: permanece, es el origen
+    color: "#ffb3a0", coreR: 4.2, glowR: 14,
+    lo: .55, hi: 1, loG: .16, hiG: .3,
+    dC: "3.2", dG: "4", d1: "-0.4", d2: "-1.1",
+  };
+  const rnd = seeded(90210 + j * 131);
+  const color = C.palette[Math.floor(rnd() * C.palette.length)];
+  const bright = j === total - 1 || rnd() > .72; // la punta brilla más
+  const coreR = +(bright ? 2.7 + rnd() * 1.2 : 1.2 + rnd() * 1.5).toFixed(2);
+  const lo = +(bright ? .55 + rnd() * .2 : .15 + rnd() * .3).toFixed(2);
+  const hi = +(bright ? 1 : .55 + rnd() * .4).toFixed(2);
+  return {
+    color, coreR, glowR: +(coreR * (bright ? 3.6 : 2.6)).toFixed(1),
+    lo, hi, loG: +(lo * .5).toFixed(2), hiG: +(.2 + hi * .18).toFixed(2),
+    dC: (1.9 + rnd() * 2).toFixed(2), dG: (2.6 + rnd() * 2).toFixed(2),
+    d1: (-(rnd() * 2.2)).toFixed(2), d2: (-(rnd() * 3.1)).toFixed(2),
+  };
+}
+
+/* ─────────────────────────── geometría del espiral ─────────────────────
+   10 puntos: centro → B0 C0 A0 → B1 C1 A1 → B2 C2 A2  (t = vuelta/fracción)
+   Radio crece exponencialmente → espiral de tramos rectos.
+   El ciclo B→C→A hace que las últimas 2 líneas sean: B2→C2 (base) y
+   C2→A2 (lado izquierdo): triángulo abierto a la derecha = la "C".
+------------------------------------------------------------------------ */
+function buildGeometry(g) {
+  if (g.mode === "aurea") return buildAurea(g);
+  const { x: cx, y: cy } = g.center;
+  const steps = g.generations * 3;     // vértices; k_max = steps-1 ≡ 2 mod 3 ⇒ termina en A
+  const T_MAX = (steps - 1) / 3;
+  const verts = [];
+  for (let k = 0; k < steps; k++) {
+    const t = k / 3;
+    const v = g.vertexOrder[k % 3];
+    const ang = (g.baseAngles[v] + g.rotPerLoop * t + (g.globalRot || 0) +
+      Math.min(0, (k - (steps - 3)) / 3)) * Math.PI / 180;
+    // ↑ giro extra entre triángulos internos: 4° por vuelta sin mover la C
+    //   (los vértices internos rotan hasta -4° relativos; 0 en el triángulo final)
+    const r = g.R * Math.pow(g.scalePerLoop, t - T_MAX);
+    verts.push({ v, x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) });
+  }
+  if (g.extendLast) { // estira el último tramo más allá de la punta de la C
+    const a = verts[verts.length - 1], b = verts[verts.length - 2];
+    const dx = a.x - b.x, dy = a.y - b.y;
+    a.x += dx * g.extendLast;
+    a.y += dy * g.extendLast;
+  }
+  const all = [{ x: cx, y: cy }, ...verts];
+  const segs = [];
+  for (let i = 0; i < all.length - 1; i++) segs.push({ a: all[i], b: all[i + 1], idx: i });
+  return { segs, outer: verts.slice(-3) }; // outer = vértices del triángulo final
+}
+
+/* ── geometría áurea: anclada en la C (idéntica a la base) ─────────────
+   El triángulo externo ES el de la base (posición y geometría intactas).
+   Los internos se derivan hacia atrás en proporción áurea respecto a él:
+   · distancia: cada triángulo interno = el externo / φ (por generación)
+   · rotación:  giro entre internos = giro externo (4°) × φ
+------------------------------------------------------------------------ */
+function buildAurea(g) {
+  const { x: cx, y: cy } = g.center;
+  const steps = g.generations * 3;
+  const phi = g.phi || (1 + Math.sqrt(5)) / 2;
+  const anchorR = k => g.R * Math.pow(g.scalePerLoop, k / 3 - (steps - 1) / 3);
+  const anchorA = k => g.baseAngles[g.vertexOrder[k % 3]] + g.rotPerLoop * (k / 3) + (g.globalRot || 0);
+  const verts = [];
+  for (let k = 0; k < steps; k++) {
+    const back = (steps / 3 - 1) - Math.floor(k / 3); // vueltas hacia adentro (0 = la C)
+    const anchorK = (steps - 3) + (k % 3);            // vértice correspondiente en la C
+    const r = anchorR(anchorK) / Math.pow(phi, back);
+    const ang = (anchorA(anchorK) - (g.twistGolden || 4 * phi) * back) * Math.PI / 180;
+    verts.push({ v: g.vertexOrder[k % 3], x: cx + r * Math.cos(ang), y: cy + r * Math.sin(ang) });
+  }
+  if (g.extendLast) {
+    const a = verts[verts.length - 1], b = verts[verts.length - 2];
+    const dx = a.x - b.x, dy = a.y - b.y;
+    a.x += dx * g.extendLast; a.y += dy * g.extendLast;
+  }
+  const all = [{ x: cx, y: cy }, ...verts];
+  const segs = [];
+  for (let i = 0; i < all.length - 1; i++) segs.push({ a: all[i], b: all[i + 1], idx: i });
+  return { segs, outer: verts.slice(-3) };
+}
+
+function segStyle(idx, total) {
+  const c = CONFIG;
+  if (idx >= total - 2) // últimas 2 líneas = la "C"
+    return { opacity: 1, width: c.cWidth, color: c.colors.c, isC: true };
+  const t = idx / (total - 3);
+  return {
+    opacity: lerp(c.ramp.from, c.ramp.to, t),
+    width: lerp(c.rampWidth.from, c.rampWidth.to, t),
+    color: lerpColor(c.colors.spiralFrom, c.colors.spiralTo, t),
+    isC: false,
+  };
+}
+
+/* ── acabado de la C: barra con bisel (puerto de tools/logo/geometry.mjs) ──
+   Mismos centros y ancho que el trazo anterior; el vértice es un marco de
+   inglete con esquinas redondeadas y las puntas son terminales circulares.
+   La barra se pinta con dos regiones recortadas por la bisectriz del vértice
+   (un gradiente perpendicular por tramo) y se revela con una máscara que
+   traza el path central, así la animación de trazado se conserva.
+   MANTENER SINCRONIZADO con tools/logo/geometry.mjs (cBand + C_FINISH). */
+const CFINISH = {
+  perp: [
+    { offset: 0, color: "#fffbe6" },
+    { offset: .16, color: "#f8e4a8" },
+    { offset: .5, color: "#ddb04a" },
+    { offset: .84, color: "#b1852c" },
+    { offset: 1, color: "#8f661c" },
+  ],
+  tint: { amber: "#d99a2b", amberOpacity: .5, light: "#fffbe6", lightOpacity: .32 },
+  bloom: { color: "#dfa637", opacity: .28, width: 6, blur: 8 },
+  cornerCut: 2.4,
+};
+
+function buildCBand(segs, width, cornerCut) {
+  const cIdx = segs.length - 2;
+  const B = segs[cIdx].a, C = segs[cIdx].b, A = segs[cIdx + 1].b;
+  const h = width / 2;
+  const unit = (p, q) => {
+    const dx = q.x - p.x, dy = q.y - p.y, len = Math.hypot(dx, dy);
+    return { x: dx / len, y: dy / len };
+  };
+  const normal = (p, q) => { const u = unit(p, q); return { x: -u.y, y: u.x }; };
+  const normalUp = (p, q) => { const n = normal(p, q); return n.y > 0 ? { x: -n.x, y: -n.y } : n; };
+  const intersect = (p1, u1, p2, u2) => {
+    const cross = (a, b) => a.x * b.y - a.y * b.x;
+    const r = { x: p2.x - p1.x, y: p2.y - p1.y };
+    const den = cross(u1, u2);
+    const t = Math.abs(den) < 1e-9 ? 0 : cross(r, u2) / den;
+    return { x: p1.x + u1.x * t, y: p1.y + u1.y * t };
+  };
+  const n1 = normal(B, C), n2 = normal(C, A);
+  const up1 = normalUp(B, C), up2 = normalUp(C, A);
+  const u1 = unit(B, C), u2 = unit(C, A);
+  const Xo = intersect(
+    { x: B.x + n1.x * h, y: B.y + n1.y * h }, u1,
+    { x: C.x + n2.x * h, y: C.y + n2.y * h }, u2
+  );
+  const Xi = intersect(
+    { x: B.x - n1.x * h, y: B.y - n1.y * h }, u1,
+    { x: C.x - n2.x * h, y: C.y - n2.y * h }, u2
+  );
+  const BP = { x: B.x + n1.x * h, y: B.y + n1.y * h };
+  const BM = { x: B.x - n1.x * h, y: B.y - n1.y * h };
+  const AP = { x: A.x + n2.x * h, y: A.y + n2.y * h };
+  const AM = { x: A.x - n2.x * h, y: A.y - n2.y * h };
+  const cut = (P, Aprev, Bnext, r) => {
+    const uIn = unit(Aprev, P), uOut = unit(P, Bnext);
+    return {
+      p1: { x: P.x - uIn.x * r, y: P.y - uIn.y * r },
+      p2: { x: P.x + uOut.x * r, y: P.y + uOut.y * r },
+    };
+  };
+  const xo = cut(Xo, BP, AP, cornerCut);
+  const xi = cut(Xi, AM, BM, cornerCut);
+  const outline = `M ${BP.x} ${BP.y} L ${xo.p1.x} ${xo.p1.y} Q ${Xo.x} ${Xo.y} ${xo.p2.x} ${xo.p2.y} `
+    + `L ${AP.x} ${AP.y} A ${h} ${h} 0 0 0 ${AM.x} ${AM.y} `
+    + `L ${xi.p1.x} ${xi.p1.y} Q ${Xi.x} ${Xi.y} ${xi.p2.x} ${xi.p2.y} `
+    + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 0 ${BP.x} ${BP.y} Z`;
+  const uB = unit(C, B), uA = unit(C, A);
+  const wsum = { x: uB.x + uA.x, y: uB.y + uA.y };
+  const wlen = Math.hypot(wsum.x, wsum.y);
+  const w = { x: wsum.x / wlen, y: wsum.y / wlen };
+  const m = { x: -w.y, y: w.x };
+  const sideB = Math.sign(m.x * (B.x - C.x) + m.y * (B.y - C.y)) || 1;
+  const L = 1200;
+  const poly = (sx) => {
+    const s = (sideB * sx) * L;
+    const x0 = C.x - w.x * L, y0 = C.y - w.y * L;
+    const x1 = C.x + w.x * L, y1 = C.y + w.y * L;
+    return `M ${x0} ${y0} L ${x1} ${y1} L ${x1 + m.x * s} ${y1 + m.y * s} L ${x0 + m.x * s} ${y0 + m.y * s} Z`;
+  };
+  return {
+    B, C, A, h, outline,
+    clip: [poly(1), poly(-1)],
+    perp: [
+      [{ x: B.x + up1.x * h, y: B.y + up1.y * h }, { x: B.x - up1.x * h, y: B.y - up1.y * h }],
+      [{ x: A.x + up2.x * h, y: A.y + up2.y * h }, { x: A.x - up2.x * h, y: A.y - up2.y * h }],
+    ],
+    tint: [[BP, Xo], [Xo, AP]],
+  };
+}
+
+/* defs (gradientes, clips) + máscara de revelado; devuelve el path a animar */
+function buildCDefs(svg, band, cD) {
+  const defs = el("defs", { id: "c-defs" });
+  const ramp = (id, axis) => {
+    const g = el("linearGradient", {
+      id, gradientUnits: "userSpaceOnUse",
+      x1: axis[0].x, y1: axis[0].y, x2: axis[1].x, y2: axis[1].y,
+    });
+    CFINISH.perp.forEach(s => g.appendChild(el("stop", { offset: `${s.offset * 100}%`, "stop-color": s.color })));
+    defs.appendChild(g);
+  };
+  const tint = (id, seg, c1, o1, c2, o2) => {
+    const g = el("linearGradient", {
+      id, gradientUnits: "userSpaceOnUse",
+      x1: seg[0].x, y1: seg[0].y, x2: seg[1].x, y2: seg[1].y,
+    });
+    g.appendChild(el("stop", { offset: "0%", "stop-color": c1, "stop-opacity": o1 }));
+    g.appendChild(el("stop", { offset: "100%", "stop-color": c2, "stop-opacity": o2 }));
+    defs.appendChild(g);
+  };
+  ramp("c-perp-1", band.perp[0]);
+  ramp("c-perp-2", band.perp[1]);
+  tint("c-tint-1", band.tint[0], CFINISH.tint.amber, CFINISH.tint.amberOpacity, CFINISH.tint.amber, 0);
+  tint("c-tint-2", band.tint[1], CFINISH.tint.light, 0, CFINISH.tint.light, CFINISH.tint.lightOpacity);
+  [1, 2].forEach(k => {
+    const cp = el("clipPath", { id: `c-clip-${k}` });
+    cp.appendChild(el("path", { d: band.clip[k - 1] }));
+    defs.appendChild(cp);
+  });
+  const bloom = el("filter", { id: "c-bloom", x: "-80%", y: "-80%", width: "260%", height: "260%" });
+  bloom.appendChild(el("feGaussianBlur", { stdDeviation: CFINISH.bloom.blur }));
+  defs.appendChild(bloom);
+  const mask = el("mask", { id: "c-reveal", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 800, height: 800 });
+  const reveal = el("path", {
+    d: cD, fill: "none", stroke: "#fff",
+    "stroke-width": CONFIG.cWidth + 2, "stroke-linecap": "round", "stroke-linejoin": "round",
+  });
+  mask.appendChild(reveal);
+  defs.appendChild(mask);
+  return { defs, reveal };
+}
+
+/* ─────────────────────────── render + animación ──────────────────────── */
+let timers = [];
+function render() {
+  timers.forEach(clearTimeout); timers = [];
+  svg.classList.remove("settle-on");
+  const baseDefs = svg.querySelector("defs");
+  while (svg.lastChild && svg.lastChild !== baseDefs) svg.lastChild.remove();
+
+  const { segs, outer } = buildGeometry(CONFIG.geometry);
+  const T = CONFIG.timing;
+  const maxIdx = segs.length - 1;
+  // arranque explosivo: los primeros tramos van rápido y el ritmo decae
+  // hasta el ritmo final — el de la C, que se mantiene
+  const n = segs.length;
+  const ramp = i => 1 - Math.pow(1 - i / (n - 1), CONFIG.timing.accelRamp || 3);
+  const delays = [], durs = [];
+  let acc = T.start;
+  for (let i = 0; i < n; i++) {
+    delays.push(acc);
+    durs.push(i >= n - 2 ? T.segC : lerp(T.segFast, T.seg, ramp(i)));
+    acc += lerp(T.staggerFast, T.stagger, ramp(i));
+  }
+  const segDelay = i => delays[i];
+  const segDur = i => durs[i];
+
+  // halo tenue detrás de la C + arista fantasma del lado abierto
+  const ghost = el("polygon", {
+    class: "ghost",
+    points: outer.map(p => `${p.x},${p.y}`).join(" "),
+  });
+  svg.appendChild(ghost);
+
+  // líneas del espiral (cada una: opacidad/grosor según su posición)
+  const cGlowGroup = el("g", { class: "c-glow" }); // el resplandor de la C
+  const cIdx = segs.length - 2; // las dos últimas = la C
+  const lines = segs.map((s, i) => {
+    const st = segStyle(i, segs.length);
+    if (st.isC) return null; // la C se dibuja como un solo path (uniones limpias)
+    const line = el("line", {
+      class: "seg", x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
+      stroke: st.color, "stroke-width": st.width, opacity: st.opacity,
+    });
+    svg.appendChild(line);
+    return line;
+  });
+  svg.appendChild(cGlowGroup);
+
+  // la C es una barra: contorno con marco de inglete + terminales circulares,
+  // dos regiones de gradiente (bisectriz) y una máscara que traza el path
+  // central para conservar la animación de revelado.
+  const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
+  const cD = `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
+  const band = buildCBand(segs, CONFIG.cWidth, CFINISH.cornerCut);
+  const cDefs = buildCDefs(svg, band, cD);
+  svg.appendChild(cDefs.defs);
+  const cGroup = el("g", { class: "c-band" });
+  if (!reduced) cGroup.setAttribute("mask", "url(#c-reveal)");
+  [1, 2].forEach(k => {
+    const g = el("g", { "clip-path": `url(#c-clip-${k})` });
+    g.appendChild(el("path", { d: band.outline, fill: `url(#c-perp-${k})` }));
+    g.appendChild(el("path", { d: band.outline, fill: `url(#c-tint-${k})` }));
+    cGroup.appendChild(g);
+  });
+  svg.appendChild(cGroup);
+  cGlowGroup.appendChild(el("path", {
+    d: cD, stroke: CFINISH.bloom.color, filter: "url(#c-bloom)",
+    "stroke-width": CONFIG.cWidth + CFINISH.bloom.width, opacity: CFINISH.bloom.opacity,
+  }));
+
+  // "calor" de formación: cada línea nace más intensa y baja al chocar con su
+  // nodo; las 2 últimas no (quedan en plena intensidad: son la C)
+  const hot = reduced ? [] : segs.map((s, i) => {
+    const st = segStyle(i, segs.length);
+    if (st.isC) return null;
+    const h = el("line", {
+      class: "seg", x1: s.a.x, y1: s.a.y, x2: s.b.x, y2: s.b.y,
+      stroke: lerpColor(st.color, "#ffffff", .55),
+      "stroke-width": st.width + 1.2, opacity: .55,
+    });
+    svg.appendChild(h);
+    return h;
+  });
+
+  // constelación: estrellas en cada punto del espiral (centro + vértices);
+  // preexisten titilando y se desvanecen cuando la línea las toca
+  if (!reduced) {
+    const C = CONFIG.constellation;
+    if (C.ambient > 0) { // atmósfera de fondo, nunca se disuelve
+      const rnd = seeded(20260901);
+      const sky = el("g", { class: "sky" });
+      for (let i = 0; i < C.ambient; i++) {
+        const big = rnd() > .9; // algunas estrellas de fondo más presentes
+        const c = el("circle", {
+          class: "ambient", cx: 40 + rnd() * 720, cy: 40 + rnd() * 720,
+          r: big ? 1.5 + rnd() * .9 : .7 + rnd() * 1.1,
+          style: `animation-delay:${(-rnd() * 4.2).toFixed(2)}s`,
+        });
+        c.style.fill = C.palette[Math.floor(rnd() * C.palette.length)];
+        c.style.setProperty("--lo", big ? (.22 + rnd() * .12).toFixed(2) : (.08 + rnd() * .12).toFixed(2));
+        c.style.setProperty("--hi", big ? (.5 + rnd() * .25).toFixed(2) : (.28 + rnd() * .3).toFixed(2));
+        c.style.setProperty("--da", (3 + rnd() * 2).toFixed(2) + "s");
+        sky.appendChild(c);
+      }
+      svg.appendChild(sky);
+      if (C.galaxy > 0) { // brazos de galaxia: mismo sentido de giro y crecimiento φ que el logo
+        const geo = CONFIG.geometry;
+        const rndG = seeded(5150);
+        const arms = 2, sp = Math.floor(C.galaxy / arms), span = Math.PI * 1.9;
+        const growth = 5.4, phase = -0.6; // radio ×5.4, barrido más amplio y disperso
+        for (let arm = 0; arm < arms; arm++) {
+          for (let s2 = 0; s2 < sp; s2++) {
+            const f = s2 / (sp - 1); // 0 = núcleo, 1 = borde del brazo
+            const th = phase + f * span + arm * (Math.PI * 2 / arms) + (rndG() - .5) * .3;
+            const rad = 58 * Math.pow(growth, f) * (1 + (rndG() - .5) * .24);
+            const inner = 1.35 - f * .5; // apenas más presencia hacia el núcleo
+            const c = el("circle", {
+              class: "ambient",
+              cx: geo.center.x + rad * Math.cos(th), cy: geo.center.y + rad * Math.sin(th),
+              r: (.6 + rndG() * 1.0) * inner,
+              style: `animation-delay:${(-rndG() * 4.2).toFixed(2)}s`,
+            });
+            c.style.fill = C.palette[Math.floor(rndG() * C.palette.length)];
+            c.style.setProperty("--lo", (.06 + rndG() * .1).toFixed(2));
+            c.style.setProperty("--hi", (.22 + rndG() * .24).toFixed(2));
+            c.style.setProperty("--da", (3 + rndG() * 2).toFixed(2) + "s");
+            sky.appendChild(c);
+          }
+        }
+      }
+    }
+    const constellation = el("g", { class: "constellation" });
+    const pts = [segs[0].a, ...segs.map(s => s.b)];
+    pts.forEach((p, j) => {
+      const sp = starSpec(j, pts.length, C); // tamaño/color/intensidad variados
+      const g = el("g", { class: "star" });
+      const glow = el("circle", { class: "glow", cx: p.x, cy: p.y, r: sp.glowR });
+      const core = el("circle", { class: "core", cx: p.x, cy: p.y, r: sp.coreR });
+      glow.style.fill = core.style.fill = sp.color;
+      core.style.setProperty("--lo", sp.lo); core.style.setProperty("--hi", sp.hi);
+      glow.style.setProperty("--lo", sp.loG); glow.style.setProperty("--hi", sp.hiG);
+      core.style.setProperty("--dc", sp.dC + "s"); core.style.animationDelay = sp.d1 + "s";
+      glow.style.setProperty("--dg", sp.dG + "s"); glow.style.animationDelay = sp.d2 + "s";
+      if (j === 0) { // supernova: segunda capa de resplandor amplio
+        const flare = el("circle", { class: "glow", cx: p.x, cy: p.y, r: sp.glowR * 2 });
+        flare.style.fill = sp.color;
+        flare.style.setProperty("--lo", .06); flare.style.setProperty("--hi", .2);
+        flare.style.setProperty("--dg", "4.6s"); flare.style.animationDelay = "-.8s";
+        g.appendChild(flare);
+      }
+      g.appendChild(glow); g.appendChild(core);
+      constellation.appendChild(g);
+    });
+    svg.appendChild(constellation);
+
+    // al construirse el vértice, la línea coincide con la estrella: choca y desvanece
+    // (la del centro permanece: es el origen del espiral)
+    const touch = j => segDelay(j - 1) + segDur(j - 1);
+    pts.forEach((_, j) => {
+      if (j === 0) return; // supernova central: no desaparece
+      const punta = j === pts.length - 1;
+      constellation.children[j].animate(
+        punta
+          ? [ // la punta se desvanece SIN destello: nada de flash artificial
+              { opacity: .85, transform: "scale(1)" },
+              { opacity: 0, transform: "scale(1.3)" },
+            ]
+          : [
+              { opacity: .85, transform: "scale(1)" },
+              { opacity: 1, transform: "scale(1.4)", offset: .3 },
+              { opacity: 0, transform: "scale(1.9)" },
+            ],
+        {
+          duration: C.dissolve, delay: touch(j),
+          easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both",
+        }
+      );
+    });
+  }
+
+  // animación
+  const anims = [];
+  lines.forEach((line, i) => {
+    if (!line) return;
+    const len = line.getTotalLength();
+    if (reduced) return;
+    line.setAttribute("stroke-dasharray", len);
+    line.setAttribute("stroke-dashoffset", len);
+    anims.push(line.animate(
+      [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+    ));
+    // blindaje: al terminar el trazado, la línea queda como trazo simple
+    // (sin dash) — así no puede desaparecer en ningún motor
+    timers.push(setTimeout(() => {
+      line.removeAttribute("stroke-dasharray");
+      line.removeAttribute("stroke-dashoffset");
+    }, segDelay(i) + segDur(i) + 80));
+  });
+  hot.forEach((h, i) => { // el brillo de formación sigue el mismo trazado…
+    if (!h) return;
+    const len = h.getTotalLength();
+    h.setAttribute("stroke-dasharray", len);
+    h.setAttribute("stroke-dashoffset", len);
+    anims.push(h.animate(
+      [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
+      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+    ));
+    anims.push(h.animate( // …y baja de intensidad al chocar con su nodo
+      [{ opacity: .55 }, { opacity: 0 }],
+      { duration: T.hotFade, delay: segDelay(i) + segDur(i),
+        easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both" }
+    ));
+    timers.push(setTimeout(() => h.remove(), segDelay(i) + segDur(i) + T.hotFade + 80));
+  });
+
+  // trazado de la C: un solo trazo continuo, y el glow aparece con ella
+  // (antes el glow preexistía visible desde el arranque)
+  if (!reduced) {
+    const reveal = cDefs.reveal;
+    const cLen = reveal.getTotalLength();
+    const cWin = segDur(cIdx) + segDur(cIdx + 1);
+    reveal.setAttribute("stroke-dasharray", cLen);
+    reveal.setAttribute("stroke-dashoffset", cLen);
+    anims.push(reveal.animate(
+      [{ strokeDashoffset: cLen }, { strokeDashoffset: 0 }],
+      { duration: cWin, delay: segDelay(cIdx), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+    ));
+    timers.push(setTimeout(() => {
+      reveal.removeAttribute("stroke-dasharray");
+      reveal.removeAttribute("stroke-dashoffset");
+    }, segDelay(cIdx) + cWin + 80));
+    cGlowGroup.style.opacity = 0;
+    anims.push(cGlowGroup.animate(
+      [{ opacity: 0 }, { opacity: 1 }],
+      { duration: cWin, delay: segDelay(cIdx), easing: "ease-out", fill: "both" }
+    ));
+  }
+
+  if (reduced) { // estado final directo, sin animación
+    cGlowGroup.style.opacity = 1;
+    svg.classList.add("settle-on");
+    return;
+  }
+
+  const end = segDelay(maxIdx) + segDur(maxIdx) + T.settlePad;
+  timers.push(setTimeout(() => svg.classList.add("settle-on"), end));
+}
+
+  /* ── mini mark (favicon simplificado) para el estado minimizado ── */
+  const gGeo = buildGeometry(CONFIG.geometry);
+  const pts = [gGeo.segs[0].a, ...gGeo.segs.map((s) => s.b)];
+  const cIdx = gGeo.segs.length - 2;
+  const cA = gGeo.segs[cIdx].a, cB = gGeo.segs[cIdx].b, cTip = gGeo.segs[cIdx + 1].b;
+  const boxPts = [pts[0], cA, cB, cTip];
+  const xs = boxPts.map((p) => p.x), ys = boxPts.map((p) => p.y);
+  const spanMini = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys));
+  const pad = spanMini * 0.14 + 12;
+  const mcx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const mcy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const side = spanMini + pad * 2;
+  const miniBand = buildCBand(gGeo.segs, CONFIG.cWidth, CFINISH.cornerCut);
+  const sp0 = starSpec(0, pts.length, CONFIG.constellation);
+  const mini = mk("svg", {
+    class: "brand-mini",
+    viewBox: `${mcx - side / 2} ${mcy - side / 2} ${side} ${side}`,
+    "aria-hidden": "true",
+  });
+  mini.appendChild(mk("circle", { cx: pts[0].x, cy: pts[0].y, r: sp0.glowR * 3.2, fill: sp0.color, opacity: ".16" }));
+  mini.appendChild(mk("circle", { cx: pts[0].x, cy: pts[0].y, r: sp0.glowR * 1.9, fill: sp0.color, opacity: ".24" }));
+  mini.appendChild(mk("path", { d: miniBand.outline, fill: CONFIG.colors.c }));
+  mini.appendChild(mk("circle", { cx: pts[0].x, cy: pts[0].y, r: sp0.coreR + 2, fill: sp0.color }));
+  host.appendChild(mini);
+
+  render();
+}
