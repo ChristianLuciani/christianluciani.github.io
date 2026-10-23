@@ -304,6 +304,15 @@ pendiente (track B) está en el issue **#67**.
 | `g.clock` | un grupo vacío cuya animación dura exactamente el cronograma | el fin del cronograma, y con él la entrada del settle |
 | agenda `jobs`/`tick` | — | los efectos posteriores (limpiar dash, retirar líneas de calor, entrar al settle) corren sobre el **reloj de animación**, no `setTimeout`: así la pieza se puede congelar fotograma a fotograma |
 
+### Generación del módulo del sitio
+
+`src/ts/brand/logoAnim.js` **se genera** desde el artefacto
+(`npm run brand:sync`) y CI verifica que no haya drift
+(`git diff --exit-code`). O sea: tocar `proposals/logo-triangulo-espiral/aurea7.html`
+obliga a re-correr `npm run brand:sync` y commitear el módulo — los hooks de
+medición (`dataset.schedule`, `dataset.c`, `g.clock`) y la agenda viajan al sitio
+con el mismo render.
+
 ### Cómo se mide
 
 `npm run logo:motion` (o `node tools/logo/verify-motion.mjs`) — carga la página en
