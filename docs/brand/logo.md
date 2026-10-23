@@ -33,9 +33,10 @@ expande.
   en su nacimiento (B), oro de marca en el vértice y luz en la punta, con
   bisel transversal que le da volumen (ver §3.1). Todo el acabado vive en la
   familia del oro: el cuarto color suma calidez, no cambia de metal.
-  **La animación aprobada (#53) todavía dibuja la C plana**: este acabado es
-  el de los assets; espejarlo en la animación es trabajo de #55 y de #56 al
-  integrarla.
+  **La animación (`proposals/.../aurea7.html`) ya refleja este acabado**:
+  dibuja la C como banda con bisel y la revela con una máscara que traza el
+  path central, conservando el timing del trazado. La integración en el
+  sitio es #56.
 - **Jerarquía** (operador, 2026-09-25): el ojo va primero al origen — la
   supernova gana +2pt de core y las estrellas grandes de las aristas (la
   punta de la C + las bright) bajan ~22% para no robar protagonismo. Es
@@ -154,8 +155,9 @@ ancla C ≡ fórmula base a 7 generaciones (0.0000 px), ratios internos = φ
 exacto por generación, twist = 3°×φ, determinismo, y fidelidad DOM
 (`node tools/logo/verify-dom-fidelity.mjs`). El gate de fidelidad compara la
 **geometría de referencia** (centros, segmentos, cielo y constelación) contra
-el DOM aprobado; **no** cubre el contorno nuevo de la barra (marco y
-terminales), que se verifica con los tests de `cBand`.
+el DOM aprobado. Desde #55, el gate verifica además el **contorno de la
+banda** (`cBand`: marco y terminales) y la **máscara de revelado** de la C en
+la animación; los assets se generan desde esa misma geometría.
 
 ## 5. Tipografía
 
