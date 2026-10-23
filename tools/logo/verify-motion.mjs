@@ -48,7 +48,7 @@ import { session } from "./chrome.mjs";
 import { decodePng, sampleRegion, differenceStats, redness } from "./png.mjs";
 /* la política (umbrales y veredicto) vive en un módulo puro y testeado en CI;
    acá sólo se adquiere (CDP + fotogramas) y se muestra */
-import { THRESHOLDS, analyze } from "./motion-analysis.mjs";
+import { THRESHOLDS, analyze, cDrawWindow, planFor, planQuality as checkPlan } from "./motion-analysis.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
@@ -313,27 +313,6 @@ const stepMs = Number(arg("step", 100));
 const framesDir = arg("frames", null);
 const verdict = !process.argv.includes("--report");
 
-/** instantes a muestrear, derivados del cronograma real del artefacto */
-function plan(L) {
-  const d0 = L.punta.delay, d1 = L.punta.delay + L.punta.duration;
-  const times = [];
-  for (let t = d0 - 200; t <= d1 + 150; t += stepMs) times.push(Math.round(t));
-  /* el settle se mide a ±40ms (y un punto más allá, ya estabilizado) */
-  for (const t of [L.settle - 40, L.settle + 40, L.settle + 900]) times.push(Math.round(t));
-  /* autocontrol: la estrella de la punta existe al arrancar la pieza */
-  times.push(Math.round(d0 - 800));
-  /* el arranque (criterio 2 de #55) se MIRA, no sólo se computa: fotogramas del
-     estallido para el strip de --frames */
-  if (L.timing?.start != null) for (const dt of [200, 800, 1400]) times.push(Math.round(L.timing.start + dt));
-  return [...new Set(times)].sort((a, b) => a - b);
-}
-
-/** el plan tiene que muestrear la disolución: con un paso enorme "no mide" (exit 2) */
-function planQuality(L, times) {
-  const inWindow = times.filter((t) => t >= L.punta.delay - 100 && t <= L.punta.delay + L.punta.duration + 150).length;
-  return inWindow >= 5 ? null : `el plan muestrea ${inWindow} fotograma(s) de la disolución: --step ${stepMs} es demasiado grueso`;
-}
-
 if (!Number.isFinite(stepMs) || stepMs <= 0) {
   /* el contrato dice: 2 = no pude medir. Un argumento inválido no es una violación */
   console.error(`❌ MOVIMIENTO: no pude medir — --step inválido: ${JSON.stringify(arg("step"))} (espero ms > 0)`);
@@ -344,8 +323,8 @@ try {
   if (framesDir) mkdirSync(framesDir, { recursive: true });
   console.log("midiendo fotogramas congelados…");
   const data = await measure(html, (L) => {
-    const times = plan(L);
-    const bad = planQuality(L, times);
+    const times = planFor(L, { stepMs });
+    const bad = checkPlan(L, times, { stepMs });
     if (bad) throw new Error(bad);
     console.log(`${times.length} fotogramas: ${times[0]}→${times.at(-1)}ms (paso ${stepMs})`);
     return times;

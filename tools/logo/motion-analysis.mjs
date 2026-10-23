@@ -264,3 +264,50 @@ export function checkStartup(profile, { timing, thresholds = THRESHOLDS } = {}) 
   }
   return fails;
 }
+
+
+/* ───────────────────────── política del plan de medición ────────────────────
+   `planFor` (qué instantes se muestrean) y `planQuality` (cuándo un plan no
+   alcanza para medir) son POLÍTICA, no adquisición: vivían dentro del script que
+   necesita Chrome, así que no tenían cobertura en CI — la misma clase de agujero
+   que el review fresco encontró en los umbrales. `cDrawWindow` deriva del
+   cronograma publicado la ventana en que la C se termina de trazar (la C es un
+   solo path con las dos últimas duraciones).
+────────────────────────────────────────────────────────────────────────────── */
+
+/** ventana de trazado de la C derivada del cronograma declarado */
+export function cDrawWindow(schedule) {
+  const { delays, durs } = schedule ?? {};
+  if (!delays?.length || !durs?.length || delays.length !== durs.length)
+    throw new Error("cronograma inválido: hacen falta delays[] y durs[] del mismo largo");
+  const cIdx = delays.length - 2;
+  if (cIdx < 0) throw new Error("el cronograma necesita al menos dos tramos para la C");
+  return { cIdx, drawEnd: delays[cIdx] + durs[cIdx] + durs.at(-1) };
+}
+
+/**
+ * Instantes a muestrear, derivados del cronograma real: la disolución de la
+ * punta paso a paso, el settle ±40ms (+900ms ya estabilizado), el autocontrol de
+ * que la estrella existe al arrancar, y fotogramas del estallido inicial (el
+ * arranque del criterio 2 se MIRA, no sólo se computa).
+ */
+export function planFor(L, { stepMs = 100 } = {}) {
+  const d0 = L.punta.delay, d1 = L.punta.delay + L.punta.duration;
+  const times = [];
+  for (let t = d0 - 200; t <= d1 + 150; t += stepMs) times.push(Math.round(t));
+  for (const t of [L.settle - 40, L.settle + 40, L.settle + 900]) times.push(Math.round(t));
+  times.push(Math.round(d0 - 800));
+  if (L.timing?.start != null) for (const dt of [200, 800, 1400]) times.push(Math.round(L.timing.start + dt));
+  return [...new Set(times)].sort((a, b) => a - b);
+}
+
+/** mínimo de fotogramas dentro de la disolución para que la medición valga */
+export const MIN_DISSOLVE_SAMPLES = 5;
+
+/** null si el plan alcanza; si no, la razón exacta (el gate sale 2, no aprueba) */
+export function planQuality(L, times, { stepMs = 100, minSamples = MIN_DISSOLVE_SAMPLES } = {}) {
+  const inWindow = times.filter((t) => t >= L.punta.delay - 100 && t <= L.punta.delay + L.punta.duration + 150).length;
+  return inWindow >= minSamples
+    ? null
+    : `el plan muestrea ${inWindow} fotograma(s) de la disolución (mínimo ${minSamples}): --step ${stepMs} es demasiado grueso`;
+}

@@ -9,8 +9,9 @@
  */
 import { describe, it, expect } from "vitest";
 import {
-  THRESHOLDS, analyze, bezierY, bloomOver, breatheFrames, checkStartup,
-  checkStructure, maxRise, scaleOf, settleStep, startupProfile, sustainedRise,
+  MIN_DISSOLVE_SAMPLES, THRESHOLDS, analyze, bezierY, bloomOver, breatheFrames,
+  cDrawWindow, checkStartup, checkStructure, maxRise, planFor, planQuality,
+  scaleOf, settleStep, startupProfile, sustainedRise,
 } from "./motion-analysis.mjs";
 
 /** filas sintéticas: {T, light, halo, body, tipRedMax, tipMax, drift} */
@@ -220,5 +221,45 @@ describe("motion-analysis — arranque (criterio 2 de #55)", () => {
     const sinDrift = { probe: probe(), L: landmark(), rows: limpio.map((r) => ({ ...r, drift: Infinity })) };
     expect(analyze(sinDrift, { stepMs: 100 }).fails.join("\n")).toMatch(/no pudo verificar el instante/);
     expect(analyze({ probe: probe(), L: landmark(), rows: limpio }, { stepMs: 100 }).fails).toEqual([]);
+  });
+});
+
+
+describe("motion-analysis — plan de medición y ventana de la C", () => {
+  it("cDrawWindow deriva el fin del trazado de la C de las dos últimas duraciones", () => {
+    /* C = un solo path: delays[n-2] + durs[n-2] + durs[n-1] */
+    const { cIdx, drawEnd } = cDrawWindow({ delays: [700, 900, 1100, 1300], durs: [260, 300, 640, 640] });
+    expect(cIdx).toBe(2);
+    expect(drawEnd).toBe(1100 + 640 + 640);
+    expect(() => cDrawWindow(null)).toThrow(/cronograma inválido/);
+    expect(() => cDrawWindow({ delays: [700], durs: [260] })).toThrow(/al menos dos tramos/);
+  });
+
+  it("planFor cubre la disolución paso a paso, el settle y el estallido", () => {
+    const L = { punta: { delay: 5000, duration: 680 }, settle: 5600, timing: { start: 700 } };
+    const times = planFor(L, { stepMs: 100 });
+    const inWindow = times.filter((t) => t >= 4900 && t <= 5830);
+    expect(inWindow.length).toBeGreaterThanOrEqual(10);       // paso 100 sobre 680ms
+    expect(times).toContain(5560);                             // settle - 40
+    expect(times).toContain(5640);                             // settle + 40
+    expect(times).toContain(6500);                             // settle + 900
+    expect(times).toContain(4200);                             // autocontrol (d0 - 800)
+    expect(times).toEqual([...times].sort((a, b) => a - b));   // ordenado
+    expect(new Set(times).size).toBe(times.length);            // sin duplicados
+    for (const dt of [200, 800, 1400]) expect(times).toContain(L.timing.start + dt);
+  });
+
+  it("planQuality rechaza un plan que no muestrea la disolución (y dice por qué)", () => {
+    const L = { punta: { delay: 5000, duration: 680 }, settle: 5600, timing: { start: 700 } };
+    expect(planQuality(L, planFor(L, { stepMs: 100 }), { stepMs: 100 })).toBeNull();
+    const grueso = planFor(L, { stepMs: 5000 });
+    const bad = planQuality(L, grueso, { stepMs: 5000 });
+    expect(bad).toMatch(/demasiado grueso/);
+    expect(bad).toContain(`mínimo ${MIN_DISSOLVE_SAMPLES}`);
+  });
+
+  it("planFor no inventa fotogramas del arranque si el artefacto no declara start", () => {
+    const L = { punta: { delay: 5000, duration: 680 }, settle: 5600, timing: null };
+    expect(planFor(L, { stepMs: 100 }).every((t) => t < 700 || t > 2100)).toBe(true);
   });
 });

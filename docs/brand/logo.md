@@ -276,7 +276,10 @@ Regenerar todo: `node tools/logo/generate-logo.mjs`
 Sólo áurea/base: `--only-aurea` / `--only-base`
 Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs`
-Tests: `npx vitest run tools/logo/geometry.test.mjs`
+Gate de movimiento: `npm run logo:motion` (ver §11)
+Módulo del sitio: `npm run brand:sync` — **obligatorio** después de tocar la
+animación (CI verifica que `src/ts/brand/logoAnim.js` no tenga drift)
+Tests: `npx vitest run tools/logo/` (geometría + instrumento)
 
 **Nota sobre los print 300dpi**: el PNG está dimensionado para 300dpi
 (A4 = 2480×3508 px ≙ 210×297 mm; A3 = 3508×4961 ≙ 297×420 mm) pero Chrome
@@ -330,9 +333,12 @@ tiempo virtual no gobierna las animaciones: medido) y mide:
   cada animación: al pausar, `startTime` queda en `null` y el reloj no sirve).
 
 Salida: **0** limpio · **1** violaciones · **2** no se pudo medir (sin Chrome, sin
-hooks, o plan demasiado grueso). La política (umbrales y veredicto) vive en
-`tools/logo/motion-analysis.mjs`, con **tests en CI**; la adquisición (CDP) necesita
-Chrome y queda fuera de CI (wiring: issue #59).
+hooks, o plan demasiado grueso). La política (umbrales, perfil del arranque,
+invariantes, plan de muestreo y veredicto) vive en `tools/logo/motion-analysis.mjs`
+y la cubre **`motion-analysis.test.mjs` (26 tests)**; el decoder y la medición de
+píxeles, **`png.test.mjs` (16 tests)** — 42 del instrumento, todos en CI
+(`npx vitest run tools/logo/png.test.mjs tools/logo/motion-analysis.test.mjs`).
+La adquisición (CDP) necesita Chrome y queda fuera de CI (wiring: issue #59).
 
 ### Estado medido del artefacto (track A, 2026-10-23)
 
