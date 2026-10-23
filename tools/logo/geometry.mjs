@@ -37,7 +37,6 @@ export const C_FINISH = {
   bloom: { color: "#dfa637", opacity: 0.28, width: 6, blur: 8 },
   shadow: { color: "#6b5218", opacity: 0.2, dy: 2.2, blur: 2.4 },
   corner: 2.4, // radio de las esquinas del contorno (suaviza el corte)
-  node: { coreR: 3.8, haloR: 14 }, // nodo estrella sobre la intersección (C)
 };
 
 /* CONFIG de aurea7.html (base v10 = misma sin mode/galaxy/timing fast) */
@@ -288,27 +287,27 @@ export function cBand(segs, width, { corner = 2.2 } = {}) {
   const AP = { x: A.x + n2.x * h, y: A.y + n2.y * h };
   const AM = { x: A.x - n2.x * h, y: A.y - n2.y * h };
 
-  /* contorno hexagonal: B+ → Xo (exterior) → A+ → A− → Xi → B− (interior).
-     Se redondean las 6 esquinas con quadratics de radio `corner`. */
-  const pts = [BP, Xo, AP, AM, Xi, BM];
-  const n = pts.length;
-  const dAt = pts.map((P, i) => {
-    const Aprev = pts[(i - 1 + n) % n], Bnext = pts[(i + 1) % n];
+  /* contorno: B+ → (inglete redondeado en Xo) → A+ → TERMINAL CIRCULAR en A
+     → A− → (inglete redondeado en Xi) → B− → TERMINAL CIRCULAR en B.
+     Los extremos libres son semicírculos de radio h (cap redondo) fundidos
+     al contorno: leen como terminal circular visto desde el plano, no como
+     una cara de tubo. El vértice es un marco de cuadro: inglete con las
+     esquinas redondeadas. */
+  const cut = (P, Aprev, Bnext, r) => {
     const uIn = unit(Aprev, P), uOut = unit(P, Bnext);
-    const r = Math.min(corner, Math.hypot(Aprev.x - P.x, Aprev.y - P.y) / 2,
-      Math.hypot(Bnext.x - P.x, Bnext.y - P.y) / 2);
     return {
       p1: { x: P.x - uIn.x * r, y: P.y - uIn.y * r },
       p2: { x: P.x + uOut.x * r, y: P.y + uOut.y * r },
       P,
     };
-  });
-  let outline = `M ${dAt[0].p2.x} ${dAt[0].p2.y}`;
-  for (let i = 1; i <= n; i++) {
-    const c = dAt[i % n];
-    outline += ` L ${c.p1.x} ${c.p1.y} Q ${c.P.x} ${c.P.y} ${c.p2.x} ${c.p2.y}`;
-  }
-  outline += " Z";
+  };
+  const xo = cut(Xo, BP, AP, corner);
+  const xi = cut(Xi, AM, BM, corner);
+  // semicírculos: A usa sweep 0 y B sweep 1 para abombar hacia afuera
+  const outline = `M ${BP.x} ${BP.y} L ${xo.p1.x} ${xo.p1.y} Q ${Xo.x} ${Xo.y} ${xo.p2.x} ${xo.p2.y} `
+    + `L ${AP.x} ${AP.y} A ${h} ${h} 0 0 0 ${AM.x} ${AM.y} `
+    + `L ${xi.p1.x} ${xi.p1.y} Q ${Xi.x} ${Xi.y} ${xi.p2.x} ${xi.p2.y} `
+    + `L ${BM.x} ${BM.y} A ${h} ${h} 0 0 1 ${BP.x} ${BP.y} Z`;
 
   /* clips: los dos brazos se separan por la BISECTRIZ del vértice C (ambos
      brazos están del mismo lado de la línea de inglete, así que esa línea no
@@ -325,7 +324,12 @@ export function cBand(segs, width, { corner = 2.2 } = {}) {
   const L = 1200;
   const poly = (sx) => {
     const s = (sideB * sx) * L;
-    return `M ${C.x - w.x * L} ${C.y - w.y * L} L ${C.x + w.x * L} ${C.y + w.y * L} L ${C.x + w.x * L + m.x * s} ${C.y + w.y * L + m.y * s} L ${C.x - w.x * L + m.x * s} ${C.y - w.y * L + m.y * s} Z`;
+    // solape 0.4: las dos mitades se pisan un pelo en la bisectriz para que
+    // el antialiasing no deje una línea clara en el vértice al rasterizar
+    const ox = -m.x * sideB * 0.4, oy = -m.y * sideB * 0.4;
+    const x0 = C.x - w.x * L + ox, y0 = C.y - w.y * L + oy;
+    const x1 = C.x + w.x * L + ox, y1 = C.y + w.y * L + oy;
+    return `M ${x0} ${y0} L ${x1} ${y1} L ${x1 + m.x * s} ${y1 + m.y * s} L ${x0 + m.x * s} ${y0 + m.y * s} Z`;
   };
 
   return {
@@ -334,7 +338,7 @@ export function cBand(segs, width, { corner = 2.2 } = {}) {
     outline,
     clip: [poly(1), poly(-1)],
     miter: { Xo, Xi },
-    ends: [{ p: B, role: "base" }, { p: A, role: "tip" }], // corte plano, sin cap
+    ends: [{ p: B, role: "base" }, { p: A, role: "tip" }], // terminales circulares
     // eje del bisel: perpendicular REAL a cada tramo, del lado iluminado (arriba)
     perp: [
       [{ x: B.x + up1.x * h, y: B.y + up1.y * h }, { x: B.x - up1.x * h, y: B.y - up1.y * h }],

@@ -84,23 +84,14 @@ aplican dos capas de gradiente:
    luz `#fffbe6` en la punta A.
 
 **Terminaciones** (operador, 2026-10-22): los extremos libres —B y la punta
-A— terminan en **corte transversal plano**, sin tapa redonda: la barra no
-debe leerse como un tubo con cara circular. El vértice C se resuelve con un
-**inglete**: los dos tramos se cortan en la misma línea (intersección de los
-bordes exterior e interior), así encajan sin hueco ni parche, y el contorno
-resultante es **una sola pieza** con las 6 esquinas redondeadas con radio
-`cFinish.corner` (2.4): el ángulo recto no debe leerse tosco (operador,
-2026-10-22). El bisel se pinta en dos regiones separadas por la **bisectriz
-del vértice**, no por la línea de inglete: los dos brazos están del mismo
-lado de esa línea.
-
-**Nodo de la intersección** (operador, 2026-10-22): sobre el vértice C se
-dibuja una **estrella-nodo** (`logo-c-node`, `cFinish.node`), encima de la
-barra —halo, núcleo y brillo—, como un nodo de la constelación posado en la
-intersección. En los tres vértices de la C se conserva el **halo** de la
-constelación de fondo pero se omite su núcleo (medio núcleo asomaba sobre el
-corte y se leía como un punto suelto); el nodo visible del vértice es este
-`logo-c-node`.
+A— terminan en **terminal circular**: un semicírculo de radio `cWidth/2`
+fundido al contorno, que se lee como el remate redondo de la barra **contra
+el plano**, no como la cara de un tubo (no hay círculo de color sólido
+encima). El vértice C conserva la unión **tipo marco de cuadro**: inglete
+con las esquinas redondeadas (`cFinish.corner` = 2.4). El contorno es una
+sola pieza, sin huecos ni parches; el bisel se pinta en dos regiones
+separadas por la **bisectriz del vértice** (los dos brazos están del mismo
+lado de la línea de inglete).
 
 Superficies:
 
@@ -175,13 +166,13 @@ técnica.
    semilla fija ⇒ idéntico en cada render.
 2. **`logo-constellation`** — constelación de vértices (1 supernova central
    + 21 nodos); congeladas en pico. En los tres vértices de la C (B, C, A)
-   se dibuja el halo pero no el núcleo (ver §3.1): el corte plano de la
-   barra los dejaría medio expuestos.
+   se dibuja el halo pero no el núcleo (ver §3.1): la barra los cubre y el
+   núcleo asomaba como un punto suelto.
 3. **`logo-spiral`** — 19 tramos con rampa de color/grosor/opacidad.
 4. **`logo-c-triespiral`** — la C con acabado ámbar→oro→luz: bisel
-   transversal + barrido longitudinal, contorno redondeado (night: bloom
-   cálido; light: sombra neutra), más `logo-c-node`: la estrella-nodo sobre
-   la intersección. Ver §3.1.
+   transversal + barrido longitudinal, contorno con marco redondeado y
+   terminales circulares (night: bloom cálido; light: sombra neutra). Ver
+   §3.1.
 
 El **lockup** añade `logo-typography` (viewBox 800×940). En la variante
 light, además, se omite `logo-background` y los halos de la constelación

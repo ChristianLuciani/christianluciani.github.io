@@ -163,14 +163,19 @@ describe("cBand() — la C como barra con bisel (misma silueta, cuarto color)", 
     expect(dist(band.perp[1][0], band.perp[1][1])).toBeCloseTo(W, 6);
   });
 
-  it("el contorno es único, cerrado y con las 6 esquinas redondeadas", () => {
+  it("el contorno es único, cerrado, con marco redondeado y terminales circulares", () => {
     const band = cBand(g.segs, W);
     expect(band.outline.startsWith("M ")).toBe(true);
     expect(band.outline.trim().endsWith("Z")).toBe(true);
-    expect((band.outline.match(/ Q /g) || []).length).toBe(6);
+    // 2 esquinas de marco (inglete redondeado) + 2 semicírculos de terminal
+    expect((band.outline.match(/ Q /g) || []).length).toBe(2);
+    expect((band.outline.match(/ A /g) || []).length).toBe(2);
+    // los arcos tienen radio h (terminal circular del ancho de la barra)
+    expect(band.outline).toContain(`A ${band.h} ${band.h} 0 0 0`);
+    expect(band.outline).toContain(`A ${band.h} ${band.h} 0 0 1`);
   });
 
-  it("extremos con corte transversal (sin tapa) y sin caps", () => {
+  it("extremos con terminal circular y sin caps/tapas sueltas", () => {
     const band = cBand(g.segs, W);
     expect(band.ends.map((e) => e.role)).toEqual(["base", "tip"]);
     expect(band).not.toHaveProperty("caps");

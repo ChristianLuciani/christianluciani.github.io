@@ -126,9 +126,6 @@ ${tint(C_IDS.t1, band.tint[0][0], band.tint[0][1], f.tint.amber, f.tint.amberOpa
 ${tint(C_IDS.t2, band.tint[1][0], band.tint[1][1], f.tint.light, 0, f.tint.light, f.tint.lightOpacity)}
     <clipPath id="c-clip-1"><path d="${band.clip[0]}"/></clipPath>
     <clipPath id="c-clip-2"><path d="${band.clip[1]}"/></clipPath>
-    <filter id="c-node-glow" x="-200%" y="-200%" width="500%" height="500%">
-      <feGaussianBlur stdDeviation="1.6"/>
-    </filter>
 ${shadow}
   </defs>`;
 };
@@ -212,22 +209,6 @@ const layerC = (g, cfg, { surface = "night" } = {}) => {
       `    <g clip-path="url(#c-clip-${k})">`,
       `      <path d="${band.outline}" fill="url(#${C_IDS["p" + k]})"/>`,
       `      <path d="${band.outline}" fill="url(#${C_IDS["t" + k]})"/>`,
-      `    </g>`
-    );
-  }
-  /* nodo estrella SOBRE la intersección (encima de la barra, feedback del
-     operador 2026-10-22): mismo lenguaje que la constelación —halo + núcleo
-     con brillo—, dimensionado para leerse sobre el oro. */
-  if (f.node) {
-    const pts = constellationPoints(g.segs);
-    const sp = starSpec(pts.length - 2, pts.length, cfg.constellation); // nodo del vértice C
-    const r = f.node.coreR;
-    rows.push(
-      `    <g id="logo-c-node" data-name="C node">`,
-      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(f.node.haloR)}" fill="url(#halo-star)" color="${sp.color}"/>`,
-      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(r + 1.2)}" fill="${sp.color}" opacity="0.28" filter="url(#c-node-glow)"/>`,
-      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(r)}" fill="${sp.color}"/>`,
-      `      <circle cx="${n2(band.C.x)}" cy="${n2(band.C.y)}" r="${n2(r * 0.25)}" fill="#fff6dc" opacity="0.85"/>`,
       `    </g>`
     );
   }
