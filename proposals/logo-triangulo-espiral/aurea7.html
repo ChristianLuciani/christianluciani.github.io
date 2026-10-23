@@ -72,7 +72,7 @@
   @keyframes twinkle{0%,100%{opacity:var(--lo,.4)} 50%{opacity:var(--hi,1)}}
   @keyframes fadeIn{to{opacity:1}}
 
-  .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft)}
+  .c-glow{fill:none; stroke:var(--gold); stroke-linecap:round}
   .settle-on .c-glow{animation:breathe 3.6s ease-in-out infinite}
   @keyframes breathe{0%,100%{opacity:.5} 50%{opacity:.75}}
 
@@ -103,9 +103,6 @@
          aria-label="Logo: triángulo espiral de conocimiento con nodos en cada vértice y una C final de Christian">
       <title>Christian Luciani — espiral de conocimiento</title>
       <defs>
-        <filter id="soft" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="8"/>
-        </filter>
         <filter id="soft2" x="-80%" y="-80%" width="260%" height="260%">
           <feGaussianBlur stdDeviation="3.5"/>
         </filter>
@@ -403,6 +400,9 @@ function buildCDefs(svg, band, cD) {
     cp.appendChild(el("path", { d: band.clip[k - 1] }));
     defs.appendChild(cp);
   });
+  const bloom = el("filter", { id: "c-bloom", x: "-80%", y: "-80%", width: "260%", height: "260%" });
+  bloom.appendChild(el("feGaussianBlur", { stdDeviation: CFINISH.bloom.blur }));
+  defs.appendChild(bloom);
   const mask = el("mask", { id: "c-reveal", maskUnits: "userSpaceOnUse", x: 0, y: 0, width: 800, height: 800 });
   const reveal = el("path", {
     d: cD, fill: "none", stroke: "#fff",
@@ -460,13 +460,10 @@ function render() {
   });
   svg.appendChild(cGlowGroup);
 
-  // la C como UN solo path: el vértice en C4 es un join redondeado real
-  // (nada de caps semicirculares montadas) y arranca ~6px antes de B4,
-  // sobre la última verde, para tragar su remate redondo: la unión se lee
-  // como un engrosamiento suave de la línea, no como dos caps chocando
+  // la C es una barra: contorno con marco de inglete + terminales circulares,
+  // dos regiones de gradiente (bisectriz) y una máscara que traza el path
+  // central para conservar la animación de revelado.
   const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
-  // arranca exacto en B4: el cap dorado (r≈5) cubre de sobra el remate
-  // verde (r≈2) — sin solape no hay desborde por los lados
   const cD = `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
   const band = buildCBand(segs, CONFIG.cWidth, CFINISH.cornerCut);
   const cDefs = buildCDefs(svg, band, cD);
@@ -481,7 +478,7 @@ function render() {
   });
   svg.appendChild(cGroup);
   cGlowGroup.appendChild(el("path", {
-    d: cD, stroke: CFINISH.bloom.color,
+    d: cD, stroke: CFINISH.bloom.color, filter: "url(#c-bloom)",
     "stroke-width": CONFIG.cWidth + CFINISH.bloom.width, opacity: CFINISH.bloom.opacity,
   }));
 

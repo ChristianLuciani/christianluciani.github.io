@@ -156,8 +156,10 @@ exacto por generación, twist = 3°×φ, determinismo, y fidelidad DOM
 (`node tools/logo/verify-dom-fidelity.mjs`). El gate de fidelidad compara la
 **geometría de referencia** (centros, segmentos, cielo y constelación) contra
 el DOM aprobado. Desde #55, el gate verifica además el **contorno de la
-banda** (`cBand`: marco y terminales) y la **máscara de revelado** de la C en
-la animación; los assets se generan desde esa misma geometría.
+banda** (`cBand`: marco y terminales), que la **máscara de revelado** esté
+aplicada en el render normal, y que el acabado completo (bisel, barrido y
+bloom) coincida con `cFinish`; los assets se generan desde esa misma
+geometría.
 
 ## 5. Tipografía
 

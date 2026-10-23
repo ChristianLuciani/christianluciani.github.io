@@ -128,10 +128,43 @@ function verify(version, htmlPath) {
     else if (!close(num(reveal["stroke-width"]), cfg.cWidth + 2))
       fail(`${version}: máscara de revelado: width=${reveal["stroke-width"]} esperado=${cfg.cWidth + 2}`);
     else console.log(`✅ ${version}: máscara de revelado ≡ cPathD (width ${cfg.cWidth + 2})`);
+
+    // el acabado completo (no sólo el contorno) ≡ cFinish: gradientes, tint y bloom
+    const stopsOf = (d, id) => {
+      const m = d.match(new RegExp(`<linearGradient id="${id}"[\\s\\S]*?</linearGradient>`));
+      if (!m) return null;
+      return [...m[0].matchAll(/<stop\b[^>]*>/g)].map((t) => parseAttrs(t[0]));
+    };
+    const sameRamp = (stops, want) =>
+      Array.isArray(stops) && stops.length === want.length &&
+      stops.every((st, i) => close(parseFloat(st.offset), want[i].offset * 100) && st["stop-color"] === want[i].color);
+    if (!sameRamp(stopsOf(dumpR, "c-perp-1"), cfg.cFinish.perp) ||
+        !sameRamp(stopsOf(dumpR, "c-perp-2"), cfg.cFinish.perp))
+      fail(`${version}: el bisel de la C diverge de cFinish.perp`);
+    const tint1 = stopsOf(dumpR, "c-tint-1");
+    const tint2 = stopsOf(dumpR, "c-tint-2");
+    const tintOk = (stops, c1, o1, c2, o2) =>
+      Array.isArray(stops) && stops.length === 2 &&
+      stops[0]["stop-color"] === c1 && close(parseFloat(stops[0]["stop-opacity"]), o1) &&
+      stops[1]["stop-color"] === c2 && close(parseFloat(stops[1]["stop-opacity"] || "1"), o2);
+    if (!tintOk(tint1, cfg.cFinish.tint.amber, cfg.cFinish.tint.amberOpacity, cfg.cFinish.tint.amber, 0) ||
+        !tintOk(tint2, cfg.cFinish.tint.light, 0, cfg.cFinish.tint.light, cfg.cFinish.tint.lightOpacity))
+      fail(`${version}: el barrido de la C diverge de cFinish.tint`);
+    const bloomM = dumpR.match(/<filter id="c-bloom"[\s\S]*?stdDeviation="([^"]+)"/);
+    if (!bloomM || !close(parseFloat(bloomM[1]), cfg.cFinish.bloom.blur))
+      fail(`${version}: el bloom de la C no usa cFinish.bloom.blur`);
+    else console.log(`✅ ${version}: acabado de la C ≡ cFinish (bisel, barrido y bloom)`);
   }
 
   /* ── modo normal: cielo + constelación ── */
   const dump = dumpDom(chrome, file);
+  if (version === "aurea") {
+    // la máscara tiene que estar APLICADA en el render normal (en reduced se
+    // muestra el estado final sin máscara, por eso se mira el dump normal)
+    if (!/<g[^>]*class="c-band"[^>]*mask="url\(#c-reveal\)"/.test(dump))
+      fail(`${version}: la C no tiene la máscara de revelado aplicada (render normal)`);
+    else console.log(`✅ ${version}: la C se revela con la máscara c-reveal`);
+  }
   const circles = extractTags(dump, "circle");
   const coreCircles = circles.filter((a) => a.class?.includes("core"));
   const domCores = new Set(coreCircles.map((a) => `${round(num(a.cx))},${round(num(a.cy))}`));
