@@ -13,7 +13,8 @@
     "build:html": "tsx build.ts",
     "logo:generate": "node tools/logo/generate-logo.mjs",
     "logo:verify": "node tools/logo/verify-dom-fidelity.mjs",
-    "brand:sync": "node tools/brand/sync-logo-anim.mjs"
+    "brand:sync": "node tools/brand/sync-logo-anim.mjs",
+    "logo:motion": "node tools/logo/verify-motion.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",
@@ -22,7 +23,7 @@
     "tsx": "^4.23.12",
     "typescript": "^5.7.0",
     "vite": "^8.3.4",
-    "vitest": "^4.1.11",
+    "vitest": "^4.1.12",
     "yaml": "^2.9.0"
   },
   "type": "module"
