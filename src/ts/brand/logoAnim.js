@@ -333,9 +333,36 @@ function buildCDefs(svg, band, cD) {
 }
 
 /* ─────────────────────────── render + animación ──────────────────────── */
-let timers = [];
+/* Agenda del cronograma: todo lo que "pasa después" (limpiar el dash, retirar
+   las líneas de calor, entrar al settle) se aplica sobre el RELOJ DE ANIMACIÓN y
+   no con setTimeout. Un timer de reloj de pared se desincroniza si la pestaña
+   queda en background (donde las animaciones sí se pausan) y, sobre todo, hace la
+   pieza NO medible: el gate de movimiento congela fotogramas con pause+currentTime
+   y los efectos posteriores no llegarían nunca. Un `finished` tampoco sirve: con
+   la animación pausada el estado es 'paused' y la promesa no resuelve. */
+const jobs = [];
+let ticking = false;
+function tick() {
+  ticking = false;
+  for (let i = jobs.length - 1; i >= 0; i--) {
+    const job = jobs[i];
+    const now = job.anim.currentTime;
+    if (now == null) { jobs.splice(i, 1); continue; } // animación cancelada: nada que limpiar
+    /* 1ms de tolerancia: en una animación terminada currentTime se clampa al fin
+       del efecto y delay + activeDuration puede quedar unas milésimas por encima */
+    if (now >= job.end - 1) { jobs.splice(i, 1); job.cb(); }
+  }
+  if (jobs.length) { ticking = true; requestAnimationFrame(tick); }
+}
+let gen = 0;
 function render() {
-  timers.forEach(clearTimeout); timers = [];
+  const run = ++gen;
+  jobs.length = 0; // el cronograma anterior muere con su render
+  const after = (anim, cb) => {
+    const t = anim.effect.getComputedTiming();
+    jobs.push({ anim, end: t.delay + t.activeDuration, cb: () => { if (run === gen) cb(); } });
+    if (!ticking) { ticking = true; requestAnimationFrame(tick); }
+  };
   svg.classList.remove("settle-on");
   const baseDefs = svg.querySelector("defs");
   while (svg.lastChild && svg.lastChild !== baseDefs) svg.lastChild.remove();
@@ -356,6 +383,13 @@ function render() {
   }
   const segDelay = i => delays[i];
   const segDur = i => durs[i];
+  /* Hooks de MEDICIÓN (no cambian el render): el cronograma declarado —los
+     arrays delays[]/durs[] del ADR-lite de #55— y los anclajes de la C. El gate
+     los lee en vez de inferirlos del DOM, donde la C ahora es una banda con
+     máscara y las líneas de calor comparten delay con su tramo. */
+  svg.dataset.schedule = JSON.stringify({
+    delays: delays.map(v => +v.toFixed(1)), durs: durs.map(v => +v.toFixed(1)),
+  });
 
   // halo tenue detrás de la C + arista fantasma del lado abierto
   const ghost = el("polygon", {
@@ -384,6 +418,7 @@ function render() {
   // central para conservar la animación de revelado.
   const cA = segs[cIdx].a, cB = segs[cIdx].b, cTip = segs[cIdx + 1].b;
   const cD = `M ${cA.x} ${cA.y} L ${cB.x} ${cB.y} L ${cTip.x} ${cTip.y}`;
+  svg.dataset.c = JSON.stringify({ a: { x: cA.x, y: cA.y }, b: { x: cB.x, y: cB.y }, tip: { x: cTip.x, y: cTip.y } });
   const band = buildCBand(segs, CONFIG.cWidth, CFINISH.cornerCut);
   const cDefs = buildCDefs(svg, band, cD);
   svg.appendChild(cDefs.defs);
@@ -512,39 +547,37 @@ function render() {
   }
 
   // animación
-  const anims = [];
   lines.forEach((line, i) => {
     if (!line) return;
     const len = line.getTotalLength();
     if (reduced) return;
     line.setAttribute("stroke-dasharray", len);
     line.setAttribute("stroke-dashoffset", len);
-    anims.push(line.animate(
+    const draw = line.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
       { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
-    ));
-    // blindaje: al terminar el trazado, la línea queda como trazo simple
-    // (sin dash) — así no puede desaparecer en ningún motor
-    timers.push(setTimeout(() => {
+    );
+    // blindaje: al terminar el trazado, la línea queda como trazo simple (sin dash)
+    after(draw, () => {
       line.removeAttribute("stroke-dasharray");
       line.removeAttribute("stroke-dashoffset");
-    }, segDelay(i) + segDur(i) + 80));
+    });
   });
   hot.forEach((h, i) => { // el brillo de formación sigue el mismo trazado…
     if (!h) return;
     const len = h.getTotalLength();
     h.setAttribute("stroke-dasharray", len);
     h.setAttribute("stroke-dashoffset", len);
-    anims.push(h.animate(
+    h.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
       { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
-    ));
-    anims.push(h.animate( // …y baja de intensidad al chocar con su nodo
+    );
+    const cool = h.animate( // …y baja de intensidad al chocar con su nodo
       [{ opacity: .55 }, { opacity: 0 }],
       { duration: T.hotFade, delay: segDelay(i) + segDur(i),
         easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both" }
-    ));
-    timers.push(setTimeout(() => h.remove(), segDelay(i) + segDur(i) + T.hotFade + 80));
+    );
+    after(cool, () => h.remove());
   });
 
   // trazado de la C: un solo trazo continuo, y el glow aparece con ella
@@ -555,19 +588,19 @@ function render() {
     const cWin = segDur(cIdx) + segDur(cIdx + 1);
     reveal.setAttribute("stroke-dasharray", cLen);
     reveal.setAttribute("stroke-dashoffset", cLen);
-    anims.push(reveal.animate(
+    const cDraw = reveal.animate(
       [{ strokeDashoffset: cLen }, { strokeDashoffset: 0 }],
       { duration: cWin, delay: segDelay(cIdx), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
-    ));
-    timers.push(setTimeout(() => {
+    );
+    after(cDraw, () => {
       reveal.removeAttribute("stroke-dasharray");
       reveal.removeAttribute("stroke-dashoffset");
-    }, segDelay(cIdx) + cWin + 80));
+    });
     cGlowGroup.style.opacity = 0;
-    anims.push(cGlowGroup.animate(
+    cGlowGroup.animate(
       [{ opacity: 0 }, { opacity: 1 }],
       { duration: cWin, delay: segDelay(cIdx), easing: "ease-out", fill: "both" }
-    ));
+    );
   }
 
   if (reduced) { // estado final directo, sin animación
@@ -577,7 +610,13 @@ function render() {
   }
 
   const end = segDelay(maxIdx) + segDur(maxIdx) + T.settlePad;
-  timers.push(setTimeout(() => svg.classList.add("settle-on"), end));
+  /* Reloj de la pieza: un grupo vacío cuya animación dura EXACTAMENTE el
+     cronograma. El settle entra cuando el reloj de animación llega al final, no
+     antes — y publica el fin del cronograma para que el gate sepa qué medir. */
+  const clock = el("g", { class: "clock" });
+  svg.appendChild(clock);
+  after(clock.animate([{ opacity: 1 }, { opacity: 1 }], { duration: end, fill: "both" }),
+    () => svg.classList.add("settle-on"));
 }
 
   /* ── mini mark (favicon simplificado) para el estado minimizado ── */
