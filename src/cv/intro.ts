@@ -6,8 +6,8 @@
  */
 
 const FRASES = [
-  "¿Pueden el Arte, la Ciencia y la Filosofía convivir en una persona?",
-  "Distintas perspectivas de una misma realidad…",
+  "Arte, Ciencia, Filosofía.",
+  "Perspectivas del  Universo…",
   "<span>Una<br><em>Instancia Humana</em>.</span>"
 ];
 
