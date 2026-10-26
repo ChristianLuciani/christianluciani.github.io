@@ -19,16 +19,18 @@ export const OUTCOME = {
 };
 
 /** Versiones esperadas que NO aparecen en `results` (vacío si no se declaró
- *  `expected` o si están todas). Acepta un número (cuántas) o los nombres. */
+ *  `expected` o si están todas). Acepta un número (cuántas) o los nombres.
+ *  Cuenta IDENTIDADES, no filas: dos resultados de la misma versión no tapan a
+ *  la que falta (F1 del pase fresco de #79). */
 function missingVersions(results, expected) {
   if (expected == null) return [];
+  const seen = new Set(results.map((r) => r.version));
   if (typeof expected === "number") {
-    const missing = expected - results.length;
+    const missing = expected - seen.size;
     return missing > 0
-      ? Array.from({ length: missing }, (_, i) => `versión ${results.length + i + 1}`)
+      ? Array.from({ length: missing }, (_, i) => `versión ${seen.size + i + 1}`)
       : [];
   }
-  const seen = new Set(results.map((r) => r.version));
   return expected.filter((version) => !seen.has(version));
 }
 

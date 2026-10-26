@@ -72,6 +72,16 @@ describe("fidelity-verdict — corrida parcial (#79)", () => {
     expect(exitCodeFor([ok("aurea"), ok("aurea")], EXPECTED)).toBe(2);
   });
 
+  it("con `expected` numérico se cuentan identidades, no filas (F1 del pase fresco)", () => {
+    expect(exitCodeFor([ok("aurea"), ok("aurea")], 2)).toBe(2);
+    expect(exitCodeFor([ok("aurea")], 2)).toBe(2);
+  });
+
+  it("con `expected` numérico, dos identidades distintas y ninguna extra ⇒ 0", () => {
+    expect(exitCodeFor([ok("aurea"), ok("base")], 2)).toBe(0);
+    expect(exitCodeFor([ok("aurea"), ok("base"), ok("extra")], 2)).toBe(0);
+  });
+
   it("sin `expected` el contrato previo no cambia (compatibilidad)", () => {
     expect(exitCodeFor([ok("aurea")])).toBe(0);
   });
