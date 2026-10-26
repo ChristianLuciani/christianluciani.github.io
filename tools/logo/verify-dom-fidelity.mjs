@@ -41,9 +41,10 @@ const parseAttrs = (tag) => {
 const extractTags = (dump, tagName) =>
   [...dump.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "g"))].map((m) => parseAttrs(m[0]));
 
-/* «el puerto diverge» y «no se pudo medir» son veredictos distintos: en CI un
- * Chrome que no arranca no es un drift de geometría. El exit es el mismo (1).
- * Un drift medido GANA el resumen: si algo divergió, la corrida midió. */
+/* «el puerto diverge» y «no se pudo medir» son veredictos distintos, y el exit
+ * los transporta — mismo contrato que el gate de movimiento (`verify-motion`):
+ * 0 limpio · 1 violaciones · 2 no se pudo medir (issue #75). Un drift medido
+ * GANA el resumen: si algo divergió, la corrida midió. */
 let drift = false;
 let unmeasured = false;
 function fail(msg) {
@@ -53,7 +54,7 @@ function fail(msg) {
 }
 function canNotMeasure(msg) {
   console.error(`❌ FIDELIDAD: ${msg}`);
-  process.exitCode = 1;
+  process.exitCode = 2; // no se pudo medir ≠ difiere
   unmeasured = true;
 }
 
@@ -191,6 +192,7 @@ for (const [version, file] of [
   try { verify(version, join(root, file)); }
   catch (e) { canNotMeasure(`${version}: ${e.message}`); }
 }
+process.exitCode = drift ? 1 : unmeasured ? 2 : 0;
 console.log(
   !process.exitCode ? "🏆 FIDELIDAD: geometry.mjs ≡ DOM aprobado (animación v16 + acabado #55)"
     : drift ? "🚫 FIDELIDAD: el puerto diverge del DOM aprobado"

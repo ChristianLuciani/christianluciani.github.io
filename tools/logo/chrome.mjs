@@ -30,7 +30,7 @@
  * explícito con la lista probada, nunca un gate que "pasa" por no poder medir.
  */
 import { spawn, spawnSync } from "node:child_process";
-import { accessSync, mkdtempSync, rmSync } from "node:fs";
+import { accessSync, constants, mkdtempSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -40,7 +40,16 @@ import { join } from "node:path";
 const MAC_CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LINUX_CHROME = ["/usr/bin/google-chrome-stable", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
 
-const exists = (p) => { try { accessSync(p); return true; } catch { return false; } };
+/* Un candidato válido es un ARCHIVO EJECUTABLE: `accessSync(F_OK)` aceptaba
+ * directorios y archivos sin permiso de ejecución, y el fallo aparecía recién al
+ * lanzarlo (issue #75). */
+const exists = (p) => {
+  try {
+    if (!statSync(p).isFile()) return false;
+    accessSync(p, constants.X_OK);
+    return true;
+  } catch { return false; }
+};
 
 /** Candidatos en orden de precedencia. Lee el entorno en cada llamada: un
  *  `CHROME_PATH` seteado después del import sigue ganando. */
@@ -67,7 +76,12 @@ export function chromePath(candidates = chromeCandidates()) {
 export function chromeFailure(err, stderr = "") {
   const lines = String(stderr).split("\n").map((l) => l.trim()).filter(Boolean);
   const cause = lines.length > 6 ? [...lines.slice(0, 2), "…", lines[lines.length - 1]] : lines;
-  const how = err?.signal ? `murió por señal ${err.signal}` : `salió con código ${err?.status ?? "null"}`;
+  /* Tres caminos, tres textos: señal (crash/timeout), código de salida, y el
+   * proceso que ni arrancó (ENOBUFS/EACCES/ETIMEDOUT sin señal). Antes ese
+   * tercero se imprimía como «código null» y no decía nada (issue #75). */
+  const how = err?.signal ? `murió por señal ${err.signal}`
+    : err?.status != null ? `salió con código ${err.status}`
+      : `no pudo ejecutarse (${err?.message || "sin detalle"})`;
   return new Error(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
 }
 
@@ -92,7 +106,7 @@ const run = (args, { capture = false } = {}) => {
     stdio: ["ignore", "pipe", "pipe"],
   });
   const stderr = res.stderr == null ? "" : String(res.stderr);
-  if (res.error) throw chromeFailure(res.error, stderr);
+  if (res.error) throw chromeFailure({ status: res.status, signal: res.signal, message: res.error.message }, stderr);
   if (res.status !== 0 || res.signal) throw chromeFailure(res, stderr);
   return capture ? res.stdout : undefined;
 };

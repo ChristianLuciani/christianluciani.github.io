@@ -7,6 +7,9 @@
  * probada, y que un fallo arrastre su stderr en vez de un "Command failed" mudo.
  * El lanzamiento real lo prueba el propio gate en CI.
  */
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { chromeCandidates, chromeFailure, chromePath } from "./chrome.mjs";
 
@@ -41,6 +44,17 @@ describe("chromePath", () => {
   it("devuelve el primer candidato existente y saltea los inexistentes", () => {
     expect(chromePath(["/no/existe-chrome", EXISTING])).toBe(EXISTING);
   });
+  it("rechaza directorios y archivos sin permiso de ejecución (issue #75)", () => {
+    const dir = mkdtempSync(join(tmpdir(), "chrome-dir-"));
+    const plain = join(dir, "chrome-sin-exec");
+    writeFileSync(plain, "no ejecutable");
+    try {
+      expect(() => chromePath([dir, plain])).toThrow(/Chrome no encontrado/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
   it("sin binario falla con la lista probada (nunca un verde silencioso)", () => {
     expect(() => chromePath(["/no/existe/google-chrome"])).toThrow(/Chrome no encontrado.*\/no\/existe\/google-chrome/);
     expect(() => chromePath([])).toThrow(/lista vacía/);
@@ -56,6 +70,11 @@ describe("chromeFailure", () => {
   });
   it("una muerte por señal no se reporta como «código null»", () => {
     expect(chromeFailure({ status: null, signal: "SIGABRT" }, "boom").message).toMatch(/murió por señal SIGABRT/);
+  });
+  it("un proceso que no llegó a arrancar dice su error, no «código null» (issue #75)", () => {
+    const err = chromeFailure({ status: null, signal: null, message: "spawnSync chrome ENOBUFS" }, "");
+    expect(err.message).toMatch(/no pudo ejecutarse \(spawnSync chrome ENOBUFS\)/);
+    expect(err.message).not.toMatch(/null/);
   });
   it("sin stderr no inventa una causa", () => {
     expect(chromeFailure({ status: 1 }, "").message).not.toMatch(/chrome:/);
