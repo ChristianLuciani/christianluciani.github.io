@@ -8,21 +8,24 @@
 
 El sitio se publica en GitHub Pages (Actions → `dist/`, `base: "/"`); el repo es público y
 tiene el tag `v1.0.0` (#54). El HTML generado (`index.html`, ensamblado por `build.ts`)
-referencia **19 rutas locales + 1 externa**:
+referencia **19 rutas locales + 1 externa** (9 de los 10 iconos se inlinean como data URI
+en el build, así que no se descargan):
 
-| Qué referencia el HTML | Peso en repo | Dónde vive |
+| Qué referencia el HTML | Peso en repo | Dónde vive / qué publica el build |
 |---|---|---|
-| 3 favicons (`/assets/brand/…`) | parte de 23 MB | `assets/brand/logo/` (58 renders); `vite.config.ts` copia 3 al build |
-| 4 thumbs de papers (`/assets/*_thumb-<hash>.jpg`) | 108 KB | `assets/` (raíz) |
-| 10 iconos (`assets/icons/*.svg`) + QR (`assets/qr-site.svg`) | 80 KB | `public/assets/` |
-| OG (`https://christianluciani.github.io/assets/og-image.png`, 2 meta) | 116 KB | `public/assets/og-image.png` |
+| 3 favicons (`/assets/brand/…`) | parte de 23 MB | fuente `assets/brand/logo/` (58 renders); `vite.config.ts` copia 3 a `/assets/brand/` |
+| 4 thumbs de papers | 92 KB | fuente `assets/<name>-<hash>.jpg`; el build publica `/assets/<name>-<hash>-<hash>.jpg` (Vite suma su hash) |
+| 10 iconos | 8.5 KB | fuente `assets/icons/` (9) + `public/assets/icons/` (patreon, 310 B); 9 se inlinean como data URI, sólo `patreon.svg` se descarga |
+| QR (`assets/qr-site.svg`) | 37 KB | `public/assets/qr-site.svg` |
+| OG (`https://christianluciani.github.io/assets/og-image.png`, 2 meta) | 113 KB | `public/assets/og-image.png` |
 | audio de salas (11 MP3, desde TS) | 8.1 MB | `public/audio/` |
 | *1 externa*: logo DRAHMAN | — | hotlink a `raw.githubusercontent.com` (`sala_html.ts:261`) |
 
-El repo además carga duplicados y material que el sitio no sirve:
-`assets/images/papers/` (148 KB) y `assets/icons/` (36 KB) son copias de `public/assets/`
-(md5 idéntico en los thumbs muestreados), `assets/og-image.png` duplica el de `public/assets/`,
-y los ~23 MB de renders print no se publican (sólo 3 favicons se copian al `dist/`).
+El repo además carga duplicados y material que el sitio no sirve: `public/assets/`
+(271 KB: 10 iconos, 14 thumbs, OG y QR) tiene sus copias en `assets/images/papers/`
+(148 KB, md5 idéntico en los thumbs muestreados), `assets/icons/` (9 archivos, sin
+`patreon.svg`) y `assets/og-image.png` (md5 idéntico). Esos duplicados, más los ~23 MB de
+renders print, no se publican: sólo 3 favicons se copian al `dist/`.
 
 Dos hechos **medidos** el 2026-10-25 (`curl -sSI`, contra los orígenes reales):
 
@@ -65,11 +68,11 @@ fallback, y el HTML generado no pasa por él: sus 19 rutas están escritas a man
 | Cache servida | Tag: `immutable, max-age=31536000` **[medido]** | Pages: edge 1 semana, browser `max-age=0, must-revalidate`; R2+CDN: TTL configurable |
 | Purga / invalidación | API de purga con acceso por email, rate-limited; **no toca tags exactos** | Instant Purge en Free (5 req/min bulk); Pages = “Purge Everything” de zona |
 | Límites duros | **>20 MB por archivo** no soportado (GitHub); HTML se sirve como `text/plain`; ≤10 000 archivos activos recomendado (100 000 soft, ToS §5) | Pages: 25 MiB/archivo, 20 000 archivos, 500 builds/mes; R2: 10 GB-mes gratis |
-| Operador / sostenibilidad | Volentio JSD Ltd (ToS §1), **financiado por sponsors** (Cloudflare, Fastly, Bunny, GCore, IBM, DO); sin contrato | Cloudflare, Inc.; producto comercial con plan Free |
+| Operador / sostenibilidad | Volentio JSD Ltd (preámbulo de los ToS), **financiado por sponsors** (Cloudflare, Fastly, Bunny, GCore, IBM, DO); sin contrato | Cloudflare, Inc.; producto comercial con plan Free |
 | Costo a nuestra escala | $0, sin cuenta; sin límite de bandwidth declarado | $0 (Pages Free; R2 free tier: 10 GB, egress gratis) |
 | LatAm | Multi-CDN (Cloudflare, Fastly, Bunny, GCore) con balanceo por RUM; **sin cifra publicada de PoPs** [?] | 348 ciudades, **Quito (UIO) y Guayaquil (GYE) listados** [OFICIAL]; medido: el borde que atendió fue GYE |
 | Integración con el deploy | Baja: la URL se arma con repo + tag + path; el tag hay que crearlo (el actual no sirve el favicon vigente) | Proyecto nuevo + dominio (Pages) o bucket público con **custom domain** (r2.dev es no-producción) |
-| Disponibilidad | **Sin SLA**; los ToS excluyen garantía de disponibilidad | Sin SLA en Free; red con reclamo de <50 ms para 95% de usuarios |
+| Disponibilidad | **Sin SLA**; los ToS §11 excluyen toda garantía | Sin SLA en Free; red con reclamo de <50 ms para 95% de usuarios |
 | Política de uso | ToS §6 prohíbe *image hosting* y “archivos en grandes cantidades”: **zona gris para media** | Hosting estático de propósito general; sin política por tipo de archivo |
 
 Fuentes y fecha en §Evidencia.
@@ -133,7 +136,13 @@ el uso de jsDelivr.
    lo consume nada de producción**: la migración tiene que cablearlo.
 2. Las 19 rutas locales del HTML generado están en `src/templates/head_html.ts`,
    `sala_html.ts` y `print_cv_html.ts`; las que se migran son **8** (3 favicons + OG en 2
-   meta + 4 thumbs). Iconos, QR y audio no se migran.
+   meta + 4 thumbs). Iconos, QR y audio no se migran. Fuente en el repo → URL publicada:
+
+   | Asset | Fuente (la ruta que usa jsDelivr) | URL que sirve Pages |
+   |---|---|---|
+   | 3 favicons | `assets/brand/logo/favicon-aurea{,-32}.svg/png`, `apple-touch-icon-aurea.png` | `/assets/brand/<mismo nombre>` |
+   | OG | `public/assets/og-image.png` | `/assets/og-image.png` |
+   | 4 thumbs | `assets/<name>-<hash>.jpg` | `/assets/<name>-<hash>-<hash>.jpg` |
 3. Un bump de assets = tag nuevo + cambiar la base
    (`…/gh/ChristianLuciani/christianluciani.github.io@v1.1.0`).
 4. **Fallback real, a implementar en la migración** (no existe hoy): `assetUrl()` sólo
@@ -162,7 +171,7 @@ Cada paso es reversible por separado.
 |---|---|---|---|---|
 | 1 | jsDelivr: gratis, sin límite de bandwidth, sirve GitHub tag/commit/branch, copia permanente en S3, branch 12 h, alias 7 d, >20 MB no soportado, HTML `text/plain`, purga por API restringida | `[OFICIAL]` | <https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md> | 2026-10-25 |
 | 2 | jsDelivr multi-CDN (Cloudflare, Fastly, Bunny, GCore) con balanceo por RUM; sin cifra publicada de PoPs | `[OFICIAL]` + `[?]` (número) | <https://www.jsdelivr.com/network> | 2026-10-25 |
-| 3 | jsDelivr: sin garantía de disponibilidad (§1 operador Volentio JSD Ltd; §5 límites de archivos; §6 prohíbe image hosting y “grandes cantidades”) | `[OFICIAL]` | <https://www.jsdelivr.com/terms/terms-of-use> · <https://www.jsdelivr.com/sponsors> | 2026-10-25 |
+| 3 | jsDelivr: sin garantía (§11 “No warranties”; operador Volentio JSD Ltd en el preámbulo; §5 límites blandos de archivos; §6 prohíbe image hosting y “grandes cantidades”) | `[OFICIAL]` | <https://www.jsdelivr.com/terms/terms-of-use> · <https://www.jsdelivr.com/sponsors> | 2026-10-25 |
 | 4 | Headers de este repo en el tag: `immutable, max-age=31536000`, CORS `*`, `cf-ray …-GYE`; `@main` ⇒ `s-maxage=43200`; el colo que nos atendió es GYE = Guayaquil (IATA) | `[BENCHMARK]` | `curl -sSI …@v1.0.0/assets/brand/logo/favicon-aurea-32.png` · `curl -s https://www.cloudflare.com/cdn-cgi/trace` ⇒ `colo=GYE loc=EC` | 2026-10-25 |
 | 5 | Pages Free: 500 builds/mes, 20 000 archivos, 25 MiB/archivo, >25 MiB ⇒ R2 | `[OFICIAL]` | <https://developers.cloudflare.com/pages/platform/limits/> | 2026-10-25 |
 | 6 | Pages browser cache `max-age=0, must-revalidate`; Purge Everything por zona, 5 req/min bulk en Free | `[OFICIAL]` | <https://developers.cloudflare.com/pages/configuration/serving-pages/> · <https://developers.cloudflare.com/cache/how-to/purge-cache/> | 2026-10-25 |
