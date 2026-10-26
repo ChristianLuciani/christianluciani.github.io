@@ -21,11 +21,8 @@ export function exitCodeFor(results) {
   return list.length && list.every((r) => r.outcome === "ok") ? 0 : 2;
 }
 
-/**
- * summaryFor(results) → { code, line }: el resumen NOMBRA las versiones
- * afectadas y qué pasó con cada una (en un estado mixto, «diverge» a secas
- * esconde que la otra versión ni se midió).
- */
+/** summaryFor(results) → { code, line }: nombra CADA versión afectada — en un
+ *  estado mixto, «diverge» a secas esconde que la otra ni se midió. */
 export function summaryFor(results) {
   const list = results ?? [];
   const code = exitCodeFor(list);
