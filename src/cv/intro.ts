@@ -7,7 +7,7 @@
 
 const FRASES = [
   "Arte, Ciencia, Filosofía.",
-  "Perspectivas del  Universo…",
+  "Perspectivas del Universo…",
   "<span>Una<br><em>Instancia Humana</em>.</span>"
 ];
 
