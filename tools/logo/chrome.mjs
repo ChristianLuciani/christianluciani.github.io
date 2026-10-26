@@ -27,13 +27,16 @@
  * override explícito, y en CI el runner lo apunta al binario que acaba de
  * instalar — y después los paths por defecto de macOS y de linux
  * (`google-chrome-stable` / `chromium` del runner). Sin binario ⇒ error
- * explícito con la lista probada, nunca un gate que "pasa" por no poder medir.
+ * explícito con la lista probada, nunca un gate que "pasa" por no poder medir;
+ * con `CHROME_PATH` seteado e inválido ⇒ error ruidoso, nunca el binario del
+ * sistema por detrás (#79).
  */
 import { spawn, spawnSync } from "node:child_process";
 import { accessSync, constants, mkdtempSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { Unmeasurable } from "./gate.mjs";
 
 /* Defaults por plataforma (macOS primero sólo por orden de lectura: en linux
  * no existe). CHROME_PATH gana siempre: se prepende en chromeCandidates(). */
@@ -63,14 +66,28 @@ export function chromeCandidates() {
 }
 
 /** Primer binario existente. `candidates` es un seam para los tests: el
- *  contrato real es la lista por defecto. */
+ *  contrato real es la lista por defecto.
+ *
+ *  `CHROME_PATH` es el override EXPLÍCITO: si está seteado y no sirve, se falla
+ *  ruidoso en vez de caer al Chrome del sistema. Antes el motivo sólo se
+ *  imprimía cuando fallaban TODOS los candidatos, así que un `CHROME_PATH` mal
+ *  apuntado se enmascaraba con otro binario y el gate medía otra cosa (#79). */
 export function chromePath(candidates = chromeCandidates()) {
+  const override = process.env.CHROME_PATH;
+  if (override && candidates.includes(override)) {
+    const why = whyNot(override);
+    if (why) {
+      throw new Unmeasurable(
+        `CHROME_PATH='${override}' no sirve (${why}) — el override explícito no se enmascara con otro binario: corregí CHROME_PATH o desetalo`,
+      );
+    }
+  }
   const found = candidates.find(exists);
   if (!found) {
     const tried = candidates.length
       ? candidates.map((p) => `${p} (${whyNot(p)})`).join(", ")
       : "(lista vacía)";
-    throw new Error(`Chrome no encontrado (probado: ${tried}) — instalá Chrome o seteá CHROME_PATH`);
+    throw new Unmeasurable(`Chrome no encontrado (probado: ${tried}) — instalá Chrome o seteá CHROME_PATH`);
   }
   return found;
 }
@@ -88,7 +105,7 @@ export function chromeFailure(err, stderr = "") {
     ? (/ETIMEDOUT|timeout/i.test(err.message) ? "no terminó a tiempo (timeout)" : `no pudo ejecutarse (${err.message})`)
     : err?.signal ? `murió por señal ${err.signal}`
       : `salió con código ${err?.status ?? "?"}`;
-  return new Error(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
+  return new Unmeasurable(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
 }
 
 const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars"];

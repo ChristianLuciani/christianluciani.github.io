@@ -278,11 +278,16 @@ Regenerar todo: `node tools/logo/generate-logo.mjs`
 Sólo áurea/base: `--only-aurea` / `--only-base`
 Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — salida **0** limpio
-· **1** el puerto difiere · **2** no se pudo medir (Chrome ausente o artefacto
-inexistente), y el resumen nombra la versión; corre en CI
+· **1** el puerto difiere · **2** no se pudo medir (Chrome ausente, o artefacto
+inexistente, **vacío**, ilegible o un directorio con el nombre del HTML), y el
+resumen nombra la versión; una corrida parcial (menos versiones de las esperadas)
+también es 2, nunca 0. Corre en CI
 con Chrome headless de linux; el binario se resuelve `CHROME_PATH` → macOS →
 `google-chrome-stable`/`chromium` (`tools/logo/chrome.mjs`), y sin binario el
-gate falla como «no se pudo medir», nunca como «diverge»
+gate falla como «no se pudo medir», nunca como «diverge»; un `CHROME_PATH`
+seteado e inválido falla ruidoso (`CHROME_PATH='…' no sirve`) en vez de caer al
+Chrome del sistema. Un error interno del gate se reporta como tal, no como
+problema de entorno (`tools/logo/gate.mjs`).
 Gate de movimiento: `npm run logo:motion` (ver §11)
 Módulo del sitio: `npm run brand:sync` — **obligatorio** después de tocar la
 animación (CI verifica que `src/ts/brand/logoAnim.js` no tenga drift)

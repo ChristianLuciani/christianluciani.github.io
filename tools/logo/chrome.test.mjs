@@ -96,3 +96,27 @@ describe("chromeFailure", () => {
     expect(chromeFailure({ status: 1 }, "").message).not.toMatch(/chrome:/);
   });
 });
+
+describe("chromePath — CHROME_PATH explícito (#79)", () => {
+  it("un override inválido falla ruidoso: NO se enmascara con el Chrome del sistema", () => {
+    withEnv("/no/existe/chrome-79", () => {
+      expect(() => chromePath(["/no/existe/chrome-79", EXISTING]))
+        .toThrow(/CHROME_PATH.*no existe.*no se enmascara/);
+    });
+  });
+
+  it("un override a un directorio también falla ruidoso", () => {
+    const dir = mkdtempSync(join(tmpdir(), "chrome-dir79-"));
+    try {
+      withEnv(dir, () => {
+        expect(() => chromePath([dir, EXISTING])).toThrow(/CHROME_PATH.*no es un archivo/);
+      });
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("un override válido sigue ganando", () => {
+    withEnv(EXISTING, () => expect(chromePath()).toBe(EXISTING));
+  });
+});
