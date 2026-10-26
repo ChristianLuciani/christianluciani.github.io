@@ -7,16 +7,16 @@
  */
 export const ASSET_MANIFEST = {
   papers: {
-    kontablo2026: "/assets/images/papers/kontablo2026_thumb.jpg",
+    kontablo2026: "/assets/kontablo2026_thumb-7y4PiTON.jpg",
     trujillo2025: "/assets/images/papers/trujillo2025_thumb.svg",
     landazuri2025: "/assets/images/papers/landazuri2025_thumb.svg",
-    zambrano2023: "/assets/images/papers/zambrano2023_thumb.jpg",
+    zambrano2023: "/assets/zambrano2023_thumb-DFrmN1Ce.jpg",
     landazuri2023: "/assets/images/papers/landazuri2023_thumb.svg",
     zambrano2022: "/assets/images/papers/zambrano2022_thumb.svg",
     aiche2022: "/assets/images/papers/aiche2022_thumb.svg",
     usfq2019: "/assets/images/papers/usfq2019_thumb.svg",
-    cabrera2006: "/assets/images/papers/cabrera2006_thumb.jpg",
-    hosaka2006: "/assets/images/papers/hosaka2006_thumb.jpg"
+    cabrera2006: "/assets/cabrera2006_thumb-ByivZRQD.jpg",
+    hosaka2006: "/assets/hosaka2006_thumb-KMqoFzTp.jpg"
   }
 } as const;
 

@@ -99,6 +99,12 @@ describe("cdnRepoPath", () => {
     expect(cdnRepoPath("/assets/og-image.png")).toBe("public/assets/og-image.png");
   });
 
+  it("maps the whole /assets/images/** tree to public/", () => {
+    expect(cdnRepoPath("/assets/images/papers/trujillo2025_thumb.svg")).toBe(
+      "public/assets/images/papers/trujillo2025_thumb.svg"
+    );
+  });
+
   it("maps the 4 thumbs to public/ (servidas sin hash, copiadas tal cual)", () => {
     expect(cdnRepoPath("/assets/kontablo2026_thumb-7y4PiTON.jpg")).toBe(
       "public/assets/kontablo2026_thumb-7y4PiTON.jpg"

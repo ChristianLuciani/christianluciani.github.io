@@ -49,7 +49,13 @@ function rootPath(path: string): string {
  *   - el OG vive en `public/assets/` y Vite publica `public/` en la raíz.
  * Las 4 thumbs sí coinciden (mismo path en `assets/`).
  */
-const SERVED_FROM_PUBLIC = new Set<string>([
+/**
+ * Sufijos servidos desde `public/` (Vite publica `public/` en la raíz): todo
+ * `/assets/images/**` y los archivos sueltos de la raíz de `public/assets/`
+ * (OG + las 4 thumbs). El resto de `/assets/**` no vive en public.
+ */
+const PUBLIC_ASSET_PREFIXES = ["/assets/images/"];
+const PUBLIC_ASSET_FILES = new Set<string>([
   "og-image.png",
   "kontablo2026_thumb-7y4PiTON.jpg",
   "zambrano2023_thumb-DFrmN1Ce.jpg",
@@ -63,8 +69,11 @@ export function cdnRepoPath(servedPath: string): string {
   if (served.startsWith(brand)) {
     return `assets/brand/logo/${served.slice(brand.length)}`;
   }
+  if (PUBLIC_ASSET_PREFIXES.some((prefix) => served.startsWith(prefix))) {
+    return `public${served}`;
+  }
   const name = served.startsWith("/assets/") ? served.slice("/assets/".length) : "";
-  if (name && SERVED_FROM_PUBLIC.has(name)) return `public/assets/${name}`;
+  if (name && PUBLIC_ASSET_FILES.has(name)) return `public/assets/${name}`;
   return served.slice(1);
 }
 
@@ -130,5 +139,5 @@ export function assetUrl(pathOrKey: string, kind?: "papers"): string {
 
   const rel = normalizeRelative(path);
   if (!ASSET_BASE) return rel;
-  return `${ASSET_BASE}/${rel}`;
+  return `${ASSET_BASE}/${cdnRepoPath(rel)}`;
 }
