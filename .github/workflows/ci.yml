@@ -25,7 +25,9 @@ jobs:
       # Chrome headless de linux instalado por el runner; el gate lo resuelve por
       # CHROME_PATH (tools/logo/chrome.mjs) y su error dice si NO pudo medir.
       - id: chrome
-        uses: browser-actions/setup-chrome@v1
+        uses: browser-actions/setup-chrome@v2
+        with:
+          chrome-version: stable
       - run: npm run logo:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
