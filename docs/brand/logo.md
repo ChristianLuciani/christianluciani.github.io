@@ -301,7 +301,8 @@ sesión de origen (PR #53) — reutilizado aquí para los PNG.
 El cronograma de la animación vive paramétrico en `CONFIG.timing` de
 `proposals/logo-triangulo-espiral/aurea7.html`. Este apartado documenta el
 **instrumento** que lo mide y el estado medido del artefacto; el pulido visual
-pendiente (track B) está en el issue **#67**.
+pendiente (track B) se cerró con la decisión de marca del issue **#67**
+(2026-10-25), documentada abajo.
 
 ### Hooks que publica el artefacto (no cambian el render)
 
@@ -309,6 +310,7 @@ pendiente (track B) está en el issue **#67**.
 |---|---|---|
 | `svg.dataset.schedule` | `delays[]` / `durs[]` — el cronograma declarado, el array del ADR-lite de #55 | perfil del arranque y ventana de trazado, **sin inferirlos** del DOM |
 | `svg.dataset.c` | anclajes de la C (vértice y punta) | encuadrar la medición: desde el acabado (#64) la C es una **banda con máscara**, no un `path.seg` |
+| `svg.dataset.intent` | `{ tipBloom }` — la **intención de marca** del apagado de la punta | el gate acota el crecimiento a ese tope en vez de prohibirlo: un bloom declarado es diseño, uno no declarado es destello |
 | `g.clock` | un grupo vacío cuya animación dura exactamente el cronograma | el fin del cronograma, y con él la entrada del settle |
 | agenda `jobs`/`tick` | — | los efectos posteriores (limpiar dash, retirar líneas de calor, entrar al settle) corren sobre el **reloj de animación**, no `setTimeout`: así la pieza se puede congelar fotograma a fotograma |
 
@@ -327,7 +329,7 @@ con el mismo render.
 una sesión CDP, **congela** el estado con `pause` + `currentTime` (el presupuesto de
 tiempo virtual no gobierna las animaciones: medido) y mide:
 
-- **destello** — estructural (opacidad monótona, escala que no crece, curva sin
+- **destello** — estructural (opacidad monótona, escala dentro del bloom declarado, curva sin
   overshoot) + medido (la luz propia de la estrella y el glow fuera del trazo nunca
   suben mientras se apaga);
 - **settle** — sin escalón a ±40 ms y la respiración efectivamente viva;
@@ -346,18 +348,34 @@ píxeles, **`png.test.mjs` (16 tests)** — 42 del instrumento, todos en CI
 La adquisición (CDP) necesita Chrome y sigue fuera de CI: #59 cableó sólo el
 gate de fidelidad (dump-dom), no el de movimiento.
 
-### Estado medido del artefacto (track A, 2026-10-23)
+### Decisión de marca y estado medido (#67, 2026-10-25)
 
-El artefacto conserva el pulido de #55 **sin aplicar** (track B, a ratificar por el
-operador). El gate lo reporta:
+El operador decidió, con la medición delante, las dos preguntas que el gate había
+dejado abiertas:
+
+1. **El bloom de la punta se queda, sin el rebote.** El crecimiento
+   `scale(1) → scale(1.3)` es intención de marca y el artefacto la **declara**
+   (`svg.dataset.intent.tipBloom`): el gate lo acota a ese tope y sigue prohibiendo
+   el overshoot (`cubic-bezier(.22,1,.36,1)`, antes `.3,1.4,.5,1`). El halo que
+   abre el bloom se **reporta** como métrica; sin declaración, hubiera sido defecto.
+2. **La respiración se arregló sobre el trazo.** antes animaba `.settle-on .c-glow`
+   (el grupo), que el trazado deja fijo en 1 ⇒ medido `0.0000`: nunca respiraba.
+   Ahora anima `.settle-on .c-glow path`, arrancando y terminando en el reposo real
+   del trazo (`0.28`, no `0.5`), así que el settle no pega escalón. El sitio espeja
+   la regla en `src/templates/head_html.ts` (`brandBreathe`, mismo reposo).
+
+Estado medido con `npm run logo:motion` (2026-10-25): **exit 0**.
 
 ```
-❌ el glow de la punta se agranda al apagarse (escala 1 → 1.3): el bloom era el destello
-❌ la curva de la punta (cubic-bezier(0.3, 1.4, 0.5, 1)) tiene overshoot
-❌ la respiración arranca en 0.5 y el trazo descansa en 0.28  (y lo mismo al terminar)
-❌ la respiración se aplica a ".settle-on .c-glow" y no al TRAZO
-❌ el glow no respira: 0.0000 entre settle+40ms y settle+900ms
+punta se apaga 5351→6031ms (680ms, cubic-bezier(0.22, 1, 0.36, 1))
+destello — luz de la estrella: suba máx +0.000 · glow fuera del trazo: +0.67 (bloom declarado: métrica)
+settle (5771ms): cuerpo 0.2113 → 0.2141 = +0.0027 (máx 0.004)
+respiración: glow 0.2141 → 0.2205 = +0.0064 (mín 0.004)
 ```
+
+Antes de la decisión el mismo gate daba **exit 1** con 6 violaciones (las dos de la
+punta y las cuatro de la respiración); esa medición es la evidencia con la que se
+eligió.
 
 Y el arranque medido: **pico 3 tramos trazando a la vez @940 ms · stagger
 110 → 235 ms (monótono) · 5/8/10 tramos aterrizados @1,0/1,5/2,0 s**.

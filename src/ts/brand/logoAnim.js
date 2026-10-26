@@ -390,6 +390,10 @@ function render() {
   svg.dataset.schedule = JSON.stringify({
     delays: delays.map(v => +v.toFixed(1)), durs: durs.map(v => +v.toFixed(1)),
   });
+  /* Intención de marca (decisión #67): la punta SÍ florece al apagarse, hasta
+     este tope. Sin esta declaración el gate lo lee como destello — con ella lo
+     acota, y el rebote (overshoot) sigue prohibido. */
+  svg.dataset.intent = JSON.stringify({ tipBloom: 1.3 });
 
   // halo tenue detrás de la C + arista fantasma del lado abierto
   const ghost = el("polygon", {
@@ -529,18 +533,20 @@ function render() {
       const punta = j === pts.length - 1;
       constellation.children[j].animate(
         punta
-          ? [ // la punta se desvanece SIN destello: nada de flash artificial
+          ? [ // bloom DECLARADO (svg.dataset.intent): crece, pero sin rebote
               { opacity: .85, transform: "scale(1)" },
               { opacity: 0, transform: "scale(1.3)" },
             ]
-          : [
+          : [ // chispazo de formación: sí sobrepasa, es la chispa del trazo
               { opacity: .85, transform: "scale(1)" },
               { opacity: 1, transform: "scale(1.4)", offset: .3 },
               { opacity: 0, transform: "scale(1.9)" },
             ],
         {
           duration: C.dissolve, delay: touch(j),
-          easing: "cubic-bezier(.3,1.4,.5,1)", fill: "both",
+          /* sin overshoot en la punta: la curva no pasa del valor final (#67) */
+          easing: punta ? "cubic-bezier(.22,1,.36,1)" : "cubic-bezier(.3,1.4,.5,1)",
+          fill: "both",
         }
       );
     });

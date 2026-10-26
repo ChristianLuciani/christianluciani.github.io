@@ -111,7 +111,11 @@ export function checkStructure(probe, L) {
   const fails = [];
   const punta = L.punta;
 
-  /* 1. opacidad monótona y escala que no crece en la disolución de la punta */
+  /* bloom declarado por el artefacto (svg.dataset.intent): la marca decide si
+     la punta florece; el tope lo pone ella, no el gate (#67) */
+  const declaredBloom = Number(probe.intent?.tipBloom);
+
+  /* 1. opacidad monótona y escala dentro del bloom declarado (sin declarar: no crece) */
   if (!punta) fails.push("no encontré la animación de disolución de la punta");
   else {
     let last = Infinity;
@@ -121,8 +125,12 @@ export function checkStructure(probe, L) {
       last = o;
     }
     const scales = punta.kf.map((k) => scaleOf(k.transform));
-    if (Math.max(...scales) > scales[0] + EPS)
-      fails.push(`el glow de la punta se agranda al apagarse (escala ${scales.join(" → ")}): el bloom era el destello`);
+    const grown = Math.max(...scales);
+    if (Number.isFinite(declaredBloom) && declaredBloom > 0) {
+      if (grown > declaredBloom + EPS)
+        fails.push(`el glow de la punta crece hasta ${grown} y declaró un bloom máximo de ${declaredBloom} (svg.dataset.intent)`);
+    } else if (grown > scales[0] + EPS)
+      fails.push(`el glow de la punta se agranda al apagarse (escala ${scales.join(" → ")}): el bloom era el destello y no está declarado (svg.dataset.intent.tipBloom)`);
   }
 
   /* 2. la curva de la punta no puede tener overshoot (y > 1) */
@@ -180,6 +188,10 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
   const drift = rows.some((r) => !Number.isFinite(r.drift)) ? Infinity : Math.max(...rows.map((r) => r.drift));
   const peak = Math.max(...rows.filter((r) => r.T >= from && r.T <= to).map((r) => r.light));
 
+  /* con bloom declarado, el halo que abre el crecimiento es la intención de
+     marca: se REPORTA (la tabla sigue imprimiéndolo) pero no se marca como
+     destello. Sin declararlo, sigue siendo un defecto. */
+  const bloomDeclared = Number.isFinite(Number(probe.intent?.tipBloom));
   const fails = [...checkStructure(probe, L)];
   if (flash.delta > thresholds.flash)
     fails.push(`destello: la luz de la estrella sube +${flash.delta.toFixed(3)} en ${flash.t}ms mientras se apaga (máx ${thresholds.flash})`);
@@ -187,7 +199,7 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
     fails.push(`bloom: la luz de la estrella sube +${bloom.delta.toFixed(3)} sobre el mínimo previo en ${bloom.t}ms (máx ${thresholds.bloom})`);
   if (sustain.delta > thresholds.flash)
     fails.push(`suba sostenida de la estrella de +${sustain.delta.toFixed(3)} mientras se apaga (máx ${thresholds.flash})`);
-  if (haloUp.delta > thresholds.halo)
+  if (haloUp.delta > thresholds.halo && !bloomDeclared)
     fails.push(`el glow fuera del trazo sube +${haloUp.delta.toFixed(2)} en ${haloUp.t}ms mientras la punta se apaga (máx ${thresholds.halo})`);
   if (settle && Math.abs(settle.delta) > thresholds.settle)
     fails.push(`salto al entrar el settle: ${settle.delta.toFixed(4)} (máx ${thresholds.settle})`);
@@ -207,7 +219,7 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
   else fails.push(...checkStartup(startup, { timing: probe.timing, thresholds }));
 
   return { from, to, d0, d1, peak, flash, bloom, sustain, haloUp, settle, breathe,
-    startup, starSeen, tipMaxSettled, drift, fails };
+    startup, starSeen, tipMaxSettled, drift, bloomDeclared, fails };
 }
 
 

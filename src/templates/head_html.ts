@@ -371,10 +371,12 @@ body {
 #brand-logo .star .glow { opacity:.16; filter:url(#soft2); animation:brandTwinkle var(--dg,3.4s) ease-in-out infinite; }
 #brand-logo .ambient { animation:brandTwinkle var(--da,4.2s) ease-in-out infinite; }
 #brand-logo .c-glow { fill:none; stroke:var(--gold); stroke-linecap:round; filter:url(#soft); }
-#brand-logo .settle-on .c-glow { animation:brandBreathe 3.6s ease-in-out infinite; }
+/* la respiración va sobre el TRAZO (el grupo lo fija el trazado en 1) y en su
+   reposo real (0.28), para no pegar escalón al entrar el settle (#67) */
+#brand-logo .settle-on .c-glow path { animation:brandBreathe 3.6s ease-in-out infinite; }
 @keyframes brandTwinkle { 0%,100%{opacity:var(--lo,.4)} 50%{opacity:var(--hi,1)} }
 @keyframes brandFadeIn { to { opacity:1 } }
-@keyframes brandBreathe { 0%,100%{opacity:.5} 50%{opacity:.75} }
+@keyframes brandBreathe { 0%,100%{opacity:.28} 50%{opacity:.42} }
 
 /* Introducción: frase rotando debajo del fractal (dentro del loader) */
 #intro-block {
