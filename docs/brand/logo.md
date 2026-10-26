@@ -374,9 +374,8 @@ punta 5351→6031ms (cubic-bezier(0.22, 1, 0.36, 1)) · luz estrella +0.000 · h
 settle +0.0027 (máx 0.004) · respiración +0.0064 (mín 0.004)
 ```
 
-Antes de la decisión el mismo gate daba **exit 1** con 6 violaciones (las dos de la
-punta y las cuatro de la respiración); esa medición es la evidencia con la que se
-eligió.
+Antes de la decisión el mismo gate daba **exit 1** con 6 violaciones (2 de la punta,
+4 de la respiración): esa medición es la evidencia con la que se eligió.
 
 Y el arranque medido: **pico 3 tramos trazando a la vez @940 ms · stagger
 110 → 235 ms (monótono) · 5/8/10 tramos aterrizados @1,0/1,5/2,0 s**.
