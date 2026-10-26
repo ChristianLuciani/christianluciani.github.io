@@ -29,7 +29,7 @@ christianluciani.github.io/
 ├── vite.config.ts      ← build (base "/")
 ├── README.md
 ├── ESTADO.md           ← Estado actual y próximo paso por proyecto
-├── public/             ← Estáticos servidos tal cual (íconos, fotos)
+├── public/             ← Recursos servidos tal cual (audio, thumbs, OG, QR)
 ├── src/
 │   ├── main.ts         ← entry Vite (UI, i18n, intro, grafo, canvases, mountSalas)
 │   ├── cv/
@@ -43,7 +43,7 @@ christianluciani.github.io/
 │       ├── app/        ← ui.ts + canvasWatch.ts
 │       ├── graph/      ← grafo.ts (mapa de conexiones)
 │       └── illusions/  ← ilusiones ópticas por canvas (módulos)
-├── assets/             ← Recursos del sitio (og-image, thumbs de papers)
+├── assets/             ← Fuente de build (iconos inline, marca en assets/brand/logo)
 ├── tools/              ← Generadores (og-image.svg)
 └── docs/
     ├── CONTRIBUTING.md ← Este archivo

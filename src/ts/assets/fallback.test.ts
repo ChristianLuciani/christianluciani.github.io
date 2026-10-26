@@ -31,13 +31,23 @@ describe("nextFallbackSrc", () => {
 /** Stub mínimo de DOM: el repo no usa jsdom (tests de funciones puras). */
 function fakeElement(tagName: string, attrs: Record<string, string>) {
   const store = { ...attrs };
+  const classes = new Set<string>();
   return {
     tagName: tagName.toUpperCase(),
     getAttribute: (name: string) => (name in store ? store[name] : null),
     setAttribute: (name: string, value: string) => {
       store[name] = value;
     },
+    removeAttribute: (name: string) => {
+      delete store[name];
+    },
     hasAttribute: (name: string) => name in store,
+    classList: {
+      add: (c: string) => classes.add(c),
+      remove: (c: string) => classes.delete(c),
+      contains: (c: string) => classes.has(c),
+    },
+    classes,
     attrs: store,
   };
 }
@@ -130,5 +140,27 @@ describe("installAssetFallback", () => {
     } finally {
       (globalThis as { Image?: unknown }).Image = originalImage;
     }
+  });
+});
+
+describe("camino feliz del fallback (no se pinta como error)", () => {
+  it("al cargar la copia local limpia .error y restaura el alt", () => {
+    const { doc, fire } = fakeDocument();
+    installAssetFallback(doc);
+    const img = fakeElement("img", {
+      src: "https://cdn.test/a/x.jpg",
+      "data-local": "/assets/x.jpg",
+      alt: "Kontablo preprint 2026",
+    });
+
+    fire("error", { target: img });
+    // el inline onerror del template corre después del listener de captura
+    img.classList.add("error");
+    img.setAttribute("alt", "§");
+
+    fire("load", { target: img });
+    expect(img.classList.contains("error")).toBe(false);
+    expect(img.getAttribute("alt")).toBe("Kontablo preprint 2026");
+    expect(img.hasAttribute("data-alt")).toBe(false);
   });
 });

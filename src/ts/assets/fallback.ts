@@ -42,6 +42,13 @@ function applyFallback(el: FallbackTarget, attr: "src" | "href"): void {
   if (!next) return;
   el.setAttribute("data-fallback", "1");
   el.setAttribute(attr, next);
+  // El `onerror` inline del template corre después de este listener y marca
+  // `error`/`alt='§'`. Si la copia local carga, el asset NO falló: se limpia
+  // en el `load` (ver installAssetFallback).
+  if (attr === "src") {
+    const alt = el.getAttribute("alt");
+    if (alt) el.setAttribute("data-alt", alt);
+  }
 }
 
 /**
@@ -58,6 +65,22 @@ export function installAssetFallback(doc: Document = document): void {
       const tag = target.tagName?.toLowerCase();
       if (tag === "img") applyFallback(target as unknown as FallbackTarget, "src");
       else if (tag === "link") applyFallback(target as unknown as FallbackTarget, "href");
+    },
+    true
+  );
+
+  // La copia local cargó: el fallback fue exitoso, no un asset roto.
+  doc.addEventListener(
+    "load",
+    (event) => {
+      const target = event.target as (Element & { classList?: DOMTokenList }) | null;
+      if (!target || target.getAttribute?.("data-fallback") !== "1") return;
+      target.classList?.remove("error");
+      const alt = target.getAttribute("data-alt");
+      if (alt) {
+        target.setAttribute("alt", alt);
+        target.removeAttribute("data-alt");
+      }
     },
     true
   );

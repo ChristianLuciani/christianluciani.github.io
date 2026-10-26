@@ -41,13 +41,47 @@ describe("normalizeBase", () => {
   });
 });
 
+describe("cdnRepoPath — familias servidas", () => {
+  it("maps the QR and the images tree to public/", () => {
+    expect(cdnRepoPath("/assets/qr-site.svg")).toBe("public/assets/qr-site.svg");
+    expect(cdnRepoPath("/assets/images/papers/x.svg")).toBe(
+      "public/assets/images/papers/x.svg"
+    );
+  });
+
+  it("maps audio to public/audio", () => {
+    expect(cdnRepoPath("/audio/room-s001.mp3")).toBe(
+      "public/audio/room-s001.mp3"
+    );
+  });
+
+  it("leaves repo-root files alone (they are not under public/)", () => {
+    expect(cdnRepoPath("/robots.txt")).toBe("robots.txt");
+  });
+});
+
+describe("assetUrl con base explícita (regresión #85 F5)", () => {
+  it("resuelve una clave de papers por la CDN con el mapa de repo", () => {
+    expect(
+      assetUrl("trujillo2025", "papers", "https://cdn.test/gh/o/r@v1")
+    ).toBe("https://cdn.test/gh/o/r@v1/public/assets/images/papers/trujillo2025_thumb.svg");
+  });
+
+  it("sin base devuelve la ruta servida relativa, como antes", () => {
+    expect(assetUrl("assets/images/papers/foo.svg", undefined, "")).toBe(
+      "assets/images/papers/foo.svg"
+    );
+  });
+});
+
 describe("cdnAssetUrl", () => {
   it("joins the base and the served path without double slashes", () => {
+    // /assets/** se sirve desde public/assets/ (Vite publica public/ en la raíz)
     expect(cdnAssetUrl("/assets/x.jpg", "https://cdn.example.com/base")).toBe(
-      "https://cdn.example.com/base/assets/x.jpg"
+      "https://cdn.example.com/base/public/assets/x.jpg"
     );
     expect(cdnAssetUrl("assets/x.jpg", "https://cdn.example.com/base")).toBe(
-      "https://cdn.example.com/base/assets/x.jpg"
+      "https://cdn.example.com/base/public/assets/x.jpg"
     );
   });
 
@@ -60,7 +94,7 @@ describe("assetAttrs", () => {
   it("emits src + data-local when the CDN is active", () => {
     const attrs = assetAttrs("/assets/x.jpg", "https://cdn.example.com/b");
     expect(attrs).toBe(
-      'src="https://cdn.example.com/b/assets/x.jpg" data-local="/assets/x.jpg"'
+      'src="https://cdn.example.com/b/public/assets/x.jpg" data-local="/assets/x.jpg"'
     );
   });
 
@@ -75,7 +109,7 @@ describe("absoluteAssetUrl", () => {
   it("uses the CDN when active", () => {
     expect(
       absoluteAssetUrl("/assets/og.png", "https://site.test", "https://cdn.test/b")
-    ).toBe("https://cdn.test/b/assets/og.png");
+    ).toBe("https://cdn.test/b/public/assets/og.png");
   });
 
   it("uses the site origin otherwise (crawler needs an absolute URL)", () => {

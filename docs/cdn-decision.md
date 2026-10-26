@@ -2,14 +2,14 @@
 
 **Estado:** ratificado (#81, merge `d8b703b`, 2026-10-26) · implementación: #84
 **Fecha:** 2026-10-25 · **Autor:** sesión `dsh/sprint/57`
-**Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo de raw.githubusercontent · as_of: 2026-10-25`
+**Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo, resuelto en #84 con copia propia · as_of: 2026-10-26`
 
 ## Contexto
 
 El sitio se publica en GitHub Pages (Actions → `dist/`, `base: "/"`); el repo es público y
 tiene el tag `v1.0.0` (#54). El HTML generado (`index.html`, ensamblado por `build.ts`)
-referencia **19 rutas locales + 1 externa** (9 de los 10 iconos se inlinean como data URI
-en el build, así que no se descargan):
+referencia **19 rutas locales, 0 externas** desde #84 (los 10 iconos se inlinean como data
+URI en el build, así que no se descargan):
 
 | Qué referencia el HTML | Peso en repo | Dónde vive / qué publica el build |
 |---|---|---|
@@ -19,7 +19,7 @@ en el build, así que no se descargan):
 | QR (`assets/qr-site.svg`) | 37 KB | `public/assets/qr-site.svg` |
 | OG (`https://christianluciani.github.io/assets/og-image.png`, 2 meta) | 113 KB | `public/assets/og-image.png` |
 | audio de salas (11 MP3, desde TS) | 8.1 MB | `public/audio/` |
-| *1 externa*: logo DRAHMAN | — | hotlink a `raw.githubusercontent.com` hasta #84 (hoy: copia propia de 10.8 KB) |
+| logo DRAHMAN (era la única externa) | 10.8 KB | propia, derivada a 88×88 desde #84 (`docs/brand/drahman-logo.md`) |
 
 El repo cargaba duplicados y material que el sitio no sirve: `public/assets/`
 (271 KB: 10 iconos, 14 thumbs, OG y QR) tenía sus copias en `assets/images/papers/`
@@ -44,11 +44,11 @@ Dos hechos **medidos** el 2026-10-25 (`curl -sSI`, contra los orígenes reales):
   (`assets/brand/logo/favicon-aurea-32.png`); el sitio sirve la copia plana
   `/assets/brand/favicon-aurea-32.png` que arma `vite.config.ts`.
 
-La capa de assets ya es agnóstica pero **incompleta**: `src/ts/assets/url.ts` resuelve
-`assetUrl()` con `VITE_ASSET_BASE_URL`, y sin embargo **no tiene consumidores de producción**
-(sólo lo re-exporta `src/ts/assets/index.ts` y lo prueba `url.test.ts`), no implementa
-fallback, y el HTML generado no pasa por él: sus 19 rutas están escritas a mano en
-`src/templates/head_html.ts`, `sala_html.ts` y `print_cv_html.ts`.
+La capa de assets era agnóstica pero **incompleta** antes de #84: `assetUrl()` leía
+`VITE_ASSET_BASE_URL` sin consumidores de producción, sin fallback, y el HTML generado no
+pasaba por él. Hoy `head_html.ts` y `sala_html.ts` resuelven las 8 rutas migradas con
+`assetAttrs()`/`absoluteAssetUrl()`, el fallback vive en `src/ts/assets/fallback.ts`, y las
+restantes (iconos, QR) siguen escritas en `print_cv_html.ts` y en el propio template.
 `docs/CDN_MIGRATION.md` describe la migración agnóstica por fases.
 
 ## Criterios
@@ -203,7 +203,7 @@ Lo que la decisión no fijaba y la implementación resolvió, sin cambiar la dec
 | Pieza | Dónde | Qué hace |
 |---|---|---|
 | Base | `src/ts/assets/url.ts` (`ASSET_BASE`) | `VITE_ASSET_BASE_URL` (Vite) o `process.env` (build). Vacía ⇒ Pages. Valida `http(s)`: una base relativa rompe el build en vez de emitir URLs rotas |
-| Ruta fuente→servida | `cdnRepoPath()` | jsDelivr sirve el **repo**, no el sitio: `/assets/brand/x` ⇒ `assets/brand/logo/x`, `/assets/og-image.png` y las 4 thumbs ⇒ `public/assets/…`. Sin este mapa, 5 de las 8 rutas daban 404 |
+| Ruta fuente→servida | `cdnRepoPath()` | jsDelivr sirve el **repo**, no el sitio. Mapa exhaustivo por familia: `/assets/brand/**` ⇒ `assets/brand/logo/**`; **todo** `/assets/**` ⇒ `public/assets/**` (OG, thumbs, QR, imágenes); `/audio/**` ⇒ `public/audio/**`; el resto, tal cual. Sin este mapa, 5 de las 8 rutas daban 404 |
 | Fallback | `src/ts/assets/fallback.ts` | `error` en captura sobre `img`/`link[data-local]`, y sonda `Image()` para favicons; un solo intento, sin loop |
 | Gate | `.github/workflows/ci.yml` | Construye en **los dos modos** y verifica las 8 rutas, el mapa y la ausencia de `data-local` en modo Pages |
 | Hotlink DRAHMAN | `public/assets/images/drahman-logo.png` + `docs/brand/drahman-logo.md` | Derivado a 88×88 (10.8 KB) con procedencia y comando; el original pesaba 2.37 MB con `max-age=300` |

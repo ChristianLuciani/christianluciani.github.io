@@ -4,7 +4,9 @@ Objetivo: servir imágenes (papers, galería, etc.) desde un CDN (Cloudinary, Cl
 
 > Decisión de proveedor y pipeline: [`docs/cdn-decision.md`](cdn-decision.md) (#57).
 > Este documento sigue siendo el **cómo** agnóstico; aquel decide el **quién sirve qué**.
-> **Implementado en #84** — la sección de abajo describe lo que corre hoy, no un plan.
+> **Implementado en #84.** Fases 1 y 3 corren hoy (`assetAttrs()` en los templates +
+> `cdnRepoPath()`); la Fase 2 —hidratación client-side por `data-asset-key`— sigue siendo
+> un plan: no hay ningún `data-asset-key` en el HTML generado.
 
 ## Capa existente (TypeScript)
 
