@@ -20,6 +20,7 @@
  *
  * Uso: node tools/logo/verify-dom-fidelity.mjs
  */
+import { existsSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -27,6 +28,7 @@ import {
   segStyle, cPathD, cBand, lerpColor,
 } from "./geometry.mjs";
 import { dumpDom } from "./chrome.mjs";
+import { summaryFor } from "./fidelity-verdict.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -41,21 +43,17 @@ const parseAttrs = (tag) => {
 const extractTags = (dump, tagName) =>
   [...dump.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "g"))].map((m) => parseAttrs(m[0]));
 
-/* «el puerto diverge» y «no se pudo medir» son veredictos distintos, y el exit
- * los transporta — mismo contrato que el gate de movimiento (`verify-motion`):
- * 0 limpio · 1 violaciones · 2 no se pudo medir (issue #75). Un drift medido
- * GANA el resumen: si algo divergió, la corrida midió. */
-let drift = false;
-let unmeasured = false;
+/* El veredicto (0/1/2 y el resumen) vive en `fidelity-verdict.mjs`, que se
+ * prueba sin Chrome. Acá sólo se acumula el outcome de CADA versión: un drift
+ * medido gana, y el resumen nombra la versión afectada (issue #75). */
+let outcome = "ok";
 function fail(msg) {
   console.error(`❌ FIDELIDAD: ${msg}`);
-  process.exitCode = 1;
-  drift = true;
+  if (outcome === "ok") outcome = "drift";
 }
 function canNotMeasure(msg) {
   console.error(`❌ FIDELIDAD: ${msg}`);
-  process.exitCode = 2; // no se pudo medir ≠ difiere
-  unmeasured = true;
+  if (outcome !== "drift") outcome = "unmeasured";
 }
 
 /* estilo tolerante: comparar por diff ≤ 0.05 (precisión de serialización) */
@@ -77,6 +75,10 @@ function verify(version, htmlPath) {
   const sky = buildSky(cfg);
   const total = g.segs.length;
   const file = resolve(htmlPath);
+  /* sin artefacto no hay nada que medir: Chrome devolvería su página de error y
+     el gate la compararía como si fuera el DOM (drift falso). Es «no se pudo
+     medir» (2), no «difiere» (1). */
+  if (!existsSync(file)) { canNotMeasure(`${version}: el artefacto no existe: ${file}`); return; }
 
   /* ── modo reduced: geometría + estilos, sin hot-lines ── */
   const dumpR = dumpDom(file, { reduced: true });
@@ -185,17 +187,16 @@ function verify(version, htmlPath) {
 }
 
 const root = resolve(HERE, "../..");
+const results = [];
 for (const [version, file] of [
   ["aurea", "proposals/logo-triangulo-espiral/aurea7.html"],
   ["base", "proposals/logo-triangulo-espiral/index.html"],
 ]) {
+  outcome = "ok";
   try { verify(version, join(root, file)); }
   catch (e) { canNotMeasure(`${version}: ${e.message}`); }
+  results.push({ version, outcome });
 }
-process.exitCode = drift ? 1 : unmeasured ? 2 : 0;
-console.log(
-  !process.exitCode ? "🏆 FIDELIDAD: geometry.mjs ≡ DOM aprobado (animación v16 + acabado #55)"
-    : drift ? "🚫 FIDELIDAD: el puerto diverge del DOM aprobado"
-      : unmeasured ? "🚫 FIDELIDAD: NO se pudo medir (Chrome no corrió) — esto no es drift: revisá Chrome/CHROME_PATH"
-        : "🚫 FIDELIDAD: la verificación falló (revisá la salida de arriba)",
-);
+const verdict = summaryFor(results);
+process.exitCode = verdict.code;
+console.log(verdict.line);

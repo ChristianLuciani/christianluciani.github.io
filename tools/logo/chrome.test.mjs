@@ -44,12 +44,22 @@ describe("chromePath", () => {
   it("devuelve el primer candidato existente y saltea los inexistentes", () => {
     expect(chromePath(["/no/existe-chrome", EXISTING])).toBe(EXISTING);
   });
-  it("rechaza directorios y archivos sin permiso de ejecución (issue #75)", () => {
+  it("rechaza un directorio como candidato y dice POR QUÉ (issue #75)", () => {
     const dir = mkdtempSync(join(tmpdir(), "chrome-dir-"));
+    try {
+      expect(() => chromePath([dir])).toThrow(/no es un archivo/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("rechaza un archivo sin permiso de ejecución y lo distingue de inexistente", () => {
+    const dir = mkdtempSync(join(tmpdir(), "chrome-noexec-"));
     const plain = join(dir, "chrome-sin-exec");
     writeFileSync(plain, "no ejecutable");
     try {
-      expect(() => chromePath([dir, plain])).toThrow(/Chrome no encontrado/);
+      expect(() => chromePath([plain])).toThrow(/sin permiso de ejecución/);
+      expect(() => chromePath([join(dir, "no-existe")])).toThrow(/no existe/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
@@ -71,10 +81,16 @@ describe("chromeFailure", () => {
   it("una muerte por señal no se reporta como «código null»", () => {
     expect(chromeFailure({ status: null, signal: "SIGABRT" }, "boom").message).toMatch(/murió por señal SIGABRT/);
   });
-  it("un proceso que no llegó a arrancar dice su error, no «código null» (issue #75)", () => {
-    const err = chromeFailure({ status: null, signal: null, message: "spawnSync chrome ENOBUFS" }, "");
+  it("ENOBUFS real (status 0 + error) no se reporta como «código 0» (F2 del pase fresco)", () => {
+    /* shape medido: spawnSync devuelve status 0 Y res.error cuando el buffer se llena */
+    const err = chromeFailure({ status: 0, code: "ENOBUFS", message: "spawnSync chrome ENOBUFS" }, "");
     expect(err.message).toMatch(/no pudo ejecutarse \(spawnSync chrome ENOBUFS\)/);
-    expect(err.message).not.toMatch(/null/);
+    expect(err.message).not.toMatch(/código 0/);
+  });
+
+  it("un timeout dice timeout, aunque el proceso muera por SIGTERM (F2)", () => {
+    const err = chromeFailure({ code: "ETIMEDOUT", signal: "SIGTERM", message: "spawnSync chrome ETIMEDOUT" }, "");
+    expect(err.message).toMatch(/no terminó a tiempo \(timeout\)/);
   });
   it("sin stderr no inventa una causa", () => {
     expect(chromeFailure({ status: 1 }, "").message).not.toMatch(/chrome:/);

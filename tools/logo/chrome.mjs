@@ -43,13 +43,18 @@ const LINUX_CHROME = ["/usr/bin/google-chrome-stable", "/usr/bin/google-chrome",
 /* Un candidato válido es un ARCHIVO EJECUTABLE: `accessSync(F_OK)` aceptaba
  * directorios y archivos sin permiso de ejecución, y el fallo aparecía recién al
  * lanzarlo (issue #75). */
-const exists = (p) => {
+/** Motivo por el que un candidato NO sirve (null si sirve). Un diagnóstico
+ *  «no encontrado» a secas esconde un wrapper sin `chmod +x` (F5 de #75). */
+const whyNot = (p) => {
   try {
-    if (!statSync(p).isFile()) return false;
+    if (!statSync(p).isFile()) return "no es un archivo";
     accessSync(p, constants.X_OK);
-    return true;
-  } catch { return false; }
+    return null;
+  } catch (e) {
+    return e?.code === "EACCES" ? "sin permiso de ejecución" : "no existe";
+  }
 };
+const exists = (p) => whyNot(p) === null;
 
 /** Candidatos en orden de precedencia. Lee el entorno en cada llamada: un
  *  `CHROME_PATH` seteado después del import sigue ganando. */
@@ -62,9 +67,10 @@ export function chromeCandidates() {
 export function chromePath(candidates = chromeCandidates()) {
   const found = candidates.find(exists);
   if (!found) {
-    throw new Error(
-      `Chrome no encontrado (probado: ${candidates.join(", ") || "(lista vacía)"}) — instalá Chrome o seteá CHROME_PATH`,
-    );
+    const tried = candidates.length
+      ? candidates.map((p) => `${p} (${whyNot(p)})`).join(", ")
+      : "(lista vacía)";
+    throw new Error(`Chrome no encontrado (probado: ${tried}) — instalá Chrome o seteá CHROME_PATH`);
   }
   return found;
 }
@@ -76,12 +82,14 @@ export function chromePath(candidates = chromeCandidates()) {
 export function chromeFailure(err, stderr = "") {
   const lines = String(stderr).split("\n").map((l) => l.trim()).filter(Boolean);
   const cause = lines.length > 6 ? [...lines.slice(0, 2), "…", lines[lines.length - 1]] : lines;
-  /* Tres caminos, tres textos: señal (crash/timeout), código de salida, y el
-   * proceso que ni arrancó (ENOBUFS/EACCES/ETIMEDOUT sin señal). Antes ese
-   * tercero se imprimía como «código null» y no decía nada (issue #75). */
-  const how = err?.signal ? `murió por señal ${err.signal}`
-    : err?.status != null ? `salió con código ${err.status}`
-      : `no pudo ejecutarse (${err?.message || "sin detalle"})`;
+  /* Cuatro caminos, cuatro textos. El `message` manda cuando existe: es el
+   * fallo de spawnSync y ahí `status` MIENTE — ENOBUFS llega con `status: 0`
+   * (un fallo que se leía como éxito) y el timeout llega como SIGTERM sin decir
+   * que fue timeout (issue #75, F2 del pase fresco). */
+  const how = err?.message
+    ? (/ETIMEDOUT|timeout/i.test(err.message) ? "no terminó a tiempo (timeout)" : `no pudo ejecutarse (${err.message})`)
+    : err?.signal ? `murió por señal ${err.signal}`
+      : `salió con código ${err?.status ?? "?"}`;
   return new Error(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
 }
 
@@ -106,7 +114,7 @@ const run = (args, { capture = false } = {}) => {
     stdio: ["ignore", "pipe", "pipe"],
   });
   const stderr = res.stderr == null ? "" : String(res.stderr);
-  if (res.error) throw chromeFailure({ status: res.status, signal: res.signal, message: res.error.message }, stderr);
+  if (res.error) throw chromeFailure({ message: res.error.message, code: res.error.code }, stderr);
   if (res.status !== 0 || res.signal) throw chromeFailure(res, stderr);
   return capture ? res.stdout : undefined;
 };
