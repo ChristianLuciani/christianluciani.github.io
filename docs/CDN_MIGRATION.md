@@ -2,6 +2,9 @@
 
 Objetivo: servir imágenes (papers, galería, etc.) desde un CDN (Cloudinary, Cloudflare, etc.) cambiando solo configuración, sin acoplar el código al proveedor.
 
+> Decisión de proveedor y pipeline: [`docs/cdn-decision.md`](cdn-decision.md) (#57).
+> Este documento sigue siendo el **cómo** agnóstico; aquel decide el **quién sirve qué**.
+
 ## Capa existente (TypeScript)
 
 - `src/ts/assets/manifest.ts`: claves lógicas → rutas relativas.
