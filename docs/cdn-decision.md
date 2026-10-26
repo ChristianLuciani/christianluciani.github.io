@@ -113,8 +113,8 @@ Nada de esta decisión es irreversible (no hay DNS, ni borrado, ni reescritura d
 **Mecanismo (una sola palanca).** Extender lo que ya existe en vez de inventar otra capa:
 
 1. `VITE_ASSET_BASE_URL` ya alimenta `assetUrl()` (`src/ts/assets/url.ts`).
-2. Las 10 referencias de `src/templates/head_html.ts` y `sala_html.ts` deben pasar por esa
-   base en `build.ts` (hoy el HTML las escribe absolutas `/assets/…`).
+2. Las 9 referencias locales de `src/templates/head_html.ts` y `sala_html.ts` deben pasar
+   por esa base en `build.ts` (hoy el HTML las escribe absolutas `/assets/…`).
 3. Un bump de assets = nuevo tag + cambiar la base (`…/gh/ChristianLuciani/christianluciani.github.io@v1.1.0`).
 4. El fallback es el path local ya commiteado: si la CDN falla, `onerror`/`srcset` o el
    propio Pages siguen sirviendo (`docs/CDN_MIGRATION.md`, “Fase 3”).
@@ -157,9 +157,9 @@ Cada paso es reversible por separado y no requiere tocar el otro.
   de ser el argumento para migrar el sitio entero.
 - **Negativas:** los assets pasan a depender de un tercero sin SLA y con política de uso
   interpretable; un bump de assets exige tag nuevo (por diseño).
-- **Deuda declarada:** `assetUrl()` no cubre las referencias HTML (10 en `src/templates/`);
-  hasta que lo haga, la palanca es un `replace` de base en `build.ts`. Seguimiento como
-  issue aparte, no en este PR: este issue entrega la decisión, no la migración.
+- **Deuda declarada:** `assetUrl()` no cubre las referencias HTML (9 locales en
+  `src/templates/`); hasta que lo haga, la palanca es un `replace` de base en `build.ts`.
+  Seguimiento como issue aparte, no en este PR: este issue entrega la decisión, no la migración.
 - **Revisión:** si el bandwidth *soft* de Pages se acerca a 100 GB/mes, o aparece un archivo
   >20 MB, se activa el disparador de R2 (§Pipeline) y se revisa este ADR.
 
