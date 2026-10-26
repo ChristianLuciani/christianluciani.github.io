@@ -12,7 +12,10 @@
  * En áurea verifica además el contorno de la C como barra (cBand) y la
  * máscara de revelado que traza cPathD.
  *
- * Cualquier drift del puerto ⇒ exit 1 con la diferencia exacta.
+ * Cualquier drift del puerto ⇒ exit 1 con la diferencia exacta. Un artefacto
+ * que Chrome no puede renderizar (inexistente, VACÍO, ilegible o un directorio
+ * con el nombre del HTML), un DOM que no renderizó el SVG, y un fallo del
+ * entorno ⇒ exit 2 «no se pudo medir», nunca un drift falso (#79, #83).
  *
  * El binario y la invocación viven en `chrome.mjs` (un solo lugar): `CHROME_PATH`
  * gana, después los defaults de macOS/linux — por eso el mismo gate corre en el
@@ -20,7 +23,6 @@
  *
  * Uso: node tools/logo/verify-dom-fidelity.mjs
  */
-import { existsSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
@@ -28,7 +30,7 @@ import {
   segStyle, cPathD, cBand, lerpColor,
 } from "./geometry.mjs";
 import { dumpDom } from "./chrome.mjs";
-import { summaryFor } from "./fidelity-verdict.mjs";
+import { artifactProblem, renderedNothing, runGate } from "./gate.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -43,18 +45,9 @@ const parseAttrs = (tag) => {
 const extractTags = (dump, tagName) =>
   [...dump.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "g"))].map((m) => parseAttrs(m[0]));
 
-/* El veredicto (0/1/2 y el resumen) vive en `fidelity-verdict.mjs`, que se
- * prueba sin Chrome. Acá sólo se acumula el outcome de CADA versión: un drift
- * medido gana, y el resumen nombra la versión afectada (issue #75). */
-let outcome = "ok";
-function fail(msg) {
-  console.error(`❌ FIDELIDAD: ${msg}`);
-  if (outcome === "ok") outcome = "drift";
-}
-function canNotMeasure(msg) {
-  console.error(`❌ FIDELIDAD: ${msg}`);
-  if (outcome !== "drift") outcome = "unmeasured";
-}
+/* El veredicto (0/1/2 y el resumen) vive en `fidelity-verdict.mjs`; el cableado
+ * —qué acumula cada versión y cómo se distingue un fallo de entorno de un bug—
+ * en `gate.mjs`, los dos probados sin Chrome. Acá sólo queda la medición. */
 
 /* estilo tolerante: comparar por diff ≤ 0.05 (precisión de serialización) */
 const close = (a, b) => a != null && b != null && Math.abs(a - b) <= 0.05;
@@ -67,20 +60,29 @@ function styleValue(style, prop) {
 const normColor = (c) => c?.replace(/\s+/g, "");
 
 /* chrome serializa colores como rgb(r,g,b); mi expected ya es rgb(...) */
-function verify(version, htmlPath) {
+function verify(version, htmlPath, { fail, canNotMeasure }) {
+  const file = resolve(htmlPath);
+  /* Preflight del artefacto (#79): si Chrome no lo puede renderizar compara un
+     DOM vacío, y eso salía como drift falso. Inexistente, vacío, ilegible o un
+     directorio ⇒ «no se pudo medir» (2), no «difiere» (1). */
+  const problem = artifactProblem(file);
+  if (problem) { canNotMeasure(`${version}: el artefacto ${problem}`); return; }
+
   const cfg = version === "base" ? CONFIG_BASE : CONFIG_AUREA;
 
   const g = buildGeometry(cfg.geometry);
   const pts = constellationPoints(g.segs);
   const sky = buildSky(cfg);
   const total = g.segs.length;
-  const file = resolve(htmlPath);
-  /* sin artefacto Chrome devuelve su página de error y el gate la compararía
-     como DOM (drift falso): es «no se pudo medir» (2), no «difiere» (1). */
-  if (!existsSync(file)) { canNotMeasure(`${version}: el artefacto no existe: ${file}`); return; }
 
   /* ── modo reduced: geometría + estilos, sin hot-lines ── */
   const dumpR = dumpDom(file, { reduced: true });
+  /* Un artefacto no vacío puede renderizar un DOM sin SVG: compararlo es otro
+     drift falso (F6 del pase fresco de #82). */
+  if (renderedNothing(dumpR)) {
+    canNotMeasure(`${version}: el artefacto no renderizó el SVG (DOM vacío)`);
+    return;
+  }
   const linesR = extractTags(dumpR, "line").filter((a) => a.x1 != null);
   const expected = new Map();
   for (const s of g.segs) {
@@ -154,6 +156,10 @@ function verify(version, htmlPath) {
 
   /* ── modo normal: cielo + constelación ── */
   const dump = dumpDom(file);
+  if (renderedNothing(dump)) {
+    canNotMeasure(`${version}: el render normal no tiene SVG (DOM vacío)`);
+    return;
+  }
   if (version === "aurea") {
     // la máscara tiene que estar APLICADA en el render normal (en reduced se
     // muestra el estado final sin máscara, por eso se mira el dump normal)
@@ -186,16 +192,14 @@ function verify(version, htmlPath) {
 }
 
 const root = resolve(HERE, "../..");
-const results = [];
-for (const [version, file] of [
+const ARTIFACTS = [
   ["aurea", "proposals/logo-triangulo-espiral/aurea7.html"],
   ["base", "proposals/logo-triangulo-espiral/index.html"],
-]) {
-  outcome = "ok";
-  try { verify(version, join(root, file)); }
-  catch (e) { canNotMeasure(`${version}: ${e.message}`); }
-  results.push({ version, outcome });
-}
-const verdict = summaryFor(results);
+];
+const pathOf = new Map(ARTIFACTS);
+const { verdict } = runGate({
+  versions: ARTIFACTS.map(([version]) => version),
+  verify: (version, report) => verify(version, join(root, pathOf.get(version)), report),
+});
 process.exitCode = verdict.code;
 console.log(verdict.line);
