@@ -1,6 +1,6 @@
 # ADR-lite — CDN para los assets del sitio (jsDelivr vs Cloudflare)
 
-**Estado:** propuesto · se ratifica con el merge de este PR (decisión del operador, #57)
+**Estado:** ratificado (#81, merge `d8b703b`, 2026-10-26) · implementación: #84
 **Fecha:** 2026-10-25 · **Autor:** sesión `dsh/sprint/57`
 **Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo de raw.githubusercontent · as_of: 2026-10-25`
 
@@ -14,18 +14,19 @@ en el build, así que no se descargan):
 | Qué referencia el HTML | Peso en repo | Dónde vive / qué publica el build |
 |---|---|---|
 | 3 favicons (`/assets/brand/…`) | parte de 23 MB | fuente `assets/brand/logo/` (58 renders); `vite.config.ts` copia 3 a `/assets/brand/` |
-| 4 thumbs de papers | 92 KB | fuente `assets/<name>-<hash>.jpg`; el build publica `/assets/<name>-<hash>-<hash>.jpg` (Vite suma su hash) |
-| 10 iconos | 8.5 KB | fuente `assets/icons/` (9) + `public/assets/icons/` (patreon, 310 B); 9 se inlinean como data URI, sólo `patreon.svg` se descarga |
+| 4 thumbs de papers | 92 KB | `public/assets/`; se publican tal cual (`/assets/<name>.jpg`, sin hash de Vite desde #84) |
+| 10 iconos | 8.5 KB | fuente única `assets/icons/`; el build los inlinea como data URI (0 requests) desde #84 |
 | QR (`assets/qr-site.svg`) | 37 KB | `public/assets/qr-site.svg` |
 | OG (`https://christianluciani.github.io/assets/og-image.png`, 2 meta) | 113 KB | `public/assets/og-image.png` |
 | audio de salas (11 MP3, desde TS) | 8.1 MB | `public/audio/` |
 | *1 externa*: logo DRAHMAN | — | hotlink a `raw.githubusercontent.com` (`sala_html.ts:261`) |
 
-El repo además carga duplicados y material que el sitio no sirve: `public/assets/`
-(271 KB: 10 iconos, 14 thumbs, OG y QR) tiene sus copias en `assets/images/papers/`
+El repo cargaba duplicados y material que el sitio no sirve: `public/assets/`
+(271 KB: 10 iconos, 14 thumbs, OG y QR) tenía sus copias en `assets/images/papers/`
 (148 KB, md5 idéntico en los thumbs muestreados), `assets/icons/` (9 archivos, sin
-`patreon.svg`) y `assets/og-image.png` (md5 idéntico). Esos duplicados, más los ~23 MB de
-renders print, no se publican: sólo 3 favicons se copian al `dist/`.
+`patreon.svg`) y `assets/og-image.png` (md5 idéntico). **#84 los eliminó** (~290 KB):
+quedó un solo hogar por familia. Los ~23 MB de renders print siguen en el repo y no se
+publican: sólo 3 favicons se copian al `dist/`.
 
 Dos hechos **medidos** el 2026-10-25 (`curl -sSI`, contra los orígenes reales):
 
@@ -142,7 +143,7 @@ el uso de jsDelivr.
    |---|---|---|
    | 3 favicons | `assets/brand/logo/favicon-aurea{,-32}.svg/png`, `apple-touch-icon-aurea.png` | `/assets/brand/<mismo nombre>` |
    | OG | `public/assets/og-image.png` | `/assets/og-image.png` |
-   | 4 thumbs | `assets/<name>-<hash>.jpg` | `/assets/<name>-<hash>-<hash>.jpg` |
+   | 4 thumbs | `public/assets/<name>.jpg` | `/assets/<name>.jpg` |
 3. Un bump de assets = tag nuevo + cambiar la base
    (`…/gh/ChristianLuciani/christianluciani.github.io@v1.1.0`).
 4. **Fallback real, a implementar en la migración** (no existe hoy): `assetUrl()` sólo
@@ -188,12 +189,32 @@ Cada paso es reversible por separado.
   deja de ser el argumento para migrar el sitio entero.
 - **Negativas:** esos assets dependen de un tercero sin SLA y con política de uso
   interpretable; un bump exige tag nuevo (por diseño).
-- **Deuda declarada:** `assetUrl()` sin consumidores de producción y sin fallback; las 19
-  rutas del HTML están a mano en tres templates; `assets/images/papers/`, `assets/icons/` y
-  `assets/og-image.png` duplican `public/assets/`. La migración (issue aparte) cablea la base,
-  implementa el fallback y deduplica. Este PR entrega la **decisión**, no la migración.
+- **Deuda declarada:** las rutas del HTML siguen escritas en tres templates (no hay
+  capa de componentes que centralice), y la activación depende de un tag nuevo + una
+  variable de repo (§Implementación). El resto —base cableada, fallback, dedupe— entró
+  en #84.
 - **Revisión:** si aparece un aviso de GitHub por banda, el sitio se acerca a 1 GB o surge un
   archivo >20 MB, se activa el disparador de R2 (§Pipeline) y se revisa este ADR.
+
+## Implementación (#84)
+
+Lo que la decisión no fijaba y la implementación resolvió, sin cambiar la decisión:
+
+| Pieza | Dónde | Qué hace |
+|---|---|---|
+| Base | `src/ts/assets/url.ts` (`ASSET_BASE`) | `VITE_ASSET_BASE_URL` (Vite) o `process.env` (build). Vacía ⇒ Pages. Valida `http(s)`: una base relativa rompe el build en vez de emitir URLs rotas |
+| Ruta fuente→servida | `cdnRepoPath()` | jsDelivr sirve el **repo**, no el sitio: `/assets/brand/x` ⇒ `assets/brand/logo/x`, `/assets/og-image.png` y las 4 thumbs ⇒ `public/assets/…`. Sin este mapa, 5 de las 8 rutas daban 404 |
+| Fallback | `src/ts/assets/fallback.ts` | `error` en captura sobre `img`/`link[data-local]`, y sonda `Image()` para favicons; un solo intento, sin loop |
+| Gate | `.github/workflows/ci.yml` | Construye en **los dos modos** y verifica las 8 rutas, el mapa y la ausencia de `data-local` en modo Pages |
+| Activación | `deploy.yml` + variable `CDN_BASE_URL` | Sin variable, el deploy es el de siempre. Con variable, las 8 rutas salen por la CDN |
+
+**Favicons y OG no tienen fallback de runtime**: `og:image` lo consume un crawler (no
+ejecuta JS) y `link[rel=icon]` es best-effort (la sonda lo intenta). Los 4 thumbs y las
+3 favicons sí degradan a la copia de Pages.
+
+**Activar** (después de taggear): `git tag v1.1.0 && git push origin v1.1.0` y
+`gh variable set CDN_BASE_URL --body "https://cdn.jsdelivr.net/gh/ChristianLuciani/christianluciani.github.io@v1.1.0"`.
+El tag es prerequisito: `v1.0.0` sirve un favicon distinto al vigente.
 
 ## Qué NO cubre
 

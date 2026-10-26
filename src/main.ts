@@ -8,6 +8,7 @@
 import { initI18n } from "./cv/i18n";
 import { initIntro } from "./cv/intro";
 import { mountSalas } from "./cv/render";
+import { installAssetFallback } from "./ts/assets/fallback";
 import { initAmbientSound } from "./ts/app/ambient";
 import { initUI } from "./ts/app/ui";
 import { mountGrafo } from "./ts/graph/grafo";
@@ -81,6 +82,10 @@ function init() {
   const kochBuzon = document.getElementById("c-koch-buzon");
   if (kochBuzon instanceof HTMLCanvasElement) mountKochArt(kochBuzon);
 }
+
+// Fallback de assets (ADR docs/cdn-decision.md): si la CDN no responde, el
+// asset vuelve a la copia de Pages. No-op cuando VITE_ASSET_BASE_URL está vacía.
+installAssetFallback();
 
 // UI global, i18n e intro (el DOM ya está parseado: módulos = deferred).
 initUI();

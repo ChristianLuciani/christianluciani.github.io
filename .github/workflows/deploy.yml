@@ -28,7 +28,12 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Base de la CDN de assets (ADR docs/cdn-decision.md, #84). Sin la
+      # variable `CDN_BASE_URL` definida en el repo, queda vacía y todo se
+      # sirve desde Pages: el deploy es idéntico al de antes de la migración.
       - run: npm run build
+        env:
+          VITE_ASSET_BASE_URL: ${{ vars.CDN_BASE_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
