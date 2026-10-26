@@ -23,40 +23,79 @@
  *     de una corrida anterior deja el gate sin puerto CDP y el error no dice por
  *     qué). Matar el proceso y borrar el perfil lo hace la propia sesión.
  *
- * Resolución del binario: candidato fijo de macOS → CHROME_PATH del entorno.
- * Sin binario ⇒ error explícito, nunca un gate que "pasa" por no poder medir.
+ * Resolución del binario (#59): `CHROME_PATH` del entorno primero — es el
+ * override explícito, y en CI el runner lo apunta al binario que acaba de
+ * instalar — y después los paths por defecto de macOS y de linux
+ * (`google-chrome-stable` / `chromium` del runner). Sin binario ⇒ error
+ * explícito con la lista probada, nunca un gate que "pasa" por no poder medir.
  */
-import { execFileSync, spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { accessSync, mkdtempSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const CANDIDATES = [
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  process.env.CHROME_PATH,
-].filter(Boolean);
+/* Defaults por plataforma (macOS primero sólo por orden de lectura: en linux
+ * no existe). CHROME_PATH gana siempre: se prepende en chromeCandidates(). */
+const MAC_CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const LINUX_CHROME = ["/usr/bin/google-chrome-stable", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
 
 const exists = (p) => { try { accessSync(p); return true; } catch { return false; } };
 
-export function chromePath() {
-  const found = CANDIDATES.find(exists);
-  if (!found) throw new Error("Chrome no encontrado (instalá Chrome o seteá CHROME_PATH)");
+/** Candidatos en orden de precedencia. Lee el entorno en cada llamada: un
+ *  `CHROME_PATH` seteado después del import sigue ganando. */
+export function chromeCandidates() {
+  return [process.env.CHROME_PATH, MAC_CHROME, ...LINUX_CHROME].filter(Boolean);
+}
+
+/** Primer binario existente. `candidates` es un seam para los tests: el
+ *  contrato real es la lista por defecto. */
+export function chromePath(candidates = chromeCandidates()) {
+  const found = candidates.find(exists);
+  if (!found) {
+    throw new Error(
+      `Chrome no encontrado (probado: ${candidates.join(", ") || "(lista vacía)"}) — instalá Chrome o seteá CHROME_PATH`,
+    );
+  }
   return found;
+}
+
+/** Error de una corrida de Chrome con su stderr. La CAUSA va primero: en el
+ *  runner de linux el volcado de crashpad (últimas líneas) tapaba el
+ *  `FATAL ... No usable sandbox!` que la explicaba — y una muerte por señal se
+ *  reportaba como «código null» (#59, pase fresco F2). */
+export function chromeFailure(err, stderr = "") {
+  const lines = String(stderr).split("\n").map((l) => l.trim()).filter(Boolean);
+  const cause = lines.length > 6 ? [...lines.slice(0, 2), "…", lines[lines.length - 1]] : lines;
+  const how = err?.signal ? `murió por señal ${err.signal}` : `salió con código ${err?.status ?? "null"}`;
+  return new Error(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
 }
 
 const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars"];
 
-const RUN_TIMEOUT_MS = 60_000;
+/* Ubuntu 23.10+ deshabilita los user namespaces (AppArmor) y Chrome aborta en el
+ * arranque con `No usable sandbox!` — medido en el runner (matrix de flags:
+ * sólo `--no-sandbox` lo destraba). El contenido que renderiza el gate es del
+ * propio repo y el runner es efímero; en macOS el sandbox queda activo. */
+if (process.platform === "linux") BASE_ARGS.push("--no-sandbox", "--disable-dev-shm-usage");
+
+const RUN_TIMEOUT_MS = 180_000;
 const CALL_TIMEOUT_MS = 30_000;
 
-const run = (args, { capture = false } = {}) =>
-  execFileSync(chromePath(), [...BASE_ARGS, ...args], {
-    encoding: capture ? "utf8" : undefined,
+/* spawnSync (no execFileSync): hace falta el stderr del binario para que un
+ * fallo en un runner nuevo diga POR QUÉ falló, no sólo "Command failed" (#59). */
+const run = (args, { capture = false } = {}) => {
+  const res = spawnSync(chromePath(), [...BASE_ARGS, ...args], {
+    encoding: capture ? "utf8" : "buffer",
     timeout: RUN_TIMEOUT_MS,
     maxBuffer: 64 * 1024 * 1024,
-    stdio: capture ? ["ignore", "pipe", "ignore"] : ["ignore", "ignore", "ignore"],
+    stdio: ["ignore", "pipe", "pipe"],
   });
+  const stderr = res.stderr == null ? "" : String(res.stderr);
+  if (res.error) throw chromeFailure(res.error, stderr);
+  if (res.status !== 0 || res.signal) throw chromeFailure(res, stderr);
+  return capture ? res.stdout : undefined;
+};
 
 /** DOM serializado tras `budget` ms de tiempo virtual. */
 export function dumpDom(file, { reduced = false, budget = 1500, size } = {}) {
