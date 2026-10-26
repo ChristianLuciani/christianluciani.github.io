@@ -21,4 +21,12 @@ jobs:
       # el módulo del logo se genera desde la animación: sin drift
       - run: npm run brand:sync
       - run: git diff --exit-code -- src/ts/brand/logoAnim.js
+      # gate de fidelidad del logo (#59): el puerto geometry.mjs ≡ DOM aprobado.
+      # Chrome headless de linux instalado por el runner; el gate lo resuelve por
+      # CHROME_PATH (tools/logo/chrome.mjs) y su error dice si NO pudo medir.
+      - id: chrome
+        uses: browser-actions/setup-chrome@v1
+      - run: npm run logo:verify
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
       - run: npm run build

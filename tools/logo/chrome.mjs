@@ -23,26 +23,49 @@
  *     de una corrida anterior deja el gate sin puerto CDP y el error no dice por
  *     qué). Matar el proceso y borrar el perfil lo hace la propia sesión.
  *
- * Resolución del binario: candidato fijo de macOS → CHROME_PATH del entorno.
- * Sin binario ⇒ error explícito, nunca un gate que "pasa" por no poder medir.
+ * Resolución del binario (#59): `CHROME_PATH` del entorno primero — es el
+ * override explícito, y en CI el runner lo apunta al binario que acaba de
+ * instalar — y después los paths por defecto de macOS y de linux
+ * (`google-chrome-stable` / `chromium` del runner). Sin binario ⇒ error
+ * explícito con la lista probada, nunca un gate que "pasa" por no poder medir.
  */
-import { execFileSync, spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import { accessSync, mkdtempSync, rmSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-const CANDIDATES = [
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  process.env.CHROME_PATH,
-].filter(Boolean);
+/* Defaults por plataforma (macOS primero sólo por orden de lectura: en linux
+ * no existe). CHROME_PATH gana siempre: se prepende en chromeCandidates(). */
+const MAC_CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
+const LINUX_CHROME = ["/usr/bin/google-chrome-stable", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
 
 const exists = (p) => { try { accessSync(p); return true; } catch { return false; } };
 
-export function chromePath() {
-  const found = CANDIDATES.find(exists);
-  if (!found) throw new Error("Chrome no encontrado (instalá Chrome o seteá CHROME_PATH)");
+/** Candidatos en orden de precedencia. Lee el entorno en cada llamada: un
+ *  `CHROME_PATH` seteado después del import sigue ganando. */
+export function chromeCandidates() {
+  return [process.env.CHROME_PATH, MAC_CHROME, ...LINUX_CHROME].filter(Boolean);
+}
+
+/** Primer binario existente. `candidates` es un seam para los tests: el
+ *  contrato real es la lista por defecto. */
+export function chromePath(candidates = chromeCandidates()) {
+  const found = candidates.find(exists);
+  if (!found) {
+    throw new Error(
+      `Chrome no encontrado (probado: ${candidates.join(", ") || "(lista vacía)"}) — instalá Chrome o seteá CHROME_PATH`,
+    );
+  }
   return found;
+}
+
+/** Error de una corrida de Chrome con su stderr: sin esto un runner sin Chrome
+ *  usable reporta sólo "Command failed" y no dice por qué (#59). */
+export function chromeFailure(err, stderr = "") {
+  const reason = String(stderr).trim().split("\n").filter((l) => l.trim()).slice(-3).join(" | ");
+  const why = reason ? ` · chrome: ${reason}` : "";
+  return new Error(`Chrome falló (${err?.message?.split("\n")[0] || err})${why}`);
 }
 
 const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars"];
@@ -50,13 +73,20 @@ const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scro
 const RUN_TIMEOUT_MS = 60_000;
 const CALL_TIMEOUT_MS = 30_000;
 
-const run = (args, { capture = false } = {}) =>
-  execFileSync(chromePath(), [...BASE_ARGS, ...args], {
-    encoding: capture ? "utf8" : undefined,
+/* spawnSync (no execFileSync): hace falta el stderr del binario para que un
+ * fallo en un runner nuevo diga POR QUÉ falló, no sólo "Command failed" (#59). */
+const run = (args, { capture = false } = {}) => {
+  const res = spawnSync(chromePath(), [...BASE_ARGS, ...args], {
+    encoding: capture ? "utf8" : "buffer",
     timeout: RUN_TIMEOUT_MS,
     maxBuffer: 64 * 1024 * 1024,
-    stdio: capture ? ["ignore", "pipe", "ignore"] : ["ignore", "ignore", "ignore"],
+    stdio: ["ignore", "pipe", "pipe"],
   });
+  const stderr = res.stderr == null ? "" : String(res.stderr);
+  if (res.error) throw chromeFailure(res.error, stderr);
+  if (res.status !== 0) throw chromeFailure(new Error(`salió con código ${res.status}`), stderr);
+  return capture ? res.stdout : undefined;
+};
 
 /** DOM serializado tras `budget` ms de tiempo virtual. */
 export function dumpDom(file, { reduced = false, budget = 1500, size } = {}) {

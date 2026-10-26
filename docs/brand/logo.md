@@ -159,7 +159,9 @@ el DOM aprobado. Desde #55, el gate verifica además el **contorno de la
 banda** (`cBand`: marco y terminales), que la **máscara de revelado** esté
 aplicada en el render normal, y que el acabado completo (bisel, barrido y
 bloom) coincida con `cFinish`; los assets se generan desde esa misma
-geometría.
+geometría. Desde #59 el gate corre en **CI** (`.github/workflows/ci.yml`: Chrome
+headless de linux + `npm run logo:verify`), así que ningún merge puede publicar
+un puerto que divergió del DOM aprobado.
 
 ## 5. Tipografía
 
@@ -275,7 +277,10 @@ assets/brand/logo/
 Regenerar todo: `node tools/logo/generate-logo.mjs`
 Sólo áurea/base: `--only-aurea` / `--only-base`
 Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
-Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs`
+Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — corre en CI
+con Chrome headless de linux; el binario se resuelve `CHROME_PATH` → macOS →
+`google-chrome-stable`/`chromium` (`tools/logo/chrome.mjs`), y sin binario el
+gate falla como «no se pudo medir», nunca como «diverge»
 Gate de movimiento: `npm run logo:motion` (ver §11)
 Módulo del sitio: `npm run brand:sync` — **obligatorio** después de tocar la
 animación (CI verifica que `src/ts/brand/logoAnim.js` no tenga drift)
