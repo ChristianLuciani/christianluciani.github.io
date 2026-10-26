@@ -5,6 +5,11 @@ name: CI
 
 on:
   pull_request:
+  # `main` también: un push directo (o un merge) no puede quedar sin tests. El
+  # index.html commiteado y el módulo del logo se verifican acá; el deploy los
+  # construye pero no corre la suite.
+  push:
+    branches: [main]
   workflow_dispatch:
 
 jobs:
