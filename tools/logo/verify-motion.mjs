@@ -278,7 +278,9 @@ function printReport({ probe, L, rows }, out, framesDir) {
   console.log(`destello — luz de la estrella: suba máx ${sign(out.flash.delta, 3)} (máx ${THRESHOLDS.flash})`
     + ` · bloom ${sign(out.bloom.delta, 3)} · sostenida ${sign(out.sustain.delta, 3)}`
     + ` · glow fuera del trazo: suba máx ${sign(out.haloUp.delta, 2)}`
-    + (out.bloomDeclared ? " (bloom declarado: métrica, no defecto)" : ` (máx ${THRESHOLDS.halo})`));
+    + (out.bloomDeclared
+      ? ` (bloom declarado ≤${out.declaredBloom}: métrica, no defecto)`
+      : ` (máx ${THRESHOLDS.halo})`));
   if (out.settle)
     console.log(`settle (${L.settle.toFixed(0)}ms): cuerpo ${out.settle.before.body.toFixed(4)} → ${out.settle.after.body.toFixed(4)}`
       + ` = ${sign(out.settle.delta, 4)} (máx ${THRESHOLDS.settle})`);

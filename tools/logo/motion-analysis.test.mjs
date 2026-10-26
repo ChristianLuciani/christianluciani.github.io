@@ -115,6 +115,14 @@ describe("motion-analysis — invariantes del cronograma (v16 vs fix)", () => {
     expect(desbocado.join("\n")).toMatch(/crece hasta 1\.5 y declaró un bloom máximo de 1\.3/);
   });
 
+  it("el overshoot sigue prohibido aunque el bloom esté declarado", () => {
+    const fails = checkStructure(
+      probe({ intent: { tipBloom: 1.3 } }),
+      landmark({ scales: [1, 1.3], easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }),
+    );
+    expect(fails.join("\n")).toMatch(/tiene overshoot/);
+  });
+
   it("sin declaración el crecimiento sigue siendo defecto (no se aprueba por omisión)", () => {
     expect(checkStructure(probe(), landmark({ scales: [1, 1.3] })).join("\n"))
       .toMatch(/se agranda al apagarse.*no está declarado/);
@@ -165,11 +173,32 @@ describe("motion-analysis — veredicto completo (analyze)", () => {
     expect(analyzeClean(conHalo).fails.join("\n")).toMatch(/glow fuera del trazo/);
   });
 
-  it("con bloom declarado el halo se reporta pero no es destello; sin declarar sigue siéndolo", () => {
-    const conHalo = rows([[1000, 20, 8, 0.2, 0.32], [1100, 12, 14, 0.2, 0.25], [1200, 6, 6, 0.2, 0.18], [1400, 1, 1, 0.2, 0.15], [1590, 0, 0, 0.2, 0.15], [1610, 0, 0, 0.2, 0.15], [2500, 0, 0, 0.21, 0.15]]);
-    const declarado = analyze({ probe: probe({ intent: { tipBloom: 1.3 } }), L: landmark(), rows: conHalo }, { stepMs: 100 });
+  const conHalo = rows([[1000, 20, 8, 0.2, 0.32], [1100, 12, 14, 0.2, 0.25], [1200, 6, 6, 0.2, 0.18], [1400, 1, 1, 0.2, 0.15], [1590, 0, 0, 0.2, 0.15], [1610, 0, 0, 0.2, 0.15], [2500, 0, 0, 0.21, 0.15]]);
+  const analyzeHalo = (intent, scales = [1, 1.3]) =>
+    analyze({ probe: probe({ intent }), L: landmark({ scales }), rows: conHalo }, { stepMs: 100 });
+
+  it("con bloom declarado Y crecimiento real, el halo es métrica y no destello", () => {
+    const declarado = analyzeHalo({ tipBloom: 1.3 });
     expect(declarado.fails.join("\n")).not.toMatch(/glow fuera del trazo/);
     expect(declarado.bloomDeclared).toBe(true);
+    expect(declarado.declaredBloom).toBe(1.3);
+  });
+
+  it("declarar un bloom que NO existe no apaga el chequeo del halo (F1 del pase fresco)", () => {
+    const sinCrecimiento = analyzeHalo({ tipBloom: 1.3 }, [1, 1]);
+    expect(sinCrecimiento.bloomDeclared).toBe(false);
+    expect(sinCrecimiento.fails.join("\n")).toMatch(/glow fuera del trazo/);
+  });
+
+  it("una declaración inválida (0/null/negativa) tampoco exime el halo", () => {
+    for (const intent of [{ tipBloom: 0 }, { tipBloom: null }, { tipBloom: -2 }, {}]) {
+      const out = analyzeHalo(intent);
+      expect(out.bloomDeclared).toBe(false);
+      expect(out.fails.join("\n")).toMatch(/glow fuera del trazo/);
+    }
+  });
+
+  it("sin declaración el halo sigue siendo destello", () => {
     expect(analyzeClean(conHalo).fails.join("\n")).toMatch(/glow fuera del trazo/);
     expect(analyzeClean(conHalo).bloomDeclared).toBe(false);
   });

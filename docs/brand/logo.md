@@ -342,8 +342,8 @@ tiempo virtual no gobierna las animaciones: medido) y mide:
 Salida: **0** limpio · **1** violaciones · **2** no se pudo medir (sin Chrome, sin
 hooks, o plan demasiado grueso). La política (umbrales, perfil del arranque,
 invariantes, plan de muestreo y veredicto) vive en `tools/logo/motion-analysis.mjs`
-y la cubre **`motion-analysis.test.mjs` (26 tests)**; el decoder y la medición de
-píxeles, **`png.test.mjs` (16 tests)** — 42 del instrumento, todos en CI
+y la cubre **`motion-analysis.test.mjs` (33 tests)**; el decoder y la medición de
+píxeles, **`png.test.mjs` (16 tests)** — 49 del instrumento, todos en CI
 (`npx vitest run tools/logo/png.test.mjs tools/logo/motion-analysis.test.mjs`).
 La adquisición (CDP) necesita Chrome y sigue fuera de CI: #59 cableó sólo el
 gate de fidelidad (dump-dom), no el de movimiento.
@@ -356,8 +356,11 @@ dejado abiertas:
 1. **El bloom de la punta se queda, sin el rebote.** El crecimiento
    `scale(1) → scale(1.3)` es intención de marca y el artefacto la **declara**
    (`svg.dataset.intent.tipBloom`): el gate lo acota a ese tope y sigue prohibiendo
-   el overshoot (`cubic-bezier(.22,1,.36,1)`, antes `.3,1.4,.5,1`). El halo que
-   abre el bloom se **reporta** como métrica; sin declaración, hubiera sido defecto.
+   el overshoot (`cubic-bezier(.22,1,.36,1)`, antes `.3,1.4,.5,1`). El halo que abre
+   el bloom se **reporta** como métrica —no llegaba al umbral ni antes de la
+   decisión, así que el veredicto pre-PR no dependía de él— y la exención exige
+   declaración **y** crecimiento medido: declarar un bloom inexistente no apaga
+   el chequeo.
 2. **La respiración se arregló sobre el trazo.** antes animaba `.settle-on .c-glow`
    (el grupo), que el trazado deja fijo en 1 ⇒ medido `0.0000`: nunca respiraba.
    Ahora anima `.settle-on .c-glow path`, arrancando y terminando en el reposo real
@@ -367,10 +370,8 @@ dejado abiertas:
 Estado medido con `npm run logo:motion` (2026-10-25): **exit 0**.
 
 ```
-punta se apaga 5351→6031ms (680ms, cubic-bezier(0.22, 1, 0.36, 1))
-destello — luz de la estrella: suba máx +0.000 · glow fuera del trazo: +0.67 (bloom declarado: métrica)
-settle (5771ms): cuerpo 0.2113 → 0.2141 = +0.0027 (máx 0.004)
-respiración: glow 0.2141 → 0.2205 = +0.0064 (mín 0.004)
+punta 5351→6031ms (cubic-bezier(0.22, 1, 0.36, 1)) · luz estrella +0.000 · halo +0.67 (bloom declarado: métrica)
+settle +0.0027 (máx 0.004) · respiración +0.0064 (mín 0.004)
 ```
 
 Antes de la decisión el mismo gate daba **exit 1** con 6 violaciones (las dos de la

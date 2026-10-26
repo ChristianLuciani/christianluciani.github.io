@@ -188,10 +188,15 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
   const drift = rows.some((r) => !Number.isFinite(r.drift)) ? Infinity : Math.max(...rows.map((r) => r.drift));
   const peak = Math.max(...rows.filter((r) => r.T >= from && r.T <= to).map((r) => r.light));
 
-  /* con bloom declarado, el halo que abre el crecimiento es la intención de
-     marca: se REPORTA (la tabla sigue imprimiéndolo) pero no se marca como
-     destello. Sin declararlo, sigue siendo un defecto. */
-  const bloomDeclared = Number.isFinite(Number(probe.intent?.tipBloom));
+  /* El halo que abre un bloom DECLARADO es intención de marca: se reporta pero
+     no se marca como destello. La exención exige las DOS cosas —declaración
+     válida y crecimiento REAL de la punta—: si la punta no creció, el halo que
+     sube no tiene excusa (si no, declarar un bloom que no existe apagaría el
+     chequeo). F1 del pase fresco. */
+  const declaredBloom = Number(probe.intent?.tipBloom);
+  const tipScales = (L.punta?.kf ?? []).map((k) => scaleOf(k.transform));
+  const tipGrew = tipScales.length > 0 && Math.max(...tipScales) > tipScales[0] + EPS;
+  const bloomDeclared = Number.isFinite(declaredBloom) && declaredBloom > 0 && tipGrew;
   const fails = [...checkStructure(probe, L)];
   if (flash.delta > thresholds.flash)
     fails.push(`destello: la luz de la estrella sube +${flash.delta.toFixed(3)} en ${flash.t}ms mientras se apaga (máx ${thresholds.flash})`);
@@ -219,7 +224,7 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
   else fails.push(...checkStartup(startup, { timing: probe.timing, thresholds }));
 
   return { from, to, d0, d1, peak, flash, bloom, sustain, haloUp, settle, breathe,
-    startup, starSeen, tipMaxSettled, drift, bloomDeclared, fails };
+    startup, starSeen, tipMaxSettled, drift, bloomDeclared, declaredBloom, fails };
 }
 
 
