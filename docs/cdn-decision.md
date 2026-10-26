@@ -19,7 +19,7 @@ en el build, así que no se descargan):
 | QR (`assets/qr-site.svg`) | 37 KB | `public/assets/qr-site.svg` |
 | OG (`https://christianluciani.github.io/assets/og-image.png`, 2 meta) | 113 KB | `public/assets/og-image.png` |
 | audio de salas (11 MP3, desde TS) | 8.1 MB | `public/audio/` |
-| *1 externa*: logo DRAHMAN | — | hotlink a `raw.githubusercontent.com` (`sala_html.ts:261`) |
+| *1 externa*: logo DRAHMAN | — | hotlink a `raw.githubusercontent.com` hasta #84 (hoy: copia propia de 10.8 KB) |
 
 El repo cargaba duplicados y material que el sitio no sirve: `public/assets/`
 (271 KB: 10 iconos, 14 thumbs, OG y QR) tenía sus copias en `assets/images/papers/`
@@ -125,7 +125,7 @@ como hoy. Nada de esta decisión es irreversible (no hay DNS, ni borrado, ni ree
 | **GitHub Pages** (actual) | `index.html`, JS/CSS y sus bundles, iconos (10), QR, audio (11 MP3), y **todo asset como fallback** | Deploy atómico del sitio; los bundles ya llevan hash de Vite y no necesitan tag |
 | **jsDelivr `@vX.Y.Z`** | 3 favicons, OG y las 4 thumbs del HTML | Inmutables, cache 1 año, CORS, borde en GYE; cambian por release, no por commit |
 | **Cloudflare R2 + custom domain** *(disparador)* | media que supere 20 MB/archivo, o si llega una queja de uso de jsDelivr, o si un archivo/cambio necesita purga real | Único camino para >25 MiB y purga sin tocar tags |
-| **`raw.githubusercontent` (DRAHMAN)** | el logo del showcase, hoy **hotlinkeado en producción** | Deuda ajena a esta decisión: su destino es el release del repo dueño o R2, no jsDelivr |
+| **`raw.githubusercontent` (DRAHMAN)** | el logo del showcase: era un hotlink de 2.37 MB con 5 min de caché; **#84 lo reemplazó por un derivado propio** | Mientras duró fue deuda ajena a esta decisión, no una opción de CDN |
 
 **Disparadores observables** (no hay dashboard de banda de Pages): aviso de GitHub
 (429 o email de soporte), sitio publicado cerca de 1 GB, un archivo >20 MB, o una queja por
@@ -206,6 +206,7 @@ Lo que la decisión no fijaba y la implementación resolvió, sin cambiar la dec
 | Ruta fuente→servida | `cdnRepoPath()` | jsDelivr sirve el **repo**, no el sitio: `/assets/brand/x` ⇒ `assets/brand/logo/x`, `/assets/og-image.png` y las 4 thumbs ⇒ `public/assets/…`. Sin este mapa, 5 de las 8 rutas daban 404 |
 | Fallback | `src/ts/assets/fallback.ts` | `error` en captura sobre `img`/`link[data-local]`, y sonda `Image()` para favicons; un solo intento, sin loop |
 | Gate | `.github/workflows/ci.yml` | Construye en **los dos modos** y verifica las 8 rutas, el mapa y la ausencia de `data-local` en modo Pages |
+| Hotlink DRAHMAN | `public/assets/images/drahman-logo.png` + `docs/brand/drahman-logo.md` | Derivado a 88×88 (10.8 KB) con procedencia y comando; el original pesaba 2.37 MB con `max-age=300` |
 | Activación | `deploy.yml` + variable `CDN_BASE_URL` | Sin variable, el deploy es el de siempre. Con variable, las 8 rutas salen por la CDN |
 
 **Favicons y OG no tienen fallback de runtime**: `og:image` lo consume un crawler (no
