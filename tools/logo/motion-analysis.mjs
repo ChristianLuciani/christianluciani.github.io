@@ -22,6 +22,8 @@ export const THRESHOLDS = {
   halo: 1.0,       // suba máxima tolerada del glow fuera del trazo por paso
   settle: 0.004,   // escalón máximo tolerado al entrar el settle (luminancia del cuerpo de la C)
   breathe: 0.004,  // cambio mínimo del glow para considerar que respira
+  tipBloomMin: 0.02, // crecimiento mínimo de la punta para llamarlo bloom (bajo eso es ruido)
+  maxTipBloom: 2.0,  // techo de `tipBloom` declarable: un typo no puede apagar los invariantes
   drift: 5,        // ms de deriva máxima del congelado respecto del instante pedido
   starSeen: 0.002, // la punta tiene que ver la estrella antes y no verla después (canal rojo)
   tipBright: 0.3,  // píxel más brillante exigido en la punta settled (la C tiene que estar ahí)
@@ -114,6 +116,8 @@ export function checkStructure(probe, L) {
   /* bloom declarado por el artefacto (svg.dataset.intent): la marca decide si
      la punta florece; el tope lo pone ella, no el gate (#67) */
   const declaredBloom = Number(probe.intent?.tipBloom);
+  if (Number.isFinite(declaredBloom) && declaredBloom > THRESHOLDS.maxTipBloom)
+    fails.push(`el artefacto declaró tipBloom=${declaredBloom} y el techo es ${THRESHOLDS.maxTipBloom}: una declaración sin cota apagaría el chequeo`);
 
   /* 1. opacidad monótona y escala dentro del bloom declarado (sin declarar: no crece) */
   if (!punta) fails.push("no encontré la animación de disolución de la punta");
@@ -195,8 +199,12 @@ export function analyze({ probe, L, rows }, { stepMs, thresholds = THRESHOLDS } 
      chequeo). F1 del pase fresco. */
   const declaredBloom = Number(probe.intent?.tipBloom);
   const tipScales = (L.punta?.kf ?? []).map((k) => scaleOf(k.transform));
-  const tipGrew = tipScales.length > 0 && Math.max(...tipScales) > tipScales[0] + EPS;
-  const bloomDeclared = Number.isFinite(declaredBloom) && declaredBloom > 0 && tipGrew;
+  /* el crecimiento tiene que superar el RUIDO para contar como bloom: con
+     `scale(1) → scale(1.000002)` la exención eximía cualquier halo */
+  const tipGrew = tipScales.length > 0 &&
+    Math.max(...tipScales) - tipScales[0] >= (thresholds.tipBloomMin ?? THRESHOLDS.tipBloomMin);
+  const bloomDeclared = Number.isFinite(declaredBloom) && declaredBloom > 0 &&
+    declaredBloom <= THRESHOLDS.maxTipBloom && tipGrew;
   const fails = [...checkStructure(probe, L)];
   if (flash.delta > thresholds.flash)
     fails.push(`destello: la luz de la estrella sube +${flash.delta.toFixed(3)} en ${flash.t}ms mientras se apaga (máx ${thresholds.flash})`);

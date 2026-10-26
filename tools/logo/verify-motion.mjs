@@ -280,7 +280,9 @@ function printReport({ probe, L, rows }, out, framesDir) {
     + ` · glow fuera del trazo: suba máx ${sign(out.haloUp.delta, 2)}`
     + (out.bloomDeclared
       ? ` (bloom declarado ≤${out.declaredBloom}: métrica, no defecto)`
-      : ` (máx ${THRESHOLDS.halo})`));
+      : probe.intent?.tipBloom != null
+        ? ` (declaración ${probe.intent.tipBloom} descartada: sin bloom medido; máx ${THRESHOLDS.halo})`
+        : ` (máx ${THRESHOLDS.halo})`));
   if (out.settle)
     console.log(`settle (${L.settle.toFixed(0)}ms): cuerpo ${out.settle.before.body.toFixed(4)} → ${out.settle.after.body.toFixed(4)}`
       + ` = ${sign(out.settle.delta, 4)} (máx ${THRESHOLDS.settle})`);

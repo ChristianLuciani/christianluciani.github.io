@@ -190,6 +190,20 @@ describe("motion-analysis — veredicto completo (analyze)", () => {
     expect(sinCrecimiento.fails.join("\n")).toMatch(/glow fuera del trazo/);
   });
 
+  it("un crecimiento por debajo del ruido no cuenta como bloom (F1 del pase 2)", () => {
+    const ruido = analyzeHalo({ tipBloom: 1.3 }, [1, 1.000002]);
+    expect(ruido.bloomDeclared).toBe(false);
+    expect(ruido.fails.join("\n")).toMatch(/glow fuera del trazo/);
+  });
+
+  it("una declaración por encima del techo no exime el halo y se denuncia (F2 del pase 2)", () => {
+    const exagerada = analyzeHalo({ tipBloom: 100 }, [1, 3]);
+    expect(exagerada.bloomDeclared).toBe(false);
+    expect(exagerada.fails.join("\n")).toMatch(/glow fuera del trazo/);
+    expect(checkStructure(probe({ intent: { tipBloom: 100 } }), landmark({ scales: [1, 3] })).join("\n"))
+      .toMatch(/tipBloom=100 y el techo es 2/);
+  });
+
   it("una declaración inválida (0/null/negativa) tampoco exime el halo", () => {
     for (const intent of [{ tipBloom: 0 }, { tipBloom: null }, { tipBloom: -2 }, {}]) {
       const out = analyzeHalo(intent);

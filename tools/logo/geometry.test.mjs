@@ -310,6 +310,15 @@ describe("geometry — el reposo de la respiración no se escribe a mano (3 copi
     expect(html).toMatch(/\.settle-on \.c-glow path\{animation:breathe/);
   });
 
+  it("el CFINISH del artefacto (duplicado a mano) declara el mismo bloom", () => {
+    /* el artefacto repite `CFINISH` con un «MANTENER SINCRONIZADO»: el gate de
+       fidelidad compara perp/tint/blur, pero NO la opacidad del bloom */
+    const html = read("proposals/logo-triangulo-espiral/aurea7.html");
+    const m = /bloom:\s*\{\s*color:\s*"[^"]+",\s*opacity:\s*([\d.]+)/.exec(html);
+    expect(m).not.toBeNull();
+    expect(Number(m[1])).toBe(rest);
+  });
+
   it("el espejo del sitio (brandBreathe) arranca en el MISMO reposo", () => {
     const head = read("src/templates/head_html.ts");
     expect(keyframe(head, "brandBreathe")).toBe(rest);

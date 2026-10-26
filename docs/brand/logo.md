@@ -330,8 +330,9 @@ una sesión CDP, **congela** el estado con `pause` + `currentTime` (el presupues
 tiempo virtual no gobierna las animaciones: medido) y mide:
 
 - **destello** — estructural (opacidad monótona, escala dentro del bloom declarado, curva sin
-  overshoot) + medido (la luz propia de la estrella y el glow fuera del trazo nunca
-  suben mientras se apaga);
+  overshoot) + medido (la luz propia de la estrella no sube mientras se apaga, y el glow
+  fuera del trazo no sube cuando no hay bloom declarado: con bloom declarado sube
+  acotado y se reporta como métrica, no como defecto);
 - **settle** — sin escalón a ±40 ms y la respiración efectivamente viva;
 - **arranque** — piso objetivo (tempo monótono, pico de concurrencia ≥2, primer
   stagger ≤60% del final, extremos == `CONFIG`) + perfil reportado;
@@ -342,8 +343,8 @@ tiempo virtual no gobierna las animaciones: medido) y mide:
 Salida: **0** limpio · **1** violaciones · **2** no se pudo medir (sin Chrome, sin
 hooks, o plan demasiado grueso). La política (umbrales, perfil del arranque,
 invariantes, plan de muestreo y veredicto) vive en `tools/logo/motion-analysis.mjs`
-y la cubre **`motion-analysis.test.mjs` (33 tests)**; el decoder y la medición de
-píxeles, **`png.test.mjs` (16 tests)** — 49 del instrumento, todos en CI
+y la cubre **`motion-analysis.test.mjs` (35 tests)**; el decoder y la medición de
+píxeles, **`png.test.mjs` (16 tests)** — 51 del instrumento, todos en CI
 (`npx vitest run tools/logo/png.test.mjs tools/logo/motion-analysis.test.mjs`).
 La adquisición (CDP) necesita Chrome y sigue fuera de CI: #59 cableó sólo el
 gate de fidelidad (dump-dom), no el de movimiento.
@@ -365,7 +366,10 @@ dejado abiertas:
    (el grupo), que el trazado deja fijo en 1 ⇒ medido `0.0000`: nunca respiraba.
    Ahora anima `.settle-on .c-glow path`, arrancando y terminando en el reposo real
    del trazo (`0.28`, no `0.5`), así que el settle no pega escalón. El sitio espeja
-   la regla en `src/templates/head_html.ts` (`brandBreathe`, mismo reposo).
+   la regla en `src/templates/head_html.ts` (`brandBreathe`, mismo reposo). Ese
+   reposo vive en tres copias (los dos keyframes y el `CFINISH` del artefacto) y
+   `geometry.test.mjs` las ata a `C_FINISH.bloom.opacity`: cambiarlo sin tocar las
+   copias pone rojo el test, no un escalón en producción.
 
 Estado medido con `npm run logo:motion` (2026-10-25): **exit 0**.
 
