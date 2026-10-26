@@ -160,8 +160,8 @@ banda** (`cBand`: marco y terminales), que la **máscara de revelado** esté
 aplicada en el render normal, y que el acabado completo (bisel, barrido y
 bloom) coincida con `cFinish`; los assets se generan desde esa misma
 geometría. Desde #59 el gate corre en **CI** (`.github/workflows/ci.yml`: Chrome
-headless de linux + `npm run logo:verify`), así que ningún merge puede publicar
-un puerto que divergió del DOM aprobado.
+headless de linux + `npm run logo:verify`), así que el merge queda bloqueado si
+el puerto diverge del DOM aprobado.
 
 ## 5. Tipografía
 
@@ -343,7 +343,8 @@ invariantes, plan de muestreo y veredicto) vive en `tools/logo/motion-analysis.m
 y la cubre **`motion-analysis.test.mjs` (26 tests)**; el decoder y la medición de
 píxeles, **`png.test.mjs` (16 tests)** — 42 del instrumento, todos en CI
 (`npx vitest run tools/logo/png.test.mjs tools/logo/motion-analysis.test.mjs`).
-La adquisición (CDP) necesita Chrome y queda fuera de CI (wiring: issue #59).
+La adquisición (CDP) necesita Chrome y sigue fuera de CI: #59 cableó sólo el
+gate de fidelidad (dump-dom), no el de movimiento.
 
 ### Estado medido del artefacto (track A, 2026-10-23)
 

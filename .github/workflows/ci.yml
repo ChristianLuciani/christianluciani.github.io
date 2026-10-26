@@ -28,21 +28,6 @@ jobs:
         uses: browser-actions/setup-chrome@v2
         with:
           chrome-version: stable
-      - name: DIAG chrome (temporal)
-        env:
-          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
-        run: |
-          set +e
-          "$CHROME_PATH" --version
-          for f in "none" "--no-sandbox" "--disable-dev-shm-usage" "--no-sandbox --disable-dev-shm-usage" "--no-sandbox --disable-dev-shm-usage --no-zygote --single-process"; do
-            echo "=== flags: [$f]"
-            if [ "$f" = "none" ]; then F=""; else F="$f"; fi
-            "$CHROME_PATH" --headless --disable-gpu $F --virtual-time-budget=500 --dump-dom "file://$PWD/index.html" > /tmp/out.html 2>/tmp/err.txt
-            echo "exit=$? bytes=$(wc -c < /tmp/out.html)"
-            echo "--- stderr head"; head -4 /tmp/err.txt
-            echo "--- stderr tail"; tail -2 /tmp/err.txt
-          done
-          exit 0
       - run: npm run logo:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}

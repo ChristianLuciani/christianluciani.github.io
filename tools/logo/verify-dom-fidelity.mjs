@@ -26,7 +26,7 @@ import {
   CONFIG_AUREA, CONFIG_BASE, buildGeometry, buildSky, constellationPoints,
   segStyle, cPathD, cBand, lerpColor,
 } from "./geometry.mjs";
-import { chromePath, dumpDom } from "./chrome.mjs";
+import { dumpDom } from "./chrome.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -41,20 +41,19 @@ const parseAttrs = (tag) => {
 const extractTags = (dump, tagName) =>
   [...dump.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "g"))].map((m) => parseAttrs(m[0]));
 
-let failed = false;
 /* «el puerto diverge» y «no se pudo medir» son veredictos distintos: en CI un
- * Chrome que no arranca no es un drift de geometría. El exit es el mismo (1);
- * lo que cambia es la razón que lee el operador. */
+ * Chrome que no arranca no es un drift de geometría. El exit es el mismo (1).
+ * Un drift medido GANA el resumen: si algo divergió, la corrida midió. */
+let drift = false;
 let unmeasured = false;
 function fail(msg) {
   console.error(`❌ FIDELIDAD: ${msg}`);
   process.exitCode = 1;
-  failed = true;
+  drift = true;
 }
 function canNotMeasure(msg) {
   console.error(`❌ FIDELIDAD: ${msg}`);
   process.exitCode = 1;
-  failed = true;
   unmeasured = true;
 }
 
@@ -71,9 +70,6 @@ const normColor = (c) => c?.replace(/\s+/g, "");
 /* chrome serializa colores como rgb(r,g,b); mi expected ya es rgb(...) */
 function verify(version, htmlPath) {
   const cfg = version === "base" ? CONFIG_BASE : CONFIG_AUREA;
-  /* resolución del binario: una sola fuente (chrome.mjs). Sin Chrome el gate
-     no puede medir ⇒ error explícito, jamás un verde por no haber medido. */
-  try { chromePath(); } catch (e) { canNotMeasure(e.message); process.exit(1); }
 
   const g = buildGeometry(cfg.geometry);
   const pts = constellationPoints(g.segs);
@@ -197,6 +193,7 @@ for (const [version, file] of [
 }
 console.log(
   !process.exitCode ? "🏆 FIDELIDAD: geometry.mjs ≡ DOM aprobado (animación v16 + acabado #55)"
-    : unmeasured ? "🚫 FIDELIDAD: NO se pudo medir (Chrome no corrió) — esto no es drift: revisá Chrome/CHROME_PATH"
-      : "🚫 FIDELIDAD: el puerto diverge del DOM aprobado",
+    : drift ? "🚫 FIDELIDAD: el puerto diverge del DOM aprobado"
+      : unmeasured ? "🚫 FIDELIDAD: NO se pudo medir (Chrome no corrió) — esto no es drift: revisá Chrome/CHROME_PATH"
+        : "🚫 FIDELIDAD: la verificación falló (revisá la salida de arriba)",
 );

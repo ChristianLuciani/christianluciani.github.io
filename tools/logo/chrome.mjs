@@ -60,17 +60,26 @@ export function chromePath(candidates = chromeCandidates()) {
   return found;
 }
 
-/** Error de una corrida de Chrome con su stderr: sin esto un runner sin Chrome
- *  usable reporta sólo "Command failed" y no dice por qué (#59). */
+/** Error de una corrida de Chrome con su stderr. La CAUSA va primero: en el
+ *  runner de linux el volcado de crashpad (últimas líneas) tapaba el
+ *  `FATAL ... No usable sandbox!` que la explicaba — y una muerte por señal se
+ *  reportaba como «código null» (#59, pase fresco F2). */
 export function chromeFailure(err, stderr = "") {
-  const reason = String(stderr).trim().split("\n").filter((l) => l.trim()).slice(-3).join(" | ");
-  const why = reason ? ` · chrome: ${reason}` : "";
-  return new Error(`Chrome falló (${err?.message?.split("\n")[0] || err})${why}`);
+  const lines = String(stderr).split("\n").map((l) => l.trim()).filter(Boolean);
+  const cause = lines.length > 6 ? [...lines.slice(0, 2), "…", lines[lines.length - 1]] : lines;
+  const how = err?.signal ? `murió por señal ${err.signal}` : `salió con código ${err?.status ?? "null"}`;
+  return new Error(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
 }
 
 const BASE_ARGS = ["--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars"];
 
-const RUN_TIMEOUT_MS = 60_000;
+/* Ubuntu 23.10+ deshabilita los user namespaces (AppArmor) y Chrome aborta en el
+ * arranque con `No usable sandbox!` — medido en el runner (matrix de flags:
+ * sólo `--no-sandbox` lo destraba). El contenido que renderiza el gate es del
+ * propio repo y el runner es efímero; en macOS el sandbox queda activo. */
+if (process.platform === "linux") BASE_ARGS.push("--no-sandbox", "--disable-dev-shm-usage");
+
+const RUN_TIMEOUT_MS = 180_000;
 const CALL_TIMEOUT_MS = 30_000;
 
 /* spawnSync (no execFileSync): hace falta el stderr del binario para que un
@@ -84,7 +93,7 @@ const run = (args, { capture = false } = {}) => {
   });
   const stderr = res.stderr == null ? "" : String(res.stderr);
   if (res.error) throw chromeFailure(res.error, stderr);
-  if (res.status !== 0) throw chromeFailure(new Error(`salió con código ${res.status}`), stderr);
+  if (res.status !== 0 || res.signal) throw chromeFailure(res, stderr);
   return capture ? res.stdout : undefined;
 };
 

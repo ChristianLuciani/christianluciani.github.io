@@ -48,13 +48,16 @@ describe("chromePath", () => {
 });
 
 describe("chromeFailure", () => {
-  it("arrastra el stderr: el motivo, no sólo 'Command failed'", () => {
-    const err = chromeFailure(new Error("Command failed: google-chrome"),
-      "\n\nprimera\nFailed to create a unique user data directory for headless.");
-    expect(err.message).toMatch(/Chrome falló/);
-    expect(err.message).toMatch(/unique user data directory/);
+  it("conserva la CAUSA aunque el volcado de crashpad sea largo (F2 del pase fresco)", () => {
+    const dump = ["FATAL: No usable sandbox!", ...Array.from({ length: 10 }, (_, i) => `  frame ${i}`), "[end of stack trace]"];
+    const err = chromeFailure({ status: 134 }, dump.join("\n"));
+    expect(err.message).toMatch(/Chrome falló \(salió con código 134\)/);
+    expect(err.message).toMatch(/No usable sandbox!/);
+  });
+  it("una muerte por señal no se reporta como «código null»", () => {
+    expect(chromeFailure({ status: null, signal: "SIGABRT" }, "boom").message).toMatch(/murió por señal SIGABRT/);
   });
   it("sin stderr no inventa una causa", () => {
-    expect(chromeFailure(new Error("salió con código 1"), "").message).not.toMatch(/chrome:/);
+    expect(chromeFailure({ status: 1 }, "").message).not.toMatch(/chrome:/);
   });
 });
