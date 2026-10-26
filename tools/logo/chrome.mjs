@@ -43,8 +43,8 @@ const LINUX_CHROME = ["/usr/bin/google-chrome-stable", "/usr/bin/google-chrome",
 /* Un candidato válido es un ARCHIVO EJECUTABLE: `accessSync(F_OK)` aceptaba
  * directorios y archivos sin permiso de ejecución, y el fallo aparecía recién al
  * lanzarlo (issue #75). */
-/** Motivo por el que un candidato NO sirve (null si sirve). Un diagnóstico
- *  «no encontrado» a secas esconde un wrapper sin `chmod +x` (F5 de #75). */
+/** Motivo por el que un candidato NO sirve (null si sirve): «no encontrado» a
+ *  secas esconde un wrapper sin `chmod +x` (F5 de #75). */
 const whyNot = (p) => {
   try {
     if (!statSync(p).isFile()) return "no es un archivo";
@@ -82,10 +82,8 @@ export function chromePath(candidates = chromeCandidates()) {
 export function chromeFailure(err, stderr = "") {
   const lines = String(stderr).split("\n").map((l) => l.trim()).filter(Boolean);
   const cause = lines.length > 6 ? [...lines.slice(0, 2), "…", lines[lines.length - 1]] : lines;
-  /* Cuatro caminos, cuatro textos. El `message` manda cuando existe: es el
-   * fallo de spawnSync y ahí `status` MIENTE — ENOBUFS llega con `status: 0`
-   * (un fallo que se leía como éxito) y el timeout llega como SIGTERM sin decir
-   * que fue timeout (issue #75, F2 del pase fresco). */
+  /* El `message` manda cuando existe: es el fallo de spawnSync y ahí `status`
+   * MIENTE — ENOBUFS llega con `status: 0` y el timeout como SIGTERM (#75). */
   const how = err?.message
     ? (/ETIMEDOUT|timeout/i.test(err.message) ? "no terminó a tiempo (timeout)" : `no pudo ejecutarse (${err.message})`)
     : err?.signal ? `murió por señal ${err.signal}`

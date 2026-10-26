@@ -75,9 +75,8 @@ function verify(version, htmlPath) {
   const sky = buildSky(cfg);
   const total = g.segs.length;
   const file = resolve(htmlPath);
-  /* sin artefacto no hay nada que medir: Chrome devolvería su página de error y
-     el gate la compararía como si fuera el DOM (drift falso). Es «no se pudo
-     medir» (2), no «difiere» (1). */
+  /* sin artefacto Chrome devuelve su página de error y el gate la compararía
+     como DOM (drift falso): es «no se pudo medir» (2), no «difiere» (1). */
   if (!existsSync(file)) { canNotMeasure(`${version}: el artefacto no existe: ${file}`); return; }
 
   /* ── modo reduced: geometría + estilos, sin hot-lines ── */

@@ -1,11 +1,8 @@
 /**
  * fidelity-verdict.mjs — política del gate de fidelidad, en funciones puras (#75).
- *
- * Por qué está separado de `verify-dom-fidelity.mjs`: el gate adquiere (Chrome,
- * dump-dom) y ese camino no se puede probar en CI; el VEREDICTO sí. El contrato
- * de salida —0 limpio · 1 el puerto difiere · 2 no se pudo medir— es el mismo
- * que usa el gate hermano `verify-motion.mjs`, y es lo único que un consumidor
- * mira: si el gate no distingue «no medí» de «difiere», un runner roto se lee
+ * La adquisición (Chrome, dump-dom) no se puede probar en CI; el veredicto sí.
+ * Contrato: 0 limpio · 1 el puerto difiere · 2 no se pudo medir (el mismo del
+ * gate hermano `verify-motion.mjs`): sin esa distinción, un runner roto se lee
  * como drift de geometría.
  */
 
