@@ -213,9 +213,15 @@ Lo que la decisión no fijaba y la implementación resolvió, sin cambiar la dec
 ejecuta JS) y `link[rel=icon]` es best-effort (la sonda lo intenta). Los 4 thumbs y las
 3 favicons sí degradan a la copia de Pages.
 
-**Activar** (después de taggear): `git tag v1.1.0 && git push origin v1.1.0` y
-`gh variable set CDN_BASE_URL --body "https://cdn.jsdelivr.net/gh/ChristianLuciani/christianluciani.github.io@v1.1.0"`.
-El tag es prerequisito: `v1.0.0` sirve un favicon distinto al vigente.
+**Activación real (2026-10-26):** tag anotado **`v1.1.1`** sobre el merge de #85 y
+`CDN_BASE_URL` apuntando a `…@v1.1.1`; deploy verificado con los 8 assets en `200` y bytes
+idénticos. Para un bump: tag nuevo sobre el merge que trae los assets + repuntar la variable.
+
+**Dos trampas que ya mordieron:**
+- `v1.0.0` sirve un favicon distinto al vigente (696 B vs 709 B): el tag debe ser nuevo.
+- El tag tiene que colgar del **commit que ya contiene los assets**. `v1.1.0` se creó sobre un
+  `main` local atrasado (anterior a esta migración) y daba 404 en las 4 thumbs; se retiró y se
+  publicó `v1.1.1` en su lugar en vez de reescribir el ref publicado.
 
 ## Qué NO cubre
 
