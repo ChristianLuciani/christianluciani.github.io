@@ -24,5 +24,8 @@ ROADMAP.md
 # Local worktrees (AGOS W3)
 .worktrees/
 
+# Estado de sesión AGOS (boards de sprint, outbox, ledger de la ventana — ADR-024)
+.agos/
+
 # Worktrees: node_modules compartido por symlink desde el repo madre
 node_modules

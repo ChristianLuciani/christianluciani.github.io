@@ -30,7 +30,7 @@
  * explícito con la lista probada, nunca un gate que "pasa" por no poder medir.
  */
 import { spawn, spawnSync } from "node:child_process";
-import { accessSync, mkdtempSync, rmSync } from "node:fs";
+import { accessSync, constants, mkdtempSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -40,7 +40,21 @@ import { join } from "node:path";
 const MAC_CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const LINUX_CHROME = ["/usr/bin/google-chrome-stable", "/usr/bin/google-chrome", "/usr/bin/chromium", "/usr/bin/chromium-browser"];
 
-const exists = (p) => { try { accessSync(p); return true; } catch { return false; } };
+/* Un candidato válido es un ARCHIVO EJECUTABLE: `accessSync(F_OK)` aceptaba
+ * directorios y archivos sin permiso de ejecución, y el fallo aparecía recién al
+ * lanzarlo (issue #75). */
+/** Motivo por el que un candidato NO sirve (null si sirve): «no encontrado» a
+ *  secas esconde un wrapper sin `chmod +x` (F5 de #75). */
+const whyNot = (p) => {
+  try {
+    if (!statSync(p).isFile()) return "no es un archivo";
+    accessSync(p, constants.X_OK);
+    return null;
+  } catch (e) {
+    return e?.code === "EACCES" ? "sin permiso de ejecución" : "no existe";
+  }
+};
+const exists = (p) => whyNot(p) === null;
 
 /** Candidatos en orden de precedencia. Lee el entorno en cada llamada: un
  *  `CHROME_PATH` seteado después del import sigue ganando. */
@@ -53,9 +67,10 @@ export function chromeCandidates() {
 export function chromePath(candidates = chromeCandidates()) {
   const found = candidates.find(exists);
   if (!found) {
-    throw new Error(
-      `Chrome no encontrado (probado: ${candidates.join(", ") || "(lista vacía)"}) — instalá Chrome o seteá CHROME_PATH`,
-    );
+    const tried = candidates.length
+      ? candidates.map((p) => `${p} (${whyNot(p)})`).join(", ")
+      : "(lista vacía)";
+    throw new Error(`Chrome no encontrado (probado: ${tried}) — instalá Chrome o seteá CHROME_PATH`);
   }
   return found;
 }
@@ -67,7 +82,12 @@ export function chromePath(candidates = chromeCandidates()) {
 export function chromeFailure(err, stderr = "") {
   const lines = String(stderr).split("\n").map((l) => l.trim()).filter(Boolean);
   const cause = lines.length > 6 ? [...lines.slice(0, 2), "…", lines[lines.length - 1]] : lines;
-  const how = err?.signal ? `murió por señal ${err.signal}` : `salió con código ${err?.status ?? "null"}`;
+  /* El `message` manda cuando existe: es el fallo de spawnSync y ahí `status`
+   * MIENTE — ENOBUFS llega con `status: 0` y el timeout como SIGTERM (#75). */
+  const how = err?.message
+    ? (/ETIMEDOUT|timeout/i.test(err.message) ? "no terminó a tiempo (timeout)" : `no pudo ejecutarse (${err.message})`)
+    : err?.signal ? `murió por señal ${err.signal}`
+      : `salió con código ${err?.status ?? "?"}`;
   return new Error(`Chrome falló (${how})${cause.length ? ` · chrome: ${cause.join(" | ")}` : ""}`);
 }
 
@@ -92,7 +112,7 @@ const run = (args, { capture = false } = {}) => {
     stdio: ["ignore", "pipe", "pipe"],
   });
   const stderr = res.stderr == null ? "" : String(res.stderr);
-  if (res.error) throw chromeFailure(res.error, stderr);
+  if (res.error) throw chromeFailure({ message: res.error.message, code: res.error.code }, stderr);
   if (res.status !== 0 || res.signal) throw chromeFailure(res, stderr);
   return capture ? res.stdout : undefined;
 };

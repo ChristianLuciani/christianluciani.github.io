@@ -277,7 +277,9 @@ assets/brand/logo/
 Regenerar todo: `node tools/logo/generate-logo.mjs`
 Sólo áurea/base: `--only-aurea` / `--only-base`
 Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
-Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — corre en CI
+Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — salida **0** limpio
+· **1** el puerto difiere · **2** no se pudo medir (Chrome ausente o artefacto
+inexistente), y el resumen nombra la versión; corre en CI
 con Chrome headless de linux; el binario se resuelve `CHROME_PATH` → macOS →
 `google-chrome-stable`/`chromium` (`tools/logo/chrome.mjs`), y sin binario el
 gate falla como «no se pudo medir», nunca como «diverge»
