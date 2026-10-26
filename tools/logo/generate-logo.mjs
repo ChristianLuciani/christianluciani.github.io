@@ -16,12 +16,13 @@
  *      [--out assets/brand/logo] (o LOGO_OUT env)
  */
 import { execFileSync } from "node:child_process";
-import { accessSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   config, buildGeometry, buildSky, constellationPoints, segStyle, cPathD, cBand, starSpec, seeded,
 } from "./geometry.mjs";
+import { chromePath } from "./chrome.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../..");
@@ -33,17 +34,12 @@ const NIGHT = "#050810";
 const DEEP = "#0b1120"; // --bg-1 del HTML aprobado (centro del gradiente)
 const HALO = "rgba(0,201,192,.07)"; // halo teal del .stage::before aprobado
 const NAME = "CHRISTIAN LUCIANI";
-const CHROME_CANDIDATES = [
-  process.env.CHROME_PATH, // override explícito (útil en CI/sandbox: wrapper con flags)
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-].filter(Boolean);
 
 const n2 = (x) => +x.toFixed(2);
 const n4 = (x) => +x.toFixed(4);
+/* el binario lo resuelve chrome.mjs (#59): CHROME_PATH → macOS → linux */
 const pickChrome = () => {
-  for (const c of CHROME_CANDIDATES) { try { accessSync(c); return c; } catch { /* next */ } }
-  console.error("❌ Chrome no encontrado (CHROME_PATH o /Applications/Google Chrome.app)");
-  process.exit(1);
+  try { return chromePath(); } catch (e) { console.error(`❌ ${e.message}`); process.exit(1); }
 };
 
 function chromeScreenshot(chrome, htmlFile, outPng, { w, h, transparent = false } = {}) {

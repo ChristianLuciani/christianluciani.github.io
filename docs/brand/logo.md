@@ -159,7 +159,9 @@ el DOM aprobado. Desde #55, el gate verifica además el **contorno de la
 banda** (`cBand`: marco y terminales), que la **máscara de revelado** esté
 aplicada en el render normal, y que el acabado completo (bisel, barrido y
 bloom) coincida con `cFinish`; los assets se generan desde esa misma
-geometría.
+geometría. Desde #59 el gate corre en **CI** (`.github/workflows/ci.yml`: Chrome
+headless de linux + `npm run logo:verify`), así que el merge queda bloqueado si
+el puerto diverge del DOM aprobado.
 
 ## 5. Tipografía
 
@@ -275,7 +277,10 @@ assets/brand/logo/
 Regenerar todo: `node tools/logo/generate-logo.mjs`
 Sólo áurea/base: `--only-aurea` / `--only-base`
 Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
-Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs`
+Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — corre en CI
+con Chrome headless de linux; el binario se resuelve `CHROME_PATH` → macOS →
+`google-chrome-stable`/`chromium` (`tools/logo/chrome.mjs`), y sin binario el
+gate falla como «no se pudo medir», nunca como «diverge»
 Gate de movimiento: `npm run logo:motion` (ver §11)
 Módulo del sitio: `npm run brand:sync` — **obligatorio** después de tocar la
 animación (CI verifica que `src/ts/brand/logoAnim.js` no tenga drift)
@@ -338,7 +343,8 @@ invariantes, plan de muestreo y veredicto) vive en `tools/logo/motion-analysis.m
 y la cubre **`motion-analysis.test.mjs` (26 tests)**; el decoder y la medición de
 píxeles, **`png.test.mjs` (16 tests)** — 42 del instrumento, todos en CI
 (`npx vitest run tools/logo/png.test.mjs tools/logo/motion-analysis.test.mjs`).
-La adquisición (CDP) necesita Chrome y queda fuera de CI (wiring: issue #59).
+La adquisición (CDP) necesita Chrome y sigue fuera de CI: #59 cableó sólo el
+gate de fidelidad (dump-dom), no el de movimiento.
 
 ### Estado medido del artefacto (track A, 2026-10-23)
 

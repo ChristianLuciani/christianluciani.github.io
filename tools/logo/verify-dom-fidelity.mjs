@@ -14,22 +14,21 @@
  *
  * Cualquier drift del puerto ⇒ exit 1 con la diferencia exacta.
  *
+ * El binario y la invocación viven en `chrome.mjs` (un solo lugar): `CHROME_PATH`
+ * gana, después los defaults de macOS/linux — por eso el mismo gate corre en el
+ * runner de linux de `ci.yml` (#59).
+ *
  * Uso: node tools/logo/verify-dom-fidelity.mjs
  */
-import { execFileSync } from "node:child_process";
-import { accessSync } from "node:fs";
 import { resolve, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
   CONFIG_AUREA, CONFIG_BASE, buildGeometry, buildSky, constellationPoints,
   segStyle, cPathD, cBand, lerpColor,
 } from "./geometry.mjs";
+import { dumpDom } from "./chrome.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const CHROME_CANDIDATES = [
-  process.env.CHROME_PATH, // override explícito (útil en CI/sandbox: wrapper con flags)
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-].filter(Boolean);
 
 const round = (n) => Math.round(n * 100) / 100;
 const num = (s) => (s == null ? null : parseFloat(s));
@@ -39,26 +38,23 @@ const parseAttrs = (tag) => {
   return attrs;
 };
 
-function dumpDom(chrome, file, { reduced = false } = {}) {
-  const args = [
-    "--headless", "--disable-gpu", "--no-first-run", "--hide-scrollbars",
-    "--virtual-time-budget=1500", "--dump-dom", `file://${file}`,
-  ];
-  if (reduced) args.push("--force-prefers-reduced-motion");
-  return execFileSync(chrome, args, {
-    encoding: "utf8", maxBuffer: 64 * 1024 * 1024,
-    stdio: ["ignore", "pipe", "ignore"], timeout: 180_000,
-  });
-}
-
 const extractTags = (dump, tagName) =>
   [...dump.matchAll(new RegExp(`<${tagName}\\b[^>]*>`, "g"))].map((m) => parseAttrs(m[0]));
 
-let failed = false;
+/* «el puerto diverge» y «no se pudo medir» son veredictos distintos: en CI un
+ * Chrome que no arranca no es un drift de geometría. El exit es el mismo (1).
+ * Un drift medido GANA el resumen: si algo divergió, la corrida midió. */
+let drift = false;
+let unmeasured = false;
 function fail(msg) {
   console.error(`❌ FIDELIDAD: ${msg}`);
   process.exitCode = 1;
-  failed = true;
+  drift = true;
+}
+function canNotMeasure(msg) {
+  console.error(`❌ FIDELIDAD: ${msg}`);
+  process.exitCode = 1;
+  unmeasured = true;
 }
 
 /* estilo tolerante: comparar por diff ≤ 0.05 (precisión de serialización) */
@@ -74,8 +70,6 @@ const normColor = (c) => c?.replace(/\s+/g, "");
 /* chrome serializa colores como rgb(r,g,b); mi expected ya es rgb(...) */
 function verify(version, htmlPath) {
   const cfg = version === "base" ? CONFIG_BASE : CONFIG_AUREA;
-  const chrome = CHROME_CANDIDATES.find((c) => { try { accessSync(c); return true; } catch { return false; } });
-  if (!chrome) { console.error("❌ Chrome no encontrado"); process.exit(1); }
 
   const g = buildGeometry(cfg.geometry);
   const pts = constellationPoints(g.segs);
@@ -84,7 +78,7 @@ function verify(version, htmlPath) {
   const file = resolve(htmlPath);
 
   /* ── modo reduced: geometría + estilos, sin hot-lines ── */
-  const dumpR = dumpDom(chrome, file, { reduced: true });
+  const dumpR = dumpDom(file, { reduced: true });
   const linesR = extractTags(dumpR, "line").filter((a) => a.x1 != null);
   const expected = new Map();
   for (const s of g.segs) {
@@ -157,7 +151,7 @@ function verify(version, htmlPath) {
   }
 
   /* ── modo normal: cielo + constelación ── */
-  const dump = dumpDom(chrome, file);
+  const dump = dumpDom(file);
   if (version === "aurea") {
     // la máscara tiene que estar APLICADA en el render normal (en reduced se
     // muestra el estado final sin máscara, por eso se mira el dump normal)
@@ -194,6 +188,12 @@ for (const [version, file] of [
   ["aurea", "proposals/logo-triangulo-espiral/aurea7.html"],
   ["base", "proposals/logo-triangulo-espiral/index.html"],
 ]) {
-  try { verify(version, join(root, file)); } catch (e) { fail(`${version}: ${e.message}`); }
+  try { verify(version, join(root, file)); }
+  catch (e) { canNotMeasure(`${version}: ${e.message}`); }
 }
-console.log(process.exitCode ? "🚫 FIDELIDAD: el puerto diverge del DOM aprobado" : "🏆 FIDELIDAD: geometry.mjs ≡ DOM aprobado (animación v16 + acabado #55)");
+console.log(
+  !process.exitCode ? "🏆 FIDELIDAD: geometry.mjs ≡ DOM aprobado (animación v16 + acabado #55)"
+    : drift ? "🚫 FIDELIDAD: el puerto diverge del DOM aprobado"
+      : unmeasured ? "🚫 FIDELIDAD: NO se pudo medir (Chrome no corrió) — esto no es drift: revisá Chrome/CHROME_PATH"
+        : "🚫 FIDELIDAD: la verificación falló (revisá la salida de arriba)",
+);
