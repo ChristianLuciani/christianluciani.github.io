@@ -30,9 +30,9 @@ const schedule = ({ n = 21, first = 125, last = 235, t0 = 700, durFast = 285, du
 
 /* ── sonda mínima: la punta y la respiración, como las lee el gate ───────── */
 const timing = { start: 700, stagger: 235, staggerFast: 125, seg: 460, segFast: 285, segC: 640, accelRamp: 2.2 };
-const probe = ({ scales = [1, 1], easing = "cubic-bezier(0.33, 0.6, 0.4, 1)", keys = [["0%, 100%", "0.5"], ["50%", "0.78"]], rest = "0.5", targets = [".settle-on .c-glow path"], sched = schedule(), tmg = timing } = {}) => ({
+const probe = ({ scales = [1, 1], easing = "cubic-bezier(0.33, 0.6, 0.4, 1)", keys = [["0%, 100%", "0.5"], ["50%", "0.78"]], rest = "0.5", targets = [".settle-on .c-glow path"], sched = schedule(), tmg = timing, intent = null } = {}) => ({
   breathe: { frames: keys.map(([key, opacity]) => ({ key, opacity })), rest, targets },
-  schedule: sched, timing: tmg, anims: [],
+  schedule: sched, timing: tmg, anims: [], intent,
 });
 const landmark = ({ easing = "cubic-bezier(0.33, 0.6, 0.4, 1)", scales = [1, 1] } = {}) => ({
   punta: { delay: 1000, duration: 680, easing, kf: scales.map((s, i) => ({ offset: i, opacity: i === 0 ? "0.85" : "0", transform: `scale(${s})` })) },
@@ -108,6 +108,26 @@ describe("motion-analysis — invariantes del cronograma (v16 vs fix)", () => {
     expect(fails).toHaveLength(3);
   });
 
+  it("el bloom DECLARADO deja de ser defecto, pero se acota al máximo declarado (#67)", () => {
+    /* decisión del operador: la punta florece; el tope lo declara el artefacto */
+    expect(checkStructure(probe({ intent: { tipBloom: 1.3 } }), landmark({ scales: [1, 1.3] }))).toEqual([]);
+    const desbocado = checkStructure(probe({ intent: { tipBloom: 1.3 } }), landmark({ scales: [1, 1.5] }));
+    expect(desbocado.join("\n")).toMatch(/crece hasta 1\.5 y declaró un bloom máximo de 1\.3/);
+  });
+
+  it("el overshoot sigue prohibido aunque el bloom esté declarado", () => {
+    const fails = checkStructure(
+      probe({ intent: { tipBloom: 1.3 } }),
+      landmark({ scales: [1, 1.3], easing: "cubic-bezier(0.3, 1.4, 0.5, 1)" }),
+    );
+    expect(fails.join("\n")).toMatch(/tiene overshoot/);
+  });
+
+  it("sin declaración el crecimiento sigue siendo defecto (no se aprueba por omisión)", () => {
+    expect(checkStructure(probe(), landmark({ scales: [1, 1.3] })).join("\n"))
+      .toMatch(/se agranda al apagarse.*no está declarado/);
+  });
+
   it("el fix pasa: fade puro, curva sin overshoot y respiración en el trazo", () => {
     expect(checkStructure(probe(), landmark({ scales: [1, 1] }))).toEqual([]);
   });
@@ -151,6 +171,50 @@ describe("motion-analysis — veredicto completo (analyze)", () => {
   it("atrapa el glow que se abre fuera del trazo", () => {
     const conHalo = rows([[1000, 20, 8, 0.2, 0.32], [1100, 12, 14, 0.2, 0.25], [1200, 6, 6, 0.2, 0.18], [1400, 1, 1, 0.2, 0.15], [1590, 0, 0, 0.2, 0.15], [1610, 0, 0, 0.2, 0.15], [2500, 0, 0, 0.21, 0.15]]);
     expect(analyzeClean(conHalo).fails.join("\n")).toMatch(/glow fuera del trazo/);
+  });
+
+  const conHalo = rows([[1000, 20, 8, 0.2, 0.32], [1100, 12, 14, 0.2, 0.25], [1200, 6, 6, 0.2, 0.18], [1400, 1, 1, 0.2, 0.15], [1590, 0, 0, 0.2, 0.15], [1610, 0, 0, 0.2, 0.15], [2500, 0, 0, 0.21, 0.15]]);
+  const analyzeHalo = (intent, scales = [1, 1.3]) =>
+    analyze({ probe: probe({ intent }), L: landmark({ scales }), rows: conHalo }, { stepMs: 100 });
+
+  it("con bloom declarado Y crecimiento real, el halo es métrica y no destello", () => {
+    const declarado = analyzeHalo({ tipBloom: 1.3 });
+    expect(declarado.fails.join("\n")).not.toMatch(/glow fuera del trazo/);
+    expect(declarado.bloomDeclared).toBe(true);
+    expect(declarado.declaredBloom).toBe(1.3);
+  });
+
+  it("declarar un bloom que NO existe no apaga el chequeo del halo (F1 del pase fresco)", () => {
+    const sinCrecimiento = analyzeHalo({ tipBloom: 1.3 }, [1, 1]);
+    expect(sinCrecimiento.bloomDeclared).toBe(false);
+    expect(sinCrecimiento.fails.join("\n")).toMatch(/glow fuera del trazo/);
+  });
+
+  it("un crecimiento por debajo del ruido no cuenta como bloom (F1 del pase 2)", () => {
+    const ruido = analyzeHalo({ tipBloom: 1.3 }, [1, 1.000002]);
+    expect(ruido.bloomDeclared).toBe(false);
+    expect(ruido.fails.join("\n")).toMatch(/glow fuera del trazo/);
+  });
+
+  it("una declaración por encima del techo no exime el halo y se denuncia (F2 del pase 2)", () => {
+    const exagerada = analyzeHalo({ tipBloom: 100 }, [1, 3]);
+    expect(exagerada.bloomDeclared).toBe(false);
+    expect(exagerada.fails.join("\n")).toMatch(/glow fuera del trazo/);
+    expect(checkStructure(probe({ intent: { tipBloom: 100 } }), landmark({ scales: [1, 3] })).join("\n"))
+      .toMatch(/tipBloom=100 y el techo es 2/);
+  });
+
+  it("una declaración inválida (0/null/negativa) tampoco exime el halo", () => {
+    for (const intent of [{ tipBloom: 0 }, { tipBloom: null }, { tipBloom: -2 }, {}]) {
+      const out = analyzeHalo(intent);
+      expect(out.bloomDeclared).toBe(false);
+      expect(out.fails.join("\n")).toMatch(/glow fuera del trazo/);
+    }
+  });
+
+  it("sin declaración el halo sigue siendo destello", () => {
+    expect(analyzeClean(conHalo).fails.join("\n")).toMatch(/glow fuera del trazo/);
+    expect(analyzeClean(conHalo).bloomDeclared).toBe(false);
   });
 
   it("atrapa el salto del settle y la respiración inerte", () => {

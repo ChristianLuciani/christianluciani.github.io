@@ -4,9 +4,10 @@
  * ancla C idéntica base↔áurea (0.0000px), ratios φ por generación,
  * determinismo y el cierre en A (la "C" abierta).
  */
+import { readFileSync } from "node:fs";
 import { describe, it, expect } from "vitest";
 import {
-  CONFIG_AUREA, CONFIG_BASE, config, buildGeometry, buildSky,
+  C_FINISH, CONFIG_AUREA, CONFIG_BASE, config, buildGeometry, buildSky,
   constellationPoints, segStyle, cPathD, cBand, seeded, starSpec,
 } from "./geometry.mjs";
 
@@ -289,5 +290,38 @@ describe("golden values — anclas congeladas del gate DOM (captan drift de seed
     expect(j2(b0.cx)).toBe(326.15);
     expect(j2(b0.cy)).toBe(245.1);
     expect(j2(b0.r)).toBe(1.28);
+  });
+});
+/* El reposo de la respiración (C_FINISH.bloom.opacity) se repite como número en
+ * dos keyframes CSS —artefacto y espejo del sitio— y `brand:sync` copia el
+ * script, no el CSS: cambiar el reposo dejaba `brandBreathe` viejo ⇒ escalón del
+ * settle en producción con CI verde (F3 del pase fresco de #67). */
+describe("geometry — el reposo de la respiración no se escribe a mano (3 copias, 1 fuente)", () => {
+  const read = (rel) => readFileSync(new URL(`../../${rel}`, import.meta.url), "utf8");
+  const keyframe = (css, name) => {
+    const m = new RegExp(`@keyframes\\s+${name}\\s*\\{\\s*0%,100%\\s*\\{\\s*opacity:\\s*([\\d.]+)`).exec(css);
+    return m ? Number(m[1]) : null;
+  };
+  const rest = C_FINISH.bloom.opacity;
+
+  it("el artefacto arranca en el reposo de la geometría, sobre el TRAZO", () => {
+    const html = read("proposals/logo-triangulo-espiral/aurea7.html");
+    expect(keyframe(html, "breathe")).toBe(rest);
+    expect(html).toMatch(/\.settle-on \.c-glow path\{animation:breathe/);
+  });
+
+  it("el CFINISH del artefacto (duplicado a mano) declara el mismo bloom", () => {
+    /* el artefacto repite `CFINISH` con un «MANTENER SINCRONIZADO»: el gate de
+       fidelidad compara perp/tint/blur, pero NO la opacidad del bloom */
+    const html = read("proposals/logo-triangulo-espiral/aurea7.html");
+    const m = /bloom:\s*\{\s*color:\s*"[^"]+",\s*opacity:\s*([\d.]+)/.exec(html);
+    expect(m).not.toBeNull();
+    expect(Number(m[1])).toBe(rest);
+  });
+
+  it("el espejo del sitio (brandBreathe) arranca en el MISMO reposo", () => {
+    const head = read("src/templates/head_html.ts");
+    expect(keyframe(head, "brandBreathe")).toBe(rest);
+    expect(head).toMatch(/#brand-logo \.settle-on \.c-glow path \{ animation:brandBreathe/);
   });
 });

@@ -86,6 +86,7 @@ const PROBE = `(() => {
      la C es una banda con máscara desde el acabado (#64) y las líneas de calor
      comparten delay con su tramo. */
   return JSON.stringify({ anims, breathe,
+    intent: svg.dataset.intent ? JSON.parse(svg.dataset.intent) : null,
     c: svg.dataset.c ? JSON.parse(svg.dataset.c) : null,
     schedule: svg.dataset.schedule ? JSON.parse(svg.dataset.schedule) : null,
     timing: CONFIG.timing });
@@ -276,7 +277,12 @@ function printReport({ probe, L, rows }, out, framesDir) {
     + ` · píxel más brillante settled=${out.tipMaxSettled.toFixed(3)}`);
   console.log(`destello — luz de la estrella: suba máx ${sign(out.flash.delta, 3)} (máx ${THRESHOLDS.flash})`
     + ` · bloom ${sign(out.bloom.delta, 3)} · sostenida ${sign(out.sustain.delta, 3)}`
-    + ` · glow fuera del trazo: suba máx ${sign(out.haloUp.delta, 2)} (máx ${THRESHOLDS.halo})`);
+    + ` · glow fuera del trazo: suba máx ${sign(out.haloUp.delta, 2)}`
+    + (out.bloomDeclared
+      ? ` (bloom declarado ≤${out.declaredBloom}: métrica, no defecto)`
+      : probe.intent?.tipBloom != null
+        ? ` (declaración ${probe.intent.tipBloom} descartada: sin bloom medido; máx ${THRESHOLDS.halo})`
+        : ` (máx ${THRESHOLDS.halo})`));
   if (out.settle)
     console.log(`settle (${L.settle.toFixed(0)}ms): cuerpo ${out.settle.before.body.toFixed(4)} → ${out.settle.after.body.toFixed(4)}`
       + ` = ${sign(out.settle.delta, 4)} (máx ${THRESHOLDS.settle})`);
