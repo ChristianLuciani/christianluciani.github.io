@@ -36,7 +36,7 @@ import { accessSync, constants, mkdtempSync, rmSync, statSync } from "node:fs";
 import { createServer } from "node:net";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { Unmeasurable } from "./gate.mjs";
+import { Unmeasurable } from "./fidelity-verdict.mjs";
 
 /* Defaults por plataforma (macOS primero sólo por orden de lectura: en linux
  * no existe). CHROME_PATH gana siempre: se prepende en chromeCandidates(). */
@@ -68,19 +68,20 @@ export function chromeCandidates() {
 /** Primer binario existente. `candidates` es un seam para los tests: el
  *  contrato real es la lista por defecto.
  *
- *  `CHROME_PATH` es el override EXPLÍCITO: si está seteado y no sirve, se falla
- *  ruidoso en vez de caer al Chrome del sistema. Antes el motivo sólo se
- *  imprimía cuando fallaban TODOS los candidatos, así que un `CHROME_PATH` mal
- *  apuntado se enmascaraba con otro binario y el gate medía otra cosa (#79). */
+ *  `CHROME_PATH` es el override EXPLÍCITO: si está seteado, el binario sale de
+ *  ahí o se falla ruidoso — nunca se cae a otro candidato, ni siquiera con una
+ *  lista custom que lo omita (F2 del pase fresco de #82). El string vacío
+ *  cuenta como «no seteado» y cae a los defaults, igual que chromeCandidates(). */
 export function chromePath(candidates = chromeCandidates()) {
   const override = process.env.CHROME_PATH;
-  if (override && candidates.includes(override)) {
+  if (override) {
     const why = whyNot(override);
     if (why) {
       throw new Unmeasurable(
         `CHROME_PATH='${override}' no sirve (${why}) — el override explícito no se enmascara con otro binario: corregí CHROME_PATH o desetalo`,
       );
     }
+    return override;
   }
   const found = candidates.find(exists);
   if (!found) {

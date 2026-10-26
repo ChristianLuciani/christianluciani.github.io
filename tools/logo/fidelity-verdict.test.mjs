@@ -104,3 +104,25 @@ describe("fidelity-verdict — error interno ≠ entorno (#79)", () => {
     expect(exitCodeFor([drift("aurea"), { version: "base", outcome: "error" }])).toBe(1);
   });
 });
+
+describe("fidelity-verdict — mixtos del pase fresco de #82", () => {
+  const EXPECTED = ["aurea", "base"];
+
+  it("parcial + drift: el código es 1 y el resumen nombra la versión sin medir (F4)", () => {
+    const results = [drift("aurea")];
+    expect(exitCodeFor(results, EXPECTED)).toBe(1);
+    const { line } = summaryFor(results, EXPECTED);
+    expect(line).toMatch(/diverge/);
+    expect(line).toMatch(/base: sin medir/);
+    expect(line).toMatch(/parcial/);
+  });
+
+  it("mixto unmeasured + error nombra las DOS causas y no manda sólo a Chrome (F3)", () => {
+    const results = [unmeasured("aurea"), { version: "base", outcome: "error" }];
+    const { code, line } = summaryFor(results);
+    expect(code).toBe(2);
+    expect(line).toMatch(/causas mixtas/);
+    expect(line).toMatch(/base: error interno del gate/);
+    expect(line).toMatch(/aurea: no se pudo medir/);
+  });
+});

@@ -1,27 +1,20 @@
 /**
  * gate.mjs — frontera y cableado del gate de fidelidad (issue #79).
  *
- * Tres piezas que estaban mezcladas en el CLI y por eso no se podían probar sin
+ * Piezas que estaban mezcladas en el CLI y por eso no se podían probar sin
  * Chrome:
  *   · `artifactProblem` — preflight del artefacto. Un HTML que Chrome no puede
  *     renderizar (inexistente, vacío, directorio, sin permiso) se compara como
  *     DOM vacío y salía «drift» (1) cuando en realidad NO se midió (2).
- *   · `Unmeasurable` — fallo de ENTORNO (binario ausente, Chrome que no arranca).
- *     Distinto de un bug del gate: el consejo de diagnóstico no es el mismo y
- *     nadie debe depurar Chrome por un TypeError.
+ *   · `renderedNothing` — el otro lado del mismo falso drift: un artefacto no
+ *     vacío que renderiza un DOM sin `<svg>` tampoco se midió.
  *   · `runGate` — el cableado: `fail()`/`canNotMeasure()` acumulan POR VERSIÓN,
  *     se traducen a `results` y terminan en el veredicto de `fidelity-verdict.mjs`.
+ *     `Unmeasurable` (taxonomía, no cableado) vive en `fidelity-verdict.mjs`:
+ *     `chrome.mjs` la usa sin depender de este módulo.
  */
 import { accessSync, constants, statSync } from "node:fs";
-import { summaryFor } from "./fidelity-verdict.mjs";
-
-/** El gate no pudo medir por el entorno: no es drift ni un bug. */
-export class Unmeasurable extends Error {
-  constructor(message) {
-    super(message);
-    this.name = "Unmeasurable";
-  }
-}
+import { summaryFor, Unmeasurable } from "./fidelity-verdict.mjs";
 
 /**
  * `artifactProblem(file)` → motivo por el que NO se puede medir (null si se
@@ -46,6 +39,15 @@ export function artifactProblem(file) {
     return `sin permiso de lectura: ${file}`;
   }
   return null;
+}
+
+/**
+ * `renderedNothing(dump)` — true si el DOM volcado no tiene ni un `<svg>`.
+ * Un artefacto no vacío puede igual renderizar nada (JS roto, HTML sin el
+ * gráfico): comparar ese DOM da un drift falso, no una medición (#83, F6).
+ */
+export function renderedNothing(dump) {
+  return !/<\s*svg\b/i.test(String(dump ?? ""));
 }
 
 /**

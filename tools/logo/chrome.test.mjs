@@ -120,3 +120,13 @@ describe("chromePath — CHROME_PATH explícito (#79)", () => {
     withEnv(EXISTING, () => expect(chromePath()).toBe(EXISTING));
   });
 });
+
+describe("chromePath — el override gana siempre (#83)", () => {
+  it("un CHROME_PATH válido gana aunque la lista custom lo omita", () => {
+    withEnv(EXISTING, () => expect(chromePath(["/no/existe-chrome"])).toBe(EXISTING));
+  });
+
+  it("un CHROME_PATH vacío cuenta como no seteado y cae a la lista", () => {
+    withEnv("", () => expect(chromePath([EXISTING])).toBe(EXISTING));
+  });
+});

@@ -14,8 +14,8 @@
  *
  * Cualquier drift del puerto ⇒ exit 1 con la diferencia exacta. Un artefacto
  * que Chrome no puede renderizar (inexistente, VACÍO, ilegible o un directorio
- * con el nombre del HTML) y un fallo del entorno ⇒ exit 2 «no se pudo medir»,
- * nunca un drift falso (#79).
+ * con el nombre del HTML), un DOM que no renderizó el SVG, y un fallo del
+ * entorno ⇒ exit 2 «no se pudo medir», nunca un drift falso (#79, #83).
  *
  * El binario y la invocación viven en `chrome.mjs` (un solo lugar): `CHROME_PATH`
  * gana, después los defaults de macOS/linux — por eso el mismo gate corre en el
@@ -30,7 +30,7 @@ import {
   segStyle, cPathD, cBand, lerpColor,
 } from "./geometry.mjs";
 import { dumpDom } from "./chrome.mjs";
-import { artifactProblem, runGate } from "./gate.mjs";
+import { artifactProblem, renderedNothing, runGate } from "./gate.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -77,6 +77,12 @@ function verify(version, htmlPath, { fail, canNotMeasure }) {
 
   /* ── modo reduced: geometría + estilos, sin hot-lines ── */
   const dumpR = dumpDom(file, { reduced: true });
+  /* Un artefacto no vacío puede renderizar un DOM sin SVG: compararlo es otro
+     drift falso (F6 del pase fresco de #82). */
+  if (renderedNothing(dumpR)) {
+    canNotMeasure(`${version}: el artefacto no renderizó el SVG (DOM vacío)`);
+    return;
+  }
   const linesR = extractTags(dumpR, "line").filter((a) => a.x1 != null);
   const expected = new Map();
   for (const s of g.segs) {
@@ -150,6 +156,10 @@ function verify(version, htmlPath, { fail, canNotMeasure }) {
 
   /* ── modo normal: cielo + constelación ── */
   const dump = dumpDom(file);
+  if (renderedNothing(dump)) {
+    canNotMeasure(`${version}: el render normal no tiene SVG (DOM vacío)`);
+    return;
+  }
   if (version === "aurea") {
     // la máscara tiene que estar APLICADA en el render normal (en reduced se
     // muestra el estado final sin máscara, por eso se mira el dump normal)

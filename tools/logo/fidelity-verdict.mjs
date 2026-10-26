@@ -8,7 +8,20 @@
  * #79: un `error` (bug del gate) también es 2 — no se midió — pero el resumen lo
  * nombra distinto de un fallo de entorno; y una corrida PARCIAL (menos versiones
  * de las esperadas) ya no puede dar 0.
+ *
+ * Vive acá también la taxonomía del error, no el cableado: `Unmeasurable` marca
+ * lo que falló por ENTORNO y lo consume `chrome.mjs` sin importar el gate (F7
+ * del pase fresco de #82: la primitiva no depende del wiring).
  */
+
+/** El gate no pudo medir por el entorno (Chrome ausente, artefacto ilegible):
+ *  no es drift ni un bug. `chrome.mjs` y el preflight lo usan como marcador. */
+export class Unmeasurable extends Error {
+  constructor(message) {
+    super(message);
+    this.name = "Unmeasurable";
+  }
+}
 
 /** outcome por versión → el veredicto de la corrida. */
 export const OUTCOME = {
@@ -59,21 +72,35 @@ export function summaryFor(results, expected) {
   }
   const bad = list.filter((r) => r.outcome !== "ok");
   const detail = bad.map((r) => `${r.version}: ${OUTCOME[r.outcome] ?? r.outcome}`).join(" · ");
+  const missing = missingVersions(list, expected);
+  const absent = missing.length
+    ? missing.map((version) => `${version}: sin medir`).join(" · ")
+    : "";
   if (code === 1) {
+    /* Un drift medido gana el código, pero una versión que ni se midió no puede
+     * desaparecer del resumen (F4 del pase fresco de #82). */
     return {
       code,
-      line: `🚫 FIDELIDAD: el puerto diverge del DOM aprobado — ${detail}`,
+      line: `🚫 FIDELIDAD: el puerto diverge del DOM aprobado — ${detail}${absent ? ` · corrida parcial, faltan ${absent}` : ""}`,
     };
   }
-  const missing = missingVersions(list, expected);
-  if (missing.length) {
-    const absent = missing.map((version) => `${version}: sin medir`).join(" · ");
+  if (absent) {
     return {
       code,
       line: `🚫 FIDELIDAD: NO se pudo medir — corrida parcial, faltan ${absent}${detail ? ` · ${detail}` : ""} (esto no es drift)`,
     };
   }
-  if (bad.some((r) => r.outcome === "error")) {
+  const hasError = bad.some((r) => r.outcome === "error");
+  const hasUnmeasured = bad.some((r) => r.outcome === "unmeasured");
+  if (hasError && hasUnmeasured) {
+    /* Un estado mixto tiene DOS causas: nombrarlas evita mandar a depurar el
+     * entorno por el bug del gate, o al revés (F3). */
+    return {
+      code,
+      line: `🚫 FIDELIDAD: NO se pudo medir — ${detail} (causas mixtas: en «no se pudo medir» es el entorno [Chrome/CHROME_PATH]; en «error interno» es un bug del gate)`,
+    };
+  }
+  if (hasError) {
     return {
       code,
       line: `🚫 FIDELIDAD: error interno del gate — ${detail} (bug del gate, NO del entorno: no es Chrome ni la ruta del binario)`,

@@ -11,7 +11,8 @@ import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:f
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { artifactProblem, runGate, Unmeasurable } from "./gate.mjs";
+import { artifactProblem, renderedNothing, runGate } from "./gate.mjs";
+import { Unmeasurable } from "./fidelity-verdict.mjs";
 
 const withDir = (fn) => {
   const dir = mkdtempSync(join(tmpdir(), "gate-artifact-"));
@@ -113,9 +114,34 @@ describe("runGate — fail()/canNotMeasure() → results (#79)", () => {
     expect(verdict.line).not.toMatch(/CHROME_PATH/);
   });
 
+  it("un TypeError DESPUÉS de fail() no pierde el drift, pero queda en el log (F5)", () => {
+    const logged = [];
+    const { results, verdict } = runGate({
+      versions: ["aurea"],
+      verify: (_, { fail }) => { fail("difiere"); throw new TypeError("boom"); },
+      error: (msg) => logged.push(msg),
+    });
+    expect(results).toEqual([{ version: "aurea", outcome: "drift" }]);
+    expect(verdict.code).toBe(1);
+    expect(logged.join("\n")).toMatch(/error interno/);
+  });
+
   it("una versión que explota igual deja su resultado: nunca una corrida parcial", () => {
     const { results } = run(() => { throw new TypeError("boom"); });
     expect(results).toHaveLength(VERSIONS.length);
     expect(results.map((r) => r.version)).toEqual(VERSIONS);
+  });
+});
+
+describe("renderedNothing — el artefacto que no renderizó el SVG (#83)", () => {
+  it("un dump vacío o sin <svg> no midió nada", () => {
+    expect(renderedNothing("")).toBe(true);
+    expect(renderedNothing("<html><body></body></html>")).toBe(true);
+    expect(renderedNothing(null)).toBe(true);
+  });
+
+  it("un dump con <svg> sí midió (no distingue mayúsculas ni atributos)", () => {
+    expect(renderedNothing('<svg xmlns="http://www.w3.org/2000/svg"><line/></svg>')).toBe(false);
+    expect(renderedNothing("<SVG>")).toBe(false);
   });
 });
