@@ -2,40 +2,50 @@
 
 **Estado:** propuesto · se ratifica con el merge de este PR (decisión del operador, #57)
 **Fecha:** 2026-10-25 · **Autor:** sesión `dsh/sprint/57`
-**Alcance declarado:** `Cubre: servir assets estáticos del sitio (favicons, OG, thumbs de papers, futuros bundles) · No cubre: hosting del HTML/JS/CSS, audio de salas (se queda en Pages por ToS), DNS del dominio, analítica, ni los PNG print del repo que el sitio no sirve · as_of: 2026-10-25`
+**Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo de raw.githubusercontent · as_of: 2026-10-25`
 
 ## Contexto
 
-El sitio se publica en GitHub Pages (Actions → `dist/`, `base: "/"`), repo público,
-tag `v1.0.0` ya publicado (requisito de #54). Lo que el sitio **realmente pide** es chico;
-lo que pesa en el repo es material que el sitio no sirve:
+El sitio se publica en GitHub Pages (Actions → `dist/`, `base: "/"`); el repo es público y
+tiene el tag `v1.0.0` (#54). El HTML generado (`index.html`, ensamblado por `build.ts`)
+referencia **19 rutas locales + 1 externa**:
 
-| Qué | Peso | ¿Lo pide el sitio? |
+| Qué referencia el HTML | Peso en repo | Dónde vive |
 |---|---|---|
-| `assets/brand/logo/` (58 archivos: renders 512→4096, print A3/A4, OG, favicons) | **23 MB** | Sólo 3 favicons (`src/templates/head_html.ts:29-31`) |
-| `public/audio/` (11 MP3 de salas) | **8.1 MB** | Sí, bajo demanda |
-| `assets/images/papers/` + `public/assets/` (thumbs) | 492 KB | Sí, 4 en HTML + manifest |
-| `og-image.png` | 116 KB | Sí (crawlers) |
-| Repo tracked completo | 33 MB | — |
+| 3 favicons (`/assets/brand/…`) | parte de 23 MB | `assets/brand/logo/` (58 renders); `vite.config.ts` copia 3 al build |
+| 4 thumbs de papers (`/assets/*_thumb-<hash>.jpg`) | 108 KB | `assets/` (raíz) |
+| 10 iconos (`assets/icons/*.svg`) + QR (`assets/qr-site.svg`) | 80 KB | `public/assets/` |
+| OG (`https://christianluciani.github.io/assets/og-image.png`, 2 meta) | 116 KB | `public/assets/og-image.png` |
+| audio de salas (11 MP3, desde TS) | 8.1 MB | `public/audio/` |
+| *1 externa*: logo DRAHMAN | — | hotlink a `raw.githubusercontent.com` (`sala_html.ts:261`) |
 
-Dos hechos medidos el 2026-10-25 (`curl -sSI`, origen real):
+El repo además carga duplicados y material que el sitio no sirve:
+`assets/images/papers/` (148 KB) y `assets/icons/` (36 KB) son copias de `public/assets/`
+(md5 idéntico en los thumbs muestreados), `assets/og-image.png` duplica el de `public/assets/`,
+y los ~23 MB de renders print no se publican (sólo 3 favicons se copian al `dist/`).
+
+Dos hechos **medidos** el 2026-10-25 (`curl -sSI`, contra los orígenes reales):
 
 - **GitHub Pages no deja fijar caché ni purgar.** `/` y `/assets/og-image.png` responden
-  `cache-control: max-age=600`, `via: 1.1 varnish`, `server: GitHub.com`; servido desde
-  Bogotá (`cache-bog-…`) para esta red. El único cache-busting es cambiar el path.
-  GitHub documenta además 100 GB/mes de bandwidth *soft* y 1 GB de sitio.
+  `cache-control: max-age=600`, `via: 1.1 varnish`, `server: GitHub.com`, servidos desde
+  Bogotá (`cache-bog-…`) para esta red. Un query string no cambia el objeto: el único
+  cache-busting es cambiar el path. GitHub documenta 100 GB/mes *soft* y 1 GB de sitio, y
+  **no expone el consumo de banda de Pages al operador** (ni UI ni API).
 - **jsDelivr ya sirve este repo desde el tag `v1.0.0`**: `200`, `image/png`,
   `cache-control: public, max-age=31536000, s-maxage=31536000, immutable`,
   `access-control-allow-origin: *`, `server: cloudflare`, y el edge respondió
-  `cf-ray: …-GYE` (**Quito**). Con `@main` en cambio: `s-maxage=43200` (12 h) —
-  el tag es la unidad inmutable, la rama no.
+  `cf-ray: …-GYE` (**Guayaquil**). Con `@main`: `s-maxage=43200` (12 h) — el tag es la
+  unidad inmutable, la rama no.
+  *Ojo con la ruta:* la URL de evidencia es el archivo **fuente** del tag
+  (`assets/brand/logo/favicon-aurea-32.png`); el sitio sirve la copia plana
+  `/assets/brand/favicon-aurea-32.png` que arma `vite.config.ts`.
 
-La capa de assets ya es agnóstica y **no hay que reescribirla**:
-`src/ts/assets/manifest.ts` (claves lógicas → rutas), `src/ts/assets/url.ts`
-(`assetUrl()` aplica `VITE_ASSET_BASE_URL`), `docs/CDN_MIGRATION.md` (migración por fases).
-Límite conocido: `assetUrl()` sólo resuelve lo que pasa por TS; las 10 referencias a assets
-del HTML generado (9 locales + 1 externa) viven en `src/templates/head_html.ts` y
-`sala_html.ts` (HTML generado por `build.ts`).
+La capa de assets ya es agnóstica pero **incompleta**: `src/ts/assets/url.ts` resuelve
+`assetUrl()` con `VITE_ASSET_BASE_URL`, y sin embargo **no tiene consumidores de producción**
+(sólo lo re-exporta `src/ts/assets/index.ts` y lo prueba `url.test.ts`), no implementa
+fallback, y el HTML generado no pasa por él: sus 19 rutas están escritas a mano en
+`src/templates/head_html.ts`, `sala_html.ts` y `print_cv_html.ts`.
+`docs/CDN_MIGRATION.md` describe la migración agnóstica por fases.
 
 ## Criterios
 
@@ -44,7 +54,7 @@ del HTML generado (9 locales + 1 externa) viven en `src/templates/head_html.ts` 
 3. **Latencia LatAm** (audiencia principal: Ecuador, Andes, Cono Sur).
 4. **Costo y límites a $0 real** — sitio personal, sin tarjeta ni sorpresas de egress.
 5. **Integración con el deploy actual** (Actions → Pages, tag semver `vX.Y.Z`).
-6. **Reversibilidad** — volver atrás = cambiar una variable, no reescribir el código.
+6. **Reversibilidad** — volver atrás = cambiar una base y rebuild, no reescribir el código.
 
 ## Comparativa
 
@@ -54,11 +64,11 @@ del HTML generado (9 locales + 1 externa) viven en `src/templates/head_html.ts` 
 | Inmutabilidad | Tag/SHA ⇒ copia **permanente en S3** de jsDelivr, inmutable de hecho | Pages: deploy atómico por hash, prod mutable; R2: objeto mutable en el path (necesita path versionado) |
 | Cache servida | Tag: `immutable, max-age=31536000` **[medido]** | Pages: edge 1 semana, browser `max-age=0, must-revalidate`; R2+CDN: TTL configurable |
 | Purga / invalidación | API de purga con acceso por email, rate-limited; **no toca tags exactos** | Instant Purge en Free (5 req/min bulk); Pages = “Purge Everything” de zona |
-| Límites duros | **>20 MB por archivo** no soportado (GitHub); HTML se sirve como `text/plain`; ≤10 000 archivos activos recomendado (100 000 soft) | Pages: 25 MiB/archivo, 20 000 archivos, 500 builds/mes; R2: 10 GB-mes gratis |
-| Operador / sostenibilidad | Volentio JSD Ltd, **financiado por sponsors** (Cloudflare, Fastly, Bunny, GCore, IBM, DO); sin contrato | Cloudflare, Inc.; producto comercial con plan Free |
+| Límites duros | **>20 MB por archivo** no soportado (GitHub); HTML se sirve como `text/plain`; ≤10 000 archivos activos recomendado (100 000 soft, ToS §5) | Pages: 25 MiB/archivo, 20 000 archivos, 500 builds/mes; R2: 10 GB-mes gratis |
+| Operador / sostenibilidad | Volentio JSD Ltd (ToS §1), **financiado por sponsors** (Cloudflare, Fastly, Bunny, GCore, IBM, DO); sin contrato | Cloudflare, Inc.; producto comercial con plan Free |
 | Costo a nuestra escala | $0, sin cuenta; sin límite de bandwidth declarado | $0 (Pages Free; R2 free tier: 10 GB, egress gratis) |
-| LatAm | Multi-CDN (Cloudflare, Fastly, Bunny, GCore) con balanceo por RUM; **sin cifra publicada de PoPs** [?] | 348 ciudades, **Quito y Guayaquil listados** [OFICIAL]; medido: `cf-ray …-GYE` |
-| Integración con el deploy | Trivial: el tag `v1.0.0` ya existe; URL = repo + tag + path | Proyecto nuevo + dominio (Pages) o bucket público con **custom domain** (r2.dev es no-producción) |
+| LatAm | Multi-CDN (Cloudflare, Fastly, Bunny, GCore) con balanceo por RUM; **sin cifra publicada de PoPs** [?] | 348 ciudades, **Quito (UIO) y Guayaquil (GYE) listados** [OFICIAL]; medido: el borde que atendió fue GYE |
+| Integración con el deploy | Baja: la URL se arma con repo + tag + path; el tag hay que crearlo (el actual no sirve el favicon vigente) | Proyecto nuevo + dominio (Pages) o bucket público con **custom domain** (r2.dev es no-producción) |
 | Disponibilidad | **Sin SLA**; los ToS excluyen garantía de disponibilidad | Sin SLA en Free; red con reclamo de <50 ms para 95% de usuarios |
 | Política de uso | ToS §6 prohíbe *image hosting* y “archivos en grandes cantidades”: **zona gris para media** | Hosting estático de propósito general; sin política por tipo de archivo |
 
@@ -66,107 +76,120 @@ Fuentes y fecha en §Evidencia.
 
 ## Decisión
 
-**Adoptar jsDelivr pinneado a tags semver como CDN de los assets que el sitio pide,
-manteniendo GitHub Pages como origen del HTML/JS/CSS y como fallback.** Cloudflare
-(Pages o R2 + custom domain) queda como **escalón con disparador explícito**, no como
-primera opción.
+**Adoptar jsDelivr pinneado a tags semver para los assets que el HTML publica y que
+cambian por release (favicons, OG, thumbs de papers), manteniendo GitHub Pages como
+origen del sitio y de todo lo demás.** Cloudflare (Pages o R2 + custom domain) queda como
+**escalón con disparador explícito**, no como primera opción.
 
 Por qué así:
 
-- **Gana el criterio 1–2 sin trabajo**: el tag `v1.0.0` ya existe (#54) y hoy responde
-  `immutable` + CORS `*`. Pages no puede dar eso sin tocar headers ni purgar.
-- **Gana el criterio 3 en Ecuador con evidencia propia**: jsDelivr resolvió a `GYE`
-  (Quito) y Pages a Bogotá, en la misma medición. Es un solo sample, no un benchmark:
-  sirve como indicio, no como cifra.
-- **Gana el criterio 5**: cero credenciales y cero pasos de CI; el mismo tag que ya
+- **Gana los criterios 1–2 con un tag nuevo**: hoy el tag `v1.0.0` responde `immutable` +
+  CORS `*`, pero su favicon (696 B) no es el vigente (709 B) — adoptar exige taggear
+  `v1.0.x`/`v1.1.0`, que de todos modos es el flujo de release de #54. Pages no puede dar
+  `immutable` sin tocar headers ni purgar.
+- **Gana el criterio 3 en Ecuador con evidencia propia**: jsDelivr atendió por Guayaquil
+  (GYE) y Pages por Bogotá en la misma sesión. Es un sample, no un benchmark: sirve como
+  indicio, no como cifra.
+- **Gana el criterio 5**: cero credenciales y cero pasos de CI; el tag es el mismo que ya
   tagea el logo.
-- **No viola el criterio 4**: sin cuenta ni cuota; lo que se sirve son favicons, OG y
-  4–10 thumbs — no “grandes cantidades”. El audio (8.1 MB, media) **se queda en Pages**
-  justamente para no forzar la lectura del ToS a nuestro favor.
+- **No viola el criterio 4**: sin cuenta ni cuota; lo que se sirve son 3 favicons + 1 OG +
+  4 thumbs — no “grandes cantidades”. El audio (8.1 MB, media) y los iconos/QR **se quedan
+  en Pages**, justamente para no forzar la lectura del ToS a nuestro favor.
 - **Cloudflare no se descarta, se difiere**: es el único que resuelve *purga* y
-  *archivos >20 MB* (R2), y el único con PoPs ecuatorianos documentados por el proveedor.
+  *archivos >20 MB* (R2), y el único con PoPs ecuatorianos documentados por el proveedor
+  (UIO y GYE).
 
 **Alternativas consideradas**
 
 | Alternativa | Por qué no (hoy) |
 |---|---|
-| Cloudflare Pages como hosting completo | Misma función que Pages actual, migración de dominio y CI; no arregla el caching por asset sin trabajo extra |
+| Cloudflare Pages como hosting completo | Misma función que Pages actual; migración de dominio y CI sin arreglar el caching por asset |
 | Cloudflare R2 + custom domain | Correcto como escalón: agrega bucket, token de CI y un dominio. Se activa con disparador (§Pipeline) |
 | Cloudinary / imgix | Overkill y con cuota; el repo ya es público y versionado |
-| `raw.githack` / `raw.githubusercontent` | Sin caché ni garantía; sólo previews. Fue el atajo de #54, no producción |
+| `raw.githack` / `raw.githubusercontent` | Sin caché ni garantía; sólo previews. El hotlink actual de DRAHMAN es deuda declarada, no una decisión de CDN |
 | No hacer nada | Deja `max-age=600` en todo y el 100 GB/mes *soft* de Pages como único techo |
 
-**Reversibilidad:** alta. Todo asset se resuelve por una base (`VITE_ASSET_BASE_URL`) o por
-un prefijo en templates; volver a Pages locales es cambiar un valor y rebuild.
-**Si el operador no responde:** default = **no migrar** (parkear); el sitio sigue como hoy.
-Nada de esta decisión es irreversible (no hay DNS, ni borrado, ni reescritura de tags).
+**Reversibilidad:** alta. La base vive en una variable (`VITE_ASSET_BASE_URL`, hoy sin
+consumidores de producción) o en un prefijo de templates; volver a Pages es cambiar un valor
+y rebuild. **Si el operador no responde:** default = **no migrar** (parkear); el sitio sigue
+como hoy. Nada de esta decisión es irreversible (no hay DNS, ni borrado, ni reescritura de tags).
 
 ## Pipeline propuesto — quién sirve qué
 
 | Superficie | Sirve | Motivo |
 |---|---|---|
-| **GitHub Pages** (actual) | `index.html`, bundles JS/CSS, `sitemap`/`robots`, y **todo asset como fallback** | Es el deploy atómico del sitio; el HTML cambia seguido y no debe depender de un tag |
-| **jsDelivr `@vX.Y.Z`** | los que el sitio referencia de `assets/brand/` (3 favicons + OG), `assets/images/papers/**` y futuros bundles versionados | Inmutables, cache 1 año, CORS, borde en Quito; cambian por release, no por commit |
-| **Cloudflare R2 + custom domain** *(disparador)* | media que supere 20 MB/archivo, o si llega una queja de uso de jsDelivr, o si el bandwidth de Pages supera ~100 GB/mes | Único camino para >25 MiB y purga real sin tocar tags |
-| **raw.githack** | nada en producción | Previews de PR |
+| **GitHub Pages** (actual) | `index.html`, JS/CSS y sus bundles, iconos (10), QR, audio (11 MP3), y **todo asset como fallback** | Deploy atómico del sitio; los bundles ya llevan hash de Vite y no necesitan tag |
+| **jsDelivr `@vX.Y.Z`** | 3 favicons, OG y las 4 thumbs del HTML | Inmutables, cache 1 año, CORS, borde en GYE; cambian por release, no por commit |
+| **Cloudflare R2 + custom domain** *(disparador)* | media que supere 20 MB/archivo, o si llega una queja de uso de jsDelivr, o si un archivo/cambio necesita purga real | Único camino para >25 MiB y purga sin tocar tags |
+| **`raw.githubusercontent` (DRAHMAN)** | el logo del showcase, hoy **hotlinkeado en producción** | Deuda ajena a esta decisión: su destino es el release del repo dueño o R2, no jsDelivr |
 
-**Mecanismo (una sola palanca).** Extender lo que ya existe en vez de inventar otra capa:
+**Disparadores observables** (no hay dashboard de banda de Pages): aviso de GitHub
+(429 o email de soporte), sitio publicado cerca de 1 GB, un archivo >20 MB, o una queja por
+el uso de jsDelivr.
 
-1. `VITE_ASSET_BASE_URL` ya alimenta `assetUrl()` (`src/ts/assets/url.ts`).
-2. Las 9 referencias locales de `src/templates/head_html.ts` y `sala_html.ts` deben pasar
-   por esa base en `build.ts` (hoy el HTML las escribe absolutas `/assets/…`).
-3. Un bump de assets = nuevo tag + cambiar la base (`…/gh/ChristianLuciani/christianluciani.github.io@v1.1.0`).
-4. El fallback es el path local ya commiteado: si la CDN falla, `onerror`/`srcset` o el
-   propio Pages siguen sirviendo (`docs/CDN_MIGRATION.md`, “Fase 3”).
+**Mecanismo (una sola palanca).** Extender lo que ya existe:
 
-**Orden de adopción:** (a) favicons + OG (4 archivos, cambio mínimo, verificable en el HTML
-generado); (b) thumbs de papers vía manifest; (c) bundles de Vite si algún día pesan.
-El audio no entra: es media y su lugar es Pages hasta que dispare R2.
-Cada paso es reversible por separado y no requiere tocar el otro.
+1. `VITE_ASSET_BASE_URL` ya alimenta `assetUrl()` (`src/ts/assets/url.ts`) — pero **hoy no
+   lo consume nada de producción**: la migración tiene que cablearlo.
+2. Las 19 rutas locales del HTML generado están en `src/templates/head_html.ts`,
+   `sala_html.ts` y `print_cv_html.ts`; las que se migran son **8** (3 favicons + OG en 2
+   meta + 4 thumbs). Iconos, QR y audio no se migran.
+3. Un bump de assets = tag nuevo + cambiar la base
+   (`…/gh/ChristianLuciani/christianluciani.github.io@v1.1.0`).
+4. **Fallback real, a implementar en la migración** (no existe hoy): `assetUrl()` sólo
+   concatena `BASE` + path, sin rama de error; para degradar hace falta hidratación con
+   `onerror` o un `srcset` a la copia local. Mientras no exista, el `src` de Pages es el
+   que manda y la CDN es una mejora, no una dependencia.
+
+**Orden de adopción:** (a) tag con los favicons/OG vigentes y esos 4 archivos servidos por
+jsDelivr, verificando el HTML generado; (b) las 4 thumbs. Los bundles no entran (Pages).
+Cada paso es reversible por separado.
 
 ## Riesgos y mitigaciones
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
-| ToS de jsDelivr §6 (image hosting / grandes cantidades) | Baja aquí, media si el sitio crece a galería pesada | No alojar media pesada en jsDelivr; el audio se queda en Pages hasta que haya disparador; revisar si el volumen crece |
-| Sin SLA, operador único | Caída = assets sin servir | Fallback local en Pages + `assetUrl()` que degrada a path relativo |
-| Tag malo es permanente en esa URL | Badge/OG roto para siempre | Taggear sólo después de verificar el build (ya lo hace #54); corregir = `vX.Y.Z+1` |
-| Un archivo publicado en un tag no se puede retirar de esa URL | Fuga de un asset (dato personal en una imagen) queda servida | Revisar el diff de assets antes de taggear; retirar el archivo del repo no alcanza: hace falta tag nuevo y no referenciar el viejo |
+| ToS de jsDelivr §6 (image hosting / grandes cantidades) | Baja aquí, media si el sitio crece a galería pesada | Servir sólo 8 archivos de marca/papers; audio y media quedan en Pages; revisar si el volumen crece |
+| Sin SLA, operador único | Caída = esos 8 assets no cargan | Mientras no exista el fallback (hoy no existe), el `src` canónico sigue siendo Pages y la CDN no es la única ruta; la migración implementa el fallback antes de retirar la copia local |
+| Tag malo es permanente en esa URL | Badge/OG roto para siempre | Taggear después de verificar el build (flujo de #54); corregir = `vX.Y.Z+1` |
+| Un archivo publicado en un tag no se puede retirar de esa URL | Fuga de un asset (dato personal en una imagen) queda servida | Revisar el diff de assets antes de taggear; retirar el archivo del repo no alcanza: hace falta tag nuevo y dejar de referenciar el viejo |
 | `@branch` con 12 h de caché | Preview viejo | Nunca usar `@main` en producción; sólo tags |
-| R2/Pages sin banda declarada | Costo futuro | R2 egress gratis; disparador medible (bandwidth de Pages) |
+| El tag `v1.0.0` no sirve el favicon vigente | Regresión visual silenciosa si se adopta sin tag nuevo | Paso (a) incluye tag nuevo; verificar `content-length` contra HEAD |
 
 ## Evidencia
 
 | # | Claim | Tier | Fuente | Fecha |
 |---|---|---|---|---|
-| 1 | jsDelivr: gratis, sin límite de bandwidth, sirve GitHub tag/commit/branch, copia permanente en S3, branch 12 h, alias 7 d, >20 MB no soportado, purga por API restringida | `[OFICIAL]` | <https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md> | 2026-10-25 |
-| 2 | jsDelivr multi-CDN (Cloudflare, Fastly, Bunny, GCore) y balanceo por RUM; sin cifra de PoPs publicada | `[OFICIAL]` + `[?]` (número) | <https://www.jsdelivr.com/network> | 2026-10-25 |
-| 3 | jsDelivr sin garantía de disponibilidad; política de uso §6 (prohíbe image hosting y archivos en grandes cantidades) | `[OFICIAL]` | <https://www.jsdelivr.com/terms/terms-of-use> | 2026-10-25 |
-| 4 | Headers reales de este repo: tag ⇒ `immutable, max-age=31536000`, CORS `*`, `cf-ray …-GYE`; `@main` ⇒ `s-maxage=43200` | `[BENCHMARK]` | `curl -sSI https://cdn.jsdelivr.net/gh/ChristianLuciani/christianluciani.github.io@v1.0.0/assets/brand/logo/favicon-aurea-32.png` | 2026-10-25 |
+| 1 | jsDelivr: gratis, sin límite de bandwidth, sirve GitHub tag/commit/branch, copia permanente en S3, branch 12 h, alias 7 d, >20 MB no soportado, HTML `text/plain`, purga por API restringida | `[OFICIAL]` | <https://raw.githubusercontent.com/jsdelivr/jsdelivr/master/README.md> | 2026-10-25 |
+| 2 | jsDelivr multi-CDN (Cloudflare, Fastly, Bunny, GCore) con balanceo por RUM; sin cifra publicada de PoPs | `[OFICIAL]` + `[?]` (número) | <https://www.jsdelivr.com/network> | 2026-10-25 |
+| 3 | jsDelivr: sin garantía de disponibilidad (§1 operador Volentio JSD Ltd; §5 límites de archivos; §6 prohíbe image hosting y “grandes cantidades”) | `[OFICIAL]` | <https://www.jsdelivr.com/terms/terms-of-use> · <https://www.jsdelivr.com/sponsors> | 2026-10-25 |
+| 4 | Headers de este repo en el tag: `immutable, max-age=31536000`, CORS `*`, `cf-ray …-GYE`; `@main` ⇒ `s-maxage=43200`; el colo que nos atendió es GYE = Guayaquil (IATA) | `[BENCHMARK]` | `curl -sSI …@v1.0.0/assets/brand/logo/favicon-aurea-32.png` · `curl -s https://www.cloudflare.com/cdn-cgi/trace` ⇒ `colo=GYE loc=EC` | 2026-10-25 |
 | 5 | Pages Free: 500 builds/mes, 20 000 archivos, 25 MiB/archivo, >25 MiB ⇒ R2 | `[OFICIAL]` | <https://developers.cloudflare.com/pages/platform/limits/> | 2026-10-25 |
 | 6 | Pages browser cache `max-age=0, must-revalidate`; Purge Everything por zona, 5 req/min bulk en Free | `[OFICIAL]` | <https://developers.cloudflare.com/pages/configuration/serving-pages/> · <https://developers.cloudflare.com/cache/how-to/purge-cache/> | 2026-10-25 |
 | 7 | R2: egress gratis, free tier 10 GB-mes + 1 M Class A + 10 M Class B; r2.dev no es producción, custom domain sí | `[OFICIAL]` | <https://developers.cloudflare.com/r2/pricing/> · <https://developers.cloudflare.com/r2/buckets/public-buckets/> | 2026-10-25 |
-| 8 | Cloudflare: 348 ciudades, Quito y Guayaquil listados | `[OFICIAL]` | <https://www.cloudflare.com/network/> | 2026-10-25 |
-| 9 | GitHub Pages: sitio ≤1 GB, 100 GB/mes soft, 429 por rate limit; recomienda CDN de terceros si se excede | `[OFICIAL]` | <https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits> | 2026-10-25 |
-| 10 | Pages entrega `cache-control: max-age=600` sin purga; servido desde Bogotá en esta red | `[BENCHMARK]` (no documentado por GitHub) | `curl -sSI https://christianluciani.github.io/assets/og-image.png` | 2026-10-25 |
+| 8 | Cloudflare: 348 ciudades; Quito (UIO) y Guayaquil (GYE) listados | `[OFICIAL]` | <https://www.cloudflare.com/network/> | 2026-10-25 |
+| 9 | GitHub Pages: sitio ≤1 GB, 100 GB/mes *soft*, 429 por rate limit, recomienda CDN de terceros si se excede; **no publica el consumo de banda** | `[OFICIAL]` | <https://docs.github.com/en/pages/getting-started-with-github-pages/github-pages-limits> | 2026-10-25 |
+| 10 | Pages entrega `cache-control: max-age=600` sin purga, y un query string no lo bustea; servido desde Bogotá en esta red | `[BENCHMARK]` (no documentado por GitHub) | `curl -sSI https://christianluciani.github.io/assets/og-image.png` y comparación con `?v=99` | 2026-10-25 |
+| 11 | Inventario y duplicados del repo (23 MB/58 renders, 8.1 MB/11 MP3, 344 KB/26 en `public/assets`, 108 KB/4 thumbs hasheadas, copias con md5 idéntico) | `[BENCHMARK]` | `du -sk`, `find`, `md5` en el worktree `dsh/sprint/57` | 2026-10-25 |
 
 ## Consecuencias
 
-- **Positivas:** assets con caché de un año, CORS y borde en Quito sin cuenta ni CI;
-  el tag `v1.0.0` se vuelve útil fuera del repo; el peso muerto (23 MB de renders) deja
-  de ser el argumento para migrar el sitio entero.
-- **Negativas:** los assets pasan a depender de un tercero sin SLA y con política de uso
-  interpretable; un bump de assets exige tag nuevo (por diseño).
-- **Deuda declarada:** `assetUrl()` no cubre las referencias HTML (9 locales en
-  `src/templates/`); hasta que lo haga, la palanca es un `replace` de base en `build.ts`.
-  Seguimiento como issue aparte, no en este PR: este issue entrega la decisión, no la migración.
-- **Revisión:** si el bandwidth *soft* de Pages se acerca a 100 GB/mes, o aparece un archivo
-  >20 MB, se activa el disparador de R2 (§Pipeline) y se revisa este ADR.
+- **Positivas:** 8 assets con caché de un año, CORS y borde en GYE sin cuenta ni CI; el tag
+  pasa a ser útil fuera del repo; el peso muerto (23 MB de renders y ~300 KB de duplicados)
+  deja de ser el argumento para migrar el sitio entero.
+- **Negativas:** esos assets dependen de un tercero sin SLA y con política de uso
+  interpretable; un bump exige tag nuevo (por diseño).
+- **Deuda declarada:** `assetUrl()` sin consumidores de producción y sin fallback; las 19
+  rutas del HTML están a mano en tres templates; `assets/images/papers/`, `assets/icons/` y
+  `assets/og-image.png` duplican `public/assets/`. La migración (issue aparte) cablea la base,
+  implementa el fallback y deduplica. Este PR entrega la **decisión**, no la migración.
+- **Revisión:** si aparece un aviso de GitHub por banda, el sitio se acerca a 1 GB o surge un
+  archivo >20 MB, se activa el disparador de R2 (§Pipeline) y se revisa este ADR.
 
 ## Qué NO cubre
 
 No implementa la migración (ni `build.ts`, ni `assetUrl()`, ni templates); no decide el
-dominio propio; no mide latencia con usuarios reales (RUM) — el dato de Quito vs Bogotá es
-un sample de una sesión; no evalúa Cloudinary/imgix en profundidad; no cubre los PNG print
-de `assets/brand/logo/` que el sitio no sirve (su lugar natural es el release de GitHub,
-no una CDN).
+dominio propio; no mide latencia con usuarios reales (RUM) — el dato GYE vs Bogotá es un
+sample de una sesión; no evalúa Cloudinary/imgix en profundidad; no resuelve el hotlink de
+DRAHMAN; no cubre los PNG print de `assets/brand/logo/` que el sitio no sirve (su lugar es
+el release de GitHub, no una CDN).
