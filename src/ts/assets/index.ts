@@ -1,3 +1,11 @@
 export { ASSET_MANIFEST, type PaperKey } from "./manifest";
-export { assetUrl } from "./url";
-
+export {
+  ASSET_BASE,
+  absoluteAssetUrl,
+  assetAttrs,
+  assetAttrsFor,
+  assetUrl,
+  cdnAssetUrl,
+  normalizeBase,
+} from "./url";
+export { installAssetFallback, nextFallbackSrc } from "./fallback";

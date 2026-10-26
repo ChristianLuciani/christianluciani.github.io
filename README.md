@@ -12,12 +12,13 @@ christianluciani.github.io/
 ├── build.sh              ← Ensamblador opcional de src/
 ├── ESTADO.md             ← Estado actual y próximos pasos
 ├── vite.config.ts        ← Build con Vite (base "/")
-├── public/               ← Recursos estáticos servidos tal cual (íconos, fotos)
+├── public/               ← Recursos servidos tal cual (audio, thumbs de papers, OG, QR)
 ├── src/ts/               ← Fractales/ilusiones en TypeScript (Koch, canvas)
-├── assets/               ← Recursos del sitio (og-image, thumbs de papers)
+├── assets/               ← Fuente de build: iconos (inline), marca en assets/brand/logo
 ├── docs/
 │   ├── CONTRIBUTING.md   ← Flujo de trabajo Git
-│   └── STYLE_GUIDE.md    ← Sistema de diseño completo
+│   ├── STYLE_GUIDE.md    ← Sistema de diseño completo
+│   ├── cdn-decision.md   ← ADR: CDN de assets (jsDelivr) y pipeline
 └── tools/                ← Generadores (og-image.svg)
 ```
 

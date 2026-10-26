@@ -1,3 +1,11 @@
+import {
+  absoluteAssetUrl,
+  assetAttrsFor,
+} from "../ts/assets/url.ts";
+
+/** Origen canónico del sitio (OG necesita URL absoluta, no relativa). */
+const SITE_ORIGIN = "https://christianluciani.github.io";
+
 /**
  * GENERADO por herramientas/extract-monolith (one-shot) desde index.html (Fase-1).
  * NO editar a mano el contenido extraído; editar la fuente original y regenerar,
@@ -18,17 +26,17 @@ export function headHtml(): string {
 <meta property="og:title" content="Christian Luciani — Investigador independiente">
 <meta property="og:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Investigador independiente en Cuenca, Ecuador.">
 <meta property="og:url" content="https://christianluciani.github.io/">
-<meta property="og:image" content="https://christianluciani.github.io/assets/og-image.png">
+<meta property="og:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Christian Luciani — Investigador independiente">
 <meta name="twitter:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Física, inteligencia sintética y tecnología educativa.">
-<meta name="twitter:image" content="https://christianluciani.github.io/assets/og-image.png">
-<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon-aurea.svg">
-<link rel="icon" type="image/png" sizes="32x32" href="/assets/brand/favicon-aurea-32.png">
-<link rel="apple-touch-icon" sizes="180x180" href="/assets/brand/apple-touch-icon-aurea.png">
+<meta name="twitter:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
+<link rel="icon" type="image/svg+xml" ${assetAttrsFor("href", "/assets/brand/favicon-aurea.svg")}>
+<link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-32.png")}>
+<link rel="apple-touch-icon" sizes="180x180" ${assetAttrsFor("href", "/assets/brand/apple-touch-icon-aurea.png")}>
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",

@@ -1,3 +1,5 @@
+import { assetAttrs } from "../ts/assets/url.ts";
+
 /**
  * SALAS: comentario editorial + shell de <section> + header GENERADO desde SALAS
  * + body de contenido. (Extraído del monolito de Fase 1; regenerable.)
@@ -258,8 +260,8 @@ export const ROOM_BODY: Record<string, string> = {
 
     <div style="margin-top:0;padding:2rem 2rem 1.5rem;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px" data-scroll="up">
       <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.5rem">
-        <img src="https://raw.githubusercontent.com/DRAHMAN-ORG/drahman-org/main/assets/images/logo.png"
-             alt="Drahma logo"
+        <img src="/assets/images/drahman-logo.png"
+             alt="Drahma logo" width="44" height="44" loading="lazy" decoding="async"
              style="height:44px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,201,192,.4));opacity:.92"
              onerror="this.style.display='none'">
         <h3 class="drahma-showcase-title" style="font-family:var(--font-display);font-size:1.6rem;color:#fff;margin:0">Proyecto <em style="color:var(--teal)">Drahma</em></h3>
@@ -496,7 +498,7 @@ export const ROOM_BODY: Record<string, string> = {
       <div data-scroll="from-left">
         <div class="pub-item">
           <div class="pub-year">2026</div>
-          <img class="pub-thumb" src="/assets/kontablo2026_thumb-7y4PiTON.jpg" alt="Kontablo preprint 2026" onerror="this.classList.add('error');this.alt='§'">
+          <img class="pub-thumb" ${assetAttrs("/assets/kontablo2026_thumb-7y4PiTON.jpg")} alt="Kontablo preprint 2026" onerror="this.classList.add('error');this.alt='§'">
           <div>
             <div class="pub-title">Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy</div>
             <div class="pub-journal">Luciani, C. · Preprint (aún no arbitrado) · Zenodo &amp; SSRN</div>
@@ -534,7 +536,7 @@ export const ROOM_BODY: Record<string, string> = {
         </div>
         <div class="pub-item">
           <div class="pub-year">2023</div>
-          <img class="pub-thumb" src="/assets/zambrano2023_thumb-DFrmN1Ce.jpg" alt="Heliyon 2023" onerror="this.classList.add('error');this.alt='§'">
+          <img class="pub-thumb" ${assetAttrs("/assets/zambrano2023_thumb-DFrmN1Ce.jpg")} alt="Heliyon 2023" onerror="this.classList.add('error');this.alt='§'">
           <div>
             <div class="pub-title">Optimization of microfibrillated cellulose isolation from cocoa pod husk via mild oxalic acid hydrolysis</div>
             <div class="pub-journal">Zambrano et al. · Heliyon · 9, e17258</div>
@@ -570,7 +572,7 @@ export const ROOM_BODY: Record<string, string> = {
         </div>
         <div class="pub-item">
           <div class="pub-year">2006</div>
-          <img class="pub-thumb" src="/assets/cabrera2006_thumb-ByivZRQD.jpg" alt="Condensed Matter Physics 2006" onerror="this.classList.add('error');this.alt='§'">
+          <img class="pub-thumb" ${assetAttrs("/assets/cabrera2006_thumb-ByivZRQD.jpg")} alt="Condensed Matter Physics 2006" onerror="this.classList.add('error');this.alt='§'">
           <div>
             <div class="pub-title">Neural control on multiple time scales: Insights from human stick balancing</div>
             <div class="pub-journal">Cabrera, Luciani, Milton · Condensed Matter Physics · Vol. 9, No. 2</div>
@@ -579,7 +581,7 @@ export const ROOM_BODY: Record<string, string> = {
         </div>
         <div class="pub-item">
           <div class="pub-year">2006</div>
-          <img class="pub-thumb" src="/assets/hosaka2006_thumb-KMqoFzTp.jpg" alt="Prog. Theor. Phys. 2006" onerror="this.classList.add('error');this.alt='§'">
+          <img class="pub-thumb" ${assetAttrs("/assets/hosaka2006_thumb-KMqoFzTp.jpg")} alt="Prog. Theor. Phys. 2006" onerror="this.classList.add('error');this.alt='§'">
           <div>
             <div class="pub-title">Balancing with Noise and Delay</div>
             <div class="pub-journal">Hosaka, Ohira, Luciani, Cabrera, Milton · Progress of Theoretical Physics Supplement · 161</div>
