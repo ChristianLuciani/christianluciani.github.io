@@ -64,13 +64,16 @@ tagear. La ruta del repo no siempre es la ruta servida — el mapa vive en
 ## Activación (estado actual, #84)
 
 ```bash
-# 1. tag con los assets vigentes (prerequisito: v1.0.0 sirve otro favicon)
-git tag v1.1.0 && git push origin v1.1.0
+# 1. tag anotado sobre el commit que YA contiene los assets (no sobre un main atrasado)
+git fetch origin && git tag -a v1.1.2 origin/main -m "assets CDN" && git push origin v1.1.2
 
 # 2. la base entra por variable de repo; el deploy la pasa a Vite
 gh variable set CDN_BASE_URL \
-  --body "https://cdn.jsdelivr.net/gh/ChristianLuciani/christianluciani.github.io@v1.1.0"
+  --body "https://cdn.jsdelivr.net/gh/ChristianLuciani/christianluciani.github.io@v1.1.2"
 ```
+
+Estado: **activo desde 2026-10-26 con `v1.1.1`**. `v1.0.0` sirve otro favicon y `v1.1.0` se
+retiró (se creó sobre un `main` local atrasado: 404 en las 4 thumbs).
 
 Sin `CDN_BASE_URL`, `VITE_ASSET_BASE_URL` queda vacía y el sitio se sirve desde Pages
 como siempre: **no hay estado intermedio roto**. Para volver atrás, borrá la variable.
