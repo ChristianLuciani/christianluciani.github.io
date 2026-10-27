@@ -21,8 +21,9 @@ dos. Para congelar un instante y compararlo, agregá `#t=<segundos>` a la URL:
 ```
 
 Controles: `espacio` pausa, `R` reinicia, `←`/`→` mueven ±0,5 s, clic o
-arrastre sobre la línea de tiempo para scrubear. La velocidad de reproducción
-(`1×`, `0,5×`, `0,25×`) ayuda a inspeccionar los tramos cortos del criterio 2.
+arrastre sobre la línea de tiempo para pausar y scrubear. La velocidad de
+reproducción (`1×`, `0,5×`, `0,25×`) ayuda a inspeccionar los tramos cortos del
+criterio 2.
 
 ## La referencia
 
@@ -80,6 +81,13 @@ nodo (cada link reinicia la velocidad). Es la opción “crecimiento”, no
 > parecidas (1,36×). El laboratorio muestra las 21 conexiones justamente porque
 > la variación real del logo es 10,6–430,7 px (40,6×): es donde las leyes se
 > separan y donde se decide el ritmo de la página.
+
+## Alcance visual
+
+La geometría es la real (`CONFIG_AUREA`), pero el acabado es de laboratorio: la C
+se dibuja como trazo grueso (sin la banda con bisel del logo), los nodos no se
+disuelven (quedan visibles para poder leer el recorrido) y el cielo es sutil y
+estático. Esto es un banco de tiempos, no una propuesta de acabado.
 
 ## Cómo decidir
 

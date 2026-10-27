@@ -462,6 +462,8 @@
   let dragging = false;
   track.addEventListener("pointerdown", (e) => {
     dragging = true;
+    playing = false;
+    syncPlay();
     track.setPointerCapture(e.pointerId);
     seekFromEvent(e);
   });
