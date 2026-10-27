@@ -1,4 +1,4 @@
-import { copyFileSync, mkdirSync } from "node:fs";
+import { copyFileSync, cpSync, mkdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
@@ -12,6 +12,20 @@ const FAVICON_FILES = [
   "favicon-aurea-32.png",
   "apple-touch-icon-aurea.png",
 ];
+
+/* El laboratorio temporal vive en proposals/ (fuente única, fuera del build)
+ * y se publica en /laboratorio/ copiándolo en closeBundle. Las páginas usan
+ * rutas relativas, así que el mismo folder sirve para /laboratorio/ o para un
+ * subdominio cuando exista el DNS. */
+const copyTimingLab = (): Plugin => ({
+  name: "copy-timing-lab",
+  closeBundle() {
+    const root = fileURLToPath(new URL(".", import.meta.url));
+    const dest = resolve(root, "dist/laboratorio");
+    rmSync(dest, { recursive: true, force: true });
+    cpSync(resolve(root, "proposals/logo-timing"), dest, { recursive: true });
+  },
+});
 
 const copyBrandFavicon = (): Plugin => ({
   name: "copy-brand-favicon",
@@ -27,7 +41,7 @@ const copyBrandFavicon = (): Plugin => ({
 
 export default defineConfig({
   base: "/",
-  plugins: [copyBrandFavicon()],
+  plugins: [copyBrandFavicon(), copyTimingLab()],
   build: {
     sourcemap: true
   },

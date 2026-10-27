@@ -9,6 +9,7 @@ import { initI18n } from "./cv/i18n";
 import { initIntro } from "./cv/intro";
 import { mountSalas } from "./cv/render";
 import { installAssetFallback } from "./ts/assets/fallback";
+import { initTempo } from "./ts/app/tempo";
 import { initAmbientSound } from "./ts/app/ambient";
 import { initUI } from "./ts/app/ui";
 import { mountGrafo } from "./ts/graph/grafo";
@@ -41,6 +42,10 @@ const reduceMotion =
 const SAFETY_MINIMIZE_DELAY_MS = 60000; // red de seguridad: la intro lo resuelve (~10s)
 const REDUCED_MINIMIZE_DELAY_MS = 300; // reduced-motion: ocultar ya
 
+// El mark minimizado (Espirángulo) abre el laboratorio temporal (portada de propuestas).
+// En dev la fuente vive en proposals/; en build se publica en /laboratorio/.
+const LAB_URL = import.meta.env.DEV ? "/proposals/logo-timing/" : "/laboratorio/";
+
 const CANVAS_MODULES: CanvasModule[] = [
   { id: neckerBgId, mount: (c) => mountNeckerBg(c) },
   { id: neckerIllId, mount: (c) => mountNeckerIll(c) },
@@ -71,7 +76,7 @@ function init() {
   if (brand) {
     mountBrandLogo(brand);
     brand.addEventListener("click", () => {
-      document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+      window.location.href = LAB_URL;
     });
     const minimize = () => {
       document.getElementById("loader")?.classList.add("hidden");
@@ -88,6 +93,10 @@ function init() {
 // Fallback de assets (ADR docs/cdn-decision.md): si la CDN no responde, el
 // asset vuelve a la copia de Pages. No-op cuando VITE_ASSET_BASE_URL está vacía.
 installAssetFallback();
+
+// Clock del Espirángulo: escucha el cronograma que publica el logo y emite
+// ticks; las ilusiones consumen tempoStep(). Debe existir antes del mount.
+initTempo();
 
 // UI global, i18n e intro (el DOM ya está parseado: módulos = deferred).
 initUI();

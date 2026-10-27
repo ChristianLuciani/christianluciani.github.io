@@ -1,3 +1,4 @@
+import { tempoStep } from "../app/tempo";
 export const id = "c-necker";
 
 export interface NeckerBgConfig {
@@ -124,7 +125,7 @@ export function mountNeckerBg(
       drawNecker(ctx, t, cell.x, cell.y, size, cell.phase);
     }
     applyVignette(ctx, w, h, background);
-    t++;
+    t += tempoStep();
     raf = window.requestAnimationFrame(draw);
   };
   raf = window.requestAnimationFrame(draw);

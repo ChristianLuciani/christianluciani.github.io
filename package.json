@@ -14,7 +14,8 @@
     "logo:generate": "node tools/logo/generate-logo.mjs",
     "logo:verify": "node tools/logo/verify-dom-fidelity.mjs",
     "brand:sync": "node tools/brand/sync-logo-anim.mjs",
-    "logo:motion": "node tools/logo/verify-motion.mjs"
+    "logo:motion": "node tools/logo/verify-motion.mjs",
+    "logo:timing": "node tools/logo/timing-lab.mjs"
   },
   "devDependencies": {
     "@types/node": "^26.2.0",

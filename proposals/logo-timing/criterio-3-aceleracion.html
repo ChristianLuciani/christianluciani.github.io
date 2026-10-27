@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Criterio 3 · Aceleración constante (REF 0,70 s) — Laboratorio temporal del Espirángulo</title>
+<meta name="description" content="Experimento visual: aceleración constante con referencia temporal de 0,70 s." />
+<link rel="icon" href="https://christianluciani.github.io/assets/brand/favicon-aurea.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="lab.css" />
+</head>
+<body data-criterion="3" data-tref="700">
+<div class="app">
+
+  <header class="top">
+    <div>
+      <p class="eyebrow">Laboratorio temporal · Espirángulo</p>
+      <h1><span class="num">03</span>Aceleración constante<span class="h1-ref">REF <b>0,70 s</b></span></h1>
+      <p class="lede">
+        Cada conexión parte del reposo y acelera igual: <b>1.758 px/s²</b>. El tiempo crece con la raíz de la distancia, así que el trazo arranca lento, llega rápido y comprime la diferencia entre tramos.
+      </p>
+    </div>
+    <div class="top-side">
+      <nav class="criteria" aria-label="Criterios del experimento">
+          <a href="criterio-1-intervalo.html"><span class="n">01</span> Intervalo constante</a>
+          <a href="criterio-2-velocidad.html"><span class="n">02</span> Velocidad constante</a>
+          <a href="criterio-3-aceleracion.html" aria-current="page"><span class="n">03</span> Aceleración constante</a>
+      </nav>
+      <div class="ref-switch" role="group" aria-label="Referencia temporal">
+          <span class="ref-k">REF</span>
+          <a href="criterio-3-aceleracion.html" aria-current="page">0,70 s</a>
+          <a href="criterio-3-aceleracion-rapida.html">0,30 s</a>
+      </div>
+      <p class="meta"><strong>21 conexiones</strong> · geometría real</p>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div class="left">
+      <section class="stage-wrap" aria-label="Animación del logo con aceleración constante">
+        <div class="stage">
+          <span class="stage-corner tl"></span><span class="stage-corner tr"></span>
+          <span class="stage-corner bl"></span><span class="stage-corner br"></span>
+          <span class="stage-tag">Criterio <b>03</b> · aceleración</span>
+          <svg id="lab-svg" class="logo-svg" role="img" aria-label="Constelación del logo conectándose nodo a nodo"></svg>
+          <div class="stage-cap">
+            <span class="phase" id="phase">Entrada</span>
+            <span class="seg" id="seg-label">constelación · 0,70 s</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="console" aria-label="Controles de reproducción">
+        <div class="transport">
+          <button id="play" class="primary" aria-label="Pausar">❚❚ Pausa</button>
+          <button id="replay" class="icon" title="Reiniciar (R)" aria-label="Reiniciar">↻</button>
+          <div class="rate" role="group" aria-label="Velocidad de reproducción">
+            <button data-rate="1" aria-pressed="true">1×</button>
+            <button data-rate="0.5" aria-pressed="false">0,5×</button>
+            <button data-rate="0.25" aria-pressed="false">0,25×</button>
+          </div>
+          <label class="toggle"><input type="checkbox" id="loop" checked /> Bucle</label>
+          <label class="toggle"><input type="checkbox" id="structure" checked /> Estructura</label>
+          <span class="spacer"></span>
+          <span class="kbd">espacio</span> pausa
+          <span class="kbd">R</span> reinicia
+          <span class="kbd">← →</span> ±0,5 s
+        </div>
+
+        <div class="timeline">
+          <div class="timeline-head">
+            <span id="timeline-status">Constelación de entrada</span>
+            <span class="now" id="timeline-now">t <b>0,00</b> s / 7,90 s</span>
+          </div>
+          <div class="track" id="track" role="slider" aria-label="Línea de tiempo" aria-valuemin="0" aria-valuemax="7.9" aria-valuenow="0" tabindex="0"></div>
+          <div class="timeline-foot">
+            <span>0 s</span>
+            <span class="ref" id="ref-note">REF = último tramo de la C · 0,70 s</span>
+            <span id="timeline-total">7,90 s</span>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <aside class="panel">
+      <div class="formula">
+        <span class="eq">a = 2·L_ref / T_ref² = 1.757,92 px/s²</span><br />
+        tᵢ = √(2·Lᵢ / a) = 0,70·√(Lᵢ / L_ref)
+        <span class="note">
+          Cada tramo se recorre desde el reposo con la misma aceleración; dentro del
+          tramo el avance es cuadrático (s = ½at²). El tramo más corto tarda 110 ms y
+          el de referencia 700 ms: el rango temporal se comprime a 6,4×.
+        </span>
+      </div>
+
+      <div class="stats">
+        <div class="stat">
+          <span class="k">Conexiones · sin entrada</span>
+          <span class="v" id="stat-total">7,20<small>s</small></span>
+          <span class="note" id="stat-total-note">+ 0,70 s de entrada</span>
+        </div>
+        <div class="stat">
+          <span class="k">Por conexión</span>
+          <span class="v" id="stat-link">0,110–0,700<small>s</small></span>
+        </div>
+        <div class="stat">
+          <span class="k">Aceleración</span>
+          <span class="v" id="stat-speed">1.758<small>px/s²</small></span>
+        </div>
+        <div class="stat">
+          <span class="k">Velocidad final · REF</span>
+          <span class="v" id="stat-extra">1.231<small>px/s</small></span>
+        </div>
+      </div>
+
+      <figure class="chart">
+        <figcaption>
+          <span>Distancia recorrida vs tiempo</span>
+          <span>curva = aceleración</span>
+        </figcaption>
+        <svg id="chart-svg" aria-label="Gráfico de distancia recorrida en función del tiempo"></svg>
+        <div class="legend">
+          <span style="color:#00c9c0"><i></i>01 intervalo</span>
+          <span style="color:#7ad7ff"><i></i>02 velocidad</span>
+          <span class="on" style="color:#ff8a70"><i></i>03 aceleración</span>
+          <span style="color:#e8b95c"><i></i>07 global</span>
+        </div>
+      </figure>
+
+      <details class="details" id="details">
+        <summary>
+          <span>Detalle por conexión</span>
+          <span class="sum-meta" id="table-count">21 conexiones</span>
+        </summary>
+        <div class="table-scroll">
+          <table>
+            <thead>
+              <tr><th>#</th><th>tramo</th><th>L px</th><th>t s</th><th>v media px/s</th></tr>
+            </thead>
+            <tbody id="link-rows"></tbody>
+          </table>
+        </div>
+      </details>
+
+      <p class="note-reduced">
+        Movimiento reducido activo: se muestra el estado final. Podés pausar, reiniciar
+        o arrastrar la línea de tiempo para inspeccionar cualquier instante.
+      </p>
+    </aside>
+  </main>
+
+</div>
+<script src="geometry.data.js"></script>
+<script src="lab.js"></script>
+</body>
+</html>

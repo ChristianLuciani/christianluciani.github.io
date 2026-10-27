@@ -1,3 +1,4 @@
+import { tempoStep } from "../app/tempo";
 export const id = "c-necker-ill";
 
 export interface NeckerIllGeometry {
@@ -81,7 +82,7 @@ export function mountNeckerIll(canvas: HTMLCanvasElement) {
 
   const loop = () => {
     drawFrame(ctx, w, h, t);
-    t++;
+    t += tempoStep();
     raf = window.requestAnimationFrame(loop);
   };
   raf = window.requestAnimationFrame(loop);

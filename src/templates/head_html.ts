@@ -226,7 +226,7 @@ export function headHtml(): string {
 ║  · .room-content → contenido principal                           ║
 ║                                                                   ║
 ║  FRACTAL LOGO                                                     ║
-║  Mark animado de marca (SVG) #brand-logo                         ║
+║  Mark animado de marca (SVG) #brand-logo — Espirángulo           ║
 ║  Durante carga: centrado, grande (120px), girando                ║
 ║  Después: esquina sup-izq, 42px, estático con hover glow         ║
 ║  Transición controlada por JS: minimizeLogo()                    ║
@@ -369,6 +369,9 @@ body {
 #brand-logo.minimized .brand-full { display:none; }
 #brand-logo.minimized .brand-mini { display:block; }
 #brand-logo.minimized:hover { filter:brightness(1.3) drop-shadow(0 0 6px var(--teal)); }
+/* tick del clock del Espirángulo: el tempo se ve aun con el mark settled */
+#brand-logo { transition:filter .14s ease-out; }
+#brand-logo.is-tick { filter:drop-shadow(0 0 8px rgba(201,168,76,.4)); }
 
 /* clases internas del SVG animado (scopeadas al logo) */
 #brand-logo .seg { fill:none; stroke-linecap:round; stroke-linejoin:round; }

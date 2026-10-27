@@ -1,4 +1,4 @@
-# Manual de estilo — Logo Triángulo-Espiral (issue #54)
+# Manual de marca — Espirángulo (logo triángulo-espiral, issue #54)
 
 > **Fuente única de verdad:** la geometría vive paramétrica en
 > `tools/logo/geometry.mjs` (puerto verificado 1:1 contra el DOM aprobado de
@@ -8,15 +8,19 @@
 >
 > **ADR D1 RATIFICADO (2026-09-25, PR #58): la versión áurea v16 es el logo
 > oficial.** La base v10 queda como referencia comparativa.
+>
+> **Nombre del mark: Espirángulo** (espiral + triángulo), ratificado el
+> 2026-10-27. El nombre es del símbolo, no de la persona ni del sitio; el
+> wordmark sigue siendo «Christian Luciani».
 
 ---
 
 ## 1. El símbolo
 
-Espiral de conocimiento acumulativo: un triángulo que nace en el
-origen —la supernova— y gira creciendo en generaciones hasta la C final en
-plena intensidad (triángulo abierto = evolución en curso). Con
-nodos-estrella en cada vértice: el símbolo es una constelación que se
+**Espirángulo** es el mark: una espiral de conocimiento acumulativo. Un
+triángulo que nace en el origen —la supernova— y gira creciendo en generaciones
+hasta la C final en plena intensidad (triángulo abierto = evolución en curso).
+Con nodos-estrella en cada vértice: el símbolo es una constelación que se
 expande.
 
 - **Espiral**: nace en el origen y crece hacia afuera — opacidad y grosor
@@ -315,11 +319,22 @@ El cronograma de la animación vive paramétrico en `CONFIG.timing` de
 pendiente (track B) se cerró con la decisión de marca del issue **#67**
 (2026-10-25), documentada abajo.
 
+> **07 — aceleración global (2026-10-27).** La animación principal usa
+> `mode: "global"`, `tRef = 300 ms`: una sola `a` sobre todo el recorrido, sin
+> stagger; cada link arranca cuando el anterior llega. El cronograma pasa a
+> `svg.dataset.tempo` y se publica como evento `espirangulo:tempo`; el clock de
+> la página (`src/ts/app/tempo.ts`) emite un tick por choque de nodo y **repite
+> la secuencia después del settle**. Las ilusiones avanzan con `tempoStep()`.
+> El gate de movimiento conserva el nombre `logo:motion`, pero su política de
+> arranque cambió: para `mode:"global"` valida cadena secuencial y último tramo
+> = `T_ref`, no el pico de concurrencia del régimen anterior.
+
 ### Hooks que publica el artefacto (no cambian el render)
 
 | Hook | Qué publica | Para qué |
 |---|---|---|
 | `svg.dataset.schedule` | `delays[]` / `durs[]` — el cronograma declarado, el array del ADR-lite de #55 | perfil del arranque y ventana de trazado, **sin inferirlos** del DOM |
+| `svg.dataset.tempo` | `intervals[]`, `arrivals[]`, `a`, `tRef` — la ley global | alimenta el clock de la página y sus ticks |
 | `svg.dataset.c` | anclajes de la C (vértice y punta) | encuadrar la medición: desde el acabado (#64) la C es una **banda con máscara**, no un `path.seg` |
 | `svg.dataset.intent` | `{ tipBloom }` — la **intención de marca** del apagado de la punta | el gate acota el crecimiento a ese tope en vez de prohibirlo: un bloom declarado es diseño, uno no declarado es destello |
 | `g.clock` | un grupo vacío cuya animación dura exactamente el cronograma | el fin del cronograma, y con él la entrada del settle |
@@ -345,8 +360,10 @@ tiempo virtual no gobierna las animaciones: medido) y mide:
   fuera del trazo no sube cuando no hay bloom declarado: con bloom declarado sube
   acotado y se reporta como métrica, no como defecto);
 - **settle** — sin escalón a ±40 ms y la respiración efectivamente viva;
-- **arranque** — piso objetivo (tempo monótono, pico de concurrencia ≥2, primer
-  stagger ≤60% del final, extremos == `CONFIG`) + perfil reportado;
+- **arranque** — régimen anterior (tempo monótono, pico de concurrencia ≥2,
+  primer stagger ≤60% del final, extremos == `CONFIG`); con `mode:"global"` el
+  gate valida **cadena secuencial + último tramo == `T_ref`** y reporta el
+  perfil igual;
 - **autochequeos** — la estrella existe antes y no después, píxel brillante en el
   settled, y la deriva del congelado (medida sobre el `currentTime` efectivo de
   cada animación: al pausar, `startTime` queda en `null` y el reloj no sirve).
@@ -354,8 +371,8 @@ tiempo virtual no gobierna las animaciones: medido) y mide:
 Salida: **0** limpio · **1** violaciones · **2** no se pudo medir (sin Chrome, sin
 hooks, o plan demasiado grueso). La política (umbrales, perfil del arranque,
 invariantes, plan de muestreo y veredicto) vive en `tools/logo/motion-analysis.mjs`
-y la cubre **`motion-analysis.test.mjs` (35 tests)**; el decoder y la medición de
-píxeles, **`png.test.mjs` (16 tests)** — 51 del instrumento, todos en CI
+y la cubre **`motion-analysis.test.mjs` (36 tests)**; el decoder y la medición de
+píxeles, **`png.test.mjs` (16 tests)** — 52 del instrumento, todos en CI
 (`npx vitest run tools/logo/png.test.mjs tools/logo/motion-analysis.test.mjs`).
 La adquisición (CDP) necesita Chrome y sigue fuera de CI: #59 cableó sólo el
 gate de fidelidad (dump-dom), no el de movimiento.
@@ -392,8 +409,10 @@ settle +0.0027 (máx 0.004) · respiración +0.0064 (mín 0.004)
 Antes de la decisión el mismo gate daba **exit 1** con 6 violaciones (2 de la punta,
 4 de la respiración): esa medición es la evidencia con la que se eligió.
 
-Y el arranque medido: **pico 3 tramos trazando a la vez @940 ms · stagger
-110 → 235 ms (monótono) · 5/8/10 tramos aterrizados @1,0/1,5/2,0 s**.
+El arranque medido del régimen anterior fue **pico 3 tramos @940 ms · stagger
+110 → 235 ms (monótono) · 5/8/10 aterrizados @1,0/1,5/2,0 s**; queda como
+histórico. La 07 es **21 links secuenciales**, último tramo 300 ms, y el tempo
+sigue vivo en la página por el clock (tick + `tempoStep()`), no por el stagger.
 
 Rojo **por diseño**: es la evidencia de lo que el track B tiene que cerrar, no una
 falla del instrumento.

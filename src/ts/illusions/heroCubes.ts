@@ -1,5 +1,6 @@
 /** HERO — cuadrícula de cubos isométricos imposibles (port de script inline). */
 import { isCanvasVisible, watchCanvas } from "../app/canvasWatch";
+import { tempoStep } from "../app/tempo";
 
 export const id = "hero-canvas";
 
@@ -61,7 +62,7 @@ export function mount(canvas: HTMLCanvasElement): void {
     for (let r = -1; r < rows; r++)
       for (let cc = -1; cc < cols; cc++)
         cube(cc * s * 1.5 + (r % 2 ? s * 0.75 : 0), r * h, s, 0.5, (r * cols + cc) * 1.9);
-    t++;
+    t += tempoStep();
     if (isCanvasVisible(id)) requestAnimationFrame(draw);
   }
   watchCanvas(canvas, draw);
