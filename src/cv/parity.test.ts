@@ -125,9 +125,10 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
     expect(cells.some((c) => c.href.includes("galeria"))).toBe(false);
   });
 
-  it("ROOM_EN derivado == baseline de 8 títulos EN (nuevo orden: proyectos primero)", () => {
+  it("ROOM_EN derivado == baseline de 9 títulos EN (nuevo orden: proyectos primero)", () => {
     expect(roomEnList()).toEqual([
       "The <em>Exhibition</em>",
+      "The <em>Studio</em>",
       "The <em>Workshop</em>",
       "The <em>Journey</em>",
       "The <em>Library</em>",

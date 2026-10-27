@@ -50,7 +50,9 @@ const CANVAS_MODULES: CanvasModule[] = [
   { id: snakesId, mount: mountRotatingSnakes },
   { id: penroseId, mount: mountPenrose },
   { id: sierpinskiId, mount: mountSierpinski },
-  { id: proyectosId, mount: mountProyectos }
+  { id: proyectosId, mount: mountProyectos },
+  // El Bastidor reusa el campo fractal: otra sala, el mismo renderer.
+  { id: "c-bastidor", mount: mountProyectos }
 ];
 
 function init() {

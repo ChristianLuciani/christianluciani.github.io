@@ -12,6 +12,7 @@ import {
 
 const IDS = [
   "proyectos",
+  "bastidor",
   "competencias",
   "experiencia",
   "fisica",
@@ -24,6 +25,7 @@ const IDS = [
 /** Baseline capturado del ROOM_EN[] (nuevo orden: proyectos primero). */
 const ROOM_EN_BASELINE = [
   "The <em>Exhibition</em>",
+  "The <em>Studio</em>",
   "The <em>Workshop</em>",
   "The <em>Journey</em>",
   "The <em>Library</em>",
@@ -34,7 +36,7 @@ const ROOM_EN_BASELINE = [
 ];
 
 describe("SALAS — integridad", () => {
-  it("tiene las 8 salas en orden DOM (galería incluida, oculta)", () => {
+  it("tiene las 9 salas en orden DOM (galería incluida, oculta)", () => {
     expect(SALAS.map((s) => s.id)).toEqual(IDS);
   });
 
@@ -87,6 +89,7 @@ describe("render — derivados puros", () => {
     expect(navTargets()).toEqual([
       "hero",
       "room-proyectos",
+      "room-bastidor",
       "room-competencias",
       "room-experiencia",
       "room-fisica",
@@ -98,17 +101,18 @@ describe("render — derivados puros", () => {
 
   it("numFor: 01..07 en nuevo orden; null para ocultas", () => {
     expect(numFor("proyectos")).toBe("01");
-    expect(numFor("competencias")).toBe("02");
-    expect(numFor("experiencia")).toBe("03");
-    expect(numFor("fisica")).toBe("04");
-    expect(numFor("grafo")).toBe("05");
-    expect(numFor("perfil")).toBe("06");
-    expect(numFor("contacto")).toBe("07");
+    expect(numFor("bastidor")).toBe("02");
+    expect(numFor("competencias")).toBe("03");
+    expect(numFor("experiencia")).toBe("04");
+    expect(numFor("fisica")).toBe("05");
+    expect(numFor("grafo")).toBe("06");
+    expect(numFor("perfil")).toBe("07");
+    expect(numFor("contacto")).toBe("08");
     expect(numFor("galeria")).toBeNull();
     expect(numFor("inexistente")).toBeNull();
   });
 
-  it("roomEnList: 8 títulos EN en orden DOM, igual al ROOM_EN histórico", () => {
+  it("roomEnList: 9 títulos EN en orden DOM, igual al ROOM_EN histórico", () => {
     expect(roomEnList()).toEqual(ROOM_EN_BASELINE);
   });
 
@@ -118,7 +122,7 @@ describe("render — derivados puros", () => {
     expect(extra["SALA 04"]).toBe("ROOM 04");
     expect(extra["SALA 07"]).toBe("ROOM 07");
     expect(extra["SALA 05"]).toBe("ROOM 05"); // grafo en nuevo orden
-    expect(extra).not.toHaveProperty("SALA 08"); // stale eliminado
+    expect(extra).not.toHaveProperty("SALA 09"); // stale eliminado
     // Subtítulos (todas las salas, incl. oculta)
     expect(extra["PERFIL PROFESIONAL · CUENCA, ECUADOR"]).toBe(
       "PROFESSIONAL PROFILE · CUENCA, ECUADOR"
@@ -126,7 +130,7 @@ describe("render — derivados puros", () => {
     expect(extra["GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS"]).toBe(
       "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS"
     );
-    expect(Object.keys(extra).length).toBe(7 + 8); // 7 números + 8 subtítulos
+    expect(Object.keys(extra).length).toBe(8 + 9); // 8 números visibles + 9 subtítulos
   });
 
   it("navDotsHtml: hero + salas visibles con data-target/data-label en orden", () => {

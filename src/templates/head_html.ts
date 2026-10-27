@@ -611,6 +611,20 @@ body {
 .status-active  { background:rgba(0,201,192,.12); color:var(--teal); border:1px solid rgba(0,201,192,.3); }
 .status-private { background:rgba(201,168,76,.10); color:var(--gold); border:1px solid rgba(201,168,76,.3); }
 .status-paused  { background:rgba(107,122,141,.1); color:var(--muted); border:1px solid rgba(107,122,141,.3); }
+/* El Bastidor: línea de graduación — qué le falta a la ficha para exhibirse. */
+.project-falta {
+  margin-top:1.1rem; padding:.7rem .9rem;
+  border-left:2px solid var(--gold); background:rgba(201,168,76,.05);
+  font-family:var(--font-mono); font-size:.62rem; line-height:1.7;
+  color:var(--muted); letter-spacing:.04em;
+}
+.project-falta-label {
+  color:var(--gold); letter-spacing:.2em; text-transform:uppercase; margin-right:.45rem;
+}
+.room-closing {
+  max-width:620px; margin:2.5rem auto 0; text-align:center;
+  color:var(--muted); font-style:italic; font-size:.95rem;
+}
 .project-title  { font-family:var(--font-display); font-size:1.5rem; color:#fff; margin-bottom:.4rem; }
 .project-title em { color:var(--teal); font-style:italic; }
 .project-tagline{ font-size:.95rem; color:var(--muted); font-style:italic; margin-bottom:1rem; }
