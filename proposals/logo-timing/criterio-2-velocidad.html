@@ -3,17 +3,17 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Criterio 2 · Velocidad constante — Laboratorio temporal del logo</title>
-<meta name="description" content="Experimento visual: todas las conexiones del logo viajan a la misma velocidad de 615 px/s." />
+<title>Criterio 2 · Velocidad constante (REF 0,70 s) — Laboratorio temporal del logo</title>
+<meta name="description" content="Experimento visual: velocidad constante con referencia temporal de 0,70 s." />
 <link rel="stylesheet" href="lab.css" />
 </head>
-<body data-criterion="2">
+<body data-criterion="2" data-tref="700">
 <div class="app">
 
   <header class="top">
     <div>
       <p class="eyebrow">Laboratorio temporal · Logo CL</p>
-      <h1><span class="num">02</span>Velocidad constante</h1>
+      <h1><span class="num">02</span>Velocidad constante<span class="h1-ref">REF <b>0,70 s</b></span></h1>
       <p class="lede">
         Todas las conexiones viajan a la misma velocidad: <b>615 px/s</b>. Los nodos cercanos se unen casi al instante y los lejanos tardan; el último tramo de la C marca la escala con 0,70 s.
       </p>
@@ -24,7 +24,12 @@
           <a href="criterio-2-velocidad.html" aria-current="page"><span class="n">02</span> Velocidad constante</a>
           <a href="criterio-3-aceleracion.html"><span class="n">03</span> Aceleración constante</a>
       </nav>
-      <p class="meta"><strong>21 conexiones</strong> · geometría real<br />referencia: último tramo de la C<br />experimento, no página</p>
+      <div class="ref-switch" role="group" aria-label="Referencia temporal">
+          <span class="ref-k">REF</span>
+          <a href="criterio-2-velocidad.html" aria-current="page">0,70 s</a>
+          <a href="criterio-2-velocidad-rapida.html">0,30 s</a>
+      </div>
+      <p class="meta"><strong>21 conexiones</strong> · geometría real</p>
     </div>
   </header>
 
@@ -68,8 +73,8 @@
           <div class="track" id="track" role="slider" aria-label="Línea de tiempo" aria-valuemin="0" aria-valuemax="5.05" aria-valuenow="0" tabindex="0"></div>
           <div class="timeline-foot">
             <span>0 s</span>
-            <span class="ref">REF = último tramo de la C · 0,70 s</span>
-            <span>5,05 s</span>
+            <span class="ref" id="ref-note">REF = último tramo de la C · 0,70 s</span>
+            <span id="timeline-total">5,05 s</span>
           </div>
         </div>
       </section>

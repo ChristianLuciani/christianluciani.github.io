@@ -24,11 +24,14 @@
   document.documentElement.style.setProperty("--accent", META.accent);
 
   const NS = "http://www.w3.org/2000/svg";
-  const T = G.timing[CRITERION];
+  const REF_KEY = document.body.dataset.tref || String(G.tRefs[0]);
+  const REF = G.refs[REF_KEY];
+  if (!REF) throw new Error(`timing-lab: referencia desconocida ${REF_KEY}`);
+  const T = REF.timing[CRITERION];
   const DUR = T.durations;
   const STARTS = T.starts;
   const ENDS = T.ends;
-  const LEAD = T.lead;
+  const LEAD = REF.leadMs;
   const TOTAL = T.total;
   const HOLD = G.holdMs;
   const SEGS = G.segs;
@@ -39,6 +42,7 @@
 
   const $ = (id) => document.getElementById(id);
   const fmt = (v, d = 2) => Number(v).toFixed(d).replace(".", ",");
+  const fmtInt = (v) => String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   const pad = (n) => String(n).padStart(2, "0");
   const clamp = (v, lo, hi) => Math.min(Math.max(v, lo), hi);
   const E = (tag, attrs = {}, parent) => {
@@ -130,7 +134,7 @@
     const my = (ref.a.y + ref.b.y) / 2;
     const deg = (Math.atan2(ref.b.y - ref.a.y, ref.b.x - ref.a.x) * 180) / Math.PI;
     const g = E("g", { transform: `translate(${mx} ${my}) rotate(${deg})` }, svg);
-    const label = `REF · 0,70 s`;
+    const label = `REF · ${fmt(REF.tRefMs / 1000, 2)} s`;
     E("text", {
       class: "ref-text",
       x: 0, y: -15,
@@ -168,7 +172,7 @@
 
   /* ── gráfico distancia–tiempo ─────────────────────────────────────── */
   const CW = 340, CH = 150, ML = 26, MR = 8, MT = 10, MB = 20;
-  const MAX_T = Math.max(...[1, 2, 3].map((k) => G.timing[k].total));
+  const MAX_T = Math.max(...[1, 2, 3].map((k) => REF.timing[k].total));
   const chart = $("chart-svg");
   chart.setAttribute("viewBox", `0 0 ${CW} ${CH}`);
   const xAt = (t) => ML + (t / MAX_T) * (CW - ML - MR);
@@ -186,12 +190,12 @@
   E("text", { class: "tick", x: ML, y: CH - 7, "text-anchor": "middle" }, cg).textContent = "0";
   E("text", { class: "tick", x: CW - MR, y: CH - 7, "text-anchor": "end" }, cg).textContent = `${fmt(MAX_T / 1000, 1)} s`;
   E("text", { class: "tick", x: ML - 3, y: CH - MB + 2, "text-anchor": "end" }, cg).textContent = "0";
-  E("text", { class: "tick", x: ML - 3, y: MT + 4, "text-anchor": "end" }, cg).textContent = `${(G.totalLen / 1000).toFixed(1)}k`;
+  E("text", { class: "tick", x: ML - 3, y: MT + 4, "text-anchor": "end" }, cg).textContent = `${fmt(G.totalLen / 1000, 1)}k`;
 
   const lawColors = { 1: "#00c9c0", 2: "#7ad7ff", 3: "#ff8a70" };
   const lawPaths = {};
   for (const k of [1, 2, 3]) {
-    const tk = G.timing[k];
+    const tk = REF.timing[k];
     let d = `M ${xAt(0)} ${yAt(0)} L ${xAt(tk.starts[0])} ${yAt(0)}`;
     let cum = 0;
     for (let i = 0; i < SEGS.length; i++) {
@@ -262,16 +266,19 @@
       : `${fmt(dursMin / 1000, 3)}–${fmt(dursMax / 1000, 3)}<small>s</small>`;
   const ratio = Math.max(...SEGS.map((s) => s.len)) / Math.min(...SEGS.map((s) => s.len));
   if (CRITERION === 1) {
-    $("stat-speed").innerHTML = `${fmt(Math.min(...vMean), 0)}–${fmt(Math.max(...vMean), 0)}<small>px/s</small>`;
+    $("stat-speed").innerHTML = `${fmtInt(Math.min(...vMean))}–${fmtInt(Math.max(...vMean))}<small>px/s</small>`;
     $("stat-extra").innerHTML = `${fmt(ratio, 1)}<small>× de rango</small>`;
   } else if (CRITERION === 2) {
-    $("stat-speed").innerHTML = `${fmt(G.metrics[2].v, 0)}<small>px/s</small>`;
+    $("stat-speed").innerHTML = `${fmtInt(REF.metrics[2].v)}<small>px/s</small>`;
     $("stat-extra").innerHTML = `${fmt(ratio, 1)}<small>× entre extremos</small>`;
   } else {
-    $("stat-speed").innerHTML = `${fmt(G.metrics[3].a, 0)}<small>px/s²</small>`;
-    $("stat-extra").innerHTML = `${fmt(G.metrics[3].vTip, 0)}<small>px/s al llegar</small>`;
+    $("stat-speed").innerHTML = `${fmtInt(REF.metrics[3].a)}<small>px/s²</small>`;
+    $("stat-extra").innerHTML = `${fmtInt(REF.metrics[3].vTip)}<small>px/s al llegar</small>`;
   }
   $("stat-total-note").textContent = `+ ${fmt(LEAD / 1000, 2)} s de entrada`;
+  $("ref-note").textContent = `REF = último tramo de la C · ${fmt(REF.tRefMs / 1000, 2)} s`;
+  $("timeline-total").textContent = `${fmt(TOTAL / 1000, 2)} s`;
+  track.setAttribute("aria-valuemax", (TOTAL / 1000).toFixed(2));
 
   /* ── render ───────────────────────────────────────────────────────── */
   function cumulativeAt(t) {
@@ -302,7 +309,7 @@
 
     if (clock < LEAD) {
       phase.textContent = "Entrada";
-      segLabel.textContent = "constelación · 0,70 s";
+      segLabel.textContent = `constelación · ${fmt(REF.tRefMs / 1000, 2)} s`;
       status.textContent = "Constelación de entrada";
     } else if (active >= 0) {
       phase.textContent = "Trazando";

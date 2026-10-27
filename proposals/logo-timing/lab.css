@@ -84,6 +84,22 @@ h1 .num {
   vertical-align: 0.55em;
   margin-right: 0.65em;
 }
+h1 .h1-ref {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 14px;
+  padding: 4px 9px;
+  border: 1px solid var(--line);
+  border-radius: 99px;
+  font-family: var(--mono);
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  vertical-align: 0.35em;
+}
+h1 .h1-ref b { color: var(--accent); font-weight: 400; }
 .lede {
   max-width: 66ch;
   margin: 12px 0 0;
@@ -109,6 +125,37 @@ h1 .num {
   text-transform: uppercase;
 }
 .top-side .meta strong { color: var(--ink-dim); font-weight: 500; }
+.ref-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--line-soft);
+  border-radius: 99px;
+  background: rgba(255, 255, 255, 0.02);
+}
+.ref-switch .ref-k {
+  padding: 0 8px 0 9px;
+  font-family: var(--mono);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.ref-switch a {
+  padding: 4px 8px;
+  border-radius: 99px;
+  color: var(--ink-faint);
+  font-family: var(--mono);
+  font-size: 10.5px;
+  text-decoration: none;
+  transition: color 0.18s, background 0.18s;
+}
+.ref-switch a:hover { color: var(--ink); }
+.ref-switch a[aria-current="page"] {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+}
 
 /* ── layout ─────────────────────────────────────────────────────────── */
 .layout {

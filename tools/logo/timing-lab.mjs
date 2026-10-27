@@ -5,15 +5,18 @@
  * hornea `proposals/logo-timing/geometry.data.js` con:
  *   · las 21 conexiones (nodos, longitud, color/grosor de marca),
  *   · la constelación (estrella por nodo) y el cielo,
- *   · los tres cronogramas candidatos, calculados acá y no en el navegador.
+ *   · los cronogramas de las DOS familias de referencia (0,70 s y 0,30 s),
+ *     calculados acá y no en el navegador.
  *
- * Criterios (T_ref = 0,70 s sobre la ÚLTIMA conexión = último tramo de la C):
+ * Criterios (T_ref sobre la ÚLTIMA conexión = último tramo de la C):
  *   1. intervalo constante   → t_i = T_ref
  *   2. velocidad constante   → v = L_ref/T_ref; t_i = L_i/v
  *   3. aceleración constante → a = 2·L_ref/T_ref²; t_i = √(2·L_i/a)
  *
  * Encadenado estricto: cada conexión arranca cuando la anterior llega.
- * `lead` = 700 ms de constelación antes de la primera conexión.
+ * `lead` = T_ref de constelación antes de la primera conexión (0,70 s / 0,30 s):
+ * no es parte del criterio, pero escala con la familia para que la versión
+ * rápida se sienta rápida desde la entrada.
  *
  * Uso: node tools/logo/timing-lab.mjs
  */
@@ -28,8 +31,7 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../..");
 const OUT = resolve(REPO, "proposals/logo-timing");
 
-const T_REF_MS = 700;
-const LEAD_MS = 700;
+const REF_SPECS = [700, 300]; // ms: familia base y familia rápida
 const HOLD_MS = 1200;
 
 const cfg = CONFIG_AUREA;
@@ -54,9 +56,9 @@ const totalLen = n2(segs.reduce((acc, s) => acc + s.len, 0));
 const ref = segs[segs.length - 1];
 const refLen = ref.len;
 
-/* ── cronogramas ─────────────────────────────────────────────────────── */
-function schedule(durations) {
-  let t = LEAD_MS;
+/* ── cronogramas por familia de referencia ───────────────────────────── */
+function schedule(durations, lead) {
+  let t = lead;
   const starts = [];
   const ends = [];
   for (const d of durations) {
@@ -68,38 +70,43 @@ function schedule(durations) {
     durations: durations.map((d) => +d.toFixed(2)),
     starts,
     ends,
-    lead: LEAD_MS,
-    connectTotal: +(t - LEAD_MS).toFixed(2),
+    lead,
+    connectTotal: +(t - lead).toFixed(2),
     total: +t.toFixed(2),
   };
 }
 
-const dur1 = segs.map(() => T_REF_MS);
-const vRef = refLen / (T_REF_MS / 1000); // px/s
-const dur2 = segs.map((s) => (s.len / vRef) * 1000);
-const aRef = (2 * refLen) / Math.pow(T_REF_MS / 1000, 2); // px/s²
-const dur3 = segs.map((s) => Math.sqrt((2 * s.len) / aRef) * 1000);
+function buildRef(tRefMs) {
+  const lead = tRefMs;
+  const tRef = tRefMs / 1000;
+  const vRef = refLen / tRef; // px/s
+  const aRef = (2 * refLen) / (tRef * tRef); // px/s²
 
-const timing = {
-  1: schedule(dur1),
-  2: schedule(dur2),
-  3: schedule(dur3),
-};
+  const timing = {
+    1: schedule(segs.map(() => tRefMs), lead),
+    2: schedule(segs.map((s) => (s.len / vRef) * 1000), lead),
+    3: schedule(segs.map((s) => Math.sqrt((2 * s.len) / aRef) * 1000), lead),
+  };
 
-const metrics = {
-  1: {
-    vRef: n2(vRef),
-    vMin: n2(Math.min(...segs.map((s) => s.len / (T_REF_MS / 1000)))),
-    vMax: n2(Math.max(...segs.map((s) => s.len / (T_REF_MS / 1000)))),
-  },
-  2: { v: n2(vRef) },
-  3: {
-    a: n2(aRef),
-    vTip: n2(aRef * (T_REF_MS / 1000)),
-    tMin: n2(Math.min(...timing[3].durations)),
-    tMax: n2(Math.max(...timing[3].durations)),
-  },
-};
+  const metrics = {
+    1: {
+      vRef: n2(vRef),
+      vMin: n2(Math.min(...segs.map((s) => s.len / tRef))),
+      vMax: n2(Math.max(...segs.map((s) => s.len / tRef))),
+    },
+    2: { v: n2(vRef) },
+    3: {
+      a: n2(aRef),
+      vTip: n2(aRef * tRef),
+      tMin: n2(Math.min(...timing[3].durations)),
+      tMax: n2(Math.max(...timing[3].durations)),
+    },
+  };
+
+  return { tRefMs, leadMs: lead, refLen, totalLen, timing, metrics };
+}
+
+const refs = Object.fromEntries(REF_SPECS.map((ms) => [String(ms), buildRef(ms)]));
 
 /* ── nodos: estrella por punto (color/tamaño deterministas de marca) ───── */
 const nodes = [segs[0].a, ...segs.map((s) => s.b)].map((p, j) => {
@@ -145,14 +152,18 @@ const ghost = geo.outer.map((p) => ({ x: n2(p.x), y: n2(p.y) }));
 /* ── chequeos: si el dato horneado no cumple, no se escribe ───────────── */
 const fail = [];
 const near = (a, b, eps = 0.02) => Math.abs(a - b) <= eps;
-if (timing[1].durations.some((d) => !near(d, T_REF_MS))) fail.push("criterio 1: duración ≠ 700 ms");
-if (!near(timing[2].durations.at(-1), T_REF_MS)) fail.push("criterio 2: referencia ≠ 700 ms");
-if (!near(timing[3].durations.at(-1), T_REF_MS)) fail.push("criterio 3: referencia ≠ 700 ms");
-for (const k of [1, 2, 3]) {
-  const t = timing[k];
-  if (!t.starts.every((s, i) => i === 0 || near(s, t.ends[i - 1], 0.011)))
-    fail.push(`criterio ${k}: cadena no contigua`);
-  if (t.durations.some((d) => d <= 0)) fail.push(`criterio ${k}: duración ≤ 0`);
+for (const tRefMs of REF_SPECS) {
+  const family = refs[String(tRefMs)];
+  const label = `ref ${tRefMs} ms`;
+  if (!near(family.timing[1].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 1 ≠ T_ref`);
+  if (!near(family.timing[2].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 2 ≠ T_ref`);
+  if (!near(family.timing[3].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 3 ≠ T_ref`);
+  for (const k of [1, 2, 3]) {
+    const t = family.timing[k];
+    if (!t.starts.every((s, i) => i === 0 || near(s, t.ends[i - 1], 0.011)))
+      fail.push(`${label}: criterio ${k} cadena no contigua`);
+    if (t.durations.some((d) => d <= 0)) fail.push(`${label}: criterio ${k} duración ≤ 0`);
+  }
 }
 if (fail.length) {
   console.error(`❌ timing-lab: ${fail.join(" · ")}`);
@@ -162,15 +173,13 @@ if (fail.length) {
 const data = {
   source: "tools/logo/geometry.mjs · CONFIG_AUREA",
   generatedBy: "node tools/logo/timing-lab.mjs",
-  tRefMs: T_REF_MS,
-  leadMs: LEAD_MS,
+  tRefs: REF_SPECS,
   holdMs: HOLD_MS,
   refIndex: segs.length - 1,
   refLen,
   totalLen,
   viewBox,
-  metrics,
-  timing,
+  refs,
   segs,
   nodes,
   sky,
@@ -189,12 +198,16 @@ writeFileSync(
 
 console.log(`✓ proposals/logo-timing/geometry.data.js`);
 console.log(`  ${segs.length} conexiones · recorrido ${totalLen} px · referencia ${refLen} px (link ${ref.i})`);
-for (const k of [1, 2, 3]) {
-  const t = timing[k];
-  console.log(
-    `  criterio ${k}: conexiones ${(t.connectTotal / 1000).toFixed(2)} s ` +
-      `· total ${(t.total / 1000).toFixed(2)} s ` +
-      `· por link ${(Math.min(...t.durations) / 1000).toFixed(3)}–${(Math.max(...t.durations) / 1000).toFixed(3)} s`
-  );
+for (const tRefMs of REF_SPECS) {
+  const family = refs[String(tRefMs)];
+  console.log(`  ── REF ${(tRefMs / 1000).toFixed(2)} s (entrada ${(family.leadMs / 1000).toFixed(2)} s)`);
+  for (const k of [1, 2, 3]) {
+    const t = family.timing[k];
+    console.log(
+      `     criterio ${k}: conexiones ${(t.connectTotal / 1000).toFixed(2)} s ` +
+        `· total ${(t.total / 1000).toFixed(2)} s ` +
+        `· por link ${(Math.min(...t.durations) / 1000).toFixed(3)}–${(Math.max(...t.durations) / 1000).toFixed(3)} s`
+    );
+  }
+  console.log(`     v_ref ${family.metrics[1].vRef} px/s · a ${family.metrics[3].a} px/s²`);
 }
-console.log(`  v_ref ${metrics[1].vRef} px/s · a ${metrics[3].a} px/s²`);
