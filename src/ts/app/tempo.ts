@@ -40,7 +40,7 @@ export interface TempoState {
 const BASE_MS = 180; // intervalo de referencia: tasa 1
 const MIN_RATE = 0.6;
 const MAX_RATE = 1.8;
-const PULSE_MS = 120;
+const PULSE_MS = 80; // < intervalo mínimo (101 ms): el pulso no queda encendido
 
 let schedule: TempoSchedule | null = null;
 let startAt = 0;
