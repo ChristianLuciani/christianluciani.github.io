@@ -7,7 +7,7 @@
 interface GrafoNode {
   id: string;
   label: string;
-  status: "raiz" | "area" | "pub" | "futuro";
+  status: "raiz" | "area" | "pub" | "desarrollo" | "futuro";
   x: number;
   y: number;
   vx: number;
@@ -22,7 +22,7 @@ interface GrafoEdge {
   b: GrafoNode;
 }
 
-// status: raiz | area | pub (publicado) | futuro (no publicado, dorado)
+// status: raiz | area | pub (publicado) | desarrollo (sin artefacto público) | futuro (idea, dorado)
 const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
   { id: "raiz", label: "Christian Luciani", status: "raiz" },
   { id: "fisica", label: "Física", status: "area" },
@@ -32,13 +32,14 @@ const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
   { id: "edu", label: "Educación", status: "area" },
   { id: "cog", label: "Cognición · Filosofía", status: "area" },
   { id: "kontablo", label: "Kontablo", status: "pub" },
-  { id: "zentropy", label: "ZENTROPY", status: "pub" },
+  { id: "zentropy", label: "ZENTROPY", status: "desarrollo" },
   { id: "drahma", label: "Drahma", status: "pub" },
-  { id: "clapps", label: "CLAPPS · Noesis/Noetix", status: "pub" },
-  { id: "estel", label: "Esteléctica", status: "pub" },
+  { id: "clapps", label: "CLAPPS · Noesis/Noetix", status: "desarrollo" },
+  { id: "estel", label: "Esteléctica", status: "desarrollo" },
   { id: "erp", label: "ERPNext · Zanah", status: "pub" },
-  { id: "topia", label: "Topia", status: "futuro" },
-  { id: "nelson", label: "Nelson Companion", status: "futuro" }
+  { id: "profile", label: "profile-as-code", status: "pub" },
+  { id: "topia", label: "Topia", status: "desarrollo" },
+  { id: "nelson", label: "Nelson Companion", status: "desarrollo" }
 ];
 
 const LINKS: [string, string][] = [
@@ -50,6 +51,7 @@ const LINKS: [string, string][] = [
   ["cog", "estel"],
   ["sob", "erp"], ["oss", "erp"],
   ["oss", "topia"], ["cog", "topia"],
+  ["oss", "profile"], ["ia", "profile"],
   ["edu", "nelson"]
 ];
 
@@ -166,6 +168,7 @@ export function mountGrafo(): void {
   function col(n: GrafoNode): string {
     if (n.status === "raiz") return "#00c9c0";
     if (n.status === "futuro") return "#c9a84c";
+    if (n.status === "desarrollo") return "#8892a0";
     return n.status === "area" ? "#4aa8a4" : "#7fd6cc";
   }
 
@@ -241,11 +244,13 @@ export function mountGrafo(): void {
         const stat =
           n.status === "pub"
             ? "publicado/activo"
-            : n.status === "futuro"
-              ? "no publicado"
-              : n.status === "raiz"
-                ? "raíz"
-                : "área";
+            : n.status === "desarrollo"
+              ? "en desarrollo"
+              : n.status === "futuro"
+                ? "idea"
+                : n.status === "raiz"
+                  ? "raíz"
+                  : "área";
         tip.innerHTML =
           '<b style="color:' + col(n) + '">' + n.label + "</b><br><span style=\"color:var(--muted)\">" + stat + "</span>";
       } else tipEl.style.display = "none";
