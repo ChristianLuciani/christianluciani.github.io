@@ -41,7 +41,7 @@ const reduceMotion =
 const SAFETY_MINIMIZE_DELAY_MS = 60000; // red de seguridad: la intro lo resuelve (~10s)
 const REDUCED_MINIMIZE_DELAY_MS = 300; // reduced-motion: ocultar ya
 
-// El mark minimizado abre el laboratorio temporal (portada de propuestas).
+// El mark minimizado (Espirángulo) abre el laboratorio temporal (portada de propuestas).
 // En dev la fuente vive en proposals/; en build se publica en /laboratorio/.
 const LAB_URL = import.meta.env.DEV ? "/proposals/logo-timing/" : "/laboratorio/";
 

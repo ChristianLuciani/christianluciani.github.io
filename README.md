@@ -2,6 +2,8 @@
 
 CV interactivo diseñado como recorrido museográfico, con ilusiones ópticas animadas y scroll cinematográfico. Repositorio y sitio de GitHub Pages.
 
+El mark animado del sitio se llama **Espirángulo** (espiral + triángulo).
+
 **[→ Ver en vivo](https://christianluciani.github.io/)**
 
 ## Estructura

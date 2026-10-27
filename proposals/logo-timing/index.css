@@ -226,6 +226,21 @@ h1 em {
   transition: background 0.18s, border-color 0.18s;
 }
 .cta:hover { background: rgba(255, 138, 112, 0.16); border-color: rgba(255, 138, 112, 0.6); }
+.hero.is-global .hero-art::before {
+  background: radial-gradient(closest-side, rgba(232, 185, 92, 0.12), transparent 72%);
+}
+.hero.is-global .hero-art:hover { border-color: rgba(232, 185, 92, 0.45); }
+.hero.is-global .hero-art:focus-visible { outline-color: #e8b95c; }
+.hero.is-global .hero-copy h2 span { color: #e8b95c; }
+.hero.is-global .pick-tag { color: #e8b95c; }
+.hero.is-global .pick-tag::before { background: #e8b95c; box-shadow: 0 0 12px #e8b95c; }
+.hero.is-global .cta {
+  border-color: rgba(232, 185, 92, 0.38);
+  background: rgba(232, 185, 92, 0.09);
+  color: #e8b95c;
+}
+.hero.is-global .cta:hover { background: rgba(232, 185, 92, 0.16); border-color: rgba(232, 185, 92, 0.65); }
+.hero.is-global .cta:focus-visible { outline-color: #e8b95c; }
 .cta:focus-visible { outline: 2px solid var(--coral); outline-offset: 3px; }
 
 /* ── familias ─────────────────────────────────────────────────────── */

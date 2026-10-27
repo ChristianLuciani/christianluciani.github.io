@@ -80,12 +80,36 @@ function buildRef(tRefMs) {
   const lead = tRefMs;
   const tRef = tRefMs / 1000;
   const vRef = refLen / tRef; // px/s
-  const aRef = (2 * refLen) / (tRef * tRef); // px/s²
+  const aRef = (2 * refLen) / (tRef * tRef); // px/s² per link
+
+  /* Séptima: una sola aceleración sobre TODO el recorrido, sin reinicios.
+     Se calibra para que el último tramo (la C) dure T_ref:
+       Δt_ref = √(2/a)·(√S_total − √S_prev) = T_ref
+     El avance dentro de cada tramo no es u²; se deriva de s(t) = ½at². */
+  const cumulative = [];
+  let acc = 0;
+  for (const s of segs) { acc += s.len; cumulative.push(acc); }
+  const sTotal = cumulative[cumulative.length - 1];
+  const sPrev = cumulative[cumulative.length - 2];
+  const rootGap = Math.sqrt(sTotal) - Math.sqrt(sPrev);
+  const aGlobal = (2 * rootGap * rootGap) / (tRef * tRef);
+  const tOf = (d) => Math.sqrt((2 * d) / aGlobal);
+  let prevD = 0;
+  const globalDurs = cumulative.map((d) => {
+    const dt = (tOf(d) - tOf(prevD)) * 1000;
+    prevD = d;
+    return dt;
+  });
+  const global = schedule(globalDurs, lead);
+  global.mode = "global";
+  global.a = n2(aGlobal);
+  global.vEnd = n2(aGlobal * tOf(sTotal));
 
   const timing = {
     1: schedule(segs.map(() => tRefMs), lead),
     2: schedule(segs.map((s) => (s.len / vRef) * 1000), lead),
     3: schedule(segs.map((s) => Math.sqrt((2 * s.len) / aRef) * 1000), lead),
+    4: global,
   };
 
   const metrics = {
@@ -100,6 +124,12 @@ function buildRef(tRefMs) {
       vTip: n2(aRef * tRef),
       tMin: n2(Math.min(...timing[3].durations)),
       tMax: n2(Math.max(...timing[3].durations)),
+    },
+    4: {
+      a: n2(aGlobal),
+      vEnd: n2(aGlobal * tOf(sTotal)),
+      tMin: n2(Math.min(...global.durations)),
+      tMax: n2(Math.max(...global.durations)),
     },
   };
 
@@ -158,7 +188,8 @@ for (const tRefMs of REF_SPECS) {
   if (!near(family.timing[1].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 1 ≠ T_ref`);
   if (!near(family.timing[2].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 2 ≠ T_ref`);
   if (!near(family.timing[3].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 3 ≠ T_ref`);
-  for (const k of [1, 2, 3]) {
+  if (!near(family.timing[4].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 4 ≠ T_ref`);
+  for (const k of [1, 2, 3, 4]) {
     const t = family.timing[k];
     if (!t.starts.every((s, i) => i === 0 || near(s, t.ends[i - 1], 0.011)))
       fail.push(`${label}: criterio ${k} cadena no contigua`);
@@ -201,13 +232,13 @@ console.log(`  ${segs.length} conexiones · recorrido ${totalLen} px · referenc
 for (const tRefMs of REF_SPECS) {
   const family = refs[String(tRefMs)];
   console.log(`  ── REF ${(tRefMs / 1000).toFixed(2)} s (entrada ${(family.leadMs / 1000).toFixed(2)} s)`);
-  for (const k of [1, 2, 3]) {
+  for (const k of [1, 2, 3, 4]) {
     const t = family.timing[k];
     console.log(
-      `     criterio ${k}: conexiones ${(t.connectTotal / 1000).toFixed(2)} s ` +
+      `     criterio ${k}${k === 4 ? " (global)" : ""}: conexiones ${(t.connectTotal / 1000).toFixed(2)} s ` +
         `· total ${(t.total / 1000).toFixed(2)} s ` +
         `· por link ${(Math.min(...t.durations) / 1000).toFixed(3)}–${(Math.max(...t.durations) / 1000).toFixed(3)} s`
     );
   }
-  console.log(`     v_ref ${family.metrics[1].vRef} px/s · a ${family.metrics[3].a} px/s²`);
+  console.log(`     v_ref ${family.metrics[1].vRef} px/s · a ${family.metrics[3].a} px/s² · a_global ${family.metrics[4].a} px/s²`);
 }

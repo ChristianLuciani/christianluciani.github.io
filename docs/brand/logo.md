@@ -1,4 +1,4 @@
-# Manual de estilo — Logo Triángulo-Espiral (issue #54)
+# Manual de marca — Espirángulo (logo triángulo-espiral, issue #54)
 
 > **Fuente única de verdad:** la geometría vive paramétrica en
 > `tools/logo/geometry.mjs` (puerto verificado 1:1 contra el DOM aprobado de
@@ -8,15 +8,19 @@
 >
 > **ADR D1 RATIFICADO (2026-09-25, PR #58): la versión áurea v16 es el logo
 > oficial.** La base v10 queda como referencia comparativa.
+>
+> **Nombre del mark: Espirángulo** (espiral + triángulo), ratificado el
+> 2026-10-27. El nombre es del símbolo, no de la persona ni del sitio; el
+> wordmark sigue siendo «Christian Luciani».
 
 ---
 
 ## 1. El símbolo
 
-Espiral de conocimiento acumulativo: un triángulo que nace en el
-origen —la supernova— y gira creciendo en generaciones hasta la C final en
-plena intensidad (triángulo abierto = evolución en curso). Con
-nodos-estrella en cada vértice: el símbolo es una constelación que se
+**Espirángulo** es el mark: una espiral de conocimiento acumulativo. Un
+triángulo que nace en el origen —la supernova— y gira creciendo en generaciones
+hasta la C final en plena intensidad (triángulo abierto = evolución en curso).
+Con nodos-estrella en cada vértice: el símbolo es una constelación que se
 expande.
 
 - **Espiral**: nace en el origen y crece hacia afuera — opacidad y grosor

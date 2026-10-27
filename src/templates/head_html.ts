@@ -226,7 +226,7 @@ export function headHtml(): string {
 ║  · .room-content → contenido principal                           ║
 ║                                                                   ║
 ║  FRACTAL LOGO                                                     ║
-║  Mark animado de marca (SVG) #brand-logo                         ║
+║  Mark animado de marca (SVG) #brand-logo — Espirángulo           ║
 ║  Durante carga: centrado, grande (120px), girando                ║
 ║  Después: esquina sup-izq, 42px, estático con hover glow         ║
 ║  Transición controlada por JS: minimizeLogo()                    ║

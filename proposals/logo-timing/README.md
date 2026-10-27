@@ -1,20 +1,21 @@
-# Laboratorio temporal del logo
+# Laboratorio temporal del Espirángulo
 
 Experimento visual para decidir **dos cosas independientes** de la animación:
 
 1. la **ley de conexión** entre nodos (intervalo, velocidad o aceleración);
 2. el **tempo base** de la página (`REF 0,70 s` o `REF 0,30 s`).
 
-Son seis páginas independientes (3 leyes × 2 tempos) más una portada, con la
-geometría real del logo principal (21 conexiones, `CONFIG_AUREA`). El build las
-publica en `/laboratorio/` y también se abren directo desde `file://`, sin
-servidor. Cada una enlaza a sus dos hermanas de ley y a su equivalente en el
-otro tempo; la portada indexa las seis.
+Son seis páginas de la matriz (3 leyes × 2 tempos), la **séptima** (una sola
+aceleración para todo el recorrido) y una portada, con la geometría real del
+mark Espirángulo (21 conexiones, `CONFIG_AUREA`). El build las publica en
+`/laboratorio/` y también se abren directo desde `file://`, sin servidor. Cada
+una de la matriz enlaza a sus dos hermanas de ley y a su equivalente en el otro
+tempo; la portada indexa las siete.
 
 ## Abrir
 
 Ruta publicada (activa al mergear y desplegar): <https://christianluciani.github.io/laboratorio/>. La portada
-(`index.html`) permite entrar a las seis; el mark minimizado del sitio abre esa
+(`index.html`) permite entrar a las siete; el mark minimizado del sitio abre esa
 misma ruta.
 
 ```bash
@@ -30,10 +31,14 @@ open proposals/logo-timing/criterio-3-aceleracion.html
 open proposals/logo-timing/criterio-1-intervalo-rapida.html
 open proposals/logo-timing/criterio-2-velocidad-rapida.html
 open proposals/logo-timing/criterio-3-aceleracion-rapida.html
+
+# séptima · aceleración global
+open proposals/logo-timing/propuesta-07-global.html
 ```
 
-Cada página tiene un selector `REF 0,70 s / 0,30 s` para saltar a la misma ley
-en el otro tempo. Para congelar un instante: `#t=<segundos>` en la URL.
+Las seis páginas de la matriz tienen un selector `REF 0,70 s / 0,30 s` para
+saltar a la misma ley en el otro tempo; la séptima es solo 0,30 s. Para congelar
+un instante: `#t=<segundos>` en la URL.
 
 Controles: `espacio` pausa, `R` reinicia, `←`/`→` mueven ±0,5 s, clic o
 arrastre sobre la línea de tiempo para pausar y scrubear. La velocidad de
@@ -98,6 +103,26 @@ comprimiendo a 6,4×. Elegir tempo y elegir ley son decisiones separadas.
 > la variación real del logo es 10,6–430,7 px (40,6×): es donde las leyes se
 > separan.
 
+## Propuesta 07 · Aceleración global
+
+Una sola aceleración `a` sobre **todo** el recorrido, sin reiniciar la velocidad
+en cada nodo. Se calibra para que el último tramo de la C dure `T_ref = 0,30 s`:
+
+```
+a = 2·(√S_total − √S_ref)² / T_ref² = 419,69 px/s²
+t(S) = √(2·S / a)
+```
+
+- Conexiones: **3,57 s** (3,87 s con entrada).
+- Por link: **0,101–0,300 s** (rango 3,0×; los links no se reinician).
+- Aceleración: `419,69 px/s²`; velocidad final: `1.498,59 px/s`.
+- El gráfico distancia–tiempo es **una sola parábola**, no una escalera de
+  reinicios.
+
+Es la alternativa que más se acerca a un “crecimiento continuo” y la que elegiría
+hoy para la animación principal. El criterio 3 por link sigue disponible para
+comparar: reparte menos (47–300 ms) y tiene 21 reinicios.
+
 ## Alcance visual
 
 La geometría es la real (`CONFIG_AUREA`), pero el acabado es de laboratorio: la C
@@ -116,6 +141,8 @@ Primero la **ley**:
   último tramo vuela: 40,6× de diferencia.
 - Si querés una sensación de **crecimiento/aceleración**, el criterio 3 reparte
   mejor el tiempo (6,4×) y evita el arranque brusco, a costa de 21 reinicios.
+- La **propuesta 07** lleva esa idea al límite: una sola curva de aceleración,
+  sin reinicios, con un rango de 3,0× y 3,57 s. Es mi recomendación actual.
 
 Después el **tempo**:
 
@@ -134,17 +161,18 @@ tramos cortos. El laboratorio muestra las leyes puras para poder decidir.
 
 ## Nombre
 
-**Espirángulo** es el nombre de trabajo (espiral + triángulo). Funciona como
-portmanteau, es pronunciable en español y describe la geometría sin ser genérico.
+**Espirángulo** es el nombre del mark, ratificado el 2026-10-27 (espiral +
+triángulo). Funciona como portmanteau, es pronunciable en español y describe la
+geometría sin ser genérico.
 
-Alternativas si no se ratifica: *Espiral áurea* (descriptivo, pero compite con el
+Alternativas descartadas: *Espiral áurea* (descriptivo, pero compite con el
 concepto matemático), *La C áurea* (pone el foco en la firma, no en el espiral),
 *Triángulo espiral* (literal, sin carácter de marca).
 
-Pendiente de formalizar: (1) ratificar el nombre; (2) decidir su alcance (¿solo
-el laboratorio o también el sitio, el `alt` y el favicon?); (3) verificar
-colisión de uso/marca antes de publicarlo como nombre oficial. Hasta entonces,
-la portada lo marca como **nombre de trabajo**.
+Pendiente: (1) definir el alcance completo de uso (sitio, `alt`, favicon, OG,
+brand kit); (2) verificar colisión de uso/marca antes de un registro. El nombre
+ya está aplicado al laboratorio; el brand kit lo recibe en
+[cluciani-brand-kit#3](https://github.com/ChristianLuciani/cluciani-brand-kit/issues/3).
 
 ## Publicación
 
@@ -163,7 +191,7 @@ exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
 
 | Archivo | Rol |
 |---|---|
-| `index.html` | portada del laboratorio (sugerencia + seis propuestas) |
+| `index.html` | portada del laboratorio (séptima + seis propuestas) |
 | `index.css` | estilos de la portada |
 | `criterio-1-intervalo.html` | ley 01, REF 0,70 s |
 | `criterio-2-velocidad.html` | ley 02, REF 0,70 s |
@@ -171,9 +199,10 @@ exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
 | `criterio-1-intervalo-rapida.html` | ley 01, REF 0,30 s |
 | `criterio-2-velocidad-rapida.html` | ley 02, REF 0,30 s |
 | `criterio-3-aceleracion-rapida.html` | ley 03, REF 0,30 s |
+| `propuesta-07-global.html` | séptima: aceleración global, REF 0,30 s |
 | `lab.css` | estilos compartidos |
 | `lab.js` | motor de render y reloj (vanilla, sin build) |
-| `geometry.data.js` | **generado**: geometría, constelación y los 6 cronogramas |
+| `geometry.data.js` | **generado**: geometría, constelación y los cronogramas de ambas familias |
 
 ## Regenerar los datos
 
@@ -181,6 +210,7 @@ exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
 node tools/logo/timing-lab.mjs   # o: npm run logo:timing
 ```
 
-El generador importa `tools/logo/geometry.mjs`, calcula las dos familias y falla
-si alguna referencia no da su `T_ref`, si una cadena no es contigua o si alguna
-duración es ≤ 0. La página no recalcula nada: consume el dato horneado.
+El generador importa `tools/logo/geometry.mjs`, calcula las dos familias (leyes
+1–3) y la global, y falla si alguna referencia no da su `T_ref`, si una cadena no
+es contigua o si alguna duración es ≤ 0. La página no recalcula nada: consume el
+dato horneado.

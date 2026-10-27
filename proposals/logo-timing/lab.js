@@ -18,6 +18,7 @@
     1: { accent: "#00c9c0", name: "Intervalo constante" },
     2: { accent: "#7ad7ff", name: "Velocidad constante" },
     3: { accent: "#ff8a70", name: "Aceleración constante" },
+    4: { accent: "#e8b95c", name: "Aceleración global" },
   }[CRITERION];
   if (!META) throw new Error(`timing-lab: criterio desconocido ${CRITERION}`);
 
@@ -35,6 +36,12 @@
   const TOTAL = T.total;
   const HOLD = G.holdMs;
   const SEGS = G.segs;
+  const GLOBAL = CRITERION === 4;
+  const CUM = [];
+  {
+    let acc = 0;
+    for (const s of SEGS) { CUM.push(acc); acc += s.len; }
+  }
   const NODES = G.nodes;
   const REF_I = G.refIndex;
   const LAST = SEGS.length - 1;
@@ -192,25 +199,37 @@
   E("text", { class: "tick", x: ML - 3, y: CH - MB + 2, "text-anchor": "end" }, cg).textContent = "0";
   E("text", { class: "tick", x: ML - 3, y: MT + 4, "text-anchor": "end" }, cg).textContent = `${fmt(G.totalLen / 1000, 1)}k`;
 
-  const lawColors = { 1: "#00c9c0", 2: "#7ad7ff", 3: "#ff8a70" };
+  const lawColors = { 1: "#00c9c0", 2: "#7ad7ff", 3: "#ff8a70", 4: "#e8b95c" };
   const lawPaths = {};
-  for (const k of [1, 2, 3]) {
+  for (const k of [1, 2, 3, 4]) {
     const tk = REF.timing[k];
-    let d = `M ${xAt(0)} ${yAt(0)} L ${xAt(tk.starts[0])} ${yAt(0)}`;
-    let cum = 0;
-    for (let i = 0; i < SEGS.length; i++) {
-      const len = SEGS[i].len;
-      const start = tk.starts[i];
-      const dur = tk.durations[i];
-      if (k === 3) {
-        for (let s = 1; s <= 6; s++) {
-          const u = s / 6;
-          d += ` L ${xAt(start + dur * u)} ${yAt(cum + len * u * u)}`;
-        }
-      } else {
-        d += ` L ${xAt(tk.ends[i])} ${yAt(cum + len)}`;
+    let d;
+    if (k === 4) {
+      /* una sola parábola: s(t) = ½·a·t², sin reinicios */
+      d = `M ${xAt(0)} ${yAt(0)} L ${xAt(tk.starts[0])} ${yAt(0)}`;
+      const span = tk.total - tk.starts[0];
+      for (let s = 1; s <= 48; s++) {
+        const t = tk.starts[0] + (span * s) / 48;
+        const dist = clamp(0.5 * tk.a * Math.pow((t - LEAD) / 1000, 2), 0, G.totalLen);
+        d += ` L ${xAt(t)} ${yAt(dist)}`;
       }
-      cum += len;
+    } else {
+      d = `M ${xAt(0)} ${yAt(0)} L ${xAt(tk.starts[0])} ${yAt(0)}`;
+      let cum = 0;
+      for (let i = 0; i < SEGS.length; i++) {
+        const len = SEGS[i].len;
+        const start = tk.starts[i];
+        const dur = tk.durations[i];
+        if (k === 3) {
+          for (let s = 1; s <= 6; s++) {
+            const u = s / 6;
+            d += ` L ${xAt(start + dur * u)} ${yAt(cum + len * u * u)}`;
+          }
+        } else {
+          d += ` L ${xAt(tk.ends[i])} ${yAt(cum + len)}`;
+        }
+        cum += len;
+      }
     }
     const path = E("path", {
       class: `law ${k === CRITERION ? "is-active" : "is-ghost"}`,
@@ -271,6 +290,9 @@
   } else if (CRITERION === 2) {
     $("stat-speed").innerHTML = `${fmtInt(REF.metrics[2].v)}<small>px/s</small>`;
     $("stat-extra").innerHTML = `${fmt(ratio, 1)}<small>× entre extremos</small>`;
+  } else if (CRITERION === 4) {
+    $("stat-speed").innerHTML = `${fmtInt(REF.metrics[4].a)}<small>px/s²</small>`;
+    $("stat-extra").innerHTML = `${fmtInt(REF.metrics[4].vEnd)}<small>px/s</small>`;
   } else {
     $("stat-speed").innerHTML = `${fmtInt(REF.metrics[3].a)}<small>px/s²</small>`;
     $("stat-extra").innerHTML = `${fmtInt(REF.metrics[3].vTip)}<small>px/s</small>`;
@@ -283,6 +305,10 @@
   /* ── render ───────────────────────────────────────────────────────── */
   function cumulativeAt(t) {
     if (t <= LEAD) return 0;
+    if (GLOBAL) {
+      const sec = (t - LEAD) / 1000;
+      return clamp(0.5 * T.a * sec * sec, 0, G.totalLen);
+    }
     let cum = 0;
     for (let i = 0; i < SEGS.length; i++) {
       if (t >= ENDS[i]) {
@@ -325,6 +351,9 @@
   function render() {
     active = -1;
     let activeP = 0;
+    const sGlobal = GLOBAL
+      ? 0.5 * T.a * Math.pow(Math.max(0, (clock - LEAD) / 1000), 2)
+      : 0;
 
     for (let i = 0; i < SEGS.length; i++) {
       let offset = SEGS[i].len;
@@ -332,7 +361,9 @@
         offset = 0;
       } else if (clock >= STARTS[i]) {
         const u = (clock - STARTS[i]) / DUR[i];
-        activeP = CRITERION === 3 ? u * u : u;
+        activeP = GLOBAL
+          ? clamp((sGlobal - CUM[i]) / SEGS[i].len, 0, 1)
+          : (CRITERION === 3 ? u * u : u);
         offset = SEGS[i].len * (1 - activeP);
         active = i;
       }
