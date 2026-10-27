@@ -273,7 +273,7 @@
     $("stat-extra").innerHTML = `${fmt(ratio, 1)}<small>× entre extremos</small>`;
   } else {
     $("stat-speed").innerHTML = `${fmtInt(REF.metrics[3].a)}<small>px/s²</small>`;
-    $("stat-extra").innerHTML = `${fmtInt(REF.metrics[3].vTip)}<small>px/s al llegar</small>`;
+    $("stat-extra").innerHTML = `${fmtInt(REF.metrics[3].vTip)}<small>px/s</small>`;
   }
   $("stat-total-note").textContent = `+ ${fmt(LEAD / 1000, 2)} s de entrada`;
   $("ref-note").textContent = `REF = último tramo de la C · ${fmt(REF.tRefMs / 1000, 2)} s`;

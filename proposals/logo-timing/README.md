@@ -7,7 +7,8 @@ Experimento visual para decidir **dos cosas independientes** de la animación:
 
 Son seis páginas independientes (3 leyes × 2 tempos), con la geometría real del
 logo principal (21 conexiones, `CONFIG_AUREA`). No tocan el sitio: se abren
-directo desde `file://`, sin servidor, y cada una enlaza a las otras cinco.
+directo desde `file://`, sin servidor. Cada una enlaza a sus dos hermanas de
+ley y a su equivalente en el otro tempo; el README indexa las seis.
 
 ## Abrir
 
