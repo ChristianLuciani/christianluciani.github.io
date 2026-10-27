@@ -6,6 +6,7 @@ import { assetAttrs } from "../ts/assets/url.ts";
  */
 import { SALAS, type SalaDef } from "../cv/salas.ts";
 import { numFor } from "../cv/render.ts";
+import { enDesarrollo, publicados, type Proyecto } from "../data/proyectos.ts";
 
 /**
  * Presentación por sala (no estructura): variante de data-scroll del título y
@@ -41,6 +42,16 @@ export const ROOM_SHELL: Record<string, string> = {
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-proyectos" style="background:var(--night)">
   <canvas class="room-canvas" id="c-proyectos" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
+
+  <div class="room-content">
+`,
+  bastidor: `<!-- ════════════════════════════════════════════════════
+  SALA — El Bastidor (en desarrollo)
+  NOTA: lo que todavía no tiene artefacto público. Cada ficha
+  declara qué le falta para pasar a La Exposición.
+════════════════════════════════════════════════════ -->
+<section class="room" id="room-bastidor" style="background:var(--night)">
+  <canvas class="room-canvas" id="c-bastidor" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
 
   <div class="room-content">
 `,
@@ -97,168 +108,16 @@ export const ROOM_SHELL: Record<string, string> = {
 };
 
 /** Contenido de la sala (tras el header) hasta </section> + divider. */
-export const ROOM_BODY: Record<string, string> = {
-  perfil: `
-    <div class="profile-grid">
-
-      <!-- Columna izquierda: tarjeta de perfil + ilusión -->
-      <div class="profile-aside">
-        <div class="profile-card" data-scroll="from-left">
-          <!--
-            FOTO: descomenta <img> y comenta .photo-ph-inner para activar
-            O usa URL directa: src="https://url-de-tu-foto.jpg"
-          -->
-          <div class="photo-placeholder" id="photo-slot">
-            <img src="https://lh3.googleusercontent.com/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c"
-                 alt="Christian Luciani"
-                 onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex'">
-            <div class="photo-ph-inner" id="photo-fallback" style="display:none">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,201,192,0.4)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              <span>Añadir foto local</span>
-            </div>
-          </div>
-          <p class="profile-text">Físico con más de 20 años en la intersección entre investigación científica, docencia universitaria e innovación educativa.</p>
-          <br>
-          <p class="profile-text" style="color:var(--muted);font-size:.95rem">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
-          <br>
-          <p class="profile-text" style="color:var(--muted);font-size:.95rem">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
-        </div>
-
-        <!-- Ilusión: Cubo de Necker animado -->
-        <!-- PROMPT PARA GENERAR SVG EN OTRA SESIÓN:
-             "Crea un SVG del Cubo de Necker (1832) en perspectiva isométrica.
-              Líneas en #00c9c0 sobre fondo transparente. 300×300px.
-              El cubo debe mostrar ambigüedad perceptual perfecta entre
-              dos orientaciones posibles. Sin relleno, solo bordes." -->
-        <div class="illusion-frame" style="height:250px;margin-top:2.5rem;" data-scroll="zoom-in" data-delay="2">
-          <canvas id="c-necker-ill" style="width:100%;height:100%"></canvas>
-          <div class="illusion-label">CUBO DE NECKER · 1832</div>
-          <a class="illusion-link" href="https://michaelbach.de/ot/sze-necker/" target="_blank" rel="noopener">↗ michaelbach.de</a>
-        </div>
-      </div>
-
-      <!-- Columna derecha: formación y eventos -->
-      <div>
-        <div class="entry" data-scroll="from-right">
-          <div class="entry-period">2006 – 2008</div>
-          <div class="entry-title">Especialización en Audiovisuales</div>
-          <div class="entry-org">Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008</div>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="1">
-          <div class="entry-period">2003 – 2006</div>
-          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos (ABD)</div>
-          <div class="entry-org">Universidad Simón Bolívar, Venezuela</div>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="2">
-          <div class="entry-period">1997 – 2003</div>
-          <div class="entry-title">Licenciatura en Física</div>
-          <div class="entry-org">Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536</div>
-        </div>
-
-        <div class="quote-block" data-scroll="zoom-in" data-delay="3">
-          La física me enseñó a ver patrones donde otros ven ruido.<br>
-          El cine me enseñó a hacer ese patrón visible para otros.
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="3">
-          <div class="entry-period">2003 · CERN · BECA</div>
-          <div class="entry-title">II Latin American School of High Energy Physics</div>
-          <div class="entry-org">San Miguel Regla, México</div>
-        </div>
-      </div>
-    </div><!-- /profile-grid -->
+/** Cierre común de sala (una tarjeta/CIERRE termina el <section>). */
+const ROOM_TAIL = `
   </div><!-- /room-content -->
 </section>
 <div class="room-divider"></div>
 
+`;
 
-`,
-  proyectos: `
-    <!-- KONTABLO -->
-    <div class="project-card" data-scroll="from-left">
-      <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
-      <div class="project-title"><em>Kontablo</em> — Ontología Contable Universal</div>
-      <div class="project-tagline">Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)</div>
-      <ul class="project-body">
-        <li>Un UUID inamovible por cada concepto contable universal — los códigos son etiquetas visuales; el UUID es la identidad canónica</li>
-        <li>195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)</li>
-        <li><em>Deterministic Boundary Library</em>: un agente no puede proponer un UUID que no exista en el grafo — elimina la clase clásica de alucinación contable a nivel del harness</li>
-        <li>Capa agent-native para la economía agéntica; resolución determinista en tres niveles, con inteligencia sintética estocástica solo como último recurso</li>
-      </ul>
-      <div class="project-note">
-        Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.<br>
-        <a class="pub-doi" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank">↗ Repositorio</a>
-        <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank" style="margin-left:1rem">↗ Zenodo DOI 10.5281/zenodo.20738795</a>
-        <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank" style="margin-left:1rem">↗ SSRN 6960598</a>
-        <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank" style="margin-left:1rem">↗ ResearchGate</a>
-      </div>
-    </div>
-
-    <!-- ZENTROPY -->
-    <div class="project-card" data-scroll="from-left" data-delay="1">
-      <span class="project-status status-active">Operacional · Stage 1 completo</span>
-      <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
-      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética</div>
-      <ul class="project-body">
-        <li>Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema <em>zentropia</em>)</li>
-        <li>Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (<code>ingest.py</code>)</li>
-        <li>Módulo central del ecosistema de cognición sintética: integra con CLAPPS, UCVE, NOOS, Kontablo</li>
-        <li>Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter</li>
-      </ul>
-      <div class="project-note">La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.</div>
-    </div>
-
-    <!-- ESTELÉCTICA -->
-    <div class="project-card" data-scroll="from-left" data-delay="2">
-      <span class="project-status status-private">Investigación activa</span>
-      <div class="project-title"><em>Esteléctica</em> — Epistemología del Diálogo Poli-dialéctico Destilado</div>
-      <div class="project-tagline">Propuesta filosófica sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética</div>
-      <ul class="project-body">
-        <li>Problema: toda conversación prolongada tiende hacia el ruido. El diálogo con cognición sintética lo acelera — la ventana de contexto se degrada, las sesiones no persisten</li>
-        <li>Propuesta: modelo <strong>Tronco/Rizoma</strong> — el rizoma explora libremente; periódicamente el par humano-cognición sintética destila hacia el Tronco (conocimiento estable)</li>
-        <li>Doble naturaleza: propuesta filosófica <em>y</em> arquitectura de software para gestión epistemológica</li>
-        <li>Integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo</li>
-      </ul>
-      <div class="project-note">Candidata a publicación académica.</div>
-    </div>
-
-    <!-- CLAPPS.AI -->
-    <div class="project-card" data-scroll="from-left" data-delay="3">
-      <span class="project-status status-active">Concepto activo</span>
-      <div class="project-title"><em>CLAPPS.AI</em> — Learning Applications Platform</div>
-      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional</div>
-      <ul class="project-body">
-        <li>Los LMS (Learning Management Systems) son en realidad plataformas de <em>registro y control de enseñanza</em>: tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real</li>
-        <li>CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad</li>
-        <li>Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias</li>
-        <li>Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos</li>
-      </ul>
-    </div>
-
-    <!-- NOOS -->
-    <div class="project-card" data-scroll="from-left" data-delay="4">
-      <span class="project-status status-private">Investigación privada</span>
-      <div class="project-title"><em>NOOS</em> — Natural Organization Operating System</div>
-      <div class="project-tagline">Reducir la entropía organizacional mediante inteligencia sintética distribuida y grafos de conocimiento</div>
-      <ul class="project-body">
-        <li>Marco conceptual que aplica teoría de sistemas complejos al diseño organizacional</li>
-        <li>Propuesta: las organizaciones pueden modelarse como sistemas termodinámicos con estados de alta/baja entropía</li>
-        <li>Arquitectura: inteligencia sintética distribuida + bases de datos en grafo para mapear flujos de decisión y conocimiento tácito</li>
-        <li>Destino: consultoría de alto valor para organizaciones en transición digital</li>
-      </ul>
-      <div class="project-note">Investigación en curso. Publicación académica planificada.</div>
-    </div>
-
-    <!-- ── DRAHMA (showcase integrado) ── -->
-    <div class="project-card" data-scroll="from-left" data-delay="5" style="margin-bottom:0">
-      <span class="project-status status-paused">Completado · Agosto 2024</span>
-      <div class="project-title"><em>Drahma</em> — Inteligencia Sintética Educativa</div>
-      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
-    </div>
-
-    <div style="margin-top:0;padding:2rem 2rem 1.5rem;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px" data-scroll="up">
+/** Showcase Drahma — obra publicada; se conserva tal cual tras las tarjetas. */
+const TALLER_DRAHMA = `<div style="margin-top:0;padding:2rem 2rem 1.5rem;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px" data-scroll="up">
       <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.5rem">
         <img src="/assets/images/drahman-logo.png"
              alt="Drahma logo" width="44" height="44" loading="lazy" decoding="async"
@@ -340,9 +199,118 @@ export const ROOM_BODY: Record<string, string> = {
   </div><!-- /room-content -->
 </section>
 <div class="room-divider"></div>
+${ROOM_TAIL}`;
+
+/** Cierre de El Bastidor: la sala declara por qué existe. */
+const CIERRE_BASTIDOR = `
+    <p class="room-closing" data-scroll="up">
+      Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir — y cada una dice qué le falta.
+    </p>
+${ROOM_TAIL}`;
+
+/**
+ * Tarjetas de una sala: la envoltura (scroll/delay/última) la añade el renderer,
+ * el copy viene de `src/data/proyectos.ts` (byte-idéntico: las claves del i18n
+ * son el texto ES exacto) y el cierre de graduación solo existe en El Bastidor.
+ */
+function tarjetas(lista: readonly Proyecto[]): string {
+  return lista
+    .map((p, i) => {
+      const delay = i === 0 ? "" : ` data-delay="${Math.min(i, 5)}"`;
+      const last = i === lista.length - 1 ? ' style="margin-bottom:0"' : "";
+      const falta = p.falta
+        ? `
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> ${p.falta}</div>`
+        : "";
+      return `
+    <div class="project-card" data-scroll="from-left"${delay}${last}>
+${p.html}${falta}
+    </div>
+`;
+    })
+    .join("");
+}
+
+export const ROOM_BODY: Record<string, string> = {
+  perfil: `
+    <div class="profile-grid">
+
+      <!-- Columna izquierda: tarjeta de perfil + ilusión -->
+      <div class="profile-aside">
+        <div class="profile-card" data-scroll="from-left">
+          <!--
+            FOTO: descomenta <img> y comenta .photo-ph-inner para activar
+            O usa URL directa: src="https://url-de-tu-foto.jpg"
+          -->
+          <div class="photo-placeholder" id="photo-slot">
+            <img src="https://lh3.googleusercontent.com/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c"
+                 alt="Christian Luciani"
+                 onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex'">
+            <div class="photo-ph-inner" id="photo-fallback" style="display:none">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,201,192,0.4)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <span>Añadir foto local</span>
+            </div>
+          </div>
+          <p class="profile-text">Físico con más de 20 años en la intersección entre investigación científica, docencia universitaria e innovación educativa.</p>
+          <br>
+          <p class="profile-text" style="color:var(--muted);font-size:.95rem">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
+          <br>
+          <p class="profile-text" style="color:var(--muted);font-size:.95rem">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
+        </div>
+
+        <!-- Ilusión: Cubo de Necker animado -->
+        <!-- PROMPT PARA GENERAR SVG EN OTRA SESIÓN:
+             "Crea un SVG del Cubo de Necker (1832) en perspectiva isométrica.
+              Líneas en #00c9c0 sobre fondo transparente. 300×300px.
+              El cubo debe mostrar ambigüedad perceptual perfecta entre
+              dos orientaciones posibles. Sin relleno, solo bordes." -->
+        <div class="illusion-frame" style="height:250px;margin-top:2.5rem;" data-scroll="zoom-in" data-delay="2">
+          <canvas id="c-necker-ill" style="width:100%;height:100%"></canvas>
+          <div class="illusion-label">CUBO DE NECKER · 1832</div>
+          <a class="illusion-link" href="https://michaelbach.de/ot/sze-necker/" target="_blank" rel="noopener">↗ michaelbach.de</a>
+        </div>
+      </div>
+
+      <!-- Columna derecha: formación y eventos -->
+      <div>
+        <div class="entry" data-scroll="from-right">
+          <div class="entry-period">2006 – 2008</div>
+          <div class="entry-title">Especialización en Audiovisuales</div>
+          <div class="entry-org">Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="1">
+          <div class="entry-period">2003 – 2006</div>
+          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos (ABD)</div>
+          <div class="entry-org">Universidad Simón Bolívar, Venezuela</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="2">
+          <div class="entry-period">1997 – 2003</div>
+          <div class="entry-title">Licenciatura en Física</div>
+          <div class="entry-org">Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536</div>
+        </div>
+
+        <div class="quote-block" data-scroll="zoom-in" data-delay="3">
+          La física me enseñó a ver patrones donde otros ven ruido.<br>
+          El cine me enseñó a hacer ese patrón visible para otros.
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="3">
+          <div class="entry-period">2003 · CERN · BECA</div>
+          <div class="entry-title">II Latin American School of High Energy Physics</div>
+          <div class="entry-org">San Miguel Regla, México</div>
+        </div>
+      </div>
+    </div><!-- /profile-grid -->
+  </div><!-- /room-content -->
+</section>
+<div class="room-divider"></div>
 
 
 `,
+  proyectos: `${tarjetas(publicados)}${TALLER_DRAHMA}`,
+  bastidor: `${tarjetas(enDesarrollo)}${CIERRE_BASTIDOR}`,
   experiencia: `
     <div class="two-col">
       <!-- Columna A -->
@@ -693,7 +661,7 @@ export const ROOM_BODY: Record<string, string> = {
 `,
   grafo: `    <p data-scroll="up" data-delay="2" style="color:var(--muted);font-style:italic;max-width:560px;margin:0 auto 1.5rem;font-size:.95rem">
       No solo amplitud: la conexión entre áreas, trabajos y proyectos.
-      Un nodo <span style="color:var(--gold)">dorado</span> aún no está publicado.
+      <span style="color:var(--teal)">Teal</span>, publicado · <span style="color:#8892a0">gris</span>, en desarrollo · <span style="color:var(--gold)">dorado</span>, todavía una idea.
     </p>
     <div style="position:relative;height:min(64vh,560px);width:100%" id="graph-stage">
       <canvas id="c-graph" style="width:100%;height:100%"></canvas>

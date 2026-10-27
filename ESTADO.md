@@ -157,7 +157,10 @@ https://christianluciani.github.io/  (raíz · base "/")
 - Enlaces a ilusiones ópticas (michaelbach.de) en cada `.illusion-frame`
 - i18n ES/EN (toggle + diccionario `MAP`) para el sitio; print-CV/imprimible actualmente solo en ES
 - Necker BG full-width en Sala 01
-- Sala 02 Proyectos: Kontablo, ZENTROPY, Esteléctica, CLAPPS.AI, NOOS, Drahma (showcase integrado, ya no es sala aparte)
+- Sala de Proyectos dividida por etapa (`src/data/proyectos.ts`): **La Exposición** (publicado y
+  auditable: Kontablo, Drahma, profile-as-code) + **El Bastidor** (en desarrollo: ZENTROPY,
+  Esteléctica, CLAPPS.AI, NOOS, Topia, Nelson Companion, Physics Lab Book; cada ficha declara
+  qué le falta para graduarse). Conteos de subtítulo derivados de la lista, no hardcodeados.
 - Manual de estilo embebido en comentario HTML
 - Estructura modular: docs/CONTRIBUTING.md, docs/STYLE_GUIDE.md, build.sh, ESTADO.md
 

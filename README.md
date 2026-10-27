@@ -37,14 +37,25 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | Sala | Contenido | Ilusión óptica |
 |------|-----------|----------------|
 | 00 · Entrada | Intro (frase → nombre) + Hero / museo | Cubos isométricos |
-| 01 · Perfil | Formación + perfil | Cubo de Necker (grid BG + frame) |
-| 02 · Proyectos | Kontablo / ZENTROPY / Esteléctica / CLAPPS · Noesis/Noetix / NOOS / **Drahma** (showcase) | Campo de Mandelbrot |
-| 03 · Trayectoria | Experiencia 2003–presente | Interferencia de doble fuente |
-| ~~04 · Evidencia~~ | ~~Galería (pendiente de llenar)~~ — *oculta* | — |
-| 04 · Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
-| 05 · Competencias | Agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
-| 06 · La Constelación | Recapitulación: Mapa de conexiones (áreas · proyectos · no-publicados) | Constelación interactiva (canvas, mapa de conexiones) |
-| 07 · Conectar | Redes y contacto | — |
+| 01 · La Exposición | **Obra publicada y auditable** — Kontablo · Drahma (showcase) · profile-as-code | Campo de Mandelbrot |
+| 02 · El Bastidor | **En desarrollo** — ZENTROPY · Esteléctica · CLAPPS / Noesis-Noetix · NOOS · Topia · Nelson Companion · Physics Lab Book | Campo de Mandelbrot |
+| 03 · El Taller | Competencias: agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
+| 04 · El Recorrido | Trayectoria 2003–presente | Interferencia de doble fuente |
+| 05 · La Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
+| 06 · La Constelación | Mapa de conexiones (áreas · proyectos) | Constelación interactiva |
+| 07 · El Visitante | Perfil y formación | Cubo de Necker |
+| 08 · El Buzón | Redes y contacto | Copo de Koch |
+| ~~El Archivo~~ | ~~Galería~~ — *oculta, pendiente de llenar* | — |
+
+**La división de salas no se decide a mano.** `src/data/proyectos.ts` declara la `etapa`
+de cada proyecto y los subtítulos derivan su conteo de ahí (nunca un "6 PROYECTOS"
+hardcodeado, que miente en cuanto entra o sale una ficha):
+
+- **publicado** = existe un artefacto que un tercero puede inspeccionar sin pedir permiso
+  (repositorio público con licencia y release, DOI o URL viva). Es el mismo criterio que el
+  SSOT de `profile-data` deriva con `projects[].artifactRefs` (`profile-as-code#333`).
+- **desarrollo** = todavía no hay artefacto público. Cada ficha de El Bastidor declara
+  `falta`: qué la haría graduarse a La Exposición.
 
 ## Flujo de trabajo
 

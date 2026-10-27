@@ -17,9 +17,14 @@
  * - `titulo`/`subtitulo` ES deben ser byte-idénticos al HTML actual: el i18n busca
  *   claves con `norm()` (colapso de espacios), así que el subtítulo en SALAS define
  *   la clave del MAP. El test de paridad (src/cv/parity.test.ts) lo garantiza.
+ * - `subtitulo` NO lleva conteos escritos a mano: se derivan de `src/data/proyectos.ts`
+ *   (la etapa de cada proyecto decide la sala). Un "6 PROYECTOS" hardcodeado miente en
+ *   cuanto entra o sale una ficha.
  * - `ilusion` es el id del canvas de ilusión de la sala — metadato de preparación
  *   para el museo 3D (reutilizaría SALAS sin re-definir la estructura).
  */
+
+import { enDesarrollo, publicados } from "../data/proyectos.ts";
 
 export interface SalaDef {
   /** id del <section> sin prefijo: 'perfil' → <section id="room-perfil"> */
@@ -55,10 +60,19 @@ export const SALAS: SalaDef[] = [
     id: "proyectos",
     titulo: "La <em>Exposición</em>",
     tituloEn: "The <em>Exhibition</em>",
-    subtitulo: "INVESTIGACIÓN EN CURSO · DESARROLLO ACTIVO · 2024–2026 · 6 PROYECTOS",
-    subtituloEn: "ONGOING RESEARCH · ACTIVE DEVELOPMENT · 2024–2026 · 6 PROJECTS",
+    subtitulo: `OBRA PUBLICADA · ARTEFACTO AUDITABLE · ${publicados.length} PROYECTOS`,
+    subtituloEn: `PUBLISHED WORK · AUDITABLE ARTIFACT · ${publicados.length} PROJECTS`,
     navLabel: "Exposición",
     ilusion: "c-proyectos"
+  },
+  {
+    id: "bastidor",
+    titulo: "El <em>Bastidor</em>",
+    tituloEn: "The <em>Studio</em>",
+    subtitulo: `EN DESARROLLO · PROTOTIPOS E IDEAS · ${enDesarrollo.length} PROYECTOS`,
+    subtituloEn: `IN DEVELOPMENT · PROTOTYPES AND IDEAS · ${enDesarrollo.length} PROJECTS`,
+    navLabel: "Bastidor",
+    ilusion: "c-bastidor"
   },
   {
     id: "competencias",
