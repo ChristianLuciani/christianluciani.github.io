@@ -286,6 +286,7 @@ h1 em {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
+.grid.grid-1 { grid-template-columns: minmax(0, 1fr); }
 .card {
   position: relative;
   display: flex;

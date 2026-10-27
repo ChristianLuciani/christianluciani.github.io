@@ -6,16 +6,16 @@ Experimento visual para decidir **dos cosas independientes** de la animación:
 2. el **tempo base** de la página (`REF 0,70 s` o `REF 0,30 s`).
 
 Son seis páginas de la matriz (3 leyes × 2 tempos), la **séptima** (una sola
-aceleración para todo el recorrido) y una portada, con la geometría real del
-mark Espirángulo (21 conexiones, `CONFIG_AUREA`). El build las publica en
-`/laboratorio/` y también se abren directo desde `file://`, sin servidor. Cada
-una de la matriz enlaza a sus dos hermanas de ley y a su equivalente en el otro
-tempo; la portada indexa las siete.
+aceleración para todo el recorrido), la **octava** (canon áureo) y una portada,
+con la geometría real del mark Espirángulo (21 conexiones, `CONFIG_AUREA`). El
+build las publica en `/laboratorio/` y también se abren directo desde
+`file://`, sin servidor. Cada una de la matriz enlaza a sus dos hermanas de ley
+y a su equivalente en el otro tempo; la portada indexa las ocho.
 
 ## Abrir
 
 Ruta publicada (activa al mergear y desplegar): <https://christianluciani.github.io/laboratorio/>. La portada
-(`index.html`) permite entrar a las siete; el mark minimizado del sitio abre esa
+(`index.html`) permite entrar a las ocho; el mark minimizado del sitio abre esa
 misma ruta.
 
 ```bash
@@ -34,6 +34,9 @@ open proposals/logo-timing/criterio-3-aceleracion-rapida.html
 
 # séptima · aceleración global
 open proposals/logo-timing/propuesta-07-global.html
+
+# octava · canon áureo
+open proposals/logo-timing/propuesta-08-aurea.html
 ```
 
 Las seis páginas de la matriz tienen un selector `REF 0,70 s / 0,30 s` para
@@ -126,6 +129,39 @@ página repite los ticks después del settle (`src/ts/app/tempo.ts`). El criteri
 por link sigue disponible para comparar: reparte menos (47–300 ms) y tiene 21
 reinicios.
 
+## Propuesta 08 · Canon áureo
+
+La misma ley 07 (una `a` global sobre los 21 links) con un **envelope temporal
+φ**:
+
+```
+T_ref = 300 ms
+entrada = T_ref / φ = 185,41 ms
+anillo = T_ref × φ = 485,41 ms
+a = 419,69 px/s²
+```
+
+- Conexiones: **3,57 s** (3,76 s con entrada).
+- Por link: **0,101–0,300 s**; la ley interna sigue saliendo de la geometría.
+- φ ordena el marco (entrada, anillo), **no** los intervalos internos: forzar φ
+  dentro de cada link lo desacopla de los nodos y rompe la lectura del tick.
+- Este es el límite honesto de “tiempo áureo”: la geometría y el envelope
+  pueden ser φ; la secuencia de 21 intervalos no, porque está atada a los lados.
+
+## Anillos de choque
+
+En todas las páginas, el anillo que nace cuando un link toca su nodo tiene:
+
+- **radio final = largo del link entrante** (el anillo pasa por el nodo de
+  origen);
+- **duración fija** = `T_ref × φ = 485,41 ms`;
+- por lo tanto, **velocidad de expansión = L / 485,41 ms**: los links cortos
+  expanden lento y los largos rápido.
+
+Antes el radio era constante (42 unidades); ahora el tamaño del anillo cuenta
+el lado que lo produjo. El círculo se recorta contra el viewBox en los lados
+más largos, pero el arco alcanza el nodo de origen.
+
 ## Alcance visual
 
 La geometría es la real (`CONFIG_AUREA`), pero el acabado es de laboratorio: la C
@@ -194,7 +230,7 @@ exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
 
 | Archivo | Rol |
 |---|---|
-| `index.html` | portada del laboratorio (séptima + seis propuestas) |
+| `index.html` | portada del laboratorio (octava + séptima + seis propuestas) |
 | `index.css` | estilos de la portada |
 | `criterio-1-intervalo.html` | ley 01, REF 0,70 s |
 | `criterio-2-velocidad.html` | ley 02, REF 0,70 s |
@@ -203,9 +239,10 @@ exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
 | `criterio-2-velocidad-rapida.html` | ley 02, REF 0,30 s |
 | `criterio-3-aceleracion-rapida.html` | ley 03, REF 0,30 s |
 | `propuesta-07-global.html` | séptima: aceleración global, REF 0,30 s |
+| `propuesta-08-aurea.html` | octava: canon áureo, REF 0,30 s |
 | `lab.css` | estilos compartidos |
 | `lab.js` | motor de render y reloj (vanilla, sin build) |
-| `geometry.data.js` | **generado**: geometría, constelación y los cronogramas de ambas familias |
+| `geometry.data.js` | **generado**: geometría, constelación y los cronogramas de las familias (0,70 / 0,30 / áurea) |
 
 ## Regenerar los datos
 
@@ -213,7 +250,7 @@ exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
 node tools/logo/timing-lab.mjs   # o: npm run logo:timing
 ```
 
-El generador importa `tools/logo/geometry.mjs`, calcula las dos familias (leyes
-1–3) y la global, y falla si alguna referencia no da su `T_ref`, si una cadena no
-es contigua o si alguna duración es ≤ 0. La página no recalcula nada: consume el
-dato horneado.
+El generador importa `tools/logo/geometry.mjs`, calcula las familias (leyes
+1–4, incluida la global) y la variante áurea, y falla si alguna referencia no da
+su `T_ref`, si una cadena no es contigua o si alguna duración es ≤ 0. La página
+no recalcula nada: consume el dato horneado.

@@ -45,6 +45,10 @@
   const NODES = G.nodes;
   const REF_I = G.refIndex;
   const LAST = SEGS.length - 1;
+  /* Anillos de choque: radio final = largo del link que golpea; duración fija,
+     así la velocidad de expansión varía con el lado y el anillo pasa por el
+     nodo de origen. */
+  const RING_MS = G.ringMs ?? 485.41;
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const $ = (id) => document.getElementById(id);
@@ -159,6 +163,7 @@
       class: "node-pulse",
       cx: n.x, cy: n.y, r: 8,
       stroke: n.color,
+      opacity: 0,
     }, g);
     const halo = E("circle", {
       class: "node-glow",
@@ -335,7 +340,7 @@
 
     if (clock < LEAD) {
       phase.textContent = "Entrada";
-      segLabel.textContent = `constelación · ${fmt(REF.tRefMs / 1000, 2)} s`;
+      segLabel.textContent = `constelación · ${fmt(REF.leadMs / 1000, 2)} s`;
       status.textContent = "Constelación de entrada";
     } else if (active >= 0) {
       phase.textContent = "Trazando";
@@ -377,19 +382,21 @@
       const dt = clock - arrival;
       if (dt >= 0) {
         const flash = Math.exp(-dt / 190);
-        const pulse = Math.exp(-dt / 330);
         el.core.setAttribute("r", (el.base * (1 + 0.5 * flash)).toFixed(2));
         el.core.setAttribute("opacity", (0.82 + 0.18 * flash).toFixed(3));
         el.halo.setAttribute("opacity", (0.16 + 0.2 * flash).toFixed(3));
         if (j > 0) {
-          el.pulse.setAttribute("r", (8 + 34 * (1 - pulse)).toFixed(2));
-          el.pulse.setAttribute("opacity", (0.55 * pulse).toFixed(3));
+          const age = clamp(dt / RING_MS, 0, 1);
+          const side = SEGS[j - 1].len;
+          el.pulse.setAttribute("r", (side * age).toFixed(2));
+          el.pulse.setAttribute("opacity", (0.55 * (1 - age)).toFixed(3));
         }
       } else {
         const tw = 0.3 + 0.08 * Math.sin((clock + j * 420) / 620);
         el.core.setAttribute("r", el.base.toFixed(2));
         el.core.setAttribute("opacity", tw.toFixed(3));
         el.halo.setAttribute("opacity", 0.08);
+        el.pulse.setAttribute("r", 0);
         el.pulse.setAttribute("opacity", 0);
       }
     }

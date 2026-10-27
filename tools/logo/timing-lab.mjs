@@ -32,7 +32,9 @@ const REPO = resolve(HERE, "../..");
 const OUT = resolve(REPO, "proposals/logo-timing");
 
 const REF_SPECS = [700, 300]; // ms: familia base y familia rápida
+const PHI = (1 + Math.sqrt(5)) / 2;
 const HOLD_MS = 1200;
+const GOLDEN = { key: "300aurea", tRefMs: 300, leadMs: 300 / PHI };
 
 const cfg = CONFIG_AUREA;
 const geo = buildGeometry(cfg.geometry);
@@ -76,8 +78,8 @@ function schedule(durations, lead) {
   };
 }
 
-function buildRef(tRefMs) {
-  const lead = tRefMs;
+function buildRef(tRefMs, leadMs = tRefMs) {
+  const lead = leadMs;
   const tRef = tRefMs / 1000;
   const vRef = refLen / tRef; // px/s
   const aRef = (2 * refLen) / (tRef * tRef); // px/s² per link
@@ -137,6 +139,12 @@ function buildRef(tRefMs) {
 }
 
 const refs = Object.fromEntries(REF_SPECS.map((ms) => [String(ms), buildRef(ms)]));
+/* 08 · canon áureo: misma ley 07, envelope temporal φ.
+   La entrada es T_ref/φ; el anillo/settle es T_ref×φ. Los 21 intervalos
+   internos siguen saliendo de la geometría: φ no se fuerza dentro de ellos
+   porque dejarían de coincidir con los nodos. */
+refs[GOLDEN.key] = { ...buildRef(GOLDEN.tRefMs, GOLDEN.leadMs), kind: "aurea", phi: PHI };
+refs[GOLDEN.key].ringMs = n2(GOLDEN.tRefMs * PHI);
 
 /* ── nodos: estrella por punto (color/tamaño deterministas de marca) ───── */
 const nodes = [segs[0].a, ...segs.map((s) => s.b)].map((p, j) => {
@@ -182,9 +190,9 @@ const ghost = geo.outer.map((p) => ({ x: n2(p.x), y: n2(p.y) }));
 /* ── chequeos: si el dato horneado no cumple, no se escribe ───────────── */
 const fail = [];
 const near = (a, b, eps = 0.02) => Math.abs(a - b) <= eps;
-for (const tRefMs of REF_SPECS) {
-  const family = refs[String(tRefMs)];
-  const label = `ref ${tRefMs} ms`;
+for (const tRefMs of [...REF_SPECS, GOLDEN.tRefMs]) {
+  const family = refs[String(tRefMs)] ?? refs[GOLDEN.key];
+  const label = family.kind === "aurea" ? `ref ${GOLDEN.key}` : `ref ${tRefMs} ms`;
   if (!near(family.timing[1].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 1 ≠ T_ref`);
   if (!near(family.timing[2].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 2 ≠ T_ref`);
   if (!near(family.timing[3].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 3 ≠ T_ref`);
@@ -205,6 +213,9 @@ const data = {
   source: "tools/logo/geometry.mjs · CONFIG_AUREA",
   generatedBy: "node tools/logo/timing-lab.mjs",
   tRefs: REF_SPECS,
+  goldenKey: GOLDEN.key,
+  phi: PHI,
+  ringMs: n2(GOLDEN.tRefMs * PHI),
   holdMs: HOLD_MS,
   refIndex: segs.length - 1,
   refLen,
@@ -229,9 +240,9 @@ writeFileSync(
 
 console.log(`✓ proposals/logo-timing/geometry.data.js`);
 console.log(`  ${segs.length} conexiones · recorrido ${totalLen} px · referencia ${refLen} px (link ${ref.i})`);
-for (const tRefMs of REF_SPECS) {
-  const family = refs[String(tRefMs)];
-  console.log(`  ── REF ${(tRefMs / 1000).toFixed(2)} s (entrada ${(family.leadMs / 1000).toFixed(2)} s)`);
+for (const key of [...REF_SPECS.map(String), GOLDEN.key]) {
+  const family = refs[key];
+  console.log(`  ── ${family.kind === "aurea" ? "REF 0.30 s · canon áureo" : `REF ${(family.tRefMs / 1000).toFixed(2)} s`} (entrada ${(family.leadMs / 1000).toFixed(2)} s)`);
   for (const k of [1, 2, 3, 4]) {
     const t = family.timing[k];
     console.log(
