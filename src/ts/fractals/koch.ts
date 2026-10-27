@@ -1,4 +1,5 @@
 import { isCanvasVisible, watchCanvas } from "../app/canvasWatch";
+import { tempoStep } from "../app/tempo";
 
 export interface Point {
   x: number;
@@ -127,7 +128,7 @@ export function mountKochArt(
 
   function frame() {
     if (!reduceMotion && isCanvasVisible(canvas.id)) {
-      angle += speed;
+      angle += speed * tempoStep();
       draw();
     }
     raf = window.requestAnimationFrame(frame);

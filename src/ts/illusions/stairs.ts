@@ -1,5 +1,6 @@
 /** CANVAS: Escalera de Penrose (Sala 02 / Drahma showcase) — port de script inline. */
 import { isCanvasVisible, watchCanvas } from "../app/canvasWatch";
+import { tempoStep } from "../app/tempo";
 
 export const id = "c-stairs-ill";
 
@@ -52,7 +53,7 @@ export function mount(canvas: HTMLCanvasElement): void {
       ctx.lineTo(x1, y1 - riseNow - 8);
       ctx.stroke();
     }
-    t++;
+    t += tempoStep();
     if (isCanvasVisible(id)) requestAnimationFrame(draw);
   }
   watchCanvas(canvas, draw);

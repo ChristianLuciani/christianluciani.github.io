@@ -75,14 +75,19 @@ const CONFIG = {
   ghostOutline: true,      // arista fantasma del lado abierto (refuerza la lectura de "C")
 
   timing: {
-    start: 700,   // la constelación se ve primero; el espiral arranca después
-    stagger: 235, // ms entre líneas al final (el ritmo de la C se mantiene)
-    staggerFast: 110, // ms entre líneas al arranque (explosivo)
-    seg: 460,     // duración del trazado de una línea al final
-    segFast: 260, // duración al arranque (explosivo)
-    segC: 640,    // duración del trazado de las líneas de la "C"
+    /* 07 · aceleración global: una sola `a` sobre todo el recorrido, sin
+       reinicios. Se calibra para que el último tramo de la C dure tRef. */
+    mode: "global",
+    tRef: 300,    // ms del último tramo de la C (el tick final)
+    start: 300,   // constelación antes del primer link
     hotFade: 500, // ms en que una línea baja de intensidad al chocar con su nodo
     settlePad: 420,
+    /* fallback: si mode !== "global", se usa el ritmo anterior por rampa */
+    stagger: 235,
+    staggerFast: 110,
+    seg: 460,
+    segFast: 260,
+    segC: 640,
   },
 };
 
@@ -370,19 +375,70 @@ function render() {
   const { segs, outer } = buildGeometry(CONFIG.geometry);
   const T = CONFIG.timing;
   const maxIdx = segs.length - 1;
-  // arranque explosivo: los primeros tramos van rápido y el ritmo decae
-  // hasta el ritmo final — el de la C, que se mantiene
   const n = segs.length;
-  const ramp = i => 1 - Math.pow(1 - i / (n - 1), CONFIG.timing.accelRamp || 3);
   const delays = [], durs = [];
-  let acc = T.start;
-  for (let i = 0; i < n; i++) {
-    delays.push(acc);
-    durs.push(i >= n - 2 ? T.segC : lerp(T.segFast, T.seg, ramp(i)));
-    acc += lerp(T.staggerFast, T.stagger, ramp(i));
+  let tempoDetail = null;
+  if (T.mode === "global") {
+    /* s(t) = ½·a·t²; la referencia (último tramo de la C) fija a.
+       Cada link arranca cuando el anterior llega: no hay stagger. */
+    const cum = [];
+    let s = 0;
+    for (const seg of segs) {
+      s += Math.hypot(seg.b.x - seg.a.x, seg.b.y - seg.a.y);
+      cum.push(s);
+    }
+    const sTotal = cum[n - 1];
+    const sPrev = cum[n - 2];
+    const tRef = (T.tRef || 300) / 1000;
+    const a = 2 * Math.pow(Math.sqrt(sTotal) - Math.sqrt(sPrev), 2) / (tRef * tRef);
+    const tOf = d => Math.sqrt((2 * d) / a);
+    let prev = 0;
+    for (let i = 0; i < n; i++) {
+      const st = tOf(prev) * 1000;
+      const en = tOf(cum[i]) * 1000;
+      delays.push(T.start + st);
+      durs.push(en - st);
+      prev = cum[i];
+    }
+    tempoDetail = {
+      mode: "global", tRef: T.tRef, lead: T.start, a,
+      intervals: durs.map(v => +v.toFixed(2)),
+      arrivals: delays.map((d, i) => +(d + durs[i]).toFixed(2)),
+      total: +(delays[n - 1] + durs[n - 1]).toFixed(2),
+    };
+  } else {
+    // ritmo anterior por rampa (fallback de la propuesta standalone)
+    const ramp = i => 1 - Math.pow(1 - i / (n - 1), CONFIG.timing.accelRamp || 3);
+    let acc = T.start;
+    for (let i = 0; i < n; i++) {
+      delays.push(acc);
+      durs.push(i >= n - 2 ? T.segC : lerp(T.segFast, T.seg, ramp(i)));
+      acc += lerp(T.staggerFast, T.stagger, ramp(i));
+    }
   }
   const segDelay = i => delays[i];
   const segDur = i => durs[i];
+  /* Easing local de la 07: progreso exacto de s(t) dentro del tramo (o del
+     span de dos tramos para la C). `linear()` mantiene la curva; si el browser
+     no lo soporta, cae a una ease-in equivalente. */
+  const supportsLinear = typeof CSS !== "undefined"
+    && CSS.supports && CSS.supports("animation-timing-function", "linear(0, 1)");
+  const globalEase = (i, count = 1) => {
+    if (T.mode !== "global") return "cubic-bezier(.19,1,.22,1)";
+    const t0 = (delays[i] - T.start) / 1000;
+    const t1 = (delays[i + count - 1] + durs[i + count - 1] - T.start) / 1000;
+    const den = t1 * t1 - t0 * t0;
+    if (!(den > 0)) return "linear";
+    if (!supportsLinear) return "cubic-bezier(.55,.06,.68,.19)";
+    const pts = [];
+    for (let k = 1; k < 8; k++) {
+      const u = k / 8;
+      const t = t0 + u * (t1 - t0);
+      const p = (t * t - t0 * t0) / den;
+      pts.push(`${p.toFixed(4)} ${(u * 100).toFixed(1)}%`);
+    }
+    return `linear(0, ${pts.join(", ")}, 1)`;
+  };
   /* Hooks de MEDICIÓN (no cambian el render): el cronograma declarado —los
      arrays delays[]/durs[] del ADR-lite de #55— y los anclajes de la C. El gate
      los lee en vez de inferirlos del DOM, donde la C ahora es una banda con
@@ -390,6 +446,12 @@ function render() {
   svg.dataset.schedule = JSON.stringify({
     delays: delays.map(v => +v.toFixed(1)), durs: durs.map(v => +v.toFixed(1)),
   });
+  /* El cronograma viaja al clock de la página: ticks en cada choque de nodo.
+     El clock sigue latiendo con los mismos intervalos después del settle. */
+  if (tempoDetail && !reduced) {
+    svg.dataset.tempo = JSON.stringify(tempoDetail);
+    window.dispatchEvent(new CustomEvent("espirangulo:tempo", { detail: tempoDetail }));
+  }
   /* Intención de marca (decisión #67): la punta SÍ florece al apagarse, hasta
      este tope. Sin esta declaración el gate lo lee como destello — con ella lo
      acota, y el rebote (overshoot) sigue prohibido. */
@@ -561,7 +623,7 @@ function render() {
     line.setAttribute("stroke-dashoffset", len);
     const draw = line.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+      { duration: segDur(i), delay: segDelay(i), easing: globalEase(i), fill: "both" }
     );
     // blindaje: al terminar el trazado, la línea queda como trazo simple (sin dash)
     after(draw, () => {
@@ -576,7 +638,7 @@ function render() {
     h.setAttribute("stroke-dashoffset", len);
     h.animate(
       [{ strokeDashoffset: len }, { strokeDashoffset: 0 }],
-      { duration: segDur(i), delay: segDelay(i), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+      { duration: segDur(i), delay: segDelay(i), easing: globalEase(i), fill: "both" }
     );
     const cool = h.animate( // …y baja de intensidad al chocar con su nodo
       [{ opacity: .55 }, { opacity: 0 }],
@@ -596,7 +658,7 @@ function render() {
     reveal.setAttribute("stroke-dashoffset", cLen);
     const cDraw = reveal.animate(
       [{ strokeDashoffset: cLen }, { strokeDashoffset: 0 }],
-      { duration: cWin, delay: segDelay(cIdx), easing: "cubic-bezier(.19,1,.22,1)", fill: "both" }
+      { duration: cWin, delay: segDelay(cIdx), easing: globalEase(cIdx, 2), fill: "both" }
     );
     after(cDraw, () => {
       reveal.removeAttribute("stroke-dasharray");

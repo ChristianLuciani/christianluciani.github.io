@@ -120,8 +120,11 @@ t(S) = √(2·S / a)
   reinicios.
 
 Es la alternativa que más se acerca a un “crecimiento continuo” y la que elegiría
-hoy para la animación principal. El criterio 3 por link sigue disponible para
-comparar: reparte menos (47–300 ms) y tiene 21 reinicios.
+hoy para la animación principal. **Ya es la animación principal del sitio**
+(2026-10-27): `aurea7.html` usa esta ley y publica su cronograma; el clock de la
+página repite los ticks después del settle (`src/ts/app/tempo.ts`). El criterio 3
+por link sigue disponible para comparar: reparte menos (47–300 ms) y tiene 21
+reinicios.
 
 ## Alcance visual
 

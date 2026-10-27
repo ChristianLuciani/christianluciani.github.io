@@ -260,7 +260,7 @@ export function startupProfile(delays, durs, { windowMs = 2500, stepMs = 10 } = 
   const landedBy = (t) => delays.filter((d, i) => d + durs[i] <= t).length;
   const t0 = delays[0];
   return {
-    n: delays.length, staggers, t0,
+    n: delays.length, staggers, durs,
     firstStagger: staggers[0] ?? NaN, lastStagger: staggers.at(-1) ?? NaN,
     peakConcurrency: peak, monotone: staggers.every((v, i) => i === 0 || v >= staggers[i - 1] - 1e-6),
     landed: { "1.0s": landedBy(t0 + 1000), "1.5s": landedBy(t0 + 1500), "2.0s": landedBy(t0 + 2000) },
@@ -272,6 +272,18 @@ export function startupProfile(delays, durs, { windowMs = 2500, stepMs = 10 } = 
 export function checkStartup(profile, { timing, thresholds = THRESHOLDS } = {}) {
   const fails = [];
   const { firstStagger, lastStagger, peakConcurrency, monotone } = profile;
+  /* 07 · aceleración global: la ley ya no es “estallido con rampa” sino una
+     cadena secuencial cuyo último tramo (la C) fija T_ref. Los invariantes
+     cambian: no hay concurrencia ni contraste de stagger que exigir. */
+  if (timing?.mode === "global") {
+    if (!profile.durs?.length) return ["el arranque no tiene tramos medibles (¿sin cronograma?)"];
+    if (profile.durs.some((d) => !(d > 0))) fails.push("el tempo global tiene una duración no positiva");
+    if (Math.abs(profile.durs.at(-1) - timing.tRef) > 1)
+      fails.push(`el último tramo no dura T_ref: ${profile.durs.at(-1).toFixed(0)}ms vs ${timing.tRef}ms`);
+    if (peakConcurrency.n > 1)
+      fails.push(`el tempo global no es secuencial: ${peakConcurrency.n} tramos a la vez`);
+    return fails;
+  }
   if (!Number.isFinite(firstStagger) || !Number.isFinite(lastStagger))
     return ["el arranque no tiene tramos medibles (¿sin cronograma?)"];
   if (!monotone) fails.push("el tempo del arranque no es monótono: la rampa vuelve a acelerar (el contraste se lee brusco)");

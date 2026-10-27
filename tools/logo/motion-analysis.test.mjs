@@ -253,6 +253,23 @@ describe("motion-analysis — arranque (criterio 2 de #55)", () => {
     expect(p.landed["2.0s"]).toBeGreaterThan(p.landed["1.0s"]);
   });
 
+  it("global 07: cadena secuencial, último tramo = T_ref", () => {
+    const gDurs = [225.1, 141.9, 131, 121.8, 101.4, 117.5, 122.4, 108.3, 130.7, 140.3, 126.7,
+      155.3, 169, 154.1, 190.2, 208.3, 190.9, 236.7, 260.2, 239.1, 300];
+    const gDelays = [];
+    let acc = 300;
+    for (const d of gDurs) { gDelays.push(+acc.toFixed(1)); acc += d; }
+    const gTiming = { mode: "global", tRef: 300, lead: 300 };
+    const p = startupProfile(gDelays, gDurs);
+    expect(p.peakConcurrency.n).toBe(1);
+    expect(p.durs.at(-1)).toBe(300);
+    expect(checkStartup(p, { timing: gTiming })).toEqual([]);
+    const bad = [...gDurs];
+    bad[bad.length - 1] = 250;
+    expect(checkStartup(startupProfile(gDelays, bad), { timing: gTiming }).join("\n"))
+      .toMatch(/el último tramo no dura T_ref/);
+  });
+
   it("un cronograma vacío no rompe: devuelve un perfil inocuo", () => {
     const p = startupProfile([], []);
     expect(p.n).toBe(0);

@@ -1,5 +1,6 @@
 /** CANVAS: Triángulo de Penrose pulsante (Sala 04 sidebar) — port de script inline. */
 import { isCanvasVisible, watchCanvas } from "../app/canvasWatch";
+import { tempoStep } from "../app/tempo";
 
 export const id = "c-penrose";
 
@@ -59,7 +60,7 @@ export function mount(canvas: HTMLCanvasElement): void {
     ctx.lineTo(pts[0][0] - thick * 0.15, pts[0][1] + thick * 0.6);
     ctx.stroke();
 
-    t++;
+    t += tempoStep();
     if (isCanvasVisible(id)) requestAnimationFrame(draw);
   }
   watchCanvas(canvas, draw);

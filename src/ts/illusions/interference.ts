@@ -1,5 +1,6 @@
 /** CANVAS: Patrón de interferencia de doble fuente (Sala 03 / Experiencia) — port de script inline. */
 import { isCanvasVisible, watchCanvas } from "../app/canvasWatch";
+import { tempoStep } from "../app/tempo";
 
 export const id = "c-exp";
 
@@ -36,7 +37,7 @@ export function mount(canvas: HTMLCanvasElement): void {
       }
     }
     ctx.globalAlpha = 1;
-    t++;
+    t += tempoStep();
     if (isCanvasVisible(id)) requestAnimationFrame(draw);
   }
   watchCanvas(canvas, draw);
