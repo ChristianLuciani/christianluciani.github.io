@@ -36,9 +36,9 @@ const COVER_TOP = `<button id="btn-lang" type="button" aria-label="Switch langua
 
 <!-- ── MARK DE MARCA / LOADER ─────────────────────── -->
 <!-- SVG animado (src/ts/brand/logoAnim.js): loader y logo permanente.
-     Es un botón (Ir al inicio) habilitado al minimizarse; en el loader está
-     deshabilitado y no es focusable. -->
-<button id="brand-logo" type="button" aria-label="Ir al inicio" disabled></button>
+     Al minimizarse se habilita y abre el laboratorio temporal; en el loader
+     está deshabilitado y no es focusable. -->
+<button id="brand-logo" type="button" aria-label="Abrir el Laboratorio temporal" title="Laboratorio temporal" disabled></button>
 
 <div id="loader">
   <div id="intro-block">

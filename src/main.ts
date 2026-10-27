@@ -41,6 +41,10 @@ const reduceMotion =
 const SAFETY_MINIMIZE_DELAY_MS = 60000; // red de seguridad: la intro lo resuelve (~10s)
 const REDUCED_MINIMIZE_DELAY_MS = 300; // reduced-motion: ocultar ya
 
+// El mark minimizado abre el laboratorio temporal (portada de propuestas).
+// En dev la fuente vive en proposals/; en build se publica en /laboratorio/.
+const LAB_URL = import.meta.env.DEV ? "/proposals/logo-timing/" : "/laboratorio/";
+
 const CANVAS_MODULES: CanvasModule[] = [
   { id: neckerBgId, mount: (c) => mountNeckerBg(c) },
   { id: neckerIllId, mount: (c) => mountNeckerIll(c) },
@@ -71,7 +75,7 @@ function init() {
   if (brand) {
     mountBrandLogo(brand);
     brand.addEventListener("click", () => {
-      document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
+      window.location.href = LAB_URL;
     });
     const minimize = () => {
       document.getElementById("loader")?.classList.add("hidden");

@@ -5,14 +5,22 @@ Experimento visual para decidir **dos cosas independientes** de la animación:
 1. la **ley de conexión** entre nodos (intervalo, velocidad o aceleración);
 2. el **tempo base** de la página (`REF 0,70 s` o `REF 0,30 s`).
 
-Son seis páginas independientes (3 leyes × 2 tempos), con la geometría real del
-logo principal (21 conexiones, `CONFIG_AUREA`). No tocan el sitio: se abren
-directo desde `file://`, sin servidor. Cada una enlaza a sus dos hermanas de
-ley y a su equivalente en el otro tempo; el README indexa las seis.
+Son seis páginas independientes (3 leyes × 2 tempos) más una portada, con la
+geometría real del logo principal (21 conexiones, `CONFIG_AUREA`). El build las
+publica en `/laboratorio/` y también se abren directo desde `file://`, sin
+servidor. Cada una enlaza a sus dos hermanas de ley y a su equivalente en el
+otro tempo; la portada indexa las seis.
 
 ## Abrir
 
+Ruta publicada (activa al mergear y desplegar): <https://christianluciani.github.io/laboratorio/>. La portada
+(`index.html`) permite entrar a las seis; el mark minimizado del sitio abre esa
+misma ruta.
+
 ```bash
+# portada del laboratorio
+open proposals/logo-timing/index.html
+
 # familia base · REF 0,70 s
 open proposals/logo-timing/criterio-1-intervalo.html
 open proposals/logo-timing/criterio-2-velocidad.html
@@ -124,10 +132,39 @@ Una variante híbrida razonable es **02 con un piso de duración (~120 ms)** par
 que los links internos no sean imperceptibles, o **01 con un techo** para los
 tramos cortos. El laboratorio muestra las leyes puras para poder decidir.
 
+## Nombre
+
+**Espirángulo** es el nombre de trabajo (espiral + triángulo). Funciona como
+portmanteau, es pronunciable en español y describe la geometría sin ser genérico.
+
+Alternativas si no se ratifica: *Espiral áurea* (descriptivo, pero compite con el
+concepto matemático), *La C áurea* (pone el foco en la firma, no en el espiral),
+*Triángulo espiral* (literal, sin carácter de marca).
+
+Pendiente de formalizar: (1) ratificar el nombre; (2) decidir su alcance (¿solo
+el laboratorio o también el sitio, el `alt` y el favicon?); (3) verificar
+colisión de uso/marca antes de publicarlo como nombre oficial. Hasta entonces,
+la portada lo marca como **nombre de trabajo**.
+
+## Publicación
+
+El build copia esta carpeta a `dist/laboratorio/` con el plugin
+`copyTimingLab` de `vite.config.ts`; el mark minimizado del sitio abre
+`/laboratorio/` (en desarrollo, `/proposals/logo-timing/`).
+
+Un subdominio real (`laboratorio.christianluciani.com`) no lo puede servir
+GitHub Pages por sí solo: requiere un dominio propio, un registro DNS `CNAME`
+hacia el host de Pages y un sitio Pages separado con su `CNAME`. Hoy el repo no
+tiene dominio propio; por eso la ruta publicada es `/laboratorio/`. Cuando
+exista dominio/DNS, se cambia la constante `LAB_URL` de `src/main.ts` y el
+`CNAME` del sitio del laboratorio.
+
 ## Archivos
 
 | Archivo | Rol |
 |---|---|
+| `index.html` | portada del laboratorio (sugerencia + seis propuestas) |
+| `index.css` | estilos de la portada |
 | `criterio-1-intervalo.html` | ley 01, REF 0,70 s |
 | `criterio-2-velocidad.html` | ley 02, REF 0,70 s |
 | `criterio-3-aceleracion.html` | ley 03, REF 0,70 s |
