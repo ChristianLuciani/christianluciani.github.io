@@ -190,9 +190,10 @@ const ghost = geo.outer.map((p) => ({ x: n2(p.x), y: n2(p.y) }));
 /* ── chequeos: si el dato horneado no cumple, no se escribe ───────────── */
 const fail = [];
 const near = (a, b, eps = 0.02) => Math.abs(a - b) <= eps;
-for (const tRefMs of [...REF_SPECS, GOLDEN.tRefMs]) {
-  const family = refs[String(tRefMs)] ?? refs[GOLDEN.key];
-  const label = family.kind === "aurea" ? `ref ${GOLDEN.key}` : `ref ${tRefMs} ms`;
+for (const key of [...REF_SPECS.map(String), GOLDEN.key]) {
+  const family = refs[key];
+  const tRefMs = family.tRefMs;
+  const label = family.kind === "aurea" ? `ref ${GOLDEN.key}` : `ref ${key} ms`;
   if (!near(family.timing[1].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 1 ≠ T_ref`);
   if (!near(family.timing[2].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 2 ≠ T_ref`);
   if (!near(family.timing[3].durations.at(-1), tRefMs)) fail.push(`${label}: criterio 3 ≠ T_ref`);
