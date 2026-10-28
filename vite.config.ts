@@ -3,10 +3,10 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 
-/* El favicon de marca vive en assets/brand/logo/ (out de
- * tools/logo/generate-logo.mjs — fuente única). Vite no publica assets
- * absolutos de la raíz (sólo public/), así que este plugin los copia a
- * dist/assets/brand/ en cada build: cero copias commiteadas, cero deriva. */
+/* Los 3 favicons son la copia vendored del brand kit canónico
+ * (cluciani-brand-kit@tag, pinneada en brand-kit.lock.json). Vite no publica
+ * assets absolutos de la raíz (sólo public/), así que este plugin los copia a
+ * dist/assets/brand/ en cada build; el espejo se verifica con brand:verify. */
 const FAVICON_FILES = [
   "favicon-aurea.svg",
   "favicon-aurea-32.png",

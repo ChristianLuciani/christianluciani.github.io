@@ -1,5 +1,11 @@
 # Plan — Migración de assets a CDN (agnóstica)
 
+> **Actualización 2026-10-27 — marca separada.** Los 3 favicons ya se resuelven
+> desde `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (deploy:
+> `vars.BRAND_KIT_CDN_BASE`); el OG y las 4 thumbs siguen en este repo. El
+> espejo local de marca está pinneado en `brand-kit.lock.json` y se verifica con
+> `npm run brand:verify`.
+
 Objetivo: servir imágenes (papers, galería, etc.) desde un CDN (Cloudinary, Cloudflare, etc.) cambiando solo configuración, sin acoplar el código al proveedor.
 
 > Decisión de proveedor y pipeline: [`docs/cdn-decision.md`](cdn-decision.md) (#57).

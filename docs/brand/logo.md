@@ -12,6 +12,13 @@
 > **Nombre del mark: Espirángulo** (espiral + triángulo), ratificado el
 > 2026-10-27. El nombre es del símbolo, no de la persona ni del sitio; el
 > wordmark sigue siendo «Christian Luciani».
+>
+> **Hogar canónico del mark estático:** `ChristianLuciani/cluciani-brand-kit`
+> (tag `v1.0.1`, commit `5a536e0`). Este repo es el **consumidor runtime**;
+> `assets/brand/logo/` es un espejo vendored pinneado en `brand-kit.lock.json`
+> y verificado con `npm run brand:verify`. No se edita a mano.
+> La **animación** y su geometría runtime viven acá; el brand kit sincroniza
+> fuente/gate/manual en #1.
 
 ---
 
