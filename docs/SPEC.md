@@ -118,7 +118,7 @@ arquitectura (duplicación), no una tarea.
 | publicaciones (title, venue, year, doi, url) | `profile-data/publications.yaml` | hecho |
 | skills + idiomas | `profile-data/skills.yaml` (+ `languages` v1.1) | hecho |
 | keywords SEO/GEO | `profile-data/keywords.yaml` | hecho |
-| títulos museísticos ("El Visitante") | `src/content/cv/museo.ts` | curación |
+| títulos museísticos ("El Autorretrato") | `src/content/cv/museo.ts` | curación |
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | curación + hecho |
 | estructura de salas (ids, ilusiones, nav/plano labels) | `src/content/cv/salas.ts` (ex `src/cv/salas.ts`) | presentación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | curación |

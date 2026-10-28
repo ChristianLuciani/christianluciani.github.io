@@ -7,7 +7,7 @@
  *     Es el mismo criterio que el SSOT de profile-data deriva con
  *     `projects[].artifactRefs` (profile-as-code#333), no una etiqueta escrita acá.
  *   · `desarrollo` = todavía no hay artefacto público; su ficha declara `falta`,
- *     es decir qué la haría graduarse a La Exposición.
+ *     es decir qué la haría graduarse a El Marco.
  *
  * `html` es la tarjeta sin la envoltura de scroll/delay: el renderer
  * (`tarjetas()` en sala_html) añade `data-scroll`/`data-delay` y, en El Bastidor,
@@ -22,7 +22,7 @@ export interface Proyecto {
   /** Nombre para lectores de pantalla y tests; la tarjeta lleva su propio <em>. */
   nombre: string;
   etapa: Etapa;
-  /** Qué le falta para pasar a La Exposición (solo `desarrollo`). */
+  /** Qué le falta para pasar a El Marco (solo `desarrollo`). */
   falta?: string;
   /** HTML interno de la tarjeta (.project-status + título + copy). */
   html: string;
@@ -180,7 +180,7 @@ export const PROYECTOS: readonly Proyecto[] = [
   }
 ];
 
-/** Obra publicada y auditable: lo que La Exposición puede colgar. */
+/** Obra publicada y auditable: lo que El Marco puede colgar. */
 export const publicados = PROYECTOS.filter((p) => p.etapa === "publicado");
 
 /** En desarrollo: prototipos, investigaciones e ideas, cada uno con su `falta`. */
