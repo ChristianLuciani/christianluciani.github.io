@@ -19,18 +19,18 @@ import { planoCellMeta } from "../templates/plano_html";
 
 const INDEX_HTML = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
 
-/** Orden de los <section class="room" id="room-X"> en el HTML. */
+/** Orden de los <section class="room [modificador]" id="room-X"> en el HTML. */
 function htmlRoomIds(): string[] {
-  const re = /<section class="room" id="room-([a-z]+)"/g;
+  const re = /<section class="room[^"]*" id="room-([a-z]+)"/g;
   const ids: string[] = [];
   let m: RegExpExecArray | null;
   while ((m = re.exec(INDEX_HTML))) ids.push(m[1]);
   return ids;
 }
 
-/** Bloque HTML de un <section class="room" id="room-X"> (hasta su </section>). */
+/** Bloque HTML de un <section class="room [modificador]" id="room-X">. */
 function htmlSectionBlock(id: string): string {
-  const start = INDEX_HTML.indexOf(`<section class="room" id="room-${id}"`);
+  const start = INDEX_HTML.search(new RegExp(`<section class="room[^"]*" id="room-${id}"`));
   expect(start).toBeGreaterThan(-1);
   const end = INDEX_HTML.indexOf("</section>", start);
   return INDEX_HTML.slice(start, end);
@@ -56,7 +56,7 @@ function htmlRoomSubtitle(id: string): string {
 
 /** Pares data-target/data-label del <nav id="nav"> en orden. */
 function htmlNavDots(): { target: string; label: string }[] {
-  const navStart = INDEX_HTML.indexOf('<nav id="nav">');
+  const navStart = INDEX_HTML.search(/<nav id="nav"[^>]*>/);
   const navEnd = INDEX_HTML.indexOf("</nav>", navStart);
   const navBlock = INDEX_HTML.slice(navStart, navEnd);
   const re = /data-target="([^"]+)"\s+data-label="([^"]+)"/g;

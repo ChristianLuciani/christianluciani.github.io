@@ -29,7 +29,7 @@ export const ROOM_SHELL: Record<string, string> = {
   perfil: `<!-- ════════════════════════════════════════════════════
   SALA 06 — Perfil y Formación
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-perfil" style="background:var(--deep)">
+<section class="room room--alt" id="room-perfil">
   <canvas class="room-canvas" id="c-necker" role="img" aria-label="Cuadrícula de cubo de Necker"></canvas>
 
   <div class="room-content">
@@ -40,7 +40,7 @@ export const ROOM_SHELL: Record<string, string> = {
   Las descripciones muestran el problema que resuelven,
   no los detalles de implementación.
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-proyectos" style="background:var(--night)">
+<section class="room" id="room-proyectos">
   <canvas class="room-canvas" id="c-proyectos" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
 
   <div class="room-content">
@@ -50,7 +50,7 @@ export const ROOM_SHELL: Record<string, string> = {
   NOTA: lo que todavía no tiene artefacto público. Cada ficha
   declara qué le falta para pasar a La Exposición.
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-bastidor" style="background:var(--night)">
+<section class="room" id="room-bastidor">
   <canvas class="room-canvas" id="c-bastidor" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
 
   <div class="room-content">
@@ -61,7 +61,7 @@ export const ROOM_SHELL: Record<string, string> = {
 
   SALA 03 — Trayectoria Profesional
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-experiencia" style="background:var(--deep)">
+<section class="room room--alt" id="room-experiencia">
   <canvas class="room-canvas" id="c-exp" role="img" aria-label="Patrón de interferencia de doble fuente"></canvas>
 
   <div class="room-content">
@@ -74,13 +74,13 @@ export const ROOM_SHELL: Record<string, string> = {
   · Cambia data-caption con el pie de foto
   · Puedes añadir más .gallery-slot o cambiar cols-3 a cols-2/cols-4
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-galeria" style="background:var(--night);display:none"><!-- Sala de Evidencia pendiente de llenar (oculta) -->
+<section class="room room--hidden" id="room-galeria"><!-- Sala de Evidencia pendiente de llenar (oculta) -->
   <div class="room-content">
 `,
   fisica: `<!-- ════════════════════════════════════════════════════
   SALA 04 — La Biblioteca (Publicaciones y Preprints)
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-fisica" style="background:var(--deep)">
+<section class="room room--alt" id="room-fisica">
   <canvas class="room-canvas" id="c-fisica" role="img" aria-label="Ilusión de serpientes rotantes"></canvas>
 
   <div class="room-content">
@@ -88,7 +88,7 @@ export const ROOM_SHELL: Record<string, string> = {
   competencias: `<!-- ════════════════════════════════════════════════════
   SALA 02 — Competencias
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-competencias" style="background:var(--night)">
+<section class="room" id="room-competencias">
   <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
 
   <div class="room-content">
@@ -96,14 +96,14 @@ export const ROOM_SHELL: Record<string, string> = {
   grafo: `<!-- ════════════════════════════════════════════════════
   SALA 05 — Constelación
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-grafo" style="background:var(--night)">
-  <div class="room-content" style="position:relative">
+<section class="room" id="room-grafo">
+  <div class="room-content">
 `,
   contacto: `<!-- ════════════════════════════════════════════════════
   SALA 07 — Contacto / Salida
 ════════════════════════════════════════════════════ -->
-<section class="room" id="room-contacto" style="background:var(--deep);min-height:55vh;display:flex;align-items:center">
-  <div class="room-content" style="width:100%">
+<section class="room room--alt room--contact" id="room-contacto">
+  <div class="room-content">
 `,
 };
 
@@ -117,17 +117,17 @@ const ROOM_TAIL = `
 `;
 
 /** Showcase Drahma — obra publicada; se conserva tal cual tras las tarjetas. */
-const TALLER_DRAHMA = `<div style="margin-top:0;padding:2rem 2rem 1.5rem;border:1px solid var(--border);border-top:none;border-radius:0 0 6px 6px" data-scroll="up">
-      <div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:.5rem">
+const TALLER_DRAHMA = `<div class="drahma-showcase" data-scroll="up">
+      <div class="drahma-showcase-head">
         <img src="/assets/images/drahman-logo.png"
              alt="Drahma logo" width="44" height="44" loading="lazy" decoding="async"
-             style="height:44px;width:auto;object-fit:contain;filter:drop-shadow(0 0 8px rgba(0,201,192,.4));opacity:.92"
+             class="drahma-showcase-logo"
              onerror="this.style.display='none'">
-        <h3 class="drahma-showcase-title" style="font-family:var(--font-display);font-size:1.6rem;color:#fff;margin:0">Proyecto <em style="color:var(--teal)">Drahma</em></h3>
+        <h3 class="drahma-showcase-title">Proyecto <em>Drahma</em></h3>
       </div>
       <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
 
-      <div style="display:grid;grid-template-columns:1.2fr 1fr;gap:3rem;align-items:start" class="two-col-drahma">
+      <div class="drahma-columns two-col-drahma">
         <div>
           <div class="timeline-note" data-scroll="from-left">
             <strong>LÍNEA TEMPORAL</strong>
@@ -167,15 +167,15 @@ const TALLER_DRAHMA = `<div style="margin-top:0;padding:2rem 2rem 1.5rem;border:
           </div>
         </div>
 
-        <div data-scroll="from-right" style="position:sticky;top:15vh">
-          <div class="illusion-frame" style="height:340px">
-            <canvas id="c-stairs-ill" style="width:100%;height:100%"></canvas>
+        <div class="drahma-aside" data-scroll="from-right">
+          <div class="illusion-frame illusion-frame--340">
+            <canvas id="c-stairs-ill" class="illusion-canvas"></canvas>
             <div class="illusion-label">ESCALERA DE PENROSE · 1958</div>
             <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-stairs/" target="_blank" rel="noopener">↗ michaelbach.de</a>
           </div>
-          <div style="margin-top:1.5rem;border:1px solid var(--border);padding:1.5rem" data-scroll="up" data-delay="2">
-            <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--teal);letter-spacing:.3em;margin-bottom:.8rem">LAB STEM</div>
-            <div style="font-family:var(--font-display);font-size:1.2rem;color:#fff;margin-bottom:.8rem">Fabricación <em style="color:var(--teal)">Pedagógica</em></div>
+          <div class="lab-stem-card" data-scroll="up" data-delay="2">
+            <div class="lab-stem-label">LAB STEM</div>
+            <div class="lab-stem-title">Fabricación <em>Pedagógica</em></div>
             <ul class="entry-body">
               <li>Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos</li>
               <li>Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores</li>
@@ -185,9 +185,9 @@ const TALLER_DRAHMA = `<div style="margin-top:0;padding:2rem 2rem 1.5rem;border:
         </div>
       </div><!-- /grid drahma -->
 
-      <div style="margin-top:2.5rem;border-top:1px solid var(--border);padding-top:1.4rem" data-scroll="up">
-        <div style="font-family:var(--font-mono);font-size:.58rem;color:var(--teal);letter-spacing:.3em;margin-bottom:.8rem">REPOSITORIO · ESTRATEGIA DE AUTORÍA</div>
-        <p style="color:var(--muted);font-size:.95rem;margin-bottom:.8rem;font-style:italic">Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo</p>
+      <div class="repo-strategy" data-scroll="up">
+        <div class="repo-label">REPOSITORIO · ESTRATEGIA DE AUTORÍA</div>
+        <p class="repo-strategy-lede">Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo</p>
         <ul class="entry-body">
           <li>Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos</li>
           <li>Repositorio privado: system prompts, documentos de contenido, notas de implementación</li>
@@ -214,21 +214,21 @@ ${ROOM_TAIL}`;
  * son el texto ES exacto) y el cierre de graduación solo existe en El Bastidor.
  */
 function tarjetas(lista: readonly Proyecto[]): string {
-  return lista
+  const cards = lista
     .map((p, i) => {
       const delay = i === 0 ? "" : ` data-delay="${Math.min(i, 5)}"`;
-      const last = i === lista.length - 1 ? ' style="margin-bottom:0"' : "";
       const falta = p.falta
         ? `
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> ${p.falta}</div>`
         : "";
       return `
-    <div class="project-card" data-scroll="from-left"${delay}${last}>
+    <div class="project-card" data-scroll="from-left"${delay}>
 ${p.html}${falta}
     </div>
 `;
     })
     .join("");
+  return `<div class="project-grid">${cards}</div>`;
 }
 
 export const ROOM_BODY: Record<string, string> = {
@@ -246,16 +246,16 @@ export const ROOM_BODY: Record<string, string> = {
             <img src="https://lh3.googleusercontent.com/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c"
                  alt="Christian Luciani"
                  onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex'">
-            <div class="photo-ph-inner" id="photo-fallback" style="display:none">
+            <div class="photo-ph-inner photo-ph-inner--hidden" id="photo-fallback">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,201,192,0.4)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
               <span>Añadir foto local</span>
             </div>
           </div>
           <p class="profile-text">Físico con más de 20 años en la intersección entre investigación científica, docencia universitaria e innovación educativa.</p>
           <br>
-          <p class="profile-text" style="color:var(--muted);font-size:.95rem">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
+          <p class="profile-text profile-text--meta">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
           <br>
-          <p class="profile-text" style="color:var(--muted);font-size:.95rem">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
+          <p class="profile-text profile-text--meta">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
         </div>
 
         <!-- Ilusión: Cubo de Necker animado -->
@@ -264,8 +264,8 @@ export const ROOM_BODY: Record<string, string> = {
               Líneas en #00c9c0 sobre fondo transparente. 300×300px.
               El cubo debe mostrar ambigüedad perceptual perfecta entre
               dos orientaciones posibles. Sin relleno, solo bordes." -->
-        <div class="illusion-frame" style="height:250px;margin-top:2.5rem;" data-scroll="zoom-in" data-delay="2">
-          <canvas id="c-necker-ill" style="width:100%;height:100%"></canvas>
+        <div class="illusion-frame illusion-frame--250 illusion-frame--spaced" data-scroll="zoom-in" data-delay="2">
+          <canvas id="c-necker-ill" class="illusion-canvas"></canvas>
           <div class="illusion-label">CUBO DE NECKER · 1832</div>
           <a class="illusion-link" href="https://michaelbach.de/ot/sze-necker/" target="_blank" rel="noopener">↗ michaelbach.de</a>
         </div>
@@ -395,8 +395,8 @@ export const ROOM_BODY: Record<string, string> = {
   galeria: `
     <!-- Sub-galería: Drahma y campo amazónico -->
     <div data-scroll="up" data-delay="1">
-      <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--teal);letter-spacing:.3em;margin-bottom:1rem">DRAHMA · CAMPO AMAZÓNICO</div>
-      <div class="gallery-grid cols-3" style="height:280px">
+      <div class="gallery-label">DRAHMA · CAMPO AMAZÓNICO</div>
+      <div class="gallery-grid cols-3 gallery-grid--280">
         <div class="gallery-slot" data-caption="Drahma — interfaz del tutor en campo">
           <!-- <img src="galeria/drahma-campo-1.jpg"> -->
           <div class="gallery-placeholder-icon">🐉</div>
@@ -416,9 +416,9 @@ export const ROOM_BODY: Record<string, string> = {
     </div>
 
     <!-- Sub-galería: Lab STEM -->
-    <div data-scroll="up" data-delay="2" style="margin-top:3rem">
-      <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--teal);letter-spacing:.3em;margin-bottom:1rem">LABORATORIO STEM · FABRICACIÓN PEDAGÓGICA</div>
-      <div class="gallery-grid cols-4" style="height:220px">
+    <div class="section-block--spaced" data-scroll="up" data-delay="2">
+      <div class="gallery-label">LABORATORIO STEM · FABRICACIÓN PEDAGÓGICA</div>
+      <div class="gallery-grid cols-4 gallery-grid--220">
         <div class="gallery-slot" data-caption="Laboratorio STEM — USFQ 2024">
           <div class="gallery-placeholder-icon">🖨️</div>
           <div class="gallery-placeholder-text">IMPRESORA 3D<br>Añadir fotografía</div>
@@ -439,9 +439,9 @@ export const ROOM_BODY: Record<string, string> = {
     </div>
 
     <!-- Sub-galería: Eventos y ciencia -->
-    <div data-scroll="up" data-delay="3" style="margin-top:3rem">
-      <div style="font-family:var(--font-mono);font-size:.6rem;color:var(--teal);letter-spacing:.3em;margin-bottom:1rem">CIENCIA EN PÚBLICO · EVENTOS</div>
-      <div class="gallery-grid cols-2" style="height:260px">
+    <div class="section-block--spaced" data-scroll="up" data-delay="3">
+      <div class="gallery-label">CIENCIA EN PÚBLICO · EVENTOS</div>
+      <div class="gallery-grid cols-2 gallery-grid--260">
         <div class="gallery-slot" data-caption="Casa Abierta USFQ — experimentos para público general">
           <div class="gallery-placeholder-icon">🔬</div>
           <div class="gallery-placeholder-text">CASA ABIERTA USFQ<br>Añadir fotografía</div>
@@ -460,7 +460,7 @@ export const ROOM_BODY: Record<string, string> = {
 
 `,
   fisica: `
-    <div style="display:grid;grid-template-columns:1fr 300px;gap:4rem;align-items:start" class="two-col-pub">
+    <div class="pub-layout two-col-pub">
 
       <!-- Lista de publicaciones -->
       <div data-scroll="from-left">
@@ -471,8 +471,8 @@ export const ROOM_BODY: Record<string, string> = {
             <div class="pub-title">Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy</div>
             <div class="pub-journal">Luciani, C. · Preprint (aún no arbitrado) · Zenodo &amp; SSRN</div>
             <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank">↗ 10.5281/zenodo.20738795</a>
-            <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank" style="margin-left:1rem">↗ SSRN 6960598</a>
-            <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank" style="margin-left:1rem">↗ ResearchGate</a>
+            <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank">↗ SSRN 6960598</a>
+            <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank">↗ ResearchGate</a>
           </div>
         </div>
         <div class="pub-item">
@@ -559,18 +559,18 @@ export const ROOM_BODY: Record<string, string> = {
       </div>
 
       <!-- Ilusión sidebar -->
-      <div data-scroll="from-right" style="position:sticky;top:15vh">
+      <div class="pub-aside" data-scroll="from-right">
         <!-- PROMPT PARA GENERAR SVG:
              "Crea un SVG del Triángulo de Penrose (Penrose Triangle / impossible triangle, 1954).
               Vista en perspectiva que hace la figura geométricamente imposible.
               Colores: degradado de #00c9c0 a #c9a84c. Fondo transparente. 280×280px.
               El triángulo debe verse sólido y tridimensional pero imposible." -->
-        <div class="illusion-frame" style="height:280px">
-          <canvas id="c-penrose" style="width:100%;height:100%" role="img" aria-label="Triángulo de Penrose pulsante"></canvas>
+        <div class="illusion-frame illusion-frame--280">
+          <canvas id="c-penrose" class="illusion-canvas" role="img" aria-label="Triángulo de Penrose pulsante"></canvas>
           <div class="illusion-label">TRIÁNGULO DE PENROSE · 1954</div>
           <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-triangle/" target="_blank" rel="noopener">↗ michaelbach.de</a>
         </div>
-        <p style="margin-top:1.5rem;font-size:.88rem;color:var(--muted);font-style:italic;line-height:1.8">
+        <p class="pub-quote">
           "Lo imposible solo lo es hasta que alguien lo dibuja correctamente."
         </p>
       </div>
@@ -645,9 +645,9 @@ export const ROOM_BODY: Record<string, string> = {
       </div>
     </div>
 
-<div style="margin-top:3rem;padding-top:2rem;border-top:1px solid var(--border)">
+<div class="room-footnote">
       <div class="room-number">INTERESES</div>
-      <p data-scroll="zoom-in" style="margin-top:1rem;color:var(--muted);font-style:italic;max-width:700px;font-size:1rem;line-height:2">
+      <p class="interests" data-scroll="zoom-in">
         Escalada en roca · Montañismo · Cine asiático · Neurociencias ·
         Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·
         <span class="hl">La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.</span>
@@ -659,13 +659,13 @@ export const ROOM_BODY: Record<string, string> = {
 
 
 `,
-  grafo: `    <p data-scroll="up" data-delay="2" style="color:var(--muted);font-style:italic;max-width:560px;margin:0 auto 1.5rem;font-size:.95rem">
+  grafo: `    <p class="graph-lede" data-scroll="up" data-delay="2">
       No solo amplitud: la conexión entre áreas, trabajos y proyectos.
-      <span style="color:var(--teal)">Teal</span>, publicado · <span style="color:#8892a0">gris</span>, en desarrollo · <span style="color:var(--gold)">dorado</span>, todavía una idea.
+      <span class="hl">Teal</span>, publicado · <span class="is-grey">gris</span>, en desarrollo · <span class="hl-gold">dorado</span>, todavía una idea.
     </p>
-    <div style="position:relative;height:min(64vh,560px);width:100%" id="graph-stage">
-      <canvas id="c-graph" style="width:100%;height:100%"></canvas>
-      <div id="graph-tip" style="position:absolute;display:none;background:rgba(8,13,24,.96);border:1px solid var(--teal);border-radius:6px;padding:.4rem .6rem;font-family:var(--font-mono);font-size:.72rem;color:var(--text);pointer-events:none;z-index:5;max-width:220px"></div>
+    <div id="graph-stage" class="graph-stage">
+      <canvas id="c-graph" class="illusion-canvas"></canvas>
+      <div id="graph-tip"></div>
     </div>
   </div>
 </section>
@@ -689,13 +689,13 @@ export const ROOM_BODY: Record<string, string> = {
 
       <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->
       <div class="illusion-frame koch-buzon" data-scroll="zoom-in" data-delay="3">
-        <canvas id="c-koch-buzon" style="width:100%;height:100%"></canvas>
+        <canvas id="c-koch-buzon" class="illusion-canvas"></canvas>
         <div class="illusion-label">COPO DE KOCH · 1904</div>
         <a class="illusion-link" href="https://es.wikipedia.org/wiki/Copo_de_nieve_de_Koch" target="_blank" rel="noopener">↗ wikipedia</a>
       </div>
     </div>
 
-    <div data-scroll="up" data-delay="4" style="margin-top:5rem;font-family:var(--font-mono);font-size:.56rem;color:var(--muted);letter-spacing:.3em">
+    <div class="contact-note" data-scroll="up" data-delay="4">
       La naturaleza de los seres cognitivos y su interacción · emergencia de la inteligencia universal
     </div>
   </div>

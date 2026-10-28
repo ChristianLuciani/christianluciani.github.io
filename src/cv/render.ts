@@ -5,10 +5,10 @@
  *
  * Flujo en el browser:
  *   main.ts (módulo diferido, corre tras parsear el HTML) → mountSalas():
- *     1. Regenera los .nav-dot de #nav desde SALAS (fuente de verdad).
+ *     1. Regenera los .nav-dot (HUD: número + label) desde SALAS.
  *     2. Auto-corrige .room-number / .room-title / .room-subtitle si hay deriva.
- *     3. Publica window.__CV_I18N__ = { ROOM_EN, MAP_EXTRA } para el script i18n.
- *     4. Monta el IntersectionObserver de estado activo del nav.
+ *     3. Sincroniza los labels del HUD con el idioma activo.
+ *     4. Monta el IntersectionObserver de estado activo (aria-current).
  *     5. Dispara 'cv:salas-ready' para que el i18n refresque títulos e idioma.
  */
 
@@ -29,17 +29,46 @@ export function navTargets(): string[] {
   return [HERO_NAV.id, ...visibleSalas().map((s) => sectionId(s.id))];
 }
 
-/** HTML de los puntos del nav lateral (hero + salas visibles), desde SALAS. */
+/** Una entrada del HUD: número + label siempre visibles (número decorativo). */
+function navLink(target: string, label: string, labelEn: string, num: string): string {
+  return (
+    `<a class="nav-dot" href="#${target}" data-target="${target}"` +
+    ` data-label="${label}" data-label-en="${labelEn}">` +
+    `<span class="n" aria-hidden="true">${num}</span>` +
+    `<span class="nav-label">${label}</span></a>`
+  );
+}
+
+/** HTML del HUD (hero + salas visibles), desde SALAS. */
 export function navDotsHtml(): string {
-  const rows = [
-    `<div class="nav-dot" data-target="${HERO_NAV.id}" data-label="${HERO_NAV.navLabel}"></div>`
-  ];
+  const rows = [navLink(HERO_NAV.id, HERO_NAV.navLabel, HERO_NAV.navLabelEn, "00")];
   for (const s of visibleSalas()) {
-    rows.push(
-      `<div class="nav-dot" data-target="${sectionId(s.id)}" data-label="${s.navLabel}"></div>`
-    );
+    rows.push(navLink(sectionId(s.id), s.navLabel, s.navLabelEn, numFor(s.id) ?? ""));
   }
   return rows.join("\n");
+}
+
+/** Label visible de una entrada del HUD en el idioma activo. */
+function labelFor(link: HTMLElement): string {
+  const en = typeof document !== "undefined" && document.documentElement.lang === "en";
+  const label = en ? link.dataset.labelEn : link.dataset.label;
+  return label ?? "";
+}
+
+/** Sincroniza los labels visibles del HUD con <html lang>. Idempotente. */
+export function syncNavLang(): void {
+  if (typeof document === "undefined") return;
+  const links = Array.from(document.querySelectorAll<HTMLElement>(".nav-dot"));
+  for (const link of links) {
+    const span = link.querySelector<HTMLElement>(".nav-label");
+    const label = labelFor(link);
+    if (span && label) span.textContent = label;
+  }
+  const active = document.querySelector<HTMLElement>('.nav-dot[aria-current="true"]');
+  if (active) {
+    const current = document.getElementById("hud-current");
+    if (current) current.textContent = labelFor(active);
+  }
 }
 
 /**
@@ -104,35 +133,51 @@ function applyRoomMeta(room: HTMLElement, s: SalaDef): void {
   }
 }
 
-function observeNavActive(targets: string[]): void {
-  const dots = Array.from(document.querySelectorAll<HTMLElement>(".nav-dot"));
-  const dotById = new Map<string, HTMLElement>();
-  for (let i = 0; i < targets.length; i++) {
-    const dot = dots[i];
-    if (dot) dotById.set(targets[i], dot);
+function setNavActive(activeId: string): void {
+  const links = Array.from(document.querySelectorAll<HTMLElement>(".nav-dot"));
+  let active: HTMLElement | null = null;
+  for (const link of links) {
+    const on = link.dataset.target === activeId;
+    link.classList.toggle("active", on);
+    if (on) {
+      link.setAttribute("aria-current", "true");
+      active = link;
+    } else {
+      link.removeAttribute("aria-current");
+    }
   }
+  if (active) {
+    const current = document.getElementById("hud-current");
+    if (current) current.textContent = labelFor(active);
+  }
+}
+
+function observeNavActive(targets: string[]): void {
+  // Banda angosta alrededor del centro del viewport: la sala que la cruza es la
+  // activa. Es más estable que un umbral de área en salas de alto variable.
   const io = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
-        const dot = dotById.get(e.target.id);
-        if (dot) dot.classList.toggle("active", e.isIntersecting);
+        if (e.isIntersecting) setNavActive(e.target.id);
       }
     },
-    { threshold: 0.4 }
+    { rootMargin: "-45% 0px -45% 0px", threshold: 0 }
   );
   for (const t of targets) {
     const el = document.getElementById(t);
     if (el) io.observe(el);
   }
+  setNavActive(targets[0]);
 }
 
 /** Monta todo lo derivado de SALAS. Idempotente: re-ejecutar es seguro. */
 export function mountSalas(): void {
   if (typeof document === "undefined") return;
 
-  // 1) Nav lateral regenerado desde SALAS.
+  // 1) HUD regenerado desde SALAS y sus labels alineados al idioma activo.
   const nav = document.getElementById("nav");
   if (nav) nav.innerHTML = navDotsHtml();
+  syncNavLang();
 
   // 2) Metadatos por sala (número/título/subtítulo) — auto-corrección si hay deriva.
   for (const s of SALAS) {

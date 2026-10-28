@@ -45,9 +45,9 @@ export const PROYECTOS: readonly Proyecto[] = [
       <div class="project-note">
         Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.<br>
         <a class="pub-doi" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank">↗ Repositorio</a>
-        <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank" style="margin-left:1rem">↗ Zenodo DOI 10.5281/zenodo.20738795</a>
-        <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank" style="margin-left:1rem">↗ SSRN 6960598</a>
-        <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank" style="margin-left:1rem">↗ ResearchGate</a>
+        <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank">↗ Zenodo DOI 10.5281/zenodo.20738795</a>
+        <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank">↗ SSRN 6960598</a>
+        <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank">↗ ResearchGate</a>
       </div>`
   },
   {
