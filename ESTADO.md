@@ -157,7 +157,7 @@ https://christianluciani.github.io/  (raíz · base "/")
 - Enlaces a ilusiones ópticas (michaelbach.de) en cada `.illusion-frame`
 - i18n ES/EN (toggle + diccionario `MAP`) para el sitio; print-CV/imprimible actualmente solo en ES
 - Necker BG full-width en Sala 01
-- Sala de Proyectos dividida por etapa (`src/data/proyectos.ts`): **La Exposición** (publicado y
+- Sala de Proyectos dividida por etapa (`src/data/proyectos.ts`): **El Marco** (publicado y
   auditable: Kontablo, Drahma, profile-as-code) + **El Bastidor** (en desarrollo: ZENTROPY,
   Esteléctica, CLAPPS.AI, NOOS, Topia, Nelson Companion, Physics Lab Book; cada ficha declara
   qué le falta para graduarse). Conteos de subtítulo derivados de la lista, no hardcodeados.
@@ -258,3 +258,4 @@ Al añadir texto ES en `index.html` → <strong>actualizar también su traducci�
 - 2026-08-10: Galería/Evidencia oculta (`display:none`) hasta llenar el contenido
 - 2026-08-10: El nombre «Christian Luciani» persiste como firma debajo del fractal minimizado (esquina SI) tras la intro
 - 2026-08-20: Añadida contribución OSS AionUi #3614 (iOfficeAI/AionUi) — fix para logos monocromáticos en dark theme — en sección Open Source de Sala 02 Competencias; actualizado profile.generated.ts (3 merged PRs)
+- 2026-10-27: Salas renombradas a la línea «taller y galería»: La Exposición → El Marco, El Taller → La Paleta, El Recorrido → El Friso, La Constelación → El Compás, El Visitante → El Autorretrato; HUD y plano alineados (etiqueta SALA sobre el número).

@@ -24,13 +24,13 @@ const IDS = [
 
 /** Baseline capturado del ROOM_EN[] (nuevo orden: proyectos primero). */
 const ROOM_EN_BASELINE = [
-  "The <em>Exhibition</em>",
-  "The <em>Studio</em>",
-  "The <em>Workshop</em>",
-  "The <em>Journey</em>",
+  "The <em>Frame</em>",
+  "The <em>Stretcher</em>",
+  "The <em>Palette</em>",
+  "The <em>Frieze</em>",
   "The <em>Library</em>",
-  "The <em>Constellation</em>",
-  "The <em>Visitor</em>",
+  "The <em>Compass</em>",
+  "The <em>Self-Portrait</em>",
   "The <em>Mailbox</em>",
   "The <em>Archive</em>"
 ];
@@ -44,18 +44,19 @@ describe("SALAS — integridad", () => {
     expect(new Set(SALAS.map((s) => s.id)).size).toBe(SALAS.length);
   });
 
-  it("solo la galería está oculta; el resto son las 7 salas visibles", () => {
+  it("solo la galería está oculta; el resto son las 8 salas visibles", () => {
     expect(SALAS.filter((s) => s.hidden).map((s) => s.id)).toEqual(["galeria"]);
     expect(visibleSalas().map((s) => s.id)).toEqual(
       IDS.filter((id) => id !== "galeria")
     );
   });
 
-  it("navLabel de cada sala en uppercase alimenta el plano (sin campo ad-hoc planoLabel)", () => {
-    // El plano deriva su etiqueta de navLabel.toUpperCase() sin override.
+  it("navLabel/navLabelEn de cada sala alimentan el HUD (el plano deriva del título)", () => {
     for (const s of visibleSalas()) {
       expect(typeof s.navLabel).toBe("string");
       expect(s.navLabel.length).toBeGreaterThan(0);
+      expect(typeof s.navLabelEn).toBe("string");
+      expect(s.navLabelEn.length).toBeGreaterThan(0);
     }
     // La galería (oculta) no participa del plano.
     expect(SALAS.find((s) => s.id === "galeria")!.hidden).toBe(true);
@@ -121,7 +122,7 @@ describe("render — derivados puros", () => {
     expect(extra["SALA 01"]).toBe("ROOM 01");
     expect(extra["SALA 04"]).toBe("ROOM 04");
     expect(extra["SALA 07"]).toBe("ROOM 07");
-    expect(extra["SALA 05"]).toBe("ROOM 05"); // grafo en nuevo orden
+    expect(extra["SALA 05"]).toBe("ROOM 05"); // fisica en nuevo orden
     expect(extra).not.toHaveProperty("SALA 09"); // stale eliminado
     // Subtítulos (todas las salas, incl. oculta)
     expect(extra["PERFIL PROFESIONAL · CUENCA, ECUADOR"]).toBe(
@@ -130,15 +131,23 @@ describe("render — derivados puros", () => {
     expect(extra["GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS"]).toBe(
       "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS"
     );
-    expect(Object.keys(extra).length).toBe(8 + 9); // 8 números visibles + 9 subtítulos
+    // Títulos en mayúsculas: el plano los rotula así y el EN no debe quedar hardcodeado.
+    expect(extra["EL MARCO"]).toBe("THE FRAME");
+    expect(extra["EL BASTIDOR"]).toBe("THE STRETCHER");
+    expect(extra["LA PALETA"]).toBe("THE PALETTE");
+    expect(extra["EL FRISO"]).toBe("THE FRIEZE");
+    expect(extra["EL COMPÁS"]).toBe("THE COMPASS");
+    expect(extra["EL AUTORRETRATO"]).toBe("THE SELF-PORTRAIT");
+    expect(extra["SALA"]).toBe("ROOM");
+    expect(Object.keys(extra).length).toBe(8 + 9 + 9 + 1); // números + subtítulos + títulos + SALA
   });
 
   it("navDotsHtml: hero + salas visibles con data-target/data-label en orden", () => {
     const html = navDotsHtml();
     expect(html).toContain(`data-target="${HERO_NAV.id}" data-label="${HERO_NAV.navLabel}"`);
-    expect(html).toContain('data-target="room-perfil" data-label="Perfil"');
+    expect(html).toContain('data-target="room-perfil" data-label="Autorretrato" data-label-en="Self-Portrait"');
     expect(html).toContain('data-target="room-fisica" data-label="Biblioteca"');
-    expect(html).toContain('data-target="room-grafo" data-label="Constelación"');
+    expect(html).toContain('data-target="room-grafo" data-label="Compás"');
     expect(html).not.toContain("room-galeria"); // oculta → fuera del nav
     // Orden: hero primero, contacto último
     const heroIdx = html.indexOf('data-target="hero"');

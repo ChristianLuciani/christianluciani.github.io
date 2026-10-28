@@ -1339,14 +1339,14 @@ a { color:inherit; }
     <nav id="nav" class="hud-nav" aria-label="Salas del museo"
          data-aria-es="Salas del museo" data-aria-en="Museum rooms">
       <a class="nav-dot" href="#hero" data-target="hero" data-label="Entrada" data-label-en="Entrance"><span class="n" aria-hidden="true">00</span><span class="nav-label">Entrada</span></a>
-      <a class="nav-dot" href="#room-proyectos" data-target="room-proyectos" data-label="Exposición" data-label-en="Exhibition"><span class="n" aria-hidden="true">01</span><span class="nav-label">Exposición</span></a>
-      <a class="nav-dot" href="#room-bastidor" data-target="room-bastidor" data-label="Bastidor" data-label-en="Studio"><span class="n" aria-hidden="true">02</span><span class="nav-label">Bastidor</span></a>
-      <a class="nav-dot" href="#room-competencias" data-target="room-competencias" data-label="Taller" data-label-en="Workshop"><span class="n" aria-hidden="true">03</span><span class="nav-label">Taller</span></a>
-      <a class="nav-dot" href="#room-experiencia" data-target="room-experiencia" data-label="Recorrido" data-label-en="Journey"><span class="n" aria-hidden="true">04</span><span class="nav-label">Recorrido</span></a>
+      <a class="nav-dot" href="#room-proyectos" data-target="room-proyectos" data-label="Marco" data-label-en="Frame"><span class="n" aria-hidden="true">01</span><span class="nav-label">Marco</span></a>
+      <a class="nav-dot" href="#room-bastidor" data-target="room-bastidor" data-label="Bastidor" data-label-en="Stretcher"><span class="n" aria-hidden="true">02</span><span class="nav-label">Bastidor</span></a>
+      <a class="nav-dot" href="#room-competencias" data-target="room-competencias" data-label="Paleta" data-label-en="Palette"><span class="n" aria-hidden="true">03</span><span class="nav-label">Paleta</span></a>
+      <a class="nav-dot" href="#room-experiencia" data-target="room-experiencia" data-label="Friso" data-label-en="Frieze"><span class="n" aria-hidden="true">04</span><span class="nav-label">Friso</span></a>
       <a class="nav-dot" href="#room-fisica" data-target="room-fisica" data-label="Biblioteca" data-label-en="Library"><span class="n" aria-hidden="true">05</span><span class="nav-label">Biblioteca</span></a>
-      <a class="nav-dot" href="#room-grafo" data-target="room-grafo" data-label="Constelación" data-label-en="Constellation"><span class="n" aria-hidden="true">06</span><span class="nav-label">Constelación</span></a>
-      <a class="nav-dot" href="#room-perfil" data-target="room-perfil" data-label="Perfil" data-label-en="Profile"><span class="n" aria-hidden="true">07</span><span class="nav-label">Perfil</span></a>
-      <a class="nav-dot" href="#room-contacto" data-target="room-contacto" data-label="Contacto" data-label-en="Contact"><span class="n" aria-hidden="true">08</span><span class="nav-label">Contacto</span></a>
+      <a class="nav-dot" href="#room-grafo" data-target="room-grafo" data-label="Compás" data-label-en="Compass"><span class="n" aria-hidden="true">06</span><span class="nav-label">Compás</span></a>
+      <a class="nav-dot" href="#room-perfil" data-target="room-perfil" data-label="Autorretrato" data-label-en="Self-Portrait"><span class="n" aria-hidden="true">07</span><span class="nav-label">Autorretrato</span></a>
+      <a class="nav-dot" href="#room-contacto" data-target="room-contacto" data-label="Buzón" data-label-en="Mailbox"><span class="n" aria-hidden="true">08</span><span class="nav-label">Buzón</span></a>
 </nav>
     <div class="hud-side">
       <button id="btn-lang" type="button" aria-label="Switch language / Cambiar idioma">EN</button>
@@ -1424,8 +1424,10 @@ a { color:inherit; }
     .bp-path{fill:none;stroke:#c9a84c;stroke-width:1;stroke-dasharray:4 5;opacity:.45}
     .bp-room rect{fill:rgba(0,201,192,.04);stroke:var(--teal);stroke-width:1.2;transition:fill .25s}
     .bp-room:hover rect{fill:rgba(0,201,192,.17)}
+    .bp-room .bp-sala{fill:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:1.8px}
     .bp-room .bp-num{fill:#c9a84c;font-family:var(--font-mono);font-size:22px;font-weight:bold}
     .bp-room .bp-name{fill:#d6dde8;font-family:var(--font-mono);font-size:12px;letter-spacing:1px}
+    .bp-room:hover .bp-sala{fill:var(--teal)}
     .bp-room:hover .bp-name{fill:var(--teal)}
     @media print{#room-plano{display:none}}
   </style>
@@ -1437,55 +1439,64 @@ a { color:inherit; }
 <polyline class="bp-path" points="180,145 450,145 720,145 720,305 450,305 180,305 180,465 450,465 720,465"/>
   <a href="#hero" class="bp-room">
     <rect x="60" y="80" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="122">00</text>
-    <text class="bp-name" x="78" y="190">ENTRADA</text>
+    <text class="bp-sala" x="78" y="100">SALA</text>
+    <text class="bp-num"  x="78" y="130">00</text>
+    <text class="bp-name" x="78" y="192">ENTRADA</text>
   </a>
   <a href="#room-proyectos" class="bp-room">
     <rect x="330" y="80" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="122">01</text>
-    <text class="bp-name" x="348" y="190">LA EXPOSICIÓN</text>
+    <text class="bp-sala" x="348" y="100">SALA</text>
+    <text class="bp-num"  x="348" y="130">01</text>
+    <text class="bp-name" x="348" y="192">EL MARCO</text>
   </a>
   <a href="#room-bastidor" class="bp-room">
     <rect x="600" y="80" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="618" y="122">02</text>
-    <text class="bp-name" x="618" y="190">EL BASTIDOR</text>
+    <text class="bp-sala" x="618" y="100">SALA</text>
+    <text class="bp-num"  x="618" y="130">02</text>
+    <text class="bp-name" x="618" y="192">EL BASTIDOR</text>
   </a>
   <a href="#room-competencias" class="bp-room">
     <rect x="60" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="282">03</text>
-    <text class="bp-name" x="78" y="350">EL TALLER</text>
+    <text class="bp-sala" x="78" y="260">SALA</text>
+    <text class="bp-num"  x="78" y="290">03</text>
+    <text class="bp-name" x="78" y="352">LA PALETA</text>
   </a>
   <a href="#room-experiencia" class="bp-room">
     <rect x="330" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="282">04</text>
-    <text class="bp-name" x="348" y="350">EL RECORRIDO</text>
+    <text class="bp-sala" x="348" y="260">SALA</text>
+    <text class="bp-num"  x="348" y="290">04</text>
+    <text class="bp-name" x="348" y="352">EL FRISO</text>
   </a>
   <a href="#room-fisica" class="bp-room">
     <rect x="600" y="240" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="618" y="282">05</text>
-    <text class="bp-name" x="618" y="350">LA BIBLIOTECA</text>
+    <text class="bp-sala" x="618" y="260">SALA</text>
+    <text class="bp-num"  x="618" y="290">05</text>
+    <text class="bp-name" x="618" y="352">LA BIBLIOTECA</text>
   </a>
   <a href="#room-grafo" class="bp-room">
     <rect x="60" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="78" y="442">06</text>
-    <text class="bp-name" x="78" y="510">LA CONSTELACIÓN</text>
+    <text class="bp-sala" x="78" y="420">SALA</text>
+    <text class="bp-num"  x="78" y="450">06</text>
+    <text class="bp-name" x="78" y="512">EL COMPÁS</text>
   </a>
   <a href="#room-perfil" class="bp-room">
     <rect x="330" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="348" y="442">07</text>
-    <text class="bp-name" x="348" y="510">EL VISITANTE</text>
+    <text class="bp-sala" x="348" y="420">SALA</text>
+    <text class="bp-num"  x="348" y="450">07</text>
+    <text class="bp-name" x="348" y="512">EL AUTORRETRATO</text>
   </a>
   <a href="#room-contacto" class="bp-room">
     <rect x="600" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-num"  x="618" y="442">08</text>
-    <text class="bp-name" x="618" y="510">EL BUZÓN</text>
+    <text class="bp-sala" x="618" y="420">SALA</text>
+    <text class="bp-num"  x="618" y="450">08</text>
+    <text class="bp-name" x="618" y="512">EL BUZÓN</text>
   </a>
   </svg>
 </section>
 <div class="room-divider"></div>
 
 <!-- ════════════════════════════════════════════════════
-  SALA 01 — Proyectos Activos y en Desarrollo
+  SALA — Proyectos Activos y en Desarrollo
   NOTA: Estos proyectos son privados / en desarrollo.
   Las descripciones muestran el problema que resuelven,
   no los detalles de implementación.
@@ -1495,7 +1506,7 @@ a { color:inherit; }
 
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 01</div>
-    <h2 class="room-title"   data-scroll="zoom-in">La <em>Exposición</em></h2>
+    <h2 class="room-title"   data-scroll="zoom-in">El <em>Marco</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 3 PROYECTOS</div>
 <div class="project-grid">
     <div class="project-card" data-scroll="from-left">
@@ -1628,7 +1639,7 @@ a { color:inherit; }
 <!-- ════════════════════════════════════════════════════
   SALA — El Bastidor (en desarrollo)
   NOTA: lo que todavía no tiene artefacto público. Cada ficha
-  declara qué le falta para pasar a La Exposición.
+  declara qué le falta para pasar a El Marco.
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-bastidor">
   <canvas class="room-canvas" id="c-bastidor" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
@@ -1735,14 +1746,14 @@ a { color:inherit; }
 <div class="room-divider"></div>
 
 <!-- ════════════════════════════════════════════════════
-  SALA 02 — Competencias
+  SALA — Competencias
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-competencias">
   <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
 
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 03</div>
-    <h2 class="room-title"   data-scroll="zoom-in">El <em>Taller</em></h2>
+    <h2 class="room-title"   data-scroll="zoom-in">La <em>Paleta</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS</div>
 
     <div class="skills-grid" data-scroll="from-center">
@@ -1825,14 +1836,14 @@ a { color:inherit; }
 
 
 
-  SALA 03 — Trayectoria Profesional
+  SALA — Trayectoria Profesional
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-experiencia">
   <canvas class="room-canvas" id="c-exp" role="img" aria-label="Patrón de interferencia de doble fuente"></canvas>
 
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 04</div>
-    <h2 class="room-title"   data-scroll="zoom-in">El <em>Recorrido</em></h2>
+    <h2 class="room-title"   data-scroll="zoom-in">El <em>Friso</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">EXPERIENCIA PROFESIONAL · 2003 – PRESENTE</div>
 
     <div class="two-col">
@@ -1915,7 +1926,7 @@ a { color:inherit; }
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 04 — La Biblioteca (Publicaciones y Preprints)
+  SALA — La Biblioteca (Publicaciones y Preprints)
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-fisica">
   <canvas class="room-canvas" id="c-fisica" role="img" aria-label="Ilusión de serpientes rotantes"></canvas>
@@ -2046,12 +2057,12 @@ a { color:inherit; }
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 05 — Constelación
+  SALA — El Compás
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-grafo">
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 06</div>
-    <h2 class="room-title"   data-scroll="zoom-in">La <em>Constelación</em></h2>
+    <h2 class="room-title"   data-scroll="zoom-in">El <em>Compás</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">RED · ÁREAS · PROYECTOS · CONEXIONES · 2026</div>
     <p class="graph-lede" data-scroll="up" data-delay="2">
       No solo amplitud: la conexión entre áreas, trabajos y proyectos.
@@ -2066,14 +2077,14 @@ a { color:inherit; }
 <div class="room-divider"></div>
 
 <!-- ════════════════════════════════════════════════════
-  SALA 06 — Perfil y Formación
+  SALA — Perfil y Formación
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-perfil">
   <canvas class="room-canvas" id="c-necker" role="img" aria-label="Cuadrícula de cubo de Necker"></canvas>
 
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 07</div>
-    <h2 class="room-title"   data-scroll="zoom-in">El <em>Visitante</em></h2>
+    <h2 class="room-title"   data-scroll="zoom-in">El <em>Autorretrato</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">PERFIL PROFESIONAL · CUENCA, ECUADOR</div>
 
     <div class="profile-grid">
@@ -2152,7 +2163,7 @@ a { color:inherit; }
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 07 — Contacto / Salida
+  SALA — Contacto / Salida
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt room--contact" id="room-contacto">
   <div class="room-content">
@@ -2190,7 +2201,7 @@ a { color:inherit; }
 
 
 <!-- ════════════════════════════════════════════════════
-  SALA 04 — Evidencia (oculta, pendiente de llenar)
+  SALA — Evidencia (oculta, pendiente de llenar)
   INSTRUCCIONES PARA COMPLETAR:
   · Añade <img src="ruta/foto.jpg"> dentro de cada .gallery-slot
   · El placeholder desaparece automáticamente al haber imagen

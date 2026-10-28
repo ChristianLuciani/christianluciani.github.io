@@ -45,13 +45,13 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | Sala | Contenido | Ilusión óptica |
 |------|-----------|----------------|
 | 00 · Entrada | Intro (frase → nombre) + Hero / museo | Cubos isométricos |
-| 01 · La Exposición | **Obra publicada y auditable** — Kontablo · Drahma (showcase) · profile-as-code | Campo de Mandelbrot |
+| 01 · El Marco | **Obra publicada y auditable** — Kontablo · Drahma (showcase) · profile-as-code | Campo de Mandelbrot |
 | 02 · El Bastidor | **En desarrollo** — ZENTROPY · Esteléctica · CLAPPS / Noesis-Noetix · NOOS · Topia · Nelson Companion · Physics Lab Book | Campo de Mandelbrot |
-| 03 · El Taller | Competencias: agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
-| 04 · El Recorrido | Trayectoria 2003–presente | Interferencia de doble fuente |
+| 03 · La Paleta | Competencias: agentes sintéticos, codificación agéntica, soberanía tecnológica, open source, ciencias, idiomas | Sierpinski |
+| 04 · El Friso | Trayectoria 2003–presente | Interferencia de doble fuente |
 | 05 · La Biblioteca | Publicaciones y preprints | Serpientes Rotantes + Triángulo Penrose |
-| 06 · La Constelación | Mapa de conexiones (áreas · proyectos) | Constelación interactiva |
-| 07 · El Visitante | Perfil y formación | Cubo de Necker |
+| 06 · El Compás | Mapa de conexiones (áreas · proyectos) | Constelación interactiva |
+| 07 · El Autorretrato | Perfil y formación | Cubo de Necker |
 | 08 · El Buzón | Redes y contacto | Copo de Koch |
 | ~~El Archivo~~ | ~~Galería~~ — *oculta, pendiente de llenar* | — |
 
@@ -63,7 +63,7 @@ hardcodeado, que miente en cuanto entra o sale una ficha):
   (repositorio público con licencia y release, DOI o URL viva). Es el mismo criterio que el
   SSOT de `profile-data` deriva con `projects[].artifactRefs` (`profile-as-code#333`).
 - **desarrollo** = todavía no hay artefacto público. Cada ficha de El Bastidor declara
-  `falta`: qué la haría graduarse a La Exposición.
+  `falta`: qué la haría graduarse a El Marco.
 
 ## Flujo de trabajo
 

@@ -27,7 +27,7 @@ export const ROOM_META: Record<string, { titleScroll: string; legacyNum?: string
 /** Comentario editorial + apertura de <section> + canvas + <div class="room-content">. */
 export const ROOM_SHELL: Record<string, string> = {
   perfil: `<!-- ════════════════════════════════════════════════════
-  SALA 06 — Perfil y Formación
+  SALA — Perfil y Formación
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-perfil">
   <canvas class="room-canvas" id="c-necker" role="img" aria-label="Cuadrícula de cubo de Necker"></canvas>
@@ -35,7 +35,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   proyectos: `<!-- ════════════════════════════════════════════════════
-  SALA 01 — Proyectos Activos y en Desarrollo
+  SALA — Proyectos Activos y en Desarrollo
   NOTA: Estos proyectos son privados / en desarrollo.
   Las descripciones muestran el problema que resuelven,
   no los detalles de implementación.
@@ -48,7 +48,7 @@ export const ROOM_SHELL: Record<string, string> = {
   bastidor: `<!-- ════════════════════════════════════════════════════
   SALA — El Bastidor (en desarrollo)
   NOTA: lo que todavía no tiene artefacto público. Cada ficha
-  declara qué le falta para pasar a La Exposición.
+  declara qué le falta para pasar a El Marco.
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-bastidor">
   <canvas class="room-canvas" id="c-bastidor" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
@@ -59,7 +59,7 @@ export const ROOM_SHELL: Record<string, string> = {
 
 
 
-  SALA 03 — Trayectoria Profesional
+  SALA — Trayectoria Profesional
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-experiencia">
   <canvas class="room-canvas" id="c-exp" role="img" aria-label="Patrón de interferencia de doble fuente"></canvas>
@@ -67,7 +67,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   galeria: `<!-- ════════════════════════════════════════════════════
-  SALA 04 — Evidencia (oculta, pendiente de llenar)
+  SALA — Evidencia (oculta, pendiente de llenar)
   INSTRUCCIONES PARA COMPLETAR:
   · Añade <img src="ruta/foto.jpg"> dentro de cada .gallery-slot
   · El placeholder desaparece automáticamente al haber imagen
@@ -78,7 +78,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   fisica: `<!-- ════════════════════════════════════════════════════
-  SALA 04 — La Biblioteca (Publicaciones y Preprints)
+  SALA — La Biblioteca (Publicaciones y Preprints)
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-fisica">
   <canvas class="room-canvas" id="c-fisica" role="img" aria-label="Ilusión de serpientes rotantes"></canvas>
@@ -86,7 +86,7 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   competencias: `<!-- ════════════════════════════════════════════════════
-  SALA 02 — Competencias
+  SALA — Competencias
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-competencias">
   <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
@@ -94,13 +94,13 @@ export const ROOM_SHELL: Record<string, string> = {
   <div class="room-content">
 `,
   grafo: `<!-- ════════════════════════════════════════════════════
-  SALA 05 — Constelación
+  SALA — El Compás
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-grafo">
   <div class="room-content">
 `,
   contacto: `<!-- ════════════════════════════════════════════════════
-  SALA 07 — Contacto / Salida
+  SALA — Contacto / Salida
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt room--contact" id="room-contacto">
   <div class="room-content">
