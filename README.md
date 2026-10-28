@@ -4,6 +4,12 @@ CV interactivo diseñado como recorrido museográfico, con ilusiones ópticas an
 
 El mark animado del sitio se llama **Espirángulo** (espiral + triángulo).
 
+El mark **estático** es canónico en
+[`cluciani-brand-kit`](https://github.com/ChristianLuciani/cluciani-brand-kit)
+(`v1.0.1`); `assets/brand/logo/` es un espejo vendored pinneado en
+`brand-kit.lock.json` y verificado con `npm run brand:verify`. La animación
+runtime y el clock viven en este repo.
+
 **[→ Ver en vivo](https://christianluciani.github.io/)**
 
 ## Estructura
@@ -16,7 +22,7 @@ christianluciani.github.io/
 ├── vite.config.ts        ← Build con Vite (base "/")
 ├── public/               ← Recursos servidos tal cual (audio, thumbs de papers, OG, QR)
 ├── src/ts/               ← Fractales/ilusiones en TypeScript (Koch, canvas)
-├── assets/               ← Fuente de build: iconos (inline), marca en assets/brand/logo
+├── assets/               ← Iconos inline + espejo vendored de marca (brand kit v1.0.1)
 ├── docs/
 │   ├── CONTRIBUTING.md   ← Flujo de trabajo Git
 │   ├── STYLE_GUIDE.md    ← Sistema de diseño completo

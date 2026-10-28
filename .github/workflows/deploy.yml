@@ -34,6 +34,7 @@ jobs:
       - run: npm run build
         env:
           VITE_ASSET_BASE_URL: ${{ vars.CDN_BASE_URL }}
+          VITE_BRAND_KIT_BASE_URL: ${{ vars.BRAND_KIT_CDN_BASE }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
