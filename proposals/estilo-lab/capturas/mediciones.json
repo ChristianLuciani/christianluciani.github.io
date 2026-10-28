@@ -1,0 +1,1835 @@
+{
+  "verificacion": {
+    "actual-hero-desktop": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 115,
+        "y": 347,
+        "w": 403,
+        "h": 194,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 115,
+        "y": 304,
+        "w": 403,
+        "h": 18,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 300,
+        "h": 150,
+        "cssW": 300,
+        "cssH": 150,
+        "alfaMedio": 5
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-proyectos",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 496,
+          "h": 338,
+          "cssW": 496,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-comp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-exp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-fisica",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 1210,
+          "h": 560,
+          "cssW": 1210,
+          "cssH": 560
+        },
+        {
+          "id": "c-necker",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 432,
+          "h": 248,
+          "cssW": 432,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 305,
+          "h": 305,
+          "cssW": 492,
+          "cssH": 318
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [
+        "/assets/images/drahman-logo.png"
+      ],
+      "scrollY": 0,
+      "viewport": "1440x900"
+    },
+    "actual-hero-canvasfull-desktop": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 115,
+        "y": 347,
+        "w": 403,
+        "h": 194,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 115,
+        "y": 304,
+        "w": 403,
+        "h": 18,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 1440,
+        "h": 900,
+        "cssW": 1440,
+        "cssH": 900,
+        "alfaMedio": 4
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 1440,
+          "h": 900,
+          "cssW": 1440,
+          "cssH": 900
+        },
+        {
+          "id": "c-proyectos",
+          "w": 1440,
+          "h": 2735,
+          "cssW": 1440,
+          "cssH": 2735
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 496,
+          "h": 338,
+          "cssW": 496,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 1440,
+          "h": 3315,
+          "cssW": 1440,
+          "cssH": 3315
+        },
+        {
+          "id": "c-comp",
+          "w": 1440,
+          "h": 1072,
+          "cssW": 1440,
+          "cssH": 1072
+        },
+        {
+          "id": "c-exp",
+          "w": 1440,
+          "h": 1190,
+          "cssW": 1440,
+          "cssH": 1190
+        },
+        {
+          "id": "c-fisica",
+          "w": 1440,
+          "h": 1739,
+          "cssW": 1440,
+          "cssH": 1739
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 1210,
+          "h": 560,
+          "cssW": 1210,
+          "cssH": 560
+        },
+        {
+          "id": "c-necker",
+          "w": 1440,
+          "h": 1261,
+          "cssW": 1440,
+          "cssH": 1261
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 432,
+          "h": 248,
+          "cssW": 432,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 305,
+          "h": 305,
+          "cssW": 492,
+          "cssH": 318
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [
+        "/assets/images/drahman-logo.png"
+      ],
+      "scrollY": 0,
+      "viewport": "1440x900"
+    },
+    "lab-hero-desktop": {
+      "title": "Prototipo · sitio con el lenguaje del laboratorio — Christian Luciani",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 162,
+        "y": 170,
+        "w": 561,
+        "h": 287,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(231, 237, 246)",
+        "font": "ui-sans-serif, system-ui, -apple-system, \"Segoe "
+      },
+      "heroLabel": {
+        "x": 162,
+        "y": 141,
+        "w": 561,
+        "h": 16,
+        "opacity": "1",
+        "display": "flex",
+        "color": "rgb(0, 201, 192)",
+        "font": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, "
+      },
+      "canvas": null,
+      "navItems": 9,
+      "tarjetas": 3,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 0,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116"
+      ],
+      "canvases": [],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 0,
+      "viewport": "1440x900"
+    },
+    "actual-sala01-desktop": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 115,
+        "y": -1378,
+        "w": 403,
+        "h": 194,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 115,
+        "y": -1421,
+        "w": 403,
+        "h": 18,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 300,
+        "h": 150,
+        "cssW": 300,
+        "cssH": 150,
+        "alfaMedio": 6
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-proyectos",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 496,
+          "h": 338,
+          "cssW": 496,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-comp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-exp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-fisica",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 1210,
+          "h": 560,
+          "cssW": 1210,
+          "cssH": 560
+        },
+        {
+          "id": "c-necker",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 432,
+          "h": 248,
+          "cssW": 432,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 305,
+          "h": 305,
+          "cssW": 492,
+          "cssH": 318
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 1725,
+      "viewport": "1440x900"
+    },
+    "actual-sala01-canvasfull-desktop": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 115,
+        "y": -1378,
+        "w": 403,
+        "h": 194,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 115,
+        "y": -1421,
+        "w": 403,
+        "h": 18,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 1440,
+        "h": 900,
+        "cssW": 1440,
+        "cssH": 900,
+        "alfaMedio": 4
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 1440,
+          "h": 900,
+          "cssW": 1440,
+          "cssH": 900
+        },
+        {
+          "id": "c-proyectos",
+          "w": 1440,
+          "h": 2735,
+          "cssW": 1440,
+          "cssH": 2735
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 496,
+          "h": 338,
+          "cssW": 496,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 1440,
+          "h": 3315,
+          "cssW": 1440,
+          "cssH": 3315
+        },
+        {
+          "id": "c-comp",
+          "w": 1440,
+          "h": 1072,
+          "cssW": 1440,
+          "cssH": 1072
+        },
+        {
+          "id": "c-exp",
+          "w": 1440,
+          "h": 1190,
+          "cssW": 1440,
+          "cssH": 1190
+        },
+        {
+          "id": "c-fisica",
+          "w": 1440,
+          "h": 1739,
+          "cssW": 1440,
+          "cssH": 1739
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 1210,
+          "h": 560,
+          "cssW": 1210,
+          "cssH": 560
+        },
+        {
+          "id": "c-necker",
+          "w": 1440,
+          "h": 1261,
+          "cssW": 1440,
+          "cssH": 1261
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 432,
+          "h": 248,
+          "cssW": 432,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 305,
+          "h": 305,
+          "cssW": 492,
+          "cssH": 318
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 1725,
+      "viewport": "1440x900"
+    },
+    "lab-sala01-desktop": {
+      "title": "Prototipo · sitio con el lenguaje del laboratorio — Christian Luciani",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 162,
+        "y": -724,
+        "w": 561,
+        "h": 287,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(231, 237, 246)",
+        "font": "ui-sans-serif, system-ui, -apple-system, \"Segoe "
+      },
+      "heroLabel": {
+        "x": 162,
+        "y": -753,
+        "w": 561,
+        "h": 16,
+        "opacity": "1",
+        "display": "flex",
+        "color": "rgb(0, 201, 192)",
+        "font": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, "
+      },
+      "canvas": null,
+      "navItems": 9,
+      "tarjetas": 3,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 0,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116"
+      ],
+      "canvases": [],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 894,
+      "viewport": "1440x900"
+    },
+    "comparar-desktop": {
+      "title": "Comparación A/B · sitio actual vs lenguaje del laboratorio — issue #89",
+      "loaderOculto": true,
+      "heroName": null,
+      "heroLabel": {
+        "x": 40,
+        "y": 28,
+        "w": 1360,
+        "h": 12,
+        "opacity": "1",
+        "display": "flex",
+        "color": "rgb(0, 201, 192)",
+        "font": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, "
+      },
+      "canvas": null,
+      "navItems": 0,
+      "tarjetas": 0,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 0,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116"
+      ],
+      "canvases": [],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 0,
+      "viewport": "1440x900"
+    },
+    "actual-hero-mobile": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 31,
+        "y": 383,
+        "w": 328,
+        "h": 83,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 31,
+        "y": 322,
+        "w": 328,
+        "h": 37,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 300,
+        "h": 150,
+        "cssW": 300,
+        "cssH": 150,
+        "alfaMedio": 5
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-proyectos",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 260,
+          "h": 338,
+          "cssW": 260,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-comp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-exp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-fisica",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 328,
+          "h": 540,
+          "cssW": 328,
+          "cssH": 540
+        },
+        {
+          "id": "c-necker",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 326,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 248,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 258
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [
+        "/assets/images/drahman-logo.png"
+      ],
+      "scrollY": 0,
+      "viewport": "390x844"
+    },
+    "actual-hero-canvasfull-mobile": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 31,
+        "y": 383,
+        "w": 328,
+        "h": 83,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 31,
+        "y": 322,
+        "w": 328,
+        "h": 37,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 390,
+        "h": 844,
+        "cssW": 390,
+        "cssH": 844,
+        "alfaMedio": 4
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 390,
+          "h": 844,
+          "cssW": 390,
+          "cssH": 844
+        },
+        {
+          "id": "c-proyectos",
+          "w": 390,
+          "h": 5923,
+          "cssW": 390,
+          "cssH": 5923
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 260,
+          "h": 338,
+          "cssW": 260,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 390,
+          "h": 5964,
+          "cssW": 390,
+          "cssH": 5964
+        },
+        {
+          "id": "c-comp",
+          "w": 390,
+          "h": 1973,
+          "cssW": 390,
+          "cssH": 1973
+        },
+        {
+          "id": "c-exp",
+          "w": 390,
+          "h": 2658,
+          "cssW": 390,
+          "cssH": 2658
+        },
+        {
+          "id": "c-fisica",
+          "w": 390,
+          "h": 2981,
+          "cssW": 390,
+          "cssH": 2981
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 328,
+          "h": 540,
+          "cssW": 328,
+          "cssH": 540
+        },
+        {
+          "id": "c-necker",
+          "w": 390,
+          "h": 2307,
+          "cssW": 390,
+          "cssH": 2307
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 326,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 248,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 258
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [
+        "/assets/images/drahman-logo.png"
+      ],
+      "scrollY": 0,
+      "viewport": "390x844"
+    },
+    "lab-hero-mobile": {
+      "title": "Prototipo · sitio con el lenguaje del laboratorio — Christian Luciani",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 18,
+        "y": 130,
+        "w": 354,
+        "h": 163,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(231, 237, 246)",
+        "font": "ui-sans-serif, system-ui, -apple-system, \"Segoe "
+      },
+      "heroLabel": {
+        "x": 18,
+        "y": 85,
+        "w": 354,
+        "h": 33,
+        "opacity": "1",
+        "display": "flex",
+        "color": "rgb(0, 201, 192)",
+        "font": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, "
+      },
+      "canvas": null,
+      "navItems": 9,
+      "tarjetas": 3,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 0,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116"
+      ],
+      "canvases": [],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 0,
+      "viewport": "390x844"
+    },
+    "actual-sala01-mobile": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 31,
+        "y": -1134,
+        "w": 328,
+        "h": 83,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 31,
+        "y": -1195,
+        "w": 328,
+        "h": 37,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 300,
+        "h": 150,
+        "cssW": 300,
+        "cssH": 150,
+        "alfaMedio": 6
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-proyectos",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 260,
+          "h": 338,
+          "cssW": 260,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-comp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-exp",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-fisica",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 328,
+          "h": 540,
+          "cssW": 328,
+          "cssH": 540
+        },
+        {
+          "id": "c-necker",
+          "w": 300,
+          "h": 150,
+          "cssW": 300,
+          "cssH": 150
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 326,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 248,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 258
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [
+        "/assets/images/drahman-logo.png"
+      ],
+      "scrollY": 1517,
+      "viewport": "390x844"
+    },
+    "actual-sala01-canvasfull-mobile": {
+      "title": "Christian Luciani — Museo de una Trayectoria",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 31,
+        "y": -1134,
+        "w": 328,
+        "h": 83,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(255, 255, 255)",
+        "font": "\"Playfair Display\", serif"
+      },
+      "heroLabel": {
+        "x": 31,
+        "y": -1195,
+        "w": 328,
+        "h": 37,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(0, 201, 192)",
+        "font": "\"Fira Code\", monospace"
+      },
+      "canvas": {
+        "w": 390,
+        "h": 844,
+        "cssW": 390,
+        "cssH": 844,
+        "alfaMedio": 4
+      },
+      "navItems": 9,
+      "tarjetas": 10,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 52,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116",
+        "lh3.googleusercontent.com"
+      ],
+      "canvases": [
+        {
+          "id": "hero-canvas",
+          "w": 390,
+          "h": 844,
+          "cssW": 390,
+          "cssH": 844
+        },
+        {
+          "id": "c-proyectos",
+          "w": 390,
+          "h": 5923,
+          "cssW": 390,
+          "cssH": 5923
+        },
+        {
+          "id": "c-stairs-ill",
+          "w": 260,
+          "h": 338,
+          "cssW": 260,
+          "cssH": 338
+        },
+        {
+          "id": "c-bastidor",
+          "w": 390,
+          "h": 5964,
+          "cssW": 390,
+          "cssH": 5964
+        },
+        {
+          "id": "c-comp",
+          "w": 390,
+          "h": 1973,
+          "cssW": 390,
+          "cssH": 1973
+        },
+        {
+          "id": "c-exp",
+          "w": 390,
+          "h": 2658,
+          "cssW": 390,
+          "cssH": 2658
+        },
+        {
+          "id": "c-fisica",
+          "w": 390,
+          "h": 2981,
+          "cssW": 390,
+          "cssH": 2981
+        },
+        {
+          "id": "c-penrose",
+          "w": 298,
+          "h": 278,
+          "cssW": 298,
+          "cssH": 278
+        },
+        {
+          "id": "c-graph",
+          "w": 328,
+          "h": 540,
+          "cssW": 328,
+          "cssH": 540
+        },
+        {
+          "id": "c-necker",
+          "w": 390,
+          "h": 2307,
+          "cssW": 390,
+          "cssH": 2307
+        },
+        {
+          "id": "c-necker-ill",
+          "w": 326,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 248
+        },
+        {
+          "id": "c-koch-buzon",
+          "w": 248,
+          "h": 248,
+          "cssW": 326,
+          "cssH": 258
+        }
+      ],
+      "overflowX": 0,
+      "imgsRotos": [
+        "/assets/images/drahman-logo.png"
+      ],
+      "scrollY": 1517,
+      "viewport": "390x844"
+    },
+    "lab-sala01-mobile": {
+      "title": "Prototipo · sitio con el lenguaje del laboratorio — Christian Luciani",
+      "loaderOculto": true,
+      "heroName": {
+        "x": 18,
+        "y": -1086,
+        "w": 354,
+        "h": 163,
+        "opacity": "1",
+        "display": "block",
+        "color": "rgb(231, 237, 246)",
+        "font": "ui-sans-serif, system-ui, -apple-system, \"Segoe "
+      },
+      "heroLabel": {
+        "x": 18,
+        "y": -1131,
+        "w": 354,
+        "h": 33,
+        "opacity": "1",
+        "display": "flex",
+        "color": "rgb(0, 201, 192)",
+        "font": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, "
+      },
+      "canvas": null,
+      "navItems": 9,
+      "tarjetas": 3,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 0,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116"
+      ],
+      "canvases": [],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 1216,
+      "viewport": "390x844"
+    },
+    "comparar-mobile": {
+      "title": "Comparación A/B · sitio actual vs lenguaje del laboratorio — issue #89",
+      "loaderOculto": true,
+      "heroName": null,
+      "heroLabel": {
+        "x": 16,
+        "y": 28,
+        "w": 358,
+        "h": 12,
+        "opacity": "1",
+        "display": "flex",
+        "color": "rgb(0, 201, 192)",
+        "font": "ui-monospace, \"SF Mono\", SFMono-Regular, Menlo, "
+      },
+      "canvas": null,
+      "navItems": 0,
+      "tarjetas": 0,
+      "fuentes": {
+        "status": "loaded",
+        "cargadas": 0,
+        "playfair": true,
+        "fira": true,
+        "cormorant": true
+      },
+      "externas": [
+        "127.0.0.1:52116"
+      ],
+      "canvases": [],
+      "overflowX": 0,
+      "imgsRotos": [],
+      "scrollY": 0,
+      "viewport": "390x844"
+    }
+  },
+  "actual-hero-desktop": {
+    "url": "/",
+    "viewport": "1440x900",
+    "red": {
+      "requests": 32,
+      "bytes": 657843,
+      "porTipo": {
+        "Document": 133913,
+        "Stylesheet": 1679,
+        "Script": 84582,
+        "Image": 277527,
+        "Font": 158073,
+        "Media": 0,
+        "Other": 2069
+      },
+      "fuentes": [
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 36891
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 38596
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 22079
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 22595
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 37912
+        }
+      ],
+      "hosts": [
+        "127.0.0.1:52116",
+        "fonts.googleapis.com",
+        "lh3.googleusercontent.com",
+        "",
+        "fonts.gstatic.com"
+      ],
+      "mayores": [
+        {
+          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
+          "bytes": 135704
+        },
+        {
+          "url": "/",
+          "bytes": 133913
+        },
+        {
+          "url": "/assets/index-yEnDpHK2.js",
+          "bytes": 84582
+        },
+        {
+          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
+          "bytes": 40017
+        },
+        {
+          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
+          "bytes": 38596
+        },
+        {
+          "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
+          "bytes": 37912
+        }
+      ]
+    },
+    "requests": 9,
+    "transferBytes": 230856,
+    "decodedBytes": 247361,
+    "jsBytes": 84683,
+    "cssBytes": 0,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 496,
+    "loadEventMs": 843,
+    "nodes": 835
+  },
+  "actual-hero-canvasfull-desktop": {
+    "url": "/",
+    "viewport": "1440x900",
+    "red": {
+      "requests": 31,
+      "bytes": 654042,
+      "porTipo": {
+        "Document": 133913,
+        "Stylesheet": 1235,
+        "Script": 84582,
+        "Image": 277162,
+        "Font": 157150,
+        "Media": 0
+      },
+      "fuentes": [
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 36372
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 38492
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 21981
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 22497
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 37808
+        }
+      ],
+      "hosts": [
+        "127.0.0.1:52116",
+        "fonts.googleapis.com",
+        "lh3.googleusercontent.com",
+        "",
+        "fonts.gstatic.com"
+      ],
+      "mayores": [
+        {
+          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
+          "bytes": 135339
+        },
+        {
+          "url": "/",
+          "bytes": 133913
+        },
+        {
+          "url": "/assets/index-yEnDpHK2.js",
+          "bytes": 84582
+        },
+        {
+          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
+          "bytes": 40017
+        },
+        {
+          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
+          "bytes": 38492
+        },
+        {
+          "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
+          "bytes": 37808
+        }
+      ]
+    },
+    "requests": 8,
+    "transferBytes": 228659,
+    "decodedBytes": 245464,
+    "jsBytes": 84683,
+    "cssBytes": 0,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 196,
+    "loadEventMs": 458,
+    "nodes": 836
+  },
+  "lab-hero-desktop": {
+    "url": "/lab/",
+    "viewport": "1440x900",
+    "red": {
+      "requests": 3,
+      "bytes": 26991,
+      "porTipo": {
+        "Document": 9802,
+        "Stylesheet": 16004,
+        "Other": 1185
+      },
+      "fuentes": [],
+      "hosts": [
+        "127.0.0.1:52116",
+        "christianluciani.github.io"
+      ],
+      "mayores": [
+        {
+          "url": "/lab/estilo.css",
+          "bytes": 16004
+        },
+        {
+          "url": "/lab/",
+          "bytes": 9802
+        },
+        {
+          "url": "/assets/brand/favicon-aurea.svg",
+          "bytes": 1185
+        }
+      ]
+    },
+    "requests": 2,
+    "transferBytes": 16121,
+    "decodedBytes": 15821,
+    "jsBytes": 0,
+    "cssBytes": 16121,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 73,
+    "loadEventMs": 81,
+    "nodes": 147
+  },
+  "comparar-desktop": {
+    "url": "/lab/comparar.html",
+    "viewport": "1440x900",
+    "red": {
+      "requests": 13,
+      "bytes": 1992568,
+      "porTipo": {
+        "Document": 11098,
+        "Image": 1981470
+      },
+      "fuentes": [],
+      "hosts": [
+        "127.0.0.1:52116"
+      ],
+      "mayores": [
+        {
+          "url": "/lab/capturas/lab-hero-desktop.png",
+          "bytes": 316950
+        },
+        {
+          "url": "/lab/capturas/actual-hero-canvasfull-desktop.png",
+          "bytes": 295255
+        },
+        {
+          "url": "/lab/capturas/lab-sala01-desktop.png",
+          "bytes": 286942
+        },
+        {
+          "url": "/lab/capturas/actual-sala01-canvasfull-desktop.png",
+          "bytes": 212914
+        },
+        {
+          "url": "/lab/capturas/actual-sala01-desktop.png",
+          "bytes": 183045
+        },
+        {
+          "url": "/lab/capturas/lab-sala01-mobile.png",
+          "bytes": 139538
+        }
+      ]
+    },
+    "requests": 12,
+    "transferBytes": 1982826,
+    "decodedBytes": 1979226,
+    "jsBytes": 0,
+    "cssBytes": 0,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 13,
+    "loadEventMs": 43,
+    "nodes": 123
+  },
+  "actual-hero-mobile": {
+    "url": "/",
+    "viewport": "390x844",
+    "red": {
+      "requests": 31,
+      "bytes": 654042,
+      "porTipo": {
+        "Document": 133913,
+        "Stylesheet": 1235,
+        "Script": 84582,
+        "Image": 277162,
+        "Font": 157150,
+        "Media": 0
+      },
+      "fuentes": [
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 36372
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 38492
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 21981
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 22497
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 37808
+        }
+      ],
+      "hosts": [
+        "127.0.0.1:52116",
+        "fonts.googleapis.com",
+        "lh3.googleusercontent.com",
+        "",
+        "fonts.gstatic.com"
+      ],
+      "mayores": [
+        {
+          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
+          "bytes": 135339
+        },
+        {
+          "url": "/",
+          "bytes": 133913
+        },
+        {
+          "url": "/assets/index-yEnDpHK2.js",
+          "bytes": 84582
+        },
+        {
+          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
+          "bytes": 40017
+        },
+        {
+          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
+          "bytes": 38492
+        },
+        {
+          "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
+          "bytes": 37808
+        }
+      ]
+    },
+    "requests": 8,
+    "transferBytes": 228659,
+    "decodedBytes": 245464,
+    "jsBytes": 84683,
+    "cssBytes": 0,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 160,
+    "loadEventMs": 253,
+    "nodes": 835
+  },
+  "actual-hero-canvasfull-mobile": {
+    "url": "/",
+    "viewport": "390x844",
+    "red": {
+      "requests": 31,
+      "bytes": 1130497,
+      "porTipo": {
+        "Document": 133913,
+        "Stylesheet": 1235,
+        "Script": 84582,
+        "Image": 277166,
+        "Font": 157150,
+        "Media": 476451
+      },
+      "fuentes": [
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 36372
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 38492
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 21981
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 22497
+        },
+        {
+          "host": "fonts.gstatic.com",
+          "bytes": 37808
+        }
+      ],
+      "hosts": [
+        "127.0.0.1:52116",
+        "fonts.googleapis.com",
+        "lh3.googleusercontent.com",
+        "",
+        "fonts.gstatic.com"
+      ],
+      "mayores": [
+        {
+          "url": "/audio/whale-song.mp3",
+          "bytes": 476451
+        },
+        {
+          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
+          "bytes": 135343
+        },
+        {
+          "url": "/",
+          "bytes": 133913
+        },
+        {
+          "url": "/assets/index-yEnDpHK2.js",
+          "bytes": 84582
+        },
+        {
+          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
+          "bytes": 40017
+        },
+        {
+          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
+          "bytes": 38492
+        }
+      ]
+    },
+    "requests": 9,
+    "transferBytes": 705163,
+    "decodedBytes": 721668,
+    "jsBytes": 84683,
+    "cssBytes": 0,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 169,
+    "loadEventMs": 284,
+    "nodes": 836
+  },
+  "lab-hero-mobile": {
+    "url": "/lab/",
+    "viewport": "390x844",
+    "red": {
+      "requests": 2,
+      "bytes": 25806,
+      "porTipo": {
+        "Document": 9802,
+        "Stylesheet": 16004
+      },
+      "fuentes": [],
+      "hosts": [
+        "127.0.0.1:52116"
+      ],
+      "mayores": [
+        {
+          "url": "/lab/estilo.css",
+          "bytes": 16004
+        },
+        {
+          "url": "/lab/",
+          "bytes": 9802
+        }
+      ]
+    },
+    "requests": 1,
+    "transferBytes": 16121,
+    "decodedBytes": 15821,
+    "jsBytes": 0,
+    "cssBytes": 16121,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 51,
+    "loadEventMs": 54,
+    "nodes": 147
+  },
+  "comparar-mobile": {
+    "url": "/lab/comparar.html",
+    "viewport": "390x844",
+    "red": {
+      "requests": 13,
+      "bytes": 1992566,
+      "porTipo": {
+        "Document": 11098,
+        "Image": 1981468
+      },
+      "fuentes": [],
+      "hosts": [
+        "127.0.0.1:52116"
+      ],
+      "mayores": [
+        {
+          "url": "/lab/capturas/lab-hero-desktop.png",
+          "bytes": 316950
+        },
+        {
+          "url": "/lab/capturas/actual-hero-canvasfull-desktop.png",
+          "bytes": 295255
+        },
+        {
+          "url": "/lab/capturas/lab-sala01-desktop.png",
+          "bytes": 286942
+        },
+        {
+          "url": "/lab/capturas/actual-sala01-canvasfull-desktop.png",
+          "bytes": 212914
+        },
+        {
+          "url": "/lab/capturas/actual-sala01-desktop.png",
+          "bytes": 183045
+        },
+        {
+          "url": "/lab/capturas/lab-sala01-mobile.png",
+          "bytes": 139538
+        }
+      ]
+    },
+    "requests": 12,
+    "transferBytes": 1982824,
+    "decodedBytes": 1979224,
+    "jsBytes": 0,
+    "cssBytes": 0,
+    "fontRequests": 0,
+    "fontBytes": 0,
+    "domContentLoadedMs": 14,
+    "loadEventMs": 53,
+    "nodes": 123
+  },
+  "archivos": {
+    "actual-html-index": 133712,
+    "actual-js-bundle": "assets/index-yEnDpHK2.js",
+    "prototipo-html": 9618,
+    "prototipo-css": 15821
+  }
+}
