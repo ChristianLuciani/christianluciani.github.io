@@ -17,6 +17,84 @@ const FADE_OUT = 1100; // ms
 const STEP = 350; // espera entre transiciones
 const START_DELAY = 700; // ms de negro antes de la primera frase (parsimonia)
 
+/** Frase 1 en triángulo: hold tras la entrada antes del fade-out. */
+const TRIANGLE_HOLD = 1500; // ms
+/** Si el clock no late, cuánto esperar antes de caer a cadencia fija. */
+const TICK_FALLBACK_MS = 700; // ms
+/** Cadencia de respaldo (sin Espirángulo) y separación mínima entre entradas. */
+const WORD_FALLBACK_MS = 420; // ms
+const WORD_MIN_GAP = 260; // ms — un tick sí, dos también: nunca a ráfaga
+/** Techo duro: la intro jamás se cuelga esperando un tick que no llega. */
+const TRIANGLE_MAX_WAIT = 6000; // ms
+
+/**
+ * Entrada acompasada al Espirángulo: cada palabra de la frase entra en un
+ * `espirangulo:tick` — el choque link-nodo del logo (ver `ts/app/tempo.ts`).
+ * `WORD_MIN_GAP` evita que un tempo rápido arme el triángulo de golpe.
+ * Si el clock no emite (logo ausente, cronograma que no llegó), cae a una
+ * cadencia fija y hay un techo duro: la intro nunca se cuelga.
+ */
+function enterOnTempo(words: HTMLElement[]): Promise<void> {
+  return new Promise<void>((resolve) => {
+    let revealed = 0;
+    let lastAt = 0;
+    let done = false;
+    let wait: number | undefined;
+    let fallback: number | undefined;
+    let hard: number | undefined;
+
+    const cleanup = () => {
+      done = true;
+      if (wait) window.clearTimeout(wait);
+      if (fallback) window.clearInterval(fallback);
+      if (hard) window.clearTimeout(hard);
+      window.removeEventListener("espirangulo:tick", onTick);
+      wait = fallback = hard = undefined;
+    };
+
+    const revealOne = () => {
+      if (done) return;
+      const word = words[revealed];
+      if (word) {
+        word.classList.add("p-word--on");
+        revealed++;
+      }
+      if (revealed >= words.length) {
+        cleanup();
+        resolve();
+      }
+    };
+
+    const onTick = (event: Event) => {
+      const detail = (event as CustomEvent<{ at?: number }>).detail;
+      const at = detail?.at ?? performance.now();
+      if (at - lastAt < WORD_MIN_GAP) return;
+      lastAt = at;
+      if (wait) {
+        window.clearTimeout(wait);
+        wait = undefined;
+      }
+      revealOne();
+    };
+
+    window.addEventListener("espirangulo:tick", onTick);
+    // Las TRES palabras esperan su tick, incluida la primera: el triángulo se
+    // arma con el reloj del logo, no con el arranque de la frase. El respaldo
+    // y el techo garantizan que eso no cuelgue la intro.
+    wait = window.setTimeout(() => {
+      fallback = window.setInterval(revealOne, WORD_FALLBACK_MS);
+    }, TICK_FALLBACK_MS);
+    hard = window.setTimeout(() => {
+      while (revealed < words.length) {
+        words[revealed].classList.add("p-word--on");
+        revealed++;
+      }
+      cleanup();
+      resolve();
+    }, TRIANGLE_MAX_WAIT);
+  });
+}
+
 /** Intervalo del foco de lectura guiada: lento (~2× más lento que antes). */
 function wordInterval(count: number): number {
   return Math.min(700, Math.max(300, Math.round(3600 / Math.max(1, count))));
@@ -173,11 +251,16 @@ export function initIntro(): void {
 
   function showPhrase(i: number) {
     if (wordTimer) window.clearTimeout(wordTimer);
+    // La primera frase se arma en triángulo y entra al tempo del Espirángulo;
+    // las demás conservan la lectura guiada.
+    const triangle = i === 0;
+    phraseEl.classList.toggle("intro-phrase--triangle", triangle);
     phraseEl.innerHTML = renderPhraseWords(FRASES[i]);
     phraseEl.classList.add("in");
-    const count = phraseEl.querySelectorAll(".p-word").length;
-    startWordReading();
-    setTimeout(() => {
+    const words = Array.from(phraseEl.querySelectorAll<HTMLElement>(".p-word"));
+    const count = words.length;
+
+    const leave = () => {
       phraseEl.classList.remove("in");
       phraseEl.classList.add("out");
       setTimeout(() => {
@@ -191,7 +274,16 @@ export function initIntro(): void {
           finish(reveal);
         }
       }, FADE_OUT);
-    }, phraseDisplay(count));
+    };
+
+    if (triangle) {
+      void enterOnTempo(words).then(() => {
+        setTimeout(leave, TRIANGLE_HOLD);
+      });
+    } else {
+      startWordReading();
+      setTimeout(leave, phraseDisplay(count));
+    }
   }
 
   function start() {
