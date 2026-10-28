@@ -66,16 +66,16 @@ function htmlNavDots(): { target: string; label: string }[] {
   return dots;
 }
 
-/** Celdas .bp-room del plano SVG: href, num, label — en orden del documento. */
-function htmlPlanoCells(): { href: string; num: string; label: string }[] {
+/** Celdas .bp-room del plano SVG: href, sala, num, label — en orden del documento. */
+function htmlPlanoCells(): { href: string; sala: string; num: string; label: string }[] {
   const start = INDEX_HTML.indexOf('<svg class="bp-svg"');
   const end = INDEX_HTML.indexOf("</svg>", start);
   const svg = INDEX_HTML.slice(start, end);
   const re =
-    /<a href="([^"]+)" class="bp-room">\s*<rect[^>]*\/>\s*<text class="bp-num"\s+x="\d+" y="\d+">([^<]+)<\/text>\s*<text class="bp-name"\s+x="\d+" y="\d+">([^<]+)<\/text>\s*<\/a>/g;
-  const cells: { href: string; num: string; label: string }[] = [];
+    /<a href="([^"]+)" class="bp-room">\s*<rect[^>]*\/>\s*<text class="bp-sala"\s+x="\d+" y="\d+">([^<]+)<\/text>\s*<text class="bp-num"\s+x="\d+" y="\d+">([^<]+)<\/text>\s*<text class="bp-name"\s+x="\d+" y="\d+">([^<]+)<\/text>\s*<\/a>/g;
+  const cells: { href: string; sala: string; num: string; label: string }[] = [];
   let m: RegExpExecArray | null;
-  while ((m = re.exec(svg))) cells.push({ href: m[1], num: m[2], label: m[3] });
+  while ((m = re.exec(svg))) cells.push({ href: m[1], sala: m[2], num: m[3], label: m[4] });
   return cells;
 }
 
@@ -119,6 +119,7 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
     const cells = htmlPlanoCells();
     const meta = planoCellMeta();
     expect(cells.map((c) => c.href)).toEqual(meta.map((m) => (m.id === "hero" ? "#hero" : `#room-${m.id}`)));
+    expect(cells.map((c) => c.sala)).toEqual(meta.map((m) => m.sala));
     expect(cells.map((c) => c.num)).toEqual(meta.map((m) => m.num));
     expect(cells.map((c) => c.label)).toEqual(meta.map((m) => m.label));
     // La galería (oculta) no está en el plano.
@@ -127,13 +128,13 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
 
   it("ROOM_EN derivado == baseline de 9 títulos EN (nuevo orden: proyectos primero)", () => {
     expect(roomEnList()).toEqual([
-      "The <em>Exhibition</em>",
-      "The <em>Studio</em>",
-      "The <em>Workshop</em>",
-      "The <em>Journey</em>",
+      "The <em>Frame</em>",
+      "The <em>Stretcher</em>",
+      "The <em>Palette</em>",
+      "The <em>Frieze</em>",
       "The <em>Library</em>",
-      "The <em>Constellation</em>",
-      "The <em>Visitor</em>",
+      "The <em>Compass</em>",
+      "The <em>Self-Portrait</em>",
       "The <em>Mailbox</em>",
       "The <em>Archive</em>"
     ]);

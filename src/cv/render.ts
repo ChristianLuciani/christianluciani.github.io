@@ -93,8 +93,9 @@ export function roomEnList(): string[] {
 
 /**
  * MAP_EXTRA — claves de sala del diccionario i18n generadas desde SALAS:
- * "SALA 01"→"ROOM 01" (visibles) y subtitulo→subtituloEn (todas). El script i18n
- * las fusiona en el MAP en runtime (idempotente).
+ * "SALA 01"→"ROOM 01" (visibles), subtitulo→subtituloEn (todas), el título en
+ * mayúsculas (el plano lo rotula así) y "SALA"→"ROOM" (etiqueta del plano). El
+ * script i18n las fusiona en el MAP en runtime (idempotente).
  */
 export function mapExtra(): Record<string, string> {
   const extra: Record<string, string> = {};
@@ -105,6 +106,11 @@ export function mapExtra(): Record<string, string> {
   for (const s of SALAS) {
     extra[s.subtitulo] = s.subtituloEn;
   }
+  const plain = (html: string) => html.replace(/<[^>]*>/g, "").toUpperCase();
+  for (const s of SALAS) {
+    extra[plain(s.titulo)] = plain(s.tituloEn);
+  }
+  extra["SALA"] = "ROOM";
   return extra;
 }
 

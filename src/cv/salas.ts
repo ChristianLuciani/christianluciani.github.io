@@ -61,42 +61,42 @@ export const HERO_NAV = {
 export const SALAS: SalaDef[] = [
   {
     id: "proyectos",
-    titulo: "La <em>Exposición</em>",
-    tituloEn: "The <em>Exhibition</em>",
+    titulo: "El <em>Marco</em>",
+    tituloEn: "The <em>Frame</em>",
     subtitulo: `OBRA PUBLICADA · ARTEFACTO AUDITABLE · ${publicados.length} PROYECTOS`,
     subtituloEn: `PUBLISHED WORK · AUDITABLE ARTIFACT · ${publicados.length} PROJECTS`,
-    navLabel: "Exposición",
-    navLabelEn: "Exhibition",
+    navLabel: "Marco",
+    navLabelEn: "Frame",
     ilusion: "c-proyectos"
   },
   {
     id: "bastidor",
     titulo: "El <em>Bastidor</em>",
-    tituloEn: "The <em>Studio</em>",
+    tituloEn: "The <em>Stretcher</em>",
     subtitulo: `EN DESARROLLO · PROTOTIPOS E IDEAS · ${enDesarrollo.length} PROYECTOS`,
     subtituloEn: `IN DEVELOPMENT · PROTOTYPES AND IDEAS · ${enDesarrollo.length} PROJECTS`,
     navLabel: "Bastidor",
-    navLabelEn: "Studio",
+    navLabelEn: "Stretcher",
     ilusion: "c-bastidor"
   },
   {
     id: "competencias",
-    titulo: "El <em>Taller</em>",
-    tituloEn: "The <em>Workshop</em>",
+    titulo: "La <em>Paleta</em>",
+    tituloEn: "The <em>Palette</em>",
     subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
     subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
-    navLabel: "Taller",
-    navLabelEn: "Workshop",
+    navLabel: "Paleta",
+    navLabelEn: "Palette",
     ilusion: "c-comp"
   },
   {
     id: "experiencia",
-    titulo: "El <em>Recorrido</em>",
-    tituloEn: "The <em>Journey</em>",
+    titulo: "El <em>Friso</em>",
+    tituloEn: "The <em>Frieze</em>",
     subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
     subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
-    navLabel: "Recorrido",
-    navLabelEn: "Journey",
+    navLabel: "Friso",
+    navLabelEn: "Frieze",
     ilusion: "c-exp"
   },
   {
@@ -111,22 +111,22 @@ export const SALAS: SalaDef[] = [
   },
   {
     id: "grafo",
-    titulo: "La <em>Constelación</em>",
-    tituloEn: "The <em>Constellation</em>",
+    titulo: "El <em>Compás</em>",
+    tituloEn: "The <em>Compass</em>",
     subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
-    subtituloEn: "CONSTELLATION · AREAS · PROJECTS · CONNECTIONS · 2026",
-    navLabel: "Constelación",
-    navLabelEn: "Constellation",
+    subtituloEn: "NETWORK · AREAS · PROJECTS · CONNECTIONS · 2026",
+    navLabel: "Compás",
+    navLabelEn: "Compass",
     ilusion: "c-graph"
   },
   {
     id: "perfil",
-    titulo: "El <em>Visitante</em>",
-    tituloEn: "The <em>Visitor</em>",
+    titulo: "El <em>Autorretrato</em>",
+    tituloEn: "The <em>Self-Portrait</em>",
     subtitulo: "PERFIL PROFESIONAL · CUENCA, ECUADOR",
     subtituloEn: "PROFESSIONAL PROFILE · CUENCA, ECUADOR",
-    navLabel: "Perfil",
-    navLabelEn: "Profile",
+    navLabel: "Autorretrato",
+    navLabelEn: "Self-Portrait",
     ilusion: "c-necker"
   },
   {
@@ -135,8 +135,8 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Mailbox</em>",
     subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
     subtituloEn: "CONTACT · NETWORKS · RESEARCH",
-    navLabel: "Contacto",
-    navLabelEn: "Contact"
+    navLabel: "Buzón",
+    navLabelEn: "Mailbox"
   },
   {
     id: "galeria",

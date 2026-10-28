@@ -20,8 +20,10 @@ const PLANO_TOP = `<!-- ══════════════════�
     .bp-path{fill:none;stroke:#c9a84c;stroke-width:1;stroke-dasharray:4 5;opacity:.45}
     .bp-room rect{fill:rgba(0,201,192,.04);stroke:var(--teal);stroke-width:1.2;transition:fill .25s}
     .bp-room:hover rect{fill:rgba(0,201,192,.17)}
+    .bp-room .bp-sala{fill:var(--muted);font-family:var(--font-mono);font-size:9px;letter-spacing:1.8px}
     .bp-room .bp-num{fill:#c9a84c;font-family:var(--font-mono);font-size:22px;font-weight:bold}
     .bp-room .bp-name{fill:#d6dde8;font-family:var(--font-mono);font-size:12px;letter-spacing:1px}
+    .bp-room:hover .bp-sala{fill:var(--teal)}
     .bp-room:hover .bp-name{fill:var(--teal)}
     @media print{#room-plano{display:none}}
   </style>
@@ -42,17 +44,20 @@ const PLANO_BOTTOM = `  </svg>
 /** Una celda del plano (entrada o sala). */
 interface PlanoCell {
   href: string;
+  /** Etiqueta de categoría sobre el número (SALA en ES, ROOM en EN). */
+  sala: string;
   num: string;
   label: string;
 }
 
 function planoCells(): PlanoCell[] {
   const cells: PlanoCell[] = [
-    { href: `#${HERO_NAV.id}`, num: "00", label: "ENTRADA" }
+    { href: `#${HERO_NAV.id}`, sala: "SALA", num: "00", label: "ENTRADA" }
   ];
   for (const s of visibleSalas()) {
     cells.push({
       href: `#${sectionId(s.id)}`,
+      sala: "SALA",
       num: numFor(s.id) ?? "",
       label: s.titulo.replace(/<[^>]*>/g, "").toUpperCase()
     });
@@ -69,8 +74,9 @@ function renderCell(c: PlanoCell, i: number): string {
   return (
     `  <a href="${c.href}" class="bp-room">\n` +
     `    <rect x="${x}" y="${y}" width="240" height="130" rx="2"/>\n` +
-    `    <text class="bp-num"  x="${x + 18}" y="${y + 42}">${c.num}</text>\n` +
-    `    <text class="bp-name" x="${x + 18}" y="${y + 110}">${c.label}</text>\n` +
+    `    <text class="bp-sala" x="${x + 18}" y="${y + 20}">${c.sala}</text>\n` +
+    `    <text class="bp-num"  x="${x + 18}" y="${y + 50}">${c.num}</text>\n` +
+    `    <text class="bp-name" x="${x + 18}" y="${y + 112}">${c.label}</text>\n` +
     `  </a>\n`
   );
 }
@@ -80,12 +86,12 @@ export function planoHtml(): string {
 }
 
 /** Test helper: metadatos de celda por sala visible (orden nav). */
-export function planoCellMeta(): { id: string; num: string; label: string }[] {
+export function planoCellMeta(): { id: string; sala: string; num: string; label: string }[] {
   const ids = [HERO_NAV.id, ...visibleSalas().map((s) => s.id)];
   return ids.map((id) => {
     const s = SALAS.find((x) => x.id === id);
     const label = s ? s.titulo.replace(/<[^>]*>/g, "").toUpperCase() : "ENTRADA";
     const num = id === HERO_NAV.id ? "00" : (numFor(id) ?? "");
-    return { id, num, label };
+    return { id, sala: "SALA", num, label };
   });
 }
