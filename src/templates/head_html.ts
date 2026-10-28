@@ -508,21 +508,30 @@ a { color:inherit; }
    Los DOS ÚLTIMOS trazos del Espirángulo (la C) dibujados en oro bajo
    «Instancia Humana». La geometría sale del propio logo (svg.dataset.c), no de
    una imitación; el SVG lo crea intro.ts → drawGoldTrace(). */
-.intro-phrase--final { min-height:6rem; }
+/* La caja de la frase final es el SISTEMA DE COORDENADAS de la C: la traza y
+   las dos palabras comparten el mismo encaje (meet centrado), así el texto
+   se apoya sobre los dos últimos tramos en vez de flotar cerca de ellos. */
+.intro-phrase--final {
+  display:block;
+  width:min(520px, 90vw);
+  height:clamp(230px, 40vh, 360px);
+  margin:0 auto;
+}
+.intro-phrase--final .p-word:nth-child(1) {
+  position:absolute; left:50%; top:0;
+  transform:translateX(-50%);
+  white-space:nowrap;
+}
+.intro-phrase--final .p-word:nth-child(n+2) { white-space:nowrap; }
 .intro-trace {
-  position:absolute; left:50%; top:50%;
-  /* La C es retrato (bbox ~310×412): se acota por ALTO para que la traza no se
-     coma la frase; el ancho sale de la proporción real (height:auto). */
-  height:clamp(120px, 20vh, 190px);
-  width:auto;
-  transform:translate(-50%,-50%);
-  opacity:.9;
+  position:absolute; inset:0;
+  width:100%; height:100%;
   pointer-events:none;
   z-index:0;
 }
 @media (max-width:620px) {
   .intro-phrase--triangle { min-height:8rem; gap:.4rem .5rem; }
-  .intro-trace { height:clamp(96px, 16vh, 140px); }
+  .intro-phrase--final { width:min(360px, 92vw); height:clamp(200px, 34vh, 280px); }
 }
 
 @media (prefers-reduced-motion: reduce) {

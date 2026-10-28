@@ -10,7 +10,7 @@
 const FRASES = [
   "Arte, Ciencia, Filosofía.",
   "Perspectivas del Universo…",
-  "<span>Instancia Humana</span>"
+  "<span>Una<br>Instancia Humana.</span>"
 ];
 
 const FADE_OUT = 1100; // ms
@@ -116,51 +116,109 @@ function choreograph(words: HTMLElement[]): Promise<void> {
   });
 }
 
+/** Geometría de los dos últimos trazos del Espirángulo (la C), normalizada. */
+interface CGeometry {
+  a: { x: number; y: number };
+  b: { x: number; y: number };
+  tip: { x: number; y: number };
+  minX: number;
+  minY: number;
+  vbW: number;
+  vbH: number;
+}
+
 /**
- * Traza de los DOS ÚLTIMOS trazos del Espirángulo — la C. El logo publica sus
- * tres puntos en `svg.dataset.c` ({a, b, tip}), así que la traza usa la
- * geometría real de la marca y no una imitación. Se dibuja en oro con
- * terminales redondeados, bajo las dos palabras, como último compás.
+ * Lee la geometría de la C que publica el logo en `svg.dataset.c`. Es la misma
+ * que dibuja la marca, así que las palabras y la traza se pueden coordinar con
+ * los DOS ÚLTIMOS TRAMOS exactos en vez de con una aproximación.
+ */
+function readCGeometry(): CGeometry | null {
+  const raw = document.querySelector<SVGSVGElement>("#brand-logo svg")?.dataset.c;
+  if (!raw) return null;
+  try {
+    const { a, b, tip } = JSON.parse(raw) as Record<"a" | "b" | "tip", { x: number; y: number }>;
+    const xs = [a.x, b.x, tip.x];
+    const ys = [a.y, b.y, tip.y];
+    const pad = 10;
+    const minX = Math.min(...xs) - pad;
+    const minY = Math.min(...ys) - pad;
+    return {
+      a, b, tip, minX, minY,
+      vbW: Math.max(...xs) - minX + pad,
+      vbH: Math.max(...ys) - minY + pad,
+    };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Coordina las dos últimas palabras con los dos últimos tramos: cada palabra se
+ * apoya sobre su tramo, rotada al ángulo del segmento y centrada en su punto
+ * medio. No es una decoración detrás del texto — el texto ES el trazo.
+ */
+function alignWordsToStrokes(words: HTMLElement[], box: HTMLElement): void {
+  const g = readCGeometry();
+  if (!g || words.length < 2) return;
+  const rect = box.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  // Mismo encaje que el SVG de la traza: `meet` centrado (preserveAspectRatio).
+  const scale = Math.min(rect.width / g.vbW, rect.height / g.vbH);
+  const offX = (rect.width - g.vbW * scale) / 2;
+  const offY = (rect.height - g.vbH * scale) / 2;
+  const map = (p: { x: number; y: number }) => ({
+    x: (p.x - g.minX) * scale + offX,
+    y: (p.y - g.minY) * scale + offY,
+  });
+
+  const segments: Array<[{ x: number; y: number }, { x: number; y: number }]> = [
+    [g.a, g.b],
+    [g.b, g.tip],
+  ];
+  segments.forEach(([p0, p1], i) => {
+    const word = words[i + 1]; // words[0] = «Una»
+    if (!word) return;
+    const mid = map({ x: (p0.x + p1.x) / 2, y: (p0.y + p1.y) / 2 });
+    let deg = (Math.atan2(p1.y - p0.y, p1.x - p0.x) * 180) / Math.PI;
+    // El tramo puede apuntar hacia atrás (la C sube y gira): si el ángulo pasa
+    // de ±90° el texto quedaría boca abajo. Se lee igual sobre la misma recta.
+    if (deg > 90 || deg < -90) deg += deg > 0 ? -180 : 180;
+    word.style.position = "absolute";
+    word.style.left = `${mid.x}px`;
+    word.style.top = `${mid.y}px`;
+    word.style.transformOrigin = "center";
+    word.style.transform = `translate(-50%,-50%) rotate(${deg}deg)`;
+  });
+}
+
+/**
+ * Traza de los DOS ÚLTIMOS trazos del Espirángulo (la C), en oro y por debajo
+ * de las dos palabras — que ya están apoyadas sobre esos mismos tramos
+ * (`alignWordsToStrokes`). Se revela por `stroke-dashoffset`.
  * Sin logo montado no dibuja nada: la frase se sostiene igual.
  */
 function drawGoldTrace(target: HTMLElement): Promise<void> {
   return new Promise<void>((resolve) => {
-    const svg = document.querySelector<SVGSVGElement>("#brand-logo svg");
-    const raw = svg?.dataset.c;
-    if (!raw) {
+    const g = readCGeometry();
+    if (!g) {
       resolve();
       return;
     }
-    let pts: Array<{ x: number; y: number }>;
-    try {
-      const { a, b, tip } = JSON.parse(raw) as Record<string, { x: number; y: number }>;
-      pts = [a, b, tip];
-    } catch {
-      resolve();
-      return;
-    }
-    const xs = pts.map((p) => p.x);
-    const ys = pts.map((p) => p.y);
-    const pad = 6;
-    const minX = Math.min(...xs) - pad;
-    const minY = Math.min(...ys) - pad;
-    const w = Math.max(...xs) - minX + pad;
-    const h = Math.max(...ys) - minY + pad;
-
     const ns = "http://www.w3.org/2000/svg";
     const trace = document.createElementNS(ns, "svg");
     trace.setAttribute("class", "intro-trace");
-    trace.setAttribute("viewBox", `${minX} ${minY} ${w} ${h}`);
+    trace.setAttribute("viewBox", `${g.minX} ${g.minY} ${g.vbW} ${g.vbH}`);
     trace.setAttribute("aria-hidden", "true");
     trace.setAttribute("preserveAspectRatio", "xMidYMid meet");
 
     const path = document.createElementNS(ns, "path");
-    path.setAttribute("d", `M ${pts[0].x} ${pts[0].y} L ${pts[1].x} ${pts[1].y} L ${pts[2].x} ${pts[2].y}`);
+    path.setAttribute("d", `M ${g.a.x} ${g.a.y} L ${g.b.x} ${g.b.y} L ${g.tip.x} ${g.tip.y}`);
     path.setAttribute("fill", "none");
     path.setAttribute("stroke", "var(--gold)");
-    path.setAttribute("stroke-width", String(Math.max(3, Math.min(w, h) * 0.07)));
+    path.setAttribute("stroke-width", String(Math.max(2, Math.min(g.vbW, g.vbH) * 0.02)));
     path.setAttribute("stroke-linecap", "round");
     path.setAttribute("stroke-linejoin", "round");
+    path.setAttribute("opacity", ".55");
     path.setAttribute("pathLength", "1");
     path.setAttribute("stroke-dasharray", "1");
     path.setAttribute("stroke-dashoffset", "1");
@@ -306,6 +364,10 @@ export function initIntro(): void {
     phraseEl.innerHTML = renderPhraseWords(FRASES[i]);
     phraseEl.classList.add("in");
     const words = Array.from(phraseEl.querySelectorAll<HTMLElement>(".p-word"));
+    // Última frase: «Instancia» y «Humana» se apoyan sobre los dos últimos
+    // tramos del logo ANTES de entrar, así la coreografía las revela ya
+    // coordinadas con la C.
+    if (last) alignWordsToStrokes(words, phraseEl);
 
     const leave = () => {
       phraseEl.classList.remove("in");
