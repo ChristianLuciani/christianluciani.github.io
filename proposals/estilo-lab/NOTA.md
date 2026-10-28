@@ -29,6 +29,11 @@ Método, para que el número sea discutible:
 - `prefers-reduced-motion: reduce` se emula en el navegador de captura para saltar la
   intro de ~16 s y fotografiar el estado asentado. No cambia HTML, CSS ni assets.
 - Caché del browser **deshabilitado** en todas las corridas: cada viewport se mide en frío.
+- Audio ambiente **bloqueado** en la medición (`*audio*`): su descarga es bajo demanda y
+  no determinista; su peso se reporta aparte (§5).
+- El **par principal** del A/B usa el sitio con los canvas de fondo como corresponde
+  (`actual-*-canvasfull-*`, corrección inyectada solo en el navegador de captura); el
+  estado tal como se publica hoy (canvas 300×150) va en un bloque secundario rotulado.
 - Un solo Chrome, un solo perfil, viewport emulado por CDP (`deviceScaleFactor: 1`).
 - Cada captura deja una sonda de DOM en `mediciones.json > verificacion` (elemento
   visible, tamaño, color, fuentes cargadas, `overflowX`, canvas): el PNG no es la
@@ -78,7 +83,7 @@ AA texto grande = 3.0):
 | `--ink` #e7edf6 | 17.01 AA | 15.47 AA | 15.07 AA |
 | `--ink-dim` #8b9bb0 | 7.07 AA | 6.43 AA | 6.26 AA |
 | `--ink-faint` #5b6a7e | 3.63 **solo grande** | 3.30 **solo grande** | 3.22 **solo grande** |
-| `--ink-meta` #75849a (ajuste) | 5.76 AA | 4.79 AA | — |
+| `--ink-meta` #75849a (ajuste) | 5.27 AA | 4.79 AA | 4.67 AA |
 | `--text` del sitio #d6dde8 | 14.65 AA | — | 12.98 AA |
 | `--muted` del sitio #6b7a8d | 4.57 AA (al límite) | — | 4.05 **solo grande** |
 | `--teal` #00c9c0 | 9.65 AA | 8.77 AA | 8.55 AA |
@@ -90,7 +95,7 @@ Dos hallazgos, ambos resueltos o declarados en el prototipo:
 
 1. **`--ink-faint` del laboratorio falla AA para texto normal** (3.30–3.63:1) y el
    laboratorio lo usa en labels de 9–10.5 px. El prototipo introduce
-   `--ink-meta: #75849a` (4.79:1 sobre tarjeta, 5.76 sobre `--bg-0`) y lo usa en todo
+   `--ink-meta: #75849a` (4.79:1 sobre tarjeta, 5.27 sobre `--bg-0`) y lo usa en todo
    texto chico; `--ink-faint` queda solo para decoración. **Si se adopta el lenguaje
    del laboratorio, este token viaja corregido o no viaja.**
 2. `--muted` del sitio (#6b7a8d) está en 4.57 sobre `--night` y cae a 4.05 sobre la
@@ -99,24 +104,47 @@ Dos hallazgos, ambos resueltos o declarados en el prototipo:
 
 ## 5. Performance
 
-Medido en frío, una corrida por viewport, local (localhost, sin latencia de red):
+Medido en frío (caché del browser deshabilitado), una corrida por viewport, local
+(localhost, sin latencia de red). **Unidad: bytes; 1 kB = 1000 B**, y el total es la
+suma exacta de la columna (los redondeos a kB pueden diferir en 0,1 kB del total).
+Fuente única: eventos `Network` de CDP, que sí incluyen cross-origin — Resource Timing
+reporta 0 bytes para Google Fonts, y de ahí salían los "0 KB de fuentes" de la versión
+anterior de esta nota.
 
-| Métrica | Sitio actual | Prototipo | Delta |
-|---|---|---|---|
-| Peso desktop | **642,4 KB** / 32 requests | **26,4 KB** / 3 requests | −96 %, 10× menos requests |
-| Peso móvil | 638,7 KB / 31 requests | 25,2 KB / 2 requests | −96 % |
-| JS | 84,6 KB (29,3 KB gzip) | 0 | — |
-| Fuentes web | **158,1 KB en 5 woff2** (el CSS declara 52 `@font-face`) | 0 | −158 KB |
-| Imágenes | 277,5 KB (incluye 135,3 KB de la foto circular, servida desde `lh3.googleusercontent.com`) | 0 | — |
-| Documento HTML | 133,9 KB (CSS inline + JSON-LD + SVG) | 9,8 KB | 14× |
-| Nodos DOM | 835 | 147 | 5,7× |
-| DCL / load (local) | 496 ms / 843 ms | 73 ms / 81 ms | — |
+| Componente (bytes) | Actual desktop | Actual móvil | Prototipo desktop | Prototipo móvil |
+|---|---|---|---|---|
+| Documento | 133.913 | 133.913 | 9.853 | 9.853 |
+| CSS | 1.679 | 1.235 | 16.087 | 16.087 |
+| JS | 84.582 | 84.582 | 0 | 0 |
+| Imágenes | 277.527 | 277.163 | 0 | 0 |
+| Fuentes web | 158.073 | 157.150 | 0 | 0 |
+| Otros | 2.069 | 0 | 1.184 | 0 |
+| **Total** | 657.843 | 654.043 | 27.124 | 25.940 |
+| En kB | 657,8 | 654,0 | 27,1 | 25,9 |
+| Requests | 32 | 31 | 3 | 2 |
+| Nodos DOM | 835 | 835 | 147 | 147 |
+| DCL / load (ms) | 433 / 760 | 131 / 241 | 134 / 140 | 30 / 32 |
+
+
+El audio ambiente **no está en la tabla, a propósito**: `/audio/whale-song.mp3` pesa
+**476.204 B** y se descarga bajo demanda (cuando el hero ocupa ≥50 % del viewport); su
+carga no es determinista entre corridas (una la traía, otra no), así que la medición lo
+bloquea (`Network.setBlockedURLs(['*audio*'])`) y el peso queda en
+`mediciones.json > audioAmbiente`. Si se cuenta, la portada actual pesa
+**1.134.047 B (1.134,0 kB)**.
+
+La tabla se **genera** desde `mediciones.json` (`node proposals/estilo-lab/capturar.mjs --tabla`),
+no se copia a mano: un número, una fuente. Es la corrida registrada en ese archivo (ahí están
+los bytes exactos, la sonda de DOM y el resto). Los bytes varían ±1 % entre corridas (el CSS de Google Fonts
+se sirve con tamaños algo distintos); los tiempos varían hasta ±30 %, así que sirven como
+orden de magnitud, no como SLA.
 
 Lectura honesta de la tabla: el prototipo **no tiene** las features del sitio (9 salas,
 i18n, sonido, canvas de ilusión, grafo de conexiones, CV imprimible). La comparación
 de bytes vale como **cota del costo del lenguaje visual**, no como "el sitio podría
-pesar 26 KB". El ahorro realista al adoptar el lenguaje es el de las fuentes
-(−158 KB, la mitad del ahorro de bytes) más el CSS que deja de ser inline.
+pesar 26 KB": −96 % de bytes y 10× menos requests es lo que cuesta el lenguaje, no lo
+que cuesta el sitio. El ahorro realista al adoptarlo es el de las fuentes (−158 kB) más
+el CSS que deja de ser inline.
 
 ## 6. Esfuerzo de migración (estimación [INF], no medida)
 
@@ -221,9 +249,10 @@ animación.
    `c-proyectos`, `c-bastidor`, `c-comp`, `c-exp`, `c-fisica`, `c-necker`; los canvas con
    tamaño fijo (`c-stairs-ill` 496×338, `c-penrose`, `c-graph`, `c-necker-ill`) están bien.
    Arreglo de una línea (`#hero-canvas,.room-canvas{width:100%;height:100%}`), **no
-   aplicado** acá. Las capturas `actual-*-canvasfull-*.png` muestran el sitio con ese
-   arreglo inyectado solo en el navegador de captura, para que el A/B no compare contra
-   una portada degradada.
+   aplicado** acá. Por eso el **par principal** del A/B usa `actual-*-canvasfull-*.png`
+   (el sitio con ese arreglo inyectado solo en el navegador de captura) y el estado
+   publicado va como bloque secundario, rotulado "Así se publica hoy": la diferencia de
+   canvas no debe leerse como parte del lenguaje visual.
 2. **158 KB de fuentes para 52 `@font-face` declaradas y 5 woff2 usados.** Tres familias
    donde el sitio usa display+cuerpo+mono; Cormorant y Fira Code son candidatas obvias a
    retirar incluso sin rediseño.

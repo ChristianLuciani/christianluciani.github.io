@@ -13,7 +13,8 @@
   --ink-faint: #5b6a7e;
   /* Ajuste declarado sobre el laboratorio: --ink-faint rinde 3,30–3,63:1
    * (falla AA para texto normal). Para texto chico se usa --ink-meta
-   * (#75849a, 4,84:1 sobre tarjeta), el paso mínimo que pasa AA. */
+   * (#75849a: 4,79:1 sobre tarjeta, 5,27:1 sobre --bg-0 — valores de
+   * `node proposals/estilo-lab/contraste.mjs`, fuente única de los ratios). */
   --ink-meta: #75849a;
   --line: rgba(140, 170, 200, 0.14);
   --line-soft: rgba(140, 170, 200, 0.08);

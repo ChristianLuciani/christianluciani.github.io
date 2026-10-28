@@ -155,6 +155,11 @@ async function connect(wsUrl) {
   /* Cada corrida se mide en frío: sin esto la segunda pasada (móvil) lee del
    * caché del browser y reporta 0 bytes de fuentes, incomparable. */
   await send("Network.setCacheDisabled", { cacheDisabled: true });
+  /* El audio ambiente se descarga bajo demanda (al ocupar el hero ≥50% del
+   * viewport) y su carga NO es determinista entre corridas: una medía 476 KB y
+   * otra 0. Se bloquea para que el peso de la portada sea comparable y se
+   * reporta aparte en `audioAmbiente` (F4 del pase del PR #92). */
+  await send("Network.setBlockedURLs", { urls: ["*audio*"] });
 
   const evaluate = async (expression) => {
     const out = await send("Runtime.evaluate", {
@@ -225,20 +230,21 @@ async function connect(wsUrl) {
   return { send, evaluate, reduceMotion, viewport, goto, shot, netReset, network, close: () => ws.close() };
 }
 
-/* ── mediciones ─────────────────────────────────────────────────────── */
-const MEDIR = `(() => {
+/* ── mediciones ───────────────────────────────────────────────────────
+ *
+ * Regla de oro de este bloque: UNA fuente por métrica.
+ *   · bytes / requests / fuentes  → `red` (eventos Network de CDP). Resource
+ *     Timing NO sirve para bytes: los recursos cross-origin llegan con
+ *     transferSize=0 sin Timing-Allow-Origin, y por eso Google Fonts pesaba "0".
+ *   · tiempos                     → `nav` (PerformanceNavigationTiming).
+ *   · tamaño del DOM              → `dom`.
+ * Cualquier campo de peso calculado con Resource Timing se eliminó: dos
+ * fuentes para el mismo número es cómo un consumidor termina leyendo "0 fuentes"
+ * con 5 woff2 descargados (F3 del pase fresco del PR #92).
+ */
+const NAV = `(() => {
   const nav = performance.getEntriesByType('navigation')[0] || {};
-  const res = performance.getEntriesByType('resource');
-  const sum = (xs) => xs.reduce((a, e) => a + (e.transferSize || 0), 0);
-  const by = (re) => res.filter((e) => re.test(e.name));
   return {
-    requests: res.length,
-    transferBytes: sum(res),
-    decodedBytes: res.reduce((a, e) => a + (e.decodedBodySize || 0), 0),
-    jsBytes: sum(by(/\\.m?js(\\?|$)/)),
-    cssBytes: sum(by(/\\.css(\\?|$)/)),
-    fontRequests: by(/fonts\\.gstatic\\.com/).length,
-    fontBytes: sum(by(/fonts\\.gstatic\\.com/)),
     domContentLoadedMs: Math.round(nav.domContentLoadedEventEnd || 0),
     loadEventMs: Math.round(nav.loadEventEnd || 0),
     nodes: document.getElementsByTagName('*').length,
@@ -298,7 +304,42 @@ const waitLoaderGone = `(async () => {
   return -1;
 })()`;
 
+/* ── modo tabla ────────────────────────────────────────────────────────
+ * La tabla de §5 de la NOTA sale de mediciones.json, no de copiar números a
+ * mano: `--tabla` la imprime para pegarla, y así no hay dos verdades (F1/F4
+ * del pase del PR #92). */
+async function tabla() {
+  const doc = JSON.parse(await readFile(join(OUT, "mediciones.json"), "utf8"));
+  const c = doc.capturas;
+  const keys = [
+    ["Documento", "Document"],
+    ["CSS", "Stylesheet"],
+    ["JS", "Script"],
+    ["Imágenes", "Image"],
+    ["Fuentes web", "Font"],
+    ["Otros", "Other"],
+  ];
+  const cols = ["actual-hero-desktop", "actual-hero-mobile", "lab-hero-desktop", "lab-hero-mobile"];
+  /* Agrupación manual: es-ES no agrupa números de 4 dígitos (minGroupingDigits=2)
+   * y la tabla quedaba con 133.913 al lado de 9853. */
+  const n = (v) => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  const b = (k, t) => n(c[k]?.red.porTipo[t] ?? 0);
+  console.log("| Componente (bytes) | Actual desktop | Actual móvil | Prototipo desktop | Prototipo móvil |");
+  console.log("|---|---|---|---|---|");
+  for (const [label, type] of keys) {
+    console.log(`| ${label} | ${cols.map((k) => b(k, type)).join(" | ")} |`);
+  }
+  console.log(`| **Total** | ${cols.map((k) => n(c[k].red.bytes)).join(" | ")} |`);
+  console.log(`| En kB | ${cols.map((k) => (c[k].red.bytes / 1000).toFixed(1).replace(".", ",")).join(" | ")} |`);
+  console.log(`| Requests | ${cols.map((k) => c[k].red.requests).join(" | ")} |`);
+  console.log(`| Nodos DOM | ${cols.map((k) => c[k].dom.nodes).join(" | ")} |`);
+  console.log(`| DCL / load (ms) | ${cols.map((k) => `${c[k].nav.domContentLoadedMs} / ${c[k].nav.loadEventMs}`).join(" | ")} |`);
+  console.log(`\nAudio ambiente (fuera de la tabla): ${n(doc.audioAmbiente.bytes)} B — ${doc.audioAmbiente.nota}`);
+  console.log(`Total con audio (desktop): ${n(c["actual-hero-desktop"].red.bytes + doc.audioAmbiente.bytes)} B`);
+}
+
 async function main() {
+  if (process.argv.includes("--tabla")) return tabla();
   const only = process.argv.find((a) => a.startsWith("--only="))?.split("=")[1];
   if (!existsSync(join(ROOT, "dist", "index.html"))) {
     throw new Error("falta dist/ — corré `npm run build` antes de capturar");
@@ -333,7 +374,8 @@ async function main() {
     server.close();
   };
 
-  const meds = {};
+  const mediciones = {};
+  const verificacion = {};
   let page;
   try {
     page = await connect(await cdp(cdpPort));
@@ -344,14 +386,14 @@ async function main() {
     };
 
     const CASES = [
-      { key: "actual-hero", url: "/", anchor: null, site: "actual" },
+      { key: "actual-hero", url: "/", anchor: null, site: "actual", mide: true },
       /* Hallazgo lateral (no se corrige en el repo): `#hero-canvas` es un
        * elemento reemplazado con `inset:0` y `width:auto` ⇒ se queda en su
        * tamaño intrínseco 300×150 en la esquina; el hallazgo viaja en la NOTA.
        * Esta captura corrige SOLO en el navegador de captura (style tag
        * inyectado) para que el A/B no compare contra una portada rota. */
       { key: "actual-hero-canvasfull", url: "/", anchor: null, site: "actual", fixCanvas: true },
-      { key: "lab-hero", url: "/lab/", anchor: null, site: "lab" },
+      { key: "lab-hero", url: "/lab/", anchor: null, site: "lab", mide: true },
       { key: "actual-sala01", url: "/", anchor: "#room-proyectos", site: "actual" },
       { key: "actual-sala01-canvasfull", url: "/", anchor: "#room-proyectos", site: "actual", fixCanvas: true },
       { key: "lab-sala01", url: "/lab/", anchor: "#sala-01", site: "lab" },
@@ -394,15 +436,17 @@ async function main() {
         }
 
         await page.shot(`${c.key}-${vp}.png`);
-        (meds.verificacion ??= {})[`${c.key}-${vp}`] = await page.evaluate(PROBE);
+        verificacion[`${c.key}-${vp}`] = await page.evaluate(PROBE);
         console.log(`  ✓ ${c.key}-${vp}.png`);
 
-        if (!c.anchor && !meds[`${c.key}-${vp}`]) {
-          meds[`${c.key}-${vp}`] = {
+        if (c.mide && !mediciones[`${c.key}-${vp}`]) {
+          const nav = await page.evaluate(NAV);
+          mediciones[`${c.key}-${vp}`] = {
             url: c.url,
             viewport: `${VIEWPORTS[vp].width}x${VIEWPORTS[vp].height}`,
             red: page.network(),
-            ...(await page.evaluate(MEDIR)),
+            nav: { domContentLoadedMs: nav.domContentLoadedMs, loadEventMs: nav.loadEventMs },
+            dom: { nodes: nav.nodes },
           };
         }
       }
@@ -411,15 +455,41 @@ async function main() {
     // Tamaños en disco de los artefactos de cada versión (evidencia estable,
     // independiente del caché del browser).
     const size = async (p) => (existsSync(p) ? (await stat(p)).size : null);
-    meds.archivos = {
+    const archivos = {
       "actual-html-index": await size(join(ROOT, "dist/index.html")),
       "actual-js-bundle": (await readFile(join(ROOT, "dist/index.html"), "utf8"))
         .match(/assets\/index-[^"]+\.js/)?.[0] ?? null,
       "prototipo-html": await size(join(HERE, "index.html")),
       "prototipo-css": await size(join(HERE, "estilo.css")),
+      "audio-ambiente": await size(join(ROOT, "public/audio/whale-song.mp3")),
     };
 
-    await writeFile(join(OUT, "mediciones.json"), JSON.stringify(meds, null, 2) + "\n");
+    const doc = {
+      schema: {
+        generado_por: "proposals/estilo-lab/capturar.mjs",
+        unidades: "bytes (1 kB = 1000 B)",
+        bloques: {
+          capturas: {
+            red: "eventos Network de CDP — ÚNICA fuente de peso, requests y fuentes; incluye cross-origin, caché deshabilitado, audio bloqueado",
+            nav: "PerformanceNavigationTiming de la página (ms, local, sin throttling)",
+            dom: "cantidad de nodos del documento",
+          },
+          audioAmbiente: "peso del audio ambiente (bloqueado en las mediciones porque su carga es bajo demanda y no determinista)",
+          archivos: "tamaño en disco de los artefactos (no es red)",
+          verificacion: "sonda de DOM por captura: qué elemento estaba visible al fotografiar",
+        },
+      },
+      audioAmbiente: {
+        archivo: "public/audio/whale-song.mp3",
+        bytes: archivos["audio-ambiente"],
+        nota: "Se descarga cuando el hero ocupa ≥50% del viewport; bloqueado en las mediciones con Network.setBlockedURLs(['*audio*']).",
+      },
+      capturas: mediciones,
+      archivos,
+      verificacion,
+    };
+
+    await writeFile(join(OUT, "mediciones.json"), JSON.stringify(doc, null, 2) + "\n");
     console.log("  ✓ capturas/mediciones.json");
   } finally {
     page?.close?.();

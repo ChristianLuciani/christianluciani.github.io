@@ -105,8 +105,12 @@
     producción (build de este commit, servido local); <b>derecha</b> el prototipo
     con tipografía sans/mono, HUD, bordes finos y tarjetas del
     <a href="https://christianluciani.github.io/laboratorio/">Laboratorio temporal</a>.
+    El par principal usa el sitio con los canvas de fondo como corresponde; el estado
+    tal como se publica hoy (canvas en 300×150) va en el último bloque, rotulado.
     Capturas: Chrome headless, <code>prefers-reduced-motion</code> para saltar la intro de ~16 s,
-    caché deshabilitado, una sola corrida por viewport.
+    caché deshabilitado, audio ambiente bloqueado, una corrida por viewport.
+    Esta página muestra 12 de las 14 capturas del directorio (las otras 2 son capturas
+    de esta misma página).
   </p>
 
   <div class="tabs">
@@ -122,12 +126,12 @@
       <section class="pair">
         <div class="pair-head">
           <h2>Hero <span>entrada</span></h2>
-          <p>642 KB · 32 req · 158 KB de fuentes &nbsp;→&nbsp; 26 KB · 3 req · 0 fuentes</p>
+          <p>657,8 kB · 32 req · 158,1 kB de fuentes &nbsp;→&nbsp; 27,1 kB · 3 req · 0 fuentes</p>
         </div>
         <div class="frames only-desk">
           <figure>
-            <img src="capturas/actual-hero-desktop.png" alt="Sitio actual — hero en desktop, tipografía serif Playfair, nombre en blanco y teal" />
-            <figcaption><b>Actual</b><span>Playfair · 100vh · canvas de cubos</span></figcaption>
+            <img src="capturas/actual-hero-canvasfull-desktop.png" alt="Sitio actual — hero en desktop con el canvas de cubos a tamaño completo, tipografía serif Playfair" />
+            <figcaption><b>Actual</b><span>Playfair · 100vh · cubos a pantalla completa</span></figcaption>
           </figure>
           <figure class="fig-lab">
             <img src="capturas/lab-hero-desktop.png" alt="Prototipo — hero en desktop, tipografía sans, etiquetas mono, métricas y tarjeta de escenario" />
@@ -136,7 +140,7 @@
         </div>
         <div class="frames only-mobile">
           <figure>
-            <img src="capturas/actual-hero-mobile.png" alt="Sitio actual — hero en móvil" />
+            <img src="capturas/actual-hero-canvasfull-mobile.png" alt="Sitio actual — hero en móvil con el canvas completo" />
             <figcaption><b>Actual</b><span>390×844</span></figcaption>
           </figure>
           <figure class="fig-lab">
@@ -153,7 +157,7 @@
         </div>
         <div class="frames only-desk">
           <figure>
-            <img src="capturas/actual-sala01-desktop.png" alt="Sitio actual — Sala 01 en desktop, tarjetas apiladas a ancho completo con borde teal" />
+            <img src="capturas/actual-sala01-canvasfull-desktop.png" alt="Sitio actual — Sala 01 en desktop con la ilusión de fondo a tamaño completo" />
             <figcaption><b>Actual</b><span>tarjetas full-width · filete izquierdo</span></figcaption>
           </figure>
           <figure class="fig-lab">
@@ -163,7 +167,7 @@
         </div>
         <div class="frames only-mobile">
           <figure>
-            <img src="capturas/actual-sala01-mobile.png" alt="Sitio actual — Sala 01 en móvil" />
+            <img src="capturas/actual-sala01-canvasfull-mobile.png" alt="Sitio actual — Sala 01 en móvil con el canvas completo" />
             <figcaption><b>Actual</b><span>390×844</span></figcaption>
           </figure>
           <figure class="fig-lab">
@@ -175,35 +179,36 @@
 
       <section class="pair">
         <div class="pair-head">
-          <h2>Control de equivalencia <span>hallazgo lateral</span></h2>
-          <p>canvas de fondo corregido SOLO en el navegador de captura</p>
+          <h2>Así se publica hoy <span>canvas 300×150 · hallazgo lateral</span></h2>
+          <p>el sitio real, sin corrección</p>
         </div>
         <p class="nota">
           Los canvas de fondo del sitio (<code>#hero-canvas</code>, <code>.room-canvas</code>)
-          se pintan en 300×150 px porque son elementos reemplazados con
-          <code>inset:0</code> y <code>width:auto</code> (toman su tamaño intrínseco).
-          Las capturas de arriba son el sitio <b>tal como está hoy</b>. Estas otras
-          aplican <code>width:100%;height:100%</code> en el navegador de captura para
-          que el A/B no compare contra una portada degradada. No es un cambio al repo.
+          se pintan hoy en 300×150 px: son elementos reemplazados con
+          <code>inset:0</code> y <code>width:auto</code>, así que toman su tamaño intrínseco
+          en la esquina de la sala. El <b>par principal de arriba usa el canvas como
+          corresponde</b> (corregido solo en el navegador de captura, sin tocar el repo);
+          este bloque muestra el estado publicado para que la diferencia quede declarada
+          y no se lea como parte del lenguaje visual.
         </p>
         <div class="frames only-desk">
           <figure>
-            <img src="capturas/actual-hero-canvasfull-desktop.png" alt="Sitio actual — hero con el canvas de cubos a tamaño completo" />
-            <figcaption><b>Actual + canvas corregido</b><span>hero</span></figcaption>
+            <img src="capturas/actual-hero-desktop.png" alt="Sitio actual — hero tal como se publica hoy, con el canvas en 300x150" />
+            <figcaption><b>Actual publicada</b><span>hero · canvas 300×150</span></figcaption>
           </figure>
           <figure>
-            <img src="capturas/actual-sala01-canvasfull-desktop.png" alt="Sitio actual — Sala 01 con la ilusión de fondo a tamaño completo" />
-            <figcaption><b>Actual + canvas corregido</b><span>Sala 01</span></figcaption>
+            <img src="capturas/actual-sala01-desktop.png" alt="Sitio actual — Sala 01 tal como se publica hoy, con el canvas en 300x150" />
+            <figcaption><b>Actual publicada</b><span>Sala 01 · canvas 300×150</span></figcaption>
           </figure>
         </div>
         <div class="frames only-mobile">
           <figure>
-            <img src="capturas/actual-hero-canvasfull-mobile.png" alt="Sitio actual — hero con canvas completo en móvil" />
-            <figcaption><b>Actual + canvas corregido</b><span>390×844</span></figcaption>
+            <img src="capturas/actual-hero-mobile.png" alt="Sitio actual — hero publicado en móvil" />
+            <figcaption><b>Actual publicada</b><span>390×844</span></figcaption>
           </figure>
           <figure>
-            <img src="capturas/actual-sala01-canvasfull-mobile.png" alt="Sitio actual — Sala 01 con canvas completo en móvil" />
-            <figcaption><b>Actual + canvas corregido</b><span>390×844</span></figcaption>
+            <img src="capturas/actual-sala01-mobile.png" alt="Sitio actual — Sala 01 publicada en móvil" />
+            <figcaption><b>Actual publicada</b><span>390×844</span></figcaption>
           </figure>
         </div>
       </section>

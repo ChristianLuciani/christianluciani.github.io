@@ -1,4 +1,261 @@
 {
+  "schema": {
+    "generado_por": "proposals/estilo-lab/capturar.mjs",
+    "unidades": "bytes (1 kB = 1000 B)",
+    "bloques": {
+      "capturas": {
+        "red": "eventos Network de CDP — ÚNICA fuente de peso, requests y fuentes; incluye cross-origin, caché deshabilitado, audio bloqueado",
+        "nav": "PerformanceNavigationTiming de la página (ms, local, sin throttling)",
+        "dom": "cantidad de nodos del documento"
+      },
+      "audioAmbiente": "peso del audio ambiente (bloqueado en las mediciones porque su carga es bajo demanda y no determinista)",
+      "archivos": "tamaño en disco de los artefactos (no es red)",
+      "verificacion": "sonda de DOM por captura: qué elemento estaba visible al fotografiar"
+    }
+  },
+  "audioAmbiente": {
+    "archivo": "public/audio/whale-song.mp3",
+    "bytes": 476204,
+    "nota": "Se descarga cuando el hero ocupa ≥50% del viewport; bloqueado en las mediciones con Network.setBlockedURLs(['*audio*'])."
+  },
+  "capturas": {
+    "actual-hero-desktop": {
+      "url": "/",
+      "viewport": "1440x900",
+      "red": {
+        "requests": 32,
+        "bytes": 657843,
+        "porTipo": {
+          "Document": 133913,
+          "Stylesheet": 1679,
+          "Script": 84582,
+          "Image": 277527,
+          "Font": 158073,
+          "Media": 0,
+          "Other": 2069
+        },
+        "fuentes": [
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 36476
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 39011
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 22079
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 22595
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 37912
+          }
+        ],
+        "hosts": [
+          "127.0.0.1:54610",
+          "fonts.googleapis.com",
+          "",
+          "lh3.googleusercontent.com",
+          "fonts.gstatic.com"
+        ],
+        "mayores": [
+          {
+            "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
+            "bytes": 135704
+          },
+          {
+            "url": "/",
+            "bytes": 133913
+          },
+          {
+            "url": "/assets/index-yEnDpHK2.js",
+            "bytes": 84582
+          },
+          {
+            "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
+            "bytes": 40017
+          },
+          {
+            "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
+            "bytes": 39011
+          },
+          {
+            "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
+            "bytes": 37912
+          }
+        ]
+      },
+      "nav": {
+        "domContentLoadedMs": 433,
+        "loadEventMs": 760
+      },
+      "dom": {
+        "nodes": 835
+      }
+    },
+    "lab-hero-desktop": {
+      "url": "/lab/",
+      "viewport": "1440x900",
+      "red": {
+        "requests": 3,
+        "bytes": 27124,
+        "porTipo": {
+          "Document": 9853,
+          "Stylesheet": 16087,
+          "Other": 1184
+        },
+        "fuentes": [],
+        "hosts": [
+          "127.0.0.1:54610",
+          "christianluciani.github.io"
+        ],
+        "mayores": [
+          {
+            "url": "/lab/estilo.css",
+            "bytes": 16087
+          },
+          {
+            "url": "/lab/",
+            "bytes": 9853
+          },
+          {
+            "url": "/assets/brand/favicon-aurea.svg",
+            "bytes": 1184
+          }
+        ]
+      },
+      "nav": {
+        "domContentLoadedMs": 134,
+        "loadEventMs": 140
+      },
+      "dom": {
+        "nodes": 147
+      }
+    },
+    "actual-hero-mobile": {
+      "url": "/",
+      "viewport": "390x844",
+      "red": {
+        "requests": 31,
+        "bytes": 654043,
+        "porTipo": {
+          "Document": 133913,
+          "Stylesheet": 1235,
+          "Script": 84582,
+          "Image": 277163,
+          "Font": 157150,
+          "Media": 0
+        },
+        "fuentes": [
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 36372
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 38492
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 21981
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 22497
+          },
+          {
+            "host": "fonts.gstatic.com",
+            "bytes": 37808
+          }
+        ],
+        "hosts": [
+          "127.0.0.1:54610",
+          "fonts.googleapis.com",
+          "lh3.googleusercontent.com",
+          "",
+          "fonts.gstatic.com"
+        ],
+        "mayores": [
+          {
+            "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
+            "bytes": 135340
+          },
+          {
+            "url": "/",
+            "bytes": 133913
+          },
+          {
+            "url": "/assets/index-yEnDpHK2.js",
+            "bytes": 84582
+          },
+          {
+            "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
+            "bytes": 40017
+          },
+          {
+            "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
+            "bytes": 38492
+          },
+          {
+            "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
+            "bytes": 37808
+          }
+        ]
+      },
+      "nav": {
+        "domContentLoadedMs": 131,
+        "loadEventMs": 241
+      },
+      "dom": {
+        "nodes": 835
+      }
+    },
+    "lab-hero-mobile": {
+      "url": "/lab/",
+      "viewport": "390x844",
+      "red": {
+        "requests": 2,
+        "bytes": 25940,
+        "porTipo": {
+          "Document": 9853,
+          "Stylesheet": 16087
+        },
+        "fuentes": [],
+        "hosts": [
+          "127.0.0.1:54610"
+        ],
+        "mayores": [
+          {
+            "url": "/lab/estilo.css",
+            "bytes": 16087
+          },
+          {
+            "url": "/lab/",
+            "bytes": 9853
+          }
+        ]
+      },
+      "nav": {
+        "domContentLoadedMs": 30,
+        "loadEventMs": 32
+      },
+      "dom": {
+        "nodes": 147
+      }
+    }
+  },
+  "archivos": {
+    "actual-html-index": 133712,
+    "actual-js-bundle": "assets/index-yEnDpHK2.js",
+    "prototipo-html": 9669,
+    "prototipo-css": 15904,
+    "audio-ambiente": 476204
+  },
   "verificacion": {
     "actual-hero-desktop": {
       "title": "Christian Luciani — Museo de una Trayectoria",
@@ -40,7 +297,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -176,7 +433,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -306,7 +563,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116"
+        "127.0.0.1:54610"
       ],
       "canvases": [],
       "overflowX": 0,
@@ -354,7 +611,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -488,7 +745,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -616,7 +873,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116"
+        "127.0.0.1:54610"
       ],
       "canvases": [],
       "overflowX": 0,
@@ -649,7 +906,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116"
+        "127.0.0.1:54610"
       ],
       "canvases": [],
       "overflowX": 0,
@@ -697,7 +954,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -833,7 +1090,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -963,7 +1220,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116"
+        "127.0.0.1:54610"
       ],
       "canvases": [],
       "overflowX": 0,
@@ -1011,7 +1268,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -1147,7 +1404,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116",
+        "127.0.0.1:54610",
         "lh3.googleusercontent.com"
       ],
       "canvases": [
@@ -1277,7 +1534,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116"
+        "127.0.0.1:54610"
       ],
       "canvases": [],
       "overflowX": 0,
@@ -1310,7 +1567,7 @@
         "cormorant": true
       },
       "externas": [
-        "127.0.0.1:52116"
+        "127.0.0.1:54610"
       ],
       "canvases": [],
       "overflowX": 0,
@@ -1318,518 +1575,5 @@
       "scrollY": 0,
       "viewport": "390x844"
     }
-  },
-  "actual-hero-desktop": {
-    "url": "/",
-    "viewport": "1440x900",
-    "red": {
-      "requests": 32,
-      "bytes": 657843,
-      "porTipo": {
-        "Document": 133913,
-        "Stylesheet": 1679,
-        "Script": 84582,
-        "Image": 277527,
-        "Font": 158073,
-        "Media": 0,
-        "Other": 2069
-      },
-      "fuentes": [
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 36891
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 38596
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 22079
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 22595
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 37912
-        }
-      ],
-      "hosts": [
-        "127.0.0.1:52116",
-        "fonts.googleapis.com",
-        "lh3.googleusercontent.com",
-        "",
-        "fonts.gstatic.com"
-      ],
-      "mayores": [
-        {
-          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
-          "bytes": 135704
-        },
-        {
-          "url": "/",
-          "bytes": 133913
-        },
-        {
-          "url": "/assets/index-yEnDpHK2.js",
-          "bytes": 84582
-        },
-        {
-          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
-          "bytes": 40017
-        },
-        {
-          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
-          "bytes": 38596
-        },
-        {
-          "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
-          "bytes": 37912
-        }
-      ]
-    },
-    "requests": 9,
-    "transferBytes": 230856,
-    "decodedBytes": 247361,
-    "jsBytes": 84683,
-    "cssBytes": 0,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 496,
-    "loadEventMs": 843,
-    "nodes": 835
-  },
-  "actual-hero-canvasfull-desktop": {
-    "url": "/",
-    "viewport": "1440x900",
-    "red": {
-      "requests": 31,
-      "bytes": 654042,
-      "porTipo": {
-        "Document": 133913,
-        "Stylesheet": 1235,
-        "Script": 84582,
-        "Image": 277162,
-        "Font": 157150,
-        "Media": 0
-      },
-      "fuentes": [
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 36372
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 38492
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 21981
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 22497
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 37808
-        }
-      ],
-      "hosts": [
-        "127.0.0.1:52116",
-        "fonts.googleapis.com",
-        "lh3.googleusercontent.com",
-        "",
-        "fonts.gstatic.com"
-      ],
-      "mayores": [
-        {
-          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
-          "bytes": 135339
-        },
-        {
-          "url": "/",
-          "bytes": 133913
-        },
-        {
-          "url": "/assets/index-yEnDpHK2.js",
-          "bytes": 84582
-        },
-        {
-          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
-          "bytes": 40017
-        },
-        {
-          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
-          "bytes": 38492
-        },
-        {
-          "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
-          "bytes": 37808
-        }
-      ]
-    },
-    "requests": 8,
-    "transferBytes": 228659,
-    "decodedBytes": 245464,
-    "jsBytes": 84683,
-    "cssBytes": 0,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 196,
-    "loadEventMs": 458,
-    "nodes": 836
-  },
-  "lab-hero-desktop": {
-    "url": "/lab/",
-    "viewport": "1440x900",
-    "red": {
-      "requests": 3,
-      "bytes": 26991,
-      "porTipo": {
-        "Document": 9802,
-        "Stylesheet": 16004,
-        "Other": 1185
-      },
-      "fuentes": [],
-      "hosts": [
-        "127.0.0.1:52116",
-        "christianluciani.github.io"
-      ],
-      "mayores": [
-        {
-          "url": "/lab/estilo.css",
-          "bytes": 16004
-        },
-        {
-          "url": "/lab/",
-          "bytes": 9802
-        },
-        {
-          "url": "/assets/brand/favicon-aurea.svg",
-          "bytes": 1185
-        }
-      ]
-    },
-    "requests": 2,
-    "transferBytes": 16121,
-    "decodedBytes": 15821,
-    "jsBytes": 0,
-    "cssBytes": 16121,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 73,
-    "loadEventMs": 81,
-    "nodes": 147
-  },
-  "comparar-desktop": {
-    "url": "/lab/comparar.html",
-    "viewport": "1440x900",
-    "red": {
-      "requests": 13,
-      "bytes": 1992568,
-      "porTipo": {
-        "Document": 11098,
-        "Image": 1981470
-      },
-      "fuentes": [],
-      "hosts": [
-        "127.0.0.1:52116"
-      ],
-      "mayores": [
-        {
-          "url": "/lab/capturas/lab-hero-desktop.png",
-          "bytes": 316950
-        },
-        {
-          "url": "/lab/capturas/actual-hero-canvasfull-desktop.png",
-          "bytes": 295255
-        },
-        {
-          "url": "/lab/capturas/lab-sala01-desktop.png",
-          "bytes": 286942
-        },
-        {
-          "url": "/lab/capturas/actual-sala01-canvasfull-desktop.png",
-          "bytes": 212914
-        },
-        {
-          "url": "/lab/capturas/actual-sala01-desktop.png",
-          "bytes": 183045
-        },
-        {
-          "url": "/lab/capturas/lab-sala01-mobile.png",
-          "bytes": 139538
-        }
-      ]
-    },
-    "requests": 12,
-    "transferBytes": 1982826,
-    "decodedBytes": 1979226,
-    "jsBytes": 0,
-    "cssBytes": 0,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 13,
-    "loadEventMs": 43,
-    "nodes": 123
-  },
-  "actual-hero-mobile": {
-    "url": "/",
-    "viewport": "390x844",
-    "red": {
-      "requests": 31,
-      "bytes": 654042,
-      "porTipo": {
-        "Document": 133913,
-        "Stylesheet": 1235,
-        "Script": 84582,
-        "Image": 277162,
-        "Font": 157150,
-        "Media": 0
-      },
-      "fuentes": [
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 36372
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 38492
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 21981
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 22497
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 37808
-        }
-      ],
-      "hosts": [
-        "127.0.0.1:52116",
-        "fonts.googleapis.com",
-        "lh3.googleusercontent.com",
-        "",
-        "fonts.gstatic.com"
-      ],
-      "mayores": [
-        {
-          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
-          "bytes": 135339
-        },
-        {
-          "url": "/",
-          "bytes": 133913
-        },
-        {
-          "url": "/assets/index-yEnDpHK2.js",
-          "bytes": 84582
-        },
-        {
-          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
-          "bytes": 40017
-        },
-        {
-          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
-          "bytes": 38492
-        },
-        {
-          "url": "/s/cormorantgaramond/v21/co3bmX5slCNuHLi8bLeY9MK7whWMhyjYqXtKky2F7g.woff2",
-          "bytes": 37808
-        }
-      ]
-    },
-    "requests": 8,
-    "transferBytes": 228659,
-    "decodedBytes": 245464,
-    "jsBytes": 84683,
-    "cssBytes": 0,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 160,
-    "loadEventMs": 253,
-    "nodes": 835
-  },
-  "actual-hero-canvasfull-mobile": {
-    "url": "/",
-    "viewport": "390x844",
-    "red": {
-      "requests": 31,
-      "bytes": 1130497,
-      "porTipo": {
-        "Document": 133913,
-        "Stylesheet": 1235,
-        "Script": 84582,
-        "Image": 277166,
-        "Font": 157150,
-        "Media": 476451
-      },
-      "fuentes": [
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 36372
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 38492
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 21981
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 22497
-        },
-        {
-          "host": "fonts.gstatic.com",
-          "bytes": 37808
-        }
-      ],
-      "hosts": [
-        "127.0.0.1:52116",
-        "fonts.googleapis.com",
-        "lh3.googleusercontent.com",
-        "",
-        "fonts.gstatic.com"
-      ],
-      "mayores": [
-        {
-          "url": "/audio/whale-song.mp3",
-          "bytes": 476451
-        },
-        {
-          "url": "/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c",
-          "bytes": 135343
-        },
-        {
-          "url": "/",
-          "bytes": 133913
-        },
-        {
-          "url": "/assets/index-yEnDpHK2.js",
-          "bytes": 84582
-        },
-        {
-          "url": "/assets/hosaka2006_thumb-KMqoFzTp.jpg",
-          "bytes": 40017
-        },
-        {
-          "url": "/s/playfairdisplay/v40/nuFiD-vYSZviVYUb_rj3ij__anPXDTzYgEM86xQ.woff2",
-          "bytes": 38492
-        }
-      ]
-    },
-    "requests": 9,
-    "transferBytes": 705163,
-    "decodedBytes": 721668,
-    "jsBytes": 84683,
-    "cssBytes": 0,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 169,
-    "loadEventMs": 284,
-    "nodes": 836
-  },
-  "lab-hero-mobile": {
-    "url": "/lab/",
-    "viewport": "390x844",
-    "red": {
-      "requests": 2,
-      "bytes": 25806,
-      "porTipo": {
-        "Document": 9802,
-        "Stylesheet": 16004
-      },
-      "fuentes": [],
-      "hosts": [
-        "127.0.0.1:52116"
-      ],
-      "mayores": [
-        {
-          "url": "/lab/estilo.css",
-          "bytes": 16004
-        },
-        {
-          "url": "/lab/",
-          "bytes": 9802
-        }
-      ]
-    },
-    "requests": 1,
-    "transferBytes": 16121,
-    "decodedBytes": 15821,
-    "jsBytes": 0,
-    "cssBytes": 16121,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 51,
-    "loadEventMs": 54,
-    "nodes": 147
-  },
-  "comparar-mobile": {
-    "url": "/lab/comparar.html",
-    "viewport": "390x844",
-    "red": {
-      "requests": 13,
-      "bytes": 1992566,
-      "porTipo": {
-        "Document": 11098,
-        "Image": 1981468
-      },
-      "fuentes": [],
-      "hosts": [
-        "127.0.0.1:52116"
-      ],
-      "mayores": [
-        {
-          "url": "/lab/capturas/lab-hero-desktop.png",
-          "bytes": 316950
-        },
-        {
-          "url": "/lab/capturas/actual-hero-canvasfull-desktop.png",
-          "bytes": 295255
-        },
-        {
-          "url": "/lab/capturas/lab-sala01-desktop.png",
-          "bytes": 286942
-        },
-        {
-          "url": "/lab/capturas/actual-sala01-canvasfull-desktop.png",
-          "bytes": 212914
-        },
-        {
-          "url": "/lab/capturas/actual-sala01-desktop.png",
-          "bytes": 183045
-        },
-        {
-          "url": "/lab/capturas/lab-sala01-mobile.png",
-          "bytes": 139538
-        }
-      ]
-    },
-    "requests": 12,
-    "transferBytes": 1982824,
-    "decodedBytes": 1979224,
-    "jsBytes": 0,
-    "cssBytes": 0,
-    "fontRequests": 0,
-    "fontBytes": 0,
-    "domContentLoadedMs": 14,
-    "loadEventMs": 53,
-    "nodes": 123
-  },
-  "archivos": {
-    "actual-html-index": 133712,
-    "actual-js-bundle": "assets/index-yEnDpHK2.js",
-    "prototipo-html": 9618,
-    "prototipo-css": 15821
   }
 }
