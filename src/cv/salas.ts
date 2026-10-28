@@ -37,8 +37,10 @@ export interface SalaDef {
   subtitulo: string;
   /** Traducción EN del subtítulo */
   subtituloEn: string;
-  /** Etiqueta del nav lateral (hover) — solo ES (atributo, no se traduce) */
+  /** Etiqueta visible del HUD (ES) */
   navLabel: string;
+  /** Etiqueta visible del HUD (EN) — el HUD se genera desde SALAS */
+  navLabelEn: string;
   /** id del canvas de ilusión de fondo de la sala (museo 3D / metadata) */
   ilusion?: string;
   /** true → sala oculta (no numerada, sin nav, sin re-render de metadatos) */
@@ -48,7 +50,8 @@ export interface SalaDef {
 /** Entrada "hero" del nav lateral (punto de la entrada del museo). */
 export const HERO_NAV = {
   id: "hero",
-  navLabel: "Entrada"
+  navLabel: "Entrada",
+  navLabelEn: "Entrance"
 } as const;
 
 /**
@@ -63,6 +66,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: `OBRA PUBLICADA · ARTEFACTO AUDITABLE · ${publicados.length} PROYECTOS`,
     subtituloEn: `PUBLISHED WORK · AUDITABLE ARTIFACT · ${publicados.length} PROJECTS`,
     navLabel: "Exposición",
+    navLabelEn: "Exhibition",
     ilusion: "c-proyectos"
   },
   {
@@ -72,6 +76,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: `EN DESARROLLO · PROTOTIPOS E IDEAS · ${enDesarrollo.length} PROYECTOS`,
     subtituloEn: `IN DEVELOPMENT · PROTOTYPES AND IDEAS · ${enDesarrollo.length} PROJECTS`,
     navLabel: "Bastidor",
+    navLabelEn: "Studio",
     ilusion: "c-bastidor"
   },
   {
@@ -81,6 +86,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
     subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
     navLabel: "Taller",
+    navLabelEn: "Workshop",
     ilusion: "c-comp"
   },
   {
@@ -90,6 +96,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
     subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
     navLabel: "Recorrido",
+    navLabelEn: "Journey",
     ilusion: "c-exp"
   },
   {
@@ -99,6 +106,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026",
     subtituloEn: "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026",
     navLabel: "Biblioteca",
+    navLabelEn: "Library",
     ilusion: "c-fisica"
   },
   {
@@ -108,6 +116,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
     subtituloEn: "CONSTELLATION · AREAS · PROJECTS · CONNECTIONS · 2026",
     navLabel: "Constelación",
+    navLabelEn: "Constellation",
     ilusion: "c-graph"
   },
   {
@@ -117,6 +126,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "PERFIL PROFESIONAL · CUENCA, ECUADOR",
     subtituloEn: "PROFESSIONAL PROFILE · CUENCA, ECUADOR",
     navLabel: "Perfil",
+    navLabelEn: "Profile",
     ilusion: "c-necker"
   },
   {
@@ -125,7 +135,8 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Mailbox</em>",
     subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
     subtituloEn: "CONTACT · NETWORKS · RESEARCH",
-    navLabel: "Contacto"
+    navLabel: "Contacto",
+    navLabelEn: "Contact"
   },
   {
     id: "galeria",
@@ -134,6 +145,7 @@ export const SALAS: SalaDef[] = [
     subtitulo: "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS",
     subtituloEn: "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS",
     navLabel: "Archivo",
+    navLabelEn: "Archive",
     hidden: true
   }
 ];

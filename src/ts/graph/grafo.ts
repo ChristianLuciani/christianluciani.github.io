@@ -217,7 +217,9 @@ export function mountGrafo(): void {
       // label
       ctxEl.fillStyle =
         act || !hv ? (n.status === "raiz" ? "#ffffff" : "#d6dde8") : "rgba(130,140,155,.6)";
-      ctxEl.font = (n.status === "raiz" ? "600 13px " : "11px ") + "'Playfair Display', serif";
+      ctxEl.font =
+        (n.status === "raiz" ? "600 13px " : "11px ") +
+        "ui-sans-serif, system-ui, -apple-system, sans-serif";
       ctxEl.textAlign = "center";
       const ly = n.y + n.r + 14;
       ctxEl.fillText(n.label, n.x, ly);

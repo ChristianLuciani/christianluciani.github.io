@@ -1,0 +1,753 @@
+{
+  "base": "http://127.0.0.1:58264/",
+  "measuredAt": "2026-10-28T01:23:29.750Z",
+  "viewports": {
+    "1440x900": {
+      "top": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 1440,
+          "h": 719,
+          "boxW": 1440,
+          "boxH": 719,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 1440,
+            "h": 1818,
+            "boxW": 1440,
+            "boxH": 1818,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 1440,
+            "h": 1794,
+            "boxW": 1440,
+            "boxH": 1794,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 1440,
+            "h": 1127,
+            "boxW": 1440,
+            "boxH": 1127,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 1440,
+            "h": 1003,
+            "boxW": 1440,
+            "boxH": 1003,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 1440,
+            "h": 1351,
+            "boxW": 1440,
+            "boxH": 1351,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 1440,
+            "h": 1106,
+            "boxW": 1440,
+            "boxH": 1106,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
+        },
+        "hudCurrent": {
+          "display": "none",
+          "text": "Entrada"
+        },
+        "active": {
+          "target": "hero",
+          "label": "Entrada"
+        },
+        "smallText": {
+          "checked": 247,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(0, 201, 192)",
+            "rgb(117, 132, 154)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "398.656px 398.672px 398.656px",
+        "contentWidth": 1171.1998291015625,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 51,
+        "hudLayout": {
+          "brandLeft": 182,
+          "logo": {
+            "left": 130,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 804,
+            "scroll": 804
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 1440,
+          "h": 900
+        }
+      },
+      "room": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 1440,
+        "innerWidth": 1440,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 1440,
+          "h": 719,
+          "boxW": 1440,
+          "boxH": 719,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 1440,
+            "h": 1818,
+            "boxW": 1440,
+            "boxH": 1818,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 1440,
+            "h": 1794,
+            "boxW": 1440,
+            "boxH": 1794,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 1440,
+            "h": 1127,
+            "boxW": 1440,
+            "boxH": 1127,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 1440,
+            "h": 1003,
+            "boxW": 1440,
+            "boxH": 1003,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 1440,
+            "h": 1351,
+            "boxW": 1440,
+            "boxH": 1351,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 1440,
+            "h": 1106,
+            "boxW": 1440,
+            "boxH": 1106,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
+        },
+        "hudCurrent": {
+          "display": "none",
+          "text": "Exposición"
+        },
+        "active": {
+          "target": "room-proyectos",
+          "label": "Exposición"
+        },
+        "smallText": {
+          "checked": 247,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(0, 201, 192)",
+            "rgb(117, 132, 154)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "398.656px 398.672px 398.656px",
+        "contentWidth": 1193.151611328125,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 51,
+        "hudLayout": {
+          "brandLeft": 182,
+          "logo": {
+            "left": 130,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 804,
+            "scroll": 804
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 1440,
+          "h": 900
+        }
+      },
+      "i18n": {
+        "lang": "en",
+        "labels": [
+          "Entrance",
+          "Exhibition",
+          "Studio",
+          "Workshop",
+          "Journey",
+          "Library",
+          "Constellation",
+          "Profile",
+          "Contact"
+        ],
+        "current": "Exhibition",
+        "title": "The Exhibition",
+        "active": "room-proyectos"
+      },
+      "requests": {
+        "total": 26,
+        "fonts": []
+      }
+    },
+    "768x1024": {
+      "top": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 768,
+          "h": 719,
+          "boxW": 768,
+          "boxH": 719,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 768,
+            "h": 2986,
+            "boxW": 768,
+            "boxH": 2986,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 768,
+            "h": 2226,
+            "boxW": 768,
+            "boxH": 2226,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 768,
+            "h": 1207,
+            "boxW": 768,
+            "boxH": 1207,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 768,
+            "h": 1535,
+            "boxW": 768,
+            "boxH": 1535,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 768,
+            "h": 1679,
+            "boxW": 768,
+            "boxH": 1679,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 768,
+            "h": 1533,
+            "boxW": 768,
+            "boxH": 1533,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "none",
+          "height": 0,
+          "visible": false
+        },
+        "hudCurrent": {
+          "display": "flex",
+          "text": "Entrada"
+        },
+        "active": {
+          "target": "hero",
+          "label": "Entrada"
+        },
+        "smallText": {
+          "checked": 238,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(117, 132, 154)",
+            "rgb(0, 201, 192)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "347.281px 347.281px",
+        "contentWidth": 678.2999877929688,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 51,
+        "hudLayout": {
+          "brandLeft": 62,
+          "logo": {
+            "left": 14,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 0,
+            "scroll": 0
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 768,
+          "h": 1024
+        }
+      },
+      "room": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 768,
+        "innerWidth": 768,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 768,
+          "h": 719,
+          "boxW": 768,
+          "boxH": 719,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 768,
+            "h": 2986,
+            "boxW": 768,
+            "boxH": 2986,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 768,
+            "h": 2226,
+            "boxW": 768,
+            "boxH": 2226,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 768,
+            "h": 1207,
+            "boxW": 768,
+            "boxH": 1207,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 768,
+            "h": 1535,
+            "boxW": 768,
+            "boxH": 1535,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 768,
+            "h": 1679,
+            "boxW": 768,
+            "boxH": 1679,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 768,
+            "h": 1533,
+            "boxW": 768,
+            "boxH": 1533,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "none",
+          "height": 0,
+          "visible": false
+        },
+        "hudCurrent": {
+          "display": "flex",
+          "text": "Exposición"
+        },
+        "active": {
+          "target": "room-proyectos",
+          "label": "Exposición"
+        },
+        "smallText": {
+          "checked": 238,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(117, 132, 154)",
+            "rgb(0, 201, 192)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "347.281px 347.281px",
+        "contentWidth": 679.14404296875,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 51,
+        "hudLayout": {
+          "brandLeft": 62,
+          "logo": {
+            "left": 14,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 0,
+            "scroll": 0
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 768,
+          "h": 1024
+        }
+      },
+      "i18n": null,
+      "requests": {
+        "total": 25,
+        "fonts": []
+      }
+    },
+    "390x844": {
+      "top": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 390,
+        "innerWidth": 390,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 390,
+          "h": 691,
+          "boxW": 390,
+          "boxH": 691,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 390,
+            "h": 4014,
+            "boxW": 390,
+            "boxH": 4014,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 390,
+            "h": 3703,
+            "boxW": 390,
+            "boxH": 3703,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 390,
+            "h": 1816,
+            "boxW": 390,
+            "boxH": 1816,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 390,
+            "h": 2004,
+            "boxW": 390,
+            "boxH": 2004,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 390,
+            "h": 2239,
+            "boxW": 390,
+            "boxH": 2239,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 390,
+            "h": 1765,
+            "boxW": 390,
+            "boxH": 1765,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "none",
+          "height": 0,
+          "visible": false
+        },
+        "hudCurrent": {
+          "display": "flex",
+          "text": "Entrada"
+        },
+        "active": {
+          "target": "hero",
+          "label": "Entrada"
+        },
+        "smallText": {
+          "checked": 238,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(117, 132, 154)",
+            "rgb(0, 201, 192)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "354px",
+        "contentWidth": 339.8399658203125,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 51,
+        "hudLayout": {
+          "brandLeft": 56,
+          "logo": {
+            "left": 14,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 0,
+            "scroll": 0
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 390,
+          "h": 844
+        }
+      },
+      "room": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 390,
+        "innerWidth": 390,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 390,
+          "h": 691,
+          "boxW": 390,
+          "boxH": 691,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 390,
+            "h": 4014,
+            "boxW": 390,
+            "boxH": 4014,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 390,
+            "h": 3703,
+            "boxW": 390,
+            "boxH": 3703,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 390,
+            "h": 1816,
+            "boxW": 390,
+            "boxH": 1816,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 390,
+            "h": 2004,
+            "boxW": 390,
+            "boxH": 2004,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 390,
+            "h": 2239,
+            "boxW": 390,
+            "boxH": 2239,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 390,
+            "h": 1765,
+            "boxW": 390,
+            "boxH": 1765,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "none",
+          "height": 0,
+          "visible": false
+        },
+        "hudCurrent": {
+          "display": "flex",
+          "text": "Exposición"
+        },
+        "active": {
+          "target": "room-proyectos",
+          "label": "Exposición"
+        },
+        "smallText": {
+          "checked": 238,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(117, 132, 154)",
+            "rgb(0, 201, 192)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "354px",
+        "contentWidth": 339.8399658203125,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 51,
+        "hudLayout": {
+          "brandLeft": 56,
+          "logo": {
+            "left": 14,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 0,
+            "scroll": 0
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 390,
+          "h": 844
+        }
+      },
+      "i18n": null,
+      "requests": {
+        "total": 25,
+        "fonts": []
+      }
+    }
+  },
+  "fontRequests": [],
+  "allRequests": 76
+}

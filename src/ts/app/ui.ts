@@ -1,8 +1,9 @@
 /**
  * UI global (portado del script inline "utilidades" de Fase 1):
- * descarga CV, cursor personalizado, barra de progreso, scroll animations,
- * parallax por sala y navegación lateral (delegada). Todo se monta desde
- * initUI() — sin efecto secundario a nivel de módulo.
+ * descarga CV, barra de progreso, scroll animations, parallax por sala y
+ * navegación del HUD (delegada). Cursor nativo: el cursor personalizado se
+ * retiró (riesgo de accesibilidad, no es lenguaje del laboratorio).
+ * Todo se monta desde initUI() — sin efecto secundario a nivel de módulo.
  */
 
 export function printCV(): void {
@@ -17,70 +18,6 @@ export function printCV(): void {
     },
     { once: true }
   );
-}
-
-function initCursor(): void {
-  const cur = document.getElementById("cursor");
-  const ring = document.getElementById("cursorRing");
-  if (!cur || !ring) return;
-
-  /* Touch devices: hide custom cursor, restore system cursor */
-  if (window.matchMedia("(pointer: coarse)").matches) {
-    document.body.style.cursor = "auto";
-    cur.style.display = "none";
-    ring.style.display = "none";
-    return;
-  }
-  let mx = 0;
-  let my = 0;
-  let rx = 0;
-  let ry = 0;
-
-  document.addEventListener("mousemove", (e) => {
-    mx = e.clientX;
-    my = e.clientY;
-  });
-
-  (function animCursor() {
-    cur.style.left = mx + "px";
-    cur.style.top = my + "px";
-    rx += (mx - rx) * 0.1;
-    ry += (my - ry) * 0.1;
-    ring.style.left = rx + "px";
-    ring.style.top = ry + "px";
-    requestAnimationFrame(animCursor);
-  })();
-
-  /* Delegado: cubre también elementos generados luego (nav-dots desde SALAS) */
-  const growSel =
-    "a, button, .nav-dot, .drahma-cell, .pub-item, .skill-block, .gallery-slot, .project-card, .illusion-frame";
-  const grow = () => {
-    ring.style.width = "58px";
-    ring.style.height = "58px";
-    cur.style.background = "var(--gold)";
-  };
-  const shrink = () => {
-    ring.style.width = "36px";
-    ring.style.height = "36px";
-    cur.style.background = "var(--teal)";
-  };
-  let hovering = false;
-  document.addEventListener("mouseover", (e) => {
-    if (e.target instanceof Element && e.target.closest(growSel)) {
-      if (!hovering) {
-        hovering = true;
-        grow();
-      }
-    }
-  });
-  document.addEventListener("mouseout", (e) => {
-    if (e.target instanceof Element && !e.target.closest(growSel)) {
-      if (hovering) {
-        hovering = false;
-        shrink();
-      }
-    }
-  });
 }
 
 function initProgress(): void {
@@ -145,6 +82,7 @@ function initNav(): void {
       const target = e.target as Element | null;
       const dot = target && target.closest ? target.closest(".nav-dot") : null;
       if (!dot) return;
+      e.preventDefault();
       const id = (dot as HTMLElement).dataset.target;
       const el = id && document.getElementById(id);
       if (el) el.scrollIntoView({ behavior: "smooth" });
@@ -164,12 +102,11 @@ function initNav(): void {
   });
 }
 
-/** Monta toda la UI global (cursor, progreso, scroll, parallax, nav, printCV). */
+/** Monta toda la UI global (progreso, scroll, parallax, nav, printCV). */
 export function initUI(): void {
   if (typeof document === "undefined") return;
   const btn = document.getElementById("btn-download");
   if (btn) btn.addEventListener("click", printCV);
-  initCursor();
   initProgress();
   initScrollAnimations();
   initParallax();
