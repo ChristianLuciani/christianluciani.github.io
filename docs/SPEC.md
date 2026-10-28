@@ -1,7 +1,7 @@
 # SPEC — Separación contenido/presentación + dependencia de profile-data
 
 > Status: draft v0.1 (pendiente de aprobación del operador) · Method: spec-driven (dev-methodology)
-> Owner: Christian Luciani · Repo: `christianluciani/cv-cluciani` · Branch: `aionui/pi/cv-profile-data`
+> Owner: Christian Luciani · Repo: `ChristianLuciani/christianluciani.github.io` · Branch: `aionui/pi/cv-profile-data`
 > Fecha: 2026-08-15 · Relacionado: profile-as-code `docs/SPEC.md` (§9.1 deploy surfaces, §15.6 v1.1), komuno manifiesto (IX–XI), AGOS (proyección read-only)
 
 ---
@@ -53,7 +53,7 @@ Mientras tanto, el ecosistema `profile-*` ya definió el **SSOT** de esos mismos
 ### Goals
 
 1. **Separación total contenido/presentación**: los hechos viven en `profile-data` (SSOT);
-   cv-cluciani queda como capa de **presentación + curación museográfica**.
+   christianluciani.github.io queda como capa de **presentación + curación museográfica**.
 2. **Dependencia de datos (D1)**: el CV consume `profile-data` como dependencia via archivo
    **generado + commiteado** (`src/data/profile.generated.ts`, header AUTO-GENERATED, jamás
    editado a mano) — mismo patrón que `index.html` hoy (D14 de profile-as-code: integración
@@ -87,7 +87,7 @@ profile-data (PRIVADO · SSOT factual — se edita SOLO ahí)
         │  tools/sync-profile.ts  (build local / agente; lee PROFILE_DATA_PATH — D14)
         │  → valida contra schema/profile.schema.json → normaliza → emite
         ▼
-cv-cluciani (PÚBLICO · deploy surface)
+christianluciani.github.io (PÚBLICO · deploy surface)
   src/data/profile.generated.ts    ← AUTO-GENERATED (commiteado; D1). Jamás a mano.
   src/content/cv/*.ts              ← CAPA DE CURACIÓN (D2): textos museográficos que NO
                                      son hechos — títulos, quotes, showcase, frases intro,
@@ -185,10 +185,10 @@ Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
 
 | # | Decisión | Racional |
 |---|---|---|
-| D1 | **Archivo generado + commiteado** en cv-cluciani (`src/data/profile.generated.ts`) | Mismo patrón que `index.html` (build.test.ts): CI solo verifica paridad; la generación es local/agente; cero credenciales de repo privado en CI. Contrato enforced por test. |
-| D2 | **Curación museográfica en cv-cluciani** (`src/content/cv/*.ts`), no en profile-data | Son textos de ESTE museo con UN consumidor; no son hechos ni plataforma-cross. Meterlos en el schema contaminaría el contrato concreta de una superficie. |
+| D1 | **Archivo generado + commiteado** en christianluciani.github.io (`src/data/profile.generated.ts`) | Mismo patrón que `index.html` (build.test.ts): CI solo verifica paridad; la generación es local/agente; cero credenciales de repo privado en CI. Contrato enforced por test. |
+| D2 | **Curación museográfica en christianluciani.github.io** (`src/content/cv/*.ts`), no en profile-data | Son textos de ESTE museo con UN consumidor; no son hechos ni plataforma-cross. Meterlos en el schema contaminaría el contrato concreta de una superficie. |
 | D3 | **MAP generado** en build desde langMaps YAML + curación; queda diccionario UI pequeño manual | Elimina la clase de bug "edité ES y olvidé EN" (causa histórica de deriva). El walker runtime no cambia. |
-| D4 | **print-CV = renderer determinista** dentro de cv-cluciani, consumiendo `profile.generated.ts` | Deploy surface sin API; promovible a renderer `print` de profile-as-code después (M5+, queda anotado). |
+| D4 | **print-CV = renderer determinista** dentro de christianluciani.github.io, consumiendo `profile.generated.ts` | Deploy surface sin API; promovible a renderer `print` de profile-as-code después (M5+, queda anotado). |
 | D5 | **Extensión del contrato como profile-as-code** (schema v1.1, spec-first en profile-as-code, NO ad-hoc en el CV) | El contrato de datos es del motor: `highlights → array`, `role/org → langMap`, `publications.url`, `languages`, `education`. El CV normaliza ambos shapes (v1 legacy + v1.1) para no bloquear el refactor. |
 | D6 | Integración por **path configurado** (`PROFILE_DATA_PATH` en `.env`/`.pacrc`, `.env` gitignored) | D14 de profile-as-code: sin symlink en el flujo normal; parametrización komuno XI. |
 | D7 | El sync **valida contra el schema del motor** (fail on schema, warn on drift — D12 profile-as-code) | Integridad del contrato sin romper flexibilidad de intención por plataforma. |
@@ -202,7 +202,7 @@ Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
    `gen-zod` + tests core. PR contra main de profile-as-code (merge: humano).
 2. **profile-data — contenido ES:** completar `role`/`org` ES de `experience.yaml` y
    verificar hechos contra el CV actual (CHECKLIST pendiente). PR en profile-data (merge: humano).
-3. **cv-cluciani — Fase 2 en adelante:** consume lo publicado por 1–2.
+3. **christianluciani.github.io — Fase 2 en adelante:** consume lo publicado por 1–2.
 
 El normalizador del CV soporta **ambos shapes** (v1 y v1.1), así el refactor del CV no
 queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y la Fase 2.5
