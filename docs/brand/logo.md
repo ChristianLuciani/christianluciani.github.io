@@ -241,8 +241,8 @@ light, además, se omite `logo-background` y los halos de la constelación
 - ❌ Rotar, estirar o reflectar el símbolo.
 - ❌ Recolorear la C a mano o aplanar su bisel (el oro es la firma; el
   acabado ámbar→oro→luz se genera desde `cFinish`).
-- ❌ Dibujar el símbolo a mano: **siempre regenerar** (`node
-  tools/logo/generate-logo.mjs`).
+- ❌ Dibujar el símbolo a mano: **regenerar en `cluciani-brand-kit`** (ahí
+  vive el generador canónico). En este repo el espejo no se regenera.
 - ❌ Editar los SVG/PNG generados — son OUTPUT; la fuente es `geometry.mjs`.
 - ❌ Usar el full en <48px (el ruido de la constelación no se lee; usar
   settled).
@@ -285,9 +285,10 @@ assets/brand/logo/
   og-image-{aurea|base}.png           # 1200×630 dark + nombre
 ```
 
-Regenerar todo: `node tools/logo/generate-logo.mjs`
-Sólo áurea/base: `--only-aurea` / `--only-base`
-Salida alternativa: `LOGO_OUT=<dir>` o `--out <dir>`
+El inventario y la regeneración canónicos viven en `cluciani-brand-kit`
+(tag `v1.0.1`). En este repo `assets/brand/logo/` es un espejo vendored: se
+verifica con `npm run brand:verify`; no se regenera acá. El script local
+`tools/logo/generate-logo.mjs` queda deprecado como referencia/sync.
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — salida **0** limpio
 · **1** el puerto difiere · **2** no se pudo medir (Chrome ausente, o artefacto
 inexistente, **vacío**, ilegible, un directorio con el nombre del HTML, o un DOM

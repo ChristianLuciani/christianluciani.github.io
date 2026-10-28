@@ -1,5 +1,12 @@
 /**
- * generate-logo.mjs — genera el paquete de assets del logo (issue #54)
+ * generate-logo.mjs — [DEPRECADO en este repo]
+ *
+ * El paquete canónico de assets estáticos se genera en
+ * `ChristianLuciani/cluciani-brand-kit`. Aquí `assets/brand/logo` es un espejo
+ * vendored pinneado (brand-kit.lock.json) y no se regenera: este archivo queda
+ * como referencia histórica y para el sync del brand kit (#1).
+ *
+ * Original: genera el paquete de assets del logo (issue #54)
  * DESDE geometry.mjs (≡ DOM aprobado PR #53, gateado por
  * verify-dom-fidelity.mjs).
  *
