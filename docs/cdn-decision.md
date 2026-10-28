@@ -2,7 +2,17 @@
 
 **Estado:** ratificado (#81, merge `d8b703b`, 2026-10-26) · implementación: #84
 **Fecha:** 2026-10-25 · **Autor:** sesión `dsh/sprint/57`
-**Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo, resuelto en #84 con copia propia · as_of: 2026-10-26`
+**Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo, resuelto en #84 con copia propia · as_of: 2026-10-27`
+
+> **Actualización 2026-10-27 — marca separada del runtime.** Los 3 favicons ya
+> no se resuelven contra el repo del sitio: se sirven desde
+> `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (mapa
+> `/assets/brand/**` → `assets/logo/**`). El OG y las 4 thumbs siguen en este
+> repo (`VITE_ASSET_BASE_URL`). El espejo local de marca queda como fallback,
+> pinneado en `brand-kit.lock.json` y verificado por `npm run brand:verify`.
+> Sin `VITE_BRAND_KIT_BASE_URL`, los favicons se sirven desde Pages como antes.
+> En GitHub Actions la base se toma de `vars.BRAND_KIT_CDN_BASE`; la variable
+> está seteada a `https://cdn.jsdelivr.net/gh/ChristianLuciani/cluciani-brand-kit@v1.0.1`.
 
 ## Contexto
 

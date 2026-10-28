@@ -11,9 +11,9 @@
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
     "test:watch": "vitest",
     "build:html": "tsx build.ts",
-    "logo:generate": "node tools/logo/generate-logo.mjs",
     "logo:verify": "node tools/logo/verify-dom-fidelity.mjs",
     "brand:sync": "node tools/brand/sync-logo-anim.mjs",
+    "brand:verify": "node tools/brand/check-brand-kit.mjs",
     "logo:motion": "node tools/logo/verify-motion.mjs",
     "logo:timing": "node tools/logo/timing-lab.mjs"
   },

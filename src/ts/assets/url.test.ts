@@ -2,7 +2,9 @@ import { describe, it, expect } from "vitest";
 import {
   absoluteAssetUrl,
   assetAttrs,
+  assetAttrsFor,
   assetUrl,
+  brandKitRepoPath,
   cdnAssetUrl,
   cdnRepoPath,
   normalizeBase,
@@ -145,6 +147,45 @@ describe("cdnRepoPath", () => {
     );
     expect(cdnRepoPath("/assets/hosaka2006_thumb-KMqoFzTp.jpg")).toBe(
       "public/assets/hosaka2006_thumb-KMqoFzTp.jpg"
+    );
+  });
+});
+
+describe("brand kit — marca separada del runtime", () => {
+  it("mapea /assets/brand/** a assets/logo/** del brand kit", () => {
+    expect(brandKitRepoPath("/assets/brand/favicon-aurea.svg")).toBe(
+      "assets/logo/favicon-aurea.svg"
+    );
+    expect(brandKitRepoPath("/assets/og-image.png")).toBe(null);
+  });
+
+  it("usa la base del brand kit para la marca, no la del sitio", () => {
+    expect(
+      cdnAssetUrl(
+        "/assets/brand/favicon-aurea.svg",
+        "https://site.test@v1",
+        "https://brand.test@v1"
+      )
+    ).toBe("https://brand.test@v1/assets/logo/favicon-aurea.svg");
+  });
+
+  it("sin base de brand kit cae a la copia local, no al CDN del sitio", () => {
+    expect(
+      cdnAssetUrl("/assets/brand/favicon-aurea.svg", "https://site.test@v1", "")
+    ).toBe("/assets/brand/favicon-aurea.svg");
+  });
+
+  it("emite data-local para el fallback de marca", () => {
+    expect(
+      assetAttrsFor("href", "/assets/brand/favicon-aurea.svg", "", "https://brand.test@v1")
+    ).toBe(
+      'href="https://brand.test@v1/assets/logo/favicon-aurea.svg" data-local="/assets/brand/favicon-aurea.svg"'
+    );
+  });
+
+  it("nombra la variable correcta en el error de base inválida", () => {
+    expect(() => normalizeBase("brand.test", "VITE_BRAND_KIT_BASE_URL")).toThrow(
+      /VITE_BRAND_KIT_BASE_URL/
     );
   });
 });
