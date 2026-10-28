@@ -452,6 +452,7 @@ a { color:inherit; }
   #intro-block { margin-top:190px; }
 }
 .intro-phrase {
+  position:relative;
   margin:0 auto;
   max-width:680px;
   min-height:4.2rem;
@@ -464,15 +465,27 @@ a { color:inherit; }
   transform:translateY(6px);
   transition:opacity 1.1s ease, transform 1.1s ease;
 }
-.p-word { margin-right:.3em; opacity:.32; transition:opacity .3s ease, color .3s ease; }
-.p-word--focus { opacity:1; color:var(--teal); }
+/* Coreografía única (intro.ts → choreograph), en dos rondas sobre el tempo:
+   ronda 1 la palabra aparece en GRIS; ronda 2 pulsa a TEAL y asienta en blanco.
+   La palabra no existe hasta que el reloj del logo la llama. */
+.p-word {
+  position:relative; z-index:1;
+  margin-right:.3em;
+  opacity:0;
+  /* Nace en gris: el primer frame visible ya es --ink-dim, sin destello blanco. */
+  color:var(--ink-dim);
+  transform:translateY(8px);
+  transition:opacity .34s ease, transform .34s cubic-bezier(.16,1,.3,1), color .34s ease;
+}
+.p-word--on    { opacity:1; transform:none; color:var(--ink-dim); }
+.p-word--pulse { color:var(--teal); }
+.p-word--lit   { color:var(--ink); }
 .intro-phrase em { color:var(--teal); font-style:normal; }
 .intro-phrase.in   { opacity:1; transform:translateY(0); }
 .intro-phrase.out  { opacity:0; transform:translateY(-8px); transition:opacity 1.1s ease, transform 1.1s ease; }
 
 /* ── Frase 1 · TRIÁNGULO ──────────────────────────────────────────────────
-   Tres palabras en tres vértices (arriba, abajo-izquierda, abajo-derecha) y
-   cada una entra en un tick del Espirángulo (intro.ts → enterOnTempo). La
+   Tres palabras en tres vértices (arriba, abajo-izquierda, abajo-derecha). La
    segunda fila deja el centro vacío: eso dibuja el triángulo, no una línea. */
 .intro-phrase--triangle {
   max-width:min(640px, 92vw);
@@ -486,20 +499,30 @@ a { color:inherit; }
   font-size:clamp(1.05rem, 3vw, 1.85rem);
   line-height:1.2;
 }
-.intro-phrase--triangle .p-word {
-  margin:0;
-  opacity:0;
-  transform:scale(.9) translateY(10px);
-  transition:opacity .34s ease, transform .34s cubic-bezier(.16,1,.3,1), color .34s ease;
-  white-space:nowrap;
-}
-/* Entrada por tiempo: la palabra no existe hasta que el reloj del logo la llama. */
-.intro-phrase--triangle .p-word--on { opacity:1; transform:none; color:var(--ink); }
+.intro-phrase--triangle .p-word { margin:0; white-space:nowrap; }
 .intro-phrase--triangle .p-word:nth-child(1) { grid-column:2; grid-row:1; }
 .intro-phrase--triangle .p-word:nth-child(2) { grid-column:1; grid-row:2; }
 .intro-phrase--triangle .p-word:nth-child(3) { grid-column:3; grid-row:2; }
+
+/* ── Frase final · TRAZA DE ORO ───────────────────────────────────────────
+   Los DOS ÚLTIMOS trazos del Espirángulo (la C) dibujados en oro bajo
+   «Instancia Humana». La geometría sale del propio logo (svg.dataset.c), no de
+   una imitación; el SVG lo crea intro.ts → drawGoldTrace(). */
+.intro-phrase--final { min-height:6rem; }
+.intro-trace {
+  position:absolute; left:50%; top:50%;
+  /* La C es retrato (bbox ~310×412): se acota por ALTO para que la traza no se
+     coma la frase; el ancho sale de la proporción real (height:auto). */
+  height:clamp(120px, 20vh, 190px);
+  width:auto;
+  transform:translate(-50%,-50%);
+  opacity:.9;
+  pointer-events:none;
+  z-index:0;
+}
 @media (max-width:620px) {
   .intro-phrase--triangle { min-height:8rem; gap:.4rem .5rem; }
+  .intro-trace { height:clamp(96px, 16vh, 140px); }
 }
 
 @media (prefers-reduced-motion: reduce) {
