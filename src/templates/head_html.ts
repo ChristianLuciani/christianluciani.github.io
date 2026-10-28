@@ -329,6 +329,8 @@ a { color:inherit; }
   transition:color .18s, background .18s;
 }
 .nav-dot .n { color:var(--ink-meta); font-size:9px; letter-spacing:.1em; }
+/* La fila del HUD recorta el overflow: el anillo de foco va por dentro. */
+.nav-dot:focus-visible { outline-offset:-2px; }
 .nav-dot:hover { color:var(--ink); background:rgba(255,255,255,.03); }
 .nav-dot.active, .nav-dot[aria-current="true"] {
   color:var(--teal);
