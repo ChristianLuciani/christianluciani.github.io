@@ -128,6 +128,11 @@ export function initI18n(): void {
       e.innerHTML = en && roomTitlesEn[i] ? roomTitlesEn[i] : titlesOrig[i];
     });
     document.documentElement.lang = en ? "en" : "es";
+    // aria-labels del HUD (marca + landmark) siguen el mismo ciclo ES/EN.
+    document.querySelectorAll<HTMLElement>("[data-aria-es]").forEach((el) => {
+      const label = en ? el.dataset.ariaEn : el.dataset.ariaEs;
+      if (label) el.setAttribute("aria-label", label);
+    });
     syncNavLang();
     const b = document.getElementById("btn-lang");
     if (b) b.textContent = en ? "ES" : "EN";

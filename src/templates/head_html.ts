@@ -1140,9 +1140,13 @@ a { color:inherit; }
    RESPONSIVE — sin overflow horizontal en 390/768/1440
 ══════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  #nav.hud-nav { display:none; }
-  .hud-current { display:inline-flex; margin-left:auto; max-width:34vw; }
+  /* La nav NO se oculta: pasa a una segunda fila scrolleable, siempre en el
+     árbol de accesibilidad y en el tab order (números + labels focusables). */
+  .hud-inner { flex-wrap:wrap; row-gap:2px; }
+  #nav.hud-nav { order:5; flex:0 0 100%; margin-left:0; overflow-x:auto; }
+  .hud-current { display:inline-flex; flex:1 1 auto; min-width:0; margin-left:auto; max-width:34vw; }
   .hud-side { margin-left:0; }
+  #hero, .room { scroll-margin-top:96px; }
 }
 @media (max-width: 900px) {
   .project-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }

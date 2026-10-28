@@ -14,7 +14,8 @@ romper reglas existentes.
 |---------------|-----------------|-----------|-----|
 | `--bg-0`      | `--night`       | `#050810` | Fondo principal (más oscuro) |
 | `--bg-1`      | `--deep`        | `#0b1120` | Fondo secundario (salas alternas) |
-| `--surface`   | —               | `#111827` | Tarjetas y superficies |
+| `--surface`   | —               | `#111827` | Alias histórico; la superficie de tarjeta usa `--card` |
+| `--card`      | —               | `rgba(255,255,255,.016)` | Fondo real de tarjetas y celdas |
 | `--ink`       | `--text`        | `#e7edf6` | Texto cuerpo |
 | `--ink-dim`   | —               | `#8b9bb0` | Texto secundario / cuerpo de tarjeta |
 | `--ink-meta`  | `--muted`       | `#75849a` | **Todo texto chico, labels y metadata** (AA 4,79:1 sobre tarjeta) |
@@ -25,8 +26,8 @@ romper reglas existentes.
 Acentos: `--teal #00c9c0` (principal), `--gold #c9a84c` (secundario / títulos de
 sala), `--ice #7ad7ff`, `--coral #ff8a70`.
 
-`--muted` ya **no** vale `#6b7a8d`: sobre `--surface` caía a 4,05:1 y fallaba AA
-para texto normal. Es alias de `--ink-meta`.
+`--muted` ya **no** vale `#6b7a8d`: sobre la tarjeta (`--card` compuesto sobre
+`--bg-0`) caía a 4,05:1 y fallaba AA para texto normal. Es alias de `--ink-meta`.
 
 ## Tipografía
 
@@ -38,7 +39,11 @@ Stacks del sistema, **cero fuentes web** (0 requests a Google Fonts):
 | `--font-mono` | `ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas, monospace` | Labels, metadata, métricas |
 
 Tamaño base: `16px` · Line-height: `1.55`. Playfair Display, Fira Code y
-Cormorant Garamond se retiraron (eran ~158 KB de fuentes).
+Cormorant Garamond se retiraron: 3 familias, 5 woff2 usados y 52 `@font-face`
+declaradas menos. El peso medido de esas fuentes en la comparación de #89 fue
+158.073 B de escritorio / 157.150 B móvil
+(`proposals/estilo-lab/NOTA.md` §5, tabla de performance); esta hoja ya no
+declara ninguna fuente y el runtime hace 0 requests a hosts de fuentes.
 
 ## Superficie
 
@@ -50,8 +55,10 @@ Cormorant Garamond se retiraron (eran ~158 KB de fuentes).
   móvil (≤620px), gap `12px`.
 - Banda de métricas (`.hero-metrics`): `dt` mono 9px `--ink-meta`, `dd` mono
   17–22px `--ink`.
-- HUD superior sticky con número + label siempre visibles; en móvil colapsa a
-  marca + sala actual (`.hud-current`).
+- HUD superior sticky con número + label siempre visibles en desktop (≥1101px);
+  a ≤1100px la nav pasa a una segunda fila horizontal scrolleable —sigue en el
+  árbol de accesibilidad y en el tab order— y la fila superior muestra marca +
+  sala actual (`.hud-current`).
 - Cursor nativo: no hay cursor personalizado.
 
 ## Navegación (HUD)
@@ -77,7 +84,10 @@ La generan `SALAS` + `src/cv/render.ts` (nunca se escribe a mano):
 ```
 
 `render.ts` regenera las entradas desde `SALAS`, sincroniza los labels con
-`<html lang>` y marca la sala activa con `aria-current="true"`.
+`<html lang>` y marca la sala activa con `aria-current="true"`. Los
+`aria-label` de la marca y del landmark también viajan en el ciclo i18n
+(`data-aria-es` / `data-aria-en`). A ≤1100px la lista se muestra en una fila
+scrolleable: ningún ítem sale del árbol de accesibilidad ni del tab order.
 
 ## Animaciones de scroll
 

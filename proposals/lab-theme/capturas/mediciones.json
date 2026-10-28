@@ -1,6 +1,6 @@
 {
-  "base": "http://127.0.0.1:58264/",
-  "measuredAt": "2026-10-28T01:23:29.750Z",
+  "base": "http://127.0.0.1:62145/",
+  "measuredAt": "2026-10-28T01:49:06.006Z",
   "viewports": {
     "1440x900": {
       "top": {
@@ -72,6 +72,71 @@
           "height": 26.9375,
           "visible": true
         },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "BODY",
+          "id": null,
+          "cls": "",
+          "tabindex": null
+        },
+        "hash": "",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
         "hudCurrent": {
           "display": "none",
           "text": "Entrada"
@@ -190,6 +255,71 @@
           "height": 26.9375,
           "visible": true
         },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "H2",
+          "id": null,
+          "cls": "room-title in-view",
+          "tabindex": "-1"
+        },
+        "hash": "#room-proyectos",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
         "hudCurrent": {
           "display": "none",
           "text": "Exposición"
@@ -212,7 +342,7 @@
           ]
         },
         "grid": "398.656px 398.672px 398.656px",
-        "contentWidth": 1193.151611328125,
+        "contentWidth": 1193.9598388671875,
         "reducedMotion": {
           "heroAnimationDuration": "1e-06s",
           "dataScrollOpacity": "1"
@@ -239,6 +369,120 @@
           "h": 900
         }
       },
+      "tabs": [
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "skip-link",
+          "text": "Saltar al contenido",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "brand",
+          "text": "◈ Christian Luciani",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot active",
+          "text": "00Entrada",
+          "target": "hero"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "01Exposición",
+          "target": "room-proyectos"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "02Bastidor",
+          "target": "room-bastidor"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "03Taller",
+          "target": "room-competencias"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "04Recorrido",
+          "target": "room-experiencia"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "05Biblioteca",
+          "target": "room-fisica"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "06Constelación",
+          "target": "room-grafo"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "07Perfil",
+          "target": "room-perfil"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "08Contacto",
+          "target": "room-contacto"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-lang",
+          "cls": "",
+          "text": "EN",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-sound",
+          "cls": "",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-download",
+          "cls": "",
+          "text": "↓ Descargar CV",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "brand-logo",
+          "cls": "minimized",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "a",
+          "id": null,
+          "cls": "[object SVGAnimatedString]",
+          "text": "00 ENTRADA",
+          "target": null
+        }
+      ],
       "i18n": {
         "lang": "en",
         "labels": [
@@ -254,10 +498,510 @@
         ],
         "current": "Exhibition",
         "title": "The Exhibition",
+        "navAriaLabel": "Museum rooms",
+        "brandAriaLabel": "Christian Luciani — go to the entrance",
         "active": "room-proyectos"
+      },
+      "modifiedClick": {
+        "before": {
+          "hash": "#room-proyectos",
+          "focus": "room-title in-view"
+        },
+        "after": {
+          "hash": "#room-proyectos",
+          "focus": "room-title in-view"
+        }
       },
       "requests": {
         "total": 26,
+        "fonts": []
+      }
+    },
+    "1000x800": {
+      "top": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 1000,
+        "innerWidth": 1000,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 1000,
+          "h": 655,
+          "boxW": 1000,
+          "boxH": 655,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 1000,
+            "h": 2072,
+            "boxW": 1000,
+            "boxH": 2072,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 1000,
+            "h": 2015,
+            "boxW": 1000,
+            "boxH": 2015,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 1000,
+            "h": 1102,
+            "boxW": 1000,
+            "boxH": 1102,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 1000,
+            "h": 1009,
+            "boxW": 1000,
+            "boxH": 1009,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 1000,
+            "h": 1478,
+            "boxW": 1000,
+            "boxH": 1478,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 1000,
+            "h": 1090,
+            "boxW": 1000,
+            "boxH": 1090,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
+        },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "BODY",
+          "id": null,
+          "cls": "",
+          "tabindex": null
+        },
+        "hash": "",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
+        "hudCurrent": {
+          "display": "flex",
+          "text": "Entrada"
+        },
+        "active": {
+          "target": "hero",
+          "label": "Entrada"
+        },
+        "smallText": {
+          "checked": 248,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(117, 132, 154)",
+            "rgb(0, 201, 192)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "298.656px 298.672px 298.656px",
+        "contentWidth": 883.199951171875,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 79.9375,
+        "hudLayout": {
+          "brandLeft": 62,
+          "logo": {
+            "left": 14,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 898,
+            "scroll": 898
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 1000,
+          "h": 800
+        }
+      },
+      "room": {
+        "fontFamily": "ui-sans-serif, system-ui, -apple-system, \"Segoe UI\", sans-serif",
+        "webFonts": 0,
+        "overflow": 0,
+        "scrollWidth": 1000,
+        "innerWidth": 1000,
+        "heroCanvas": {
+          "sel": "#hero-canvas",
+          "w": 1000,
+          "h": 655,
+          "boxW": 1000,
+          "boxH": 655,
+          "ok": true
+        },
+        "roomCanvases": [
+          {
+            "id": "c-proyectos",
+            "w": 1000,
+            "h": 2072,
+            "boxW": 1000,
+            "boxH": 2072,
+            "ok": true
+          },
+          {
+            "id": "c-bastidor",
+            "w": 1000,
+            "h": 2015,
+            "boxW": 1000,
+            "boxH": 2015,
+            "ok": true
+          },
+          {
+            "id": "c-comp",
+            "w": 1000,
+            "h": 1102,
+            "boxW": 1000,
+            "boxH": 1102,
+            "ok": true
+          },
+          {
+            "id": "c-exp",
+            "w": 1000,
+            "h": 1009,
+            "boxW": 1000,
+            "boxH": 1009,
+            "ok": true
+          },
+          {
+            "id": "c-fisica",
+            "w": 1000,
+            "h": 1478,
+            "boxW": 1000,
+            "boxH": 1478,
+            "ok": true
+          },
+          {
+            "id": "c-necker",
+            "w": 1000,
+            "h": 1090,
+            "boxW": 1000,
+            "boxH": 1090,
+            "ok": true
+          }
+        ],
+        "nav": {
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
+        },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "H2",
+          "id": null,
+          "cls": "room-title in-view",
+          "tabindex": "-1"
+        },
+        "hash": "#room-proyectos",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
+        "hudCurrent": {
+          "display": "flex",
+          "text": "Exposición"
+        },
+        "active": {
+          "target": "room-proyectos",
+          "label": "Exposición"
+        },
+        "smallText": {
+          "checked": 248,
+          "min": 4.67,
+          "violations": [],
+          "colors": [
+            "rgb(5, 8, 16)",
+            "rgb(139, 155, 176)",
+            "rgb(117, 132, 154)",
+            "rgb(0, 201, 192)",
+            "rgb(231, 237, 246)",
+            "rgb(201, 168, 76)"
+          ]
+        },
+        "grid": "298.656px 298.672px 298.656px",
+        "contentWidth": 888.97412109375,
+        "reducedMotion": {
+          "heroAnimationDuration": "1e-06s",
+          "dataScrollOpacity": "1"
+        },
+        "skipLink": true,
+        "hudHeight": 79.9375,
+        "hudLayout": {
+          "brandLeft": 62,
+          "logo": {
+            "left": 14,
+            "width": 36,
+            "minimized": true
+          },
+          "overlap": false,
+          "navScroll": {
+            "client": 898,
+            "scroll": 898
+          },
+          "navItems": 9
+        },
+        "overflowing": [],
+        "viewport": {
+          "w": 1000,
+          "h": 800
+        }
+      },
+      "tabs": [
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "skip-link",
+          "text": "Saltar al contenido",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "brand",
+          "text": "◈ Christian Luciani",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot active",
+          "text": "00Entrada",
+          "target": "hero"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "01Exposición",
+          "target": "room-proyectos"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "02Bastidor",
+          "target": "room-bastidor"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "03Taller",
+          "target": "room-competencias"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "04Recorrido",
+          "target": "room-experiencia"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "05Biblioteca",
+          "target": "room-fisica"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "06Constelación",
+          "target": "room-grafo"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "07Perfil",
+          "target": "room-perfil"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "08Contacto",
+          "target": "room-contacto"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-lang",
+          "cls": "",
+          "text": "EN",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-sound",
+          "cls": "",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-download",
+          "cls": "",
+          "text": "↓ Descargar CV",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "brand-logo",
+          "cls": "minimized",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "a",
+          "id": null,
+          "cls": "[object SVGAnimatedString]",
+          "text": "00 ENTRADA",
+          "target": null
+        }
+      ],
+      "i18n": null,
+      "modifiedClick": null,
+      "requests": {
+        "total": 25,
         "fonts": []
       }
     },
@@ -327,10 +1071,75 @@
           }
         ],
         "nav": {
-          "display": "none",
-          "height": 0,
-          "visible": false
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
         },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "BODY",
+          "id": null,
+          "cls": "",
+          "tabindex": null
+        },
+        "hash": "",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
         "hudCurrent": {
           "display": "flex",
           "text": "Entrada"
@@ -340,7 +1149,7 @@
           "label": "Entrada"
         },
         "smallText": {
-          "checked": 238,
+          "checked": 247,
           "min": 4.67,
           "violations": [],
           "colors": [
@@ -359,7 +1168,7 @@
           "dataScrollOpacity": "1"
         },
         "skipLink": true,
-        "hudHeight": 51,
+        "hudHeight": 79.9375,
         "hudLayout": {
           "brandLeft": 62,
           "logo": {
@@ -369,8 +1178,8 @@
           },
           "overlap": false,
           "navScroll": {
-            "client": 0,
-            "scroll": 0
+            "client": 675,
+            "scroll": 804
           },
           "navItems": 9
         },
@@ -445,10 +1254,75 @@
           }
         ],
         "nav": {
-          "display": "none",
-          "height": 0,
-          "visible": false
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
         },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "H2",
+          "id": null,
+          "cls": "room-title in-view",
+          "tabindex": "-1"
+        },
+        "hash": "#room-proyectos",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
         "hudCurrent": {
           "display": "flex",
           "text": "Exposición"
@@ -458,7 +1332,7 @@
           "label": "Exposición"
         },
         "smallText": {
-          "checked": 238,
+          "checked": 247,
           "min": 4.67,
           "violations": [],
           "colors": [
@@ -471,13 +1345,13 @@
           ]
         },
         "grid": "347.281px 347.281px",
-        "contentWidth": 679.14404296875,
+        "contentWidth": 678.8759765625,
         "reducedMotion": {
           "heroAnimationDuration": "1e-06s",
           "dataScrollOpacity": "1"
         },
         "skipLink": true,
-        "hudHeight": 51,
+        "hudHeight": 79.9375,
         "hudLayout": {
           "brandLeft": 62,
           "logo": {
@@ -487,8 +1361,8 @@
           },
           "overlap": false,
           "navScroll": {
-            "client": 0,
-            "scroll": 0
+            "client": 675,
+            "scroll": 804
           },
           "navItems": 9
         },
@@ -498,7 +1372,122 @@
           "h": 1024
         }
       },
+      "tabs": [
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "skip-link",
+          "text": "Saltar al contenido",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "brand",
+          "text": "◈ Christian Luciani",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot active",
+          "text": "00Entrada",
+          "target": "hero"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "01Exposición",
+          "target": "room-proyectos"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "02Bastidor",
+          "target": "room-bastidor"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "03Taller",
+          "target": "room-competencias"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "04Recorrido",
+          "target": "room-experiencia"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "05Biblioteca",
+          "target": "room-fisica"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "06Constelación",
+          "target": "room-grafo"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "07Perfil",
+          "target": "room-perfil"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "08Contacto",
+          "target": "room-contacto"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-lang",
+          "cls": "",
+          "text": "EN",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-sound",
+          "cls": "",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-download",
+          "cls": "",
+          "text": "↓ Descargar CV",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "brand-logo",
+          "cls": "minimized",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "a",
+          "id": null,
+          "cls": "[object SVGAnimatedString]",
+          "text": "00 ENTRADA",
+          "target": null
+        }
+      ],
       "i18n": null,
+      "modifiedClick": null,
       "requests": {
         "total": 25,
         "fonts": []
@@ -570,10 +1559,75 @@
           }
         ],
         "nav": {
-          "display": "none",
-          "height": 0,
-          "visible": false
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
         },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "BODY",
+          "id": null,
+          "cls": "",
+          "tabindex": null
+        },
+        "hash": "",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
         "hudCurrent": {
           "display": "flex",
           "text": "Entrada"
@@ -583,7 +1637,7 @@
           "label": "Entrada"
         },
         "smallText": {
-          "checked": 238,
+          "checked": 247,
           "min": 4.67,
           "violations": [],
           "colors": [
@@ -602,7 +1656,7 @@
           "dataScrollOpacity": "1"
         },
         "skipLink": true,
-        "hudHeight": 51,
+        "hudHeight": 87.9375,
         "hudLayout": {
           "brandLeft": 56,
           "logo": {
@@ -612,8 +1666,8 @@
           },
           "overlap": false,
           "navScroll": {
-            "client": 0,
-            "scroll": 0
+            "client": 320,
+            "scroll": 804
           },
           "navItems": 9
         },
@@ -688,10 +1742,75 @@
           }
         ],
         "nav": {
-          "display": "none",
-          "height": 0,
-          "visible": false
+          "display": "flex",
+          "height": 26.9375,
+          "visible": true
         },
+        "navAriaLabel": "Salas del museo",
+        "activeElement": {
+          "tag": "H2",
+          "id": null,
+          "cls": "room-title in-view",
+          "tabindex": "-1"
+        },
+        "hash": "#room-proyectos",
+        "brandAriaLabel": "Christian Luciani — ir a la entrada",
+        "navFocusables": [
+          {
+            "target": "hero",
+            "tabIndex": 0,
+            "label": "Entrada",
+            "visible": true
+          },
+          {
+            "target": "room-proyectos",
+            "tabIndex": 0,
+            "label": "Exposición",
+            "visible": true
+          },
+          {
+            "target": "room-bastidor",
+            "tabIndex": 0,
+            "label": "Bastidor",
+            "visible": true
+          },
+          {
+            "target": "room-competencias",
+            "tabIndex": 0,
+            "label": "Taller",
+            "visible": true
+          },
+          {
+            "target": "room-experiencia",
+            "tabIndex": 0,
+            "label": "Recorrido",
+            "visible": true
+          },
+          {
+            "target": "room-fisica",
+            "tabIndex": 0,
+            "label": "Biblioteca",
+            "visible": true
+          },
+          {
+            "target": "room-grafo",
+            "tabIndex": 0,
+            "label": "Constelación",
+            "visible": true
+          },
+          {
+            "target": "room-perfil",
+            "tabIndex": 0,
+            "label": "Perfil",
+            "visible": true
+          },
+          {
+            "target": "room-contacto",
+            "tabIndex": 0,
+            "label": "Contacto",
+            "visible": true
+          }
+        ],
         "hudCurrent": {
           "display": "flex",
           "text": "Exposición"
@@ -701,7 +1820,7 @@
           "label": "Exposición"
         },
         "smallText": {
-          "checked": 238,
+          "checked": 247,
           "min": 4.67,
           "violations": [],
           "colors": [
@@ -720,7 +1839,7 @@
           "dataScrollOpacity": "1"
         },
         "skipLink": true,
-        "hudHeight": 51,
+        "hudHeight": 87.9375,
         "hudLayout": {
           "brandLeft": 56,
           "logo": {
@@ -730,8 +1849,8 @@
           },
           "overlap": false,
           "navScroll": {
-            "client": 0,
-            "scroll": 0
+            "client": 320,
+            "scroll": 804
           },
           "navItems": 9
         },
@@ -741,7 +1860,122 @@
           "h": 844
         }
       },
+      "tabs": [
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "skip-link",
+          "text": "Saltar al contenido",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "brand",
+          "text": "◈ Christian Luciani",
+          "target": null
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot active",
+          "text": "00Entrada",
+          "target": "hero"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "01Exposición",
+          "target": "room-proyectos"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "02Bastidor",
+          "target": "room-bastidor"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "03Taller",
+          "target": "room-competencias"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "04Recorrido",
+          "target": "room-experiencia"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "05Biblioteca",
+          "target": "room-fisica"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "06Constelación",
+          "target": "room-grafo"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "07Perfil",
+          "target": "room-perfil"
+        },
+        {
+          "tag": "A",
+          "id": null,
+          "cls": "nav-dot",
+          "text": "08Contacto",
+          "target": "room-contacto"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-lang",
+          "cls": "",
+          "text": "EN",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-sound",
+          "cls": "",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "btn-download",
+          "cls": "",
+          "text": "↓ Descargar CV",
+          "target": null
+        },
+        {
+          "tag": "BUTTON",
+          "id": "brand-logo",
+          "cls": "minimized",
+          "text": "",
+          "target": null
+        },
+        {
+          "tag": "a",
+          "id": null,
+          "cls": "[object SVGAnimatedString]",
+          "text": "00 ENTRADA",
+          "target": null
+        }
+      ],
       "i18n": null,
+      "modifiedClick": null,
       "requests": {
         "total": 25,
         "fonts": []
@@ -749,5 +1983,5 @@
     }
   },
   "fontRequests": [],
-  "allRequests": 76
+  "allRequests": 101
 }

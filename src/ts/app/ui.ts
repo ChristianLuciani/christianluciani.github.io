@@ -73,6 +73,16 @@ function initParallax(): void {
   updateParallax();
 }
 
+/** Lleva el foco al destino del HUD (heading de la sala o el hero). */
+function focusDestination(el: HTMLElement): void {
+  const heading =
+    el.querySelector<HTMLElement>(".room-title, .hero-name") ??
+    el.querySelector<HTMLElement>("h1, h2") ??
+    el;
+  if (!heading.hasAttribute("tabindex")) heading.setAttribute("tabindex", "-1");
+  heading.focus({ preventScroll: true });
+}
+
 function initNav(): void {
   /* Los .nav-dot los genera SALAS (render.ts); aquí solo la interacción:
      click por DELEGACIÓN y el estado activo lo gestiona render.ts. */
@@ -82,10 +92,26 @@ function initNav(): void {
       const target = e.target as Element | null;
       const dot = target && target.closest ? target.closest(".nav-dot") : null;
       if (!dot) return;
-      e.preventDefault();
+      /* Click primario sin modificadores: interceptamos para hacer scroll suave
+         y mover el foco. Ctrl/Cmd/Shift/Alt o botón no-primario conservan el
+         comportamiento nativo (nueva pestaña, etc.). */
+      if (
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      ) {
+        return;
+      }
       const id = (dot as HTMLElement).dataset.target;
       const el = id && document.getElementById(id);
-      if (el) el.scrollIntoView({ behavior: "smooth" });
+      if (!el) return;
+      e.preventDefault();
+      history.pushState(null, "", `#${id}`);
+      el.scrollIntoView({ behavior: "smooth" });
+      focusDestination(el);
     });
   }
 

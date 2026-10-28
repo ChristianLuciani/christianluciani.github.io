@@ -33,7 +33,7 @@ export interface SalaDef {
   titulo: string;
   /** Traducción EN del título (HTML, puede contener <em>) */
   tituloEn: string;
-  /** Subtítulo / metadata ES (texto plano, Fira Code) */
+  /** Subtítulo / metadata ES (texto plano, mono del sistema) */
   subtitulo: string;
   /** Traducción EN del subtítulo */
   subtituloEn: string;

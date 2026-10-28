@@ -206,6 +206,18 @@ const MEASURE_JS = `(() => {
     heroCanvas: canvasCheck("#hero-canvas", "#hero"),
     roomCanvases: rooms,
     nav: nav ? { display: getComputedStyle(nav).display, height: navRect.height, visible: navRect.height > 0 } : null,
+    navAriaLabel: nav && nav.getAttribute("aria-label"),
+    activeElement: (() => { const a = document.activeElement; return a ? { tag: a.tagName, id: a.id || null, cls: String(a.className || "").slice(0, 40), tabindex: a.getAttribute("tabindex") } : null; })(),
+    hash: location.hash,
+    brandAriaLabel: (document.querySelector(".brand") || {}).getAttribute
+      ? document.querySelector(".brand").getAttribute("aria-label")
+      : null,
+    navFocusables: [...document.querySelectorAll("#nav a")].map((a) => ({
+      target: a.dataset.target,
+      tabIndex: a.tabIndex,
+      label: (a.querySelector(".nav-label") || {}).textContent || "",
+      visible: !!(a.getClientRects().length && getComputedStyle(a).visibility !== "hidden") && a.getBoundingClientRect().width > 0
+    })),
     hudCurrent: hudCurrent ? { display: getComputedStyle(hudCurrent).display, text: hudCurrent.textContent.trim() } : null,
     active: active ? { target: active.dataset.target, label: (active.querySelector(".nav-label") || {}).textContent || "" } : null,
     smallText: { checked: small.length, min: small.length ? Math.min(...small.map((x) => x.ratio)) : null, violations: bad, colors: [...new Set(small.map((x) => x.color))] },
@@ -242,8 +254,28 @@ const MEASURE_JS = `(() => {
   };
 })()`;
 
+/** Un paso de Tab real (CDP) + descriptor del elemento enfocado. */
+async function tabWalk(cdp, steps = 16) {
+  await cdp.evaluate("window.scrollTo(0, 0); if (document.activeElement) document.activeElement.blur();");
+  const out = [];
+  for (let i = 0; i < steps; i++) {
+    await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9, nativeVirtualKeyCode: 9 });
+    await sleep(30);
+    out.push(await cdp.evaluate(`(() => {
+      const a = document.activeElement;
+      if (!a) return null;
+      return { tag: a.tagName, id: a.id || null, cls: String(a.className || "").slice(0, 30),
+        text: (a.textContent || "").trim().replace(/\\s+/g, " ").slice(0, 24),
+        target: (a.dataset && a.dataset.target) || null };
+    })()`));
+  }
+  return out;
+}
+
 const VIEWPORTS = [
   { w: 1440, h: 900, shot: true },
+  { w: 1000, h: 800, shot: false },
   { w: 768, h: 1024, shot: false },
   { w: 390, h: 844, shot: true }
 ];
@@ -273,11 +305,25 @@ async function main() {
       // Datos de red de la portada (incluye cross-origin: Network, no Resource Timing).
       const navReqs = [...cdp.requests];
       const top = await cdp.evaluate(MEASURE_JS);
+      const tabs = await tabWalk(cdp, 16);
       if (vp.shot) await cdp.capture(join(OUT, `portada-${vp.w}x${vp.h}.png`));
       // Navegar a una sala concreta y verificar el HUD activo.
-      await cdp.evaluate("document.getElementById('room-proyectos').scrollIntoView({behavior:'instant',block:'start'})");
-      await sleep(700);
+      // Click primario real del HUD: scroll + hash + foco en el heading (F3).
+      await cdp.evaluate("document.querySelector('.nav-dot[data-target=\"room-proyectos\"]').click()");
+      await sleep(900);
       const room = await cdp.evaluate(MEASURE_JS);
+      let modifiedClick = null;
+      if (vp.w === 1440) {
+        modifiedClick = await cdp.evaluate(`(() => {
+          const a = document.querySelector('.nav-dot[data-target="room-contacto"]');
+          const href = a.getAttribute('href');
+          a.removeAttribute('href'); // el default nativo no puede navegar: aísla el handler
+          const before = { hash: location.hash, focus: document.activeElement && document.activeElement.className };
+          a.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, ctrlKey: true, button: 0 }));
+          a.setAttribute('href', href);
+          return { before, after: { hash: location.hash, focus: document.activeElement && document.activeElement.className } };
+        })()`);
+      }
       if (vp.shot) await cdp.capture(join(OUT, `sala-${vp.w}x${vp.h}.png`));
       let i18n = null;
       if (vp.w === 1440) {
@@ -288,6 +334,8 @@ async function main() {
           labels: [...document.querySelectorAll('.nav-label')].map((x) => x.textContent),
           current: (document.getElementById('hud-current') || {}).textContent,
           title: document.querySelector('#room-proyectos .room-title').textContent,
+          navAriaLabel: document.querySelector('#nav').getAttribute('aria-label'),
+          brandAriaLabel: document.querySelector('.brand').getAttribute('aria-label'),
           active: (document.querySelector('.nav-dot[aria-current=\"true\"]') || {}).dataset && document.querySelector('.nav-dot[aria-current=\"true\"]').dataset.target
         })`);
         await cdp.evaluate("document.getElementById('btn-lang').click()");
@@ -296,7 +344,7 @@ async function main() {
       const fontReqs = navReqs.filter((u) => /fonts\\.(googleapis|gstatic)\\.com/.test(u));
       results.fontRequests.push(...fontReqs);
       results.allRequests += navReqs.length;
-      results.viewports[`${vp.w}x${vp.h}`] = { top, room, i18n, requests: { total: navReqs.length, fonts: fontReqs } };
+      results.viewports[`${vp.w}x${vp.h}`] = { top, room, tabs, i18n, modifiedClick, requests: { total: navReqs.length, fonts: fontReqs } };
     }
   } finally {
     cdp.close();
@@ -315,8 +363,14 @@ async function main() {
       roomCanvasesOk: t.roomCanvases.every((c) => c.ok),
       canvasMismatch: t.roomCanvases.filter((c) => !c.ok).map((c) => `${c.id}:${c.w}x${c.h}/${c.boxW}x${c.boxH}`),
       navVisible: t.nav && t.nav.visible,
+      navFocusables: `${t.navFocusables.filter((a) => a.visible && a.tabIndex >= 0).length}/${t.navFocusables.length}`,
+      tabNavReached: new Set(r.tabs.filter((x) => x && x.target).map((x) => x.target)).size,
+      navAria: t.navAriaLabel,
       hudCurrent: t.hudCurrent && `${t.hudCurrent.display} "${t.hudCurrent.text}"`,
       activeAfterNav: rm.active && `${rm.active.target} (${rm.active.label})`,
+      focusAfterNav: rm.activeElement && `${rm.activeElement.tag}#${rm.activeElement.id || ""}.${rm.activeElement.cls}`,
+      hashAfterNav: rm.hash,
+      modifiedClickPreserved: r.modifiedClick ? r.modifiedClick.before.hash === r.modifiedClick.after.hash && r.modifiedClick.before.focus === r.modifiedClick.after.focus : null,
       smallMinContrast: t.smallText.min,
       contrastViolations: t.smallText.violations.length
     };

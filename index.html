@@ -1124,9 +1124,13 @@ a { color:inherit; }
    RESPONSIVE — sin overflow horizontal en 390/768/1440
 ══════════════════════════════════════════════ */
 @media (max-width: 1100px) {
-  #nav.hud-nav { display:none; }
-  .hud-current { display:inline-flex; margin-left:auto; max-width:34vw; }
+  /* La nav NO se oculta: pasa a una segunda fila scrolleable, siempre en el
+     árbol de accesibilidad y en el tab order (números + labels focusables). */
+  .hud-inner { flex-wrap:wrap; row-gap:2px; }
+  #nav.hud-nav { order:5; flex:0 0 100%; margin-left:0; overflow-x:auto; }
+  .hud-current { display:inline-flex; flex:1 1 auto; min-width:0; margin-left:auto; max-width:34vw; }
   .hud-side { margin-left:0; }
+  #hero, .room { scroll-margin-top:96px; }
 }
 @media (max-width: 900px) {
   .project-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
@@ -1291,12 +1295,15 @@ a { color:inherit; }
 <!-- ── BOTÓN IDIOMA ES/EN ── -->
 <header class="hud">
   <div class="hud-inner">
-    <a class="brand" href="#hero" aria-label="Christian Luciani — ir a la entrada">
+    <a class="brand" href="#hero" aria-label="Christian Luciani — ir a la entrada"
+       data-aria-es="Christian Luciani — ir a la entrada"
+       data-aria-en="Christian Luciani — go to the entrance">
       <span class="brand-mark" aria-hidden="true">◈</span>
       <span class="brand-name">Christian Luciani</span>
     </a>
     <span class="hud-current" id="hud-current">Entrada</span>
-    <nav id="nav" class="hud-nav" aria-label="Salas del museo">
+    <nav id="nav" class="hud-nav" aria-label="Salas del museo"
+         data-aria-es="Salas del museo" data-aria-en="Museum rooms">
       <a class="nav-dot" href="#hero" data-target="hero" data-label="Entrada" data-label-en="Entrance"><span class="n" aria-hidden="true">00</span><span class="nav-label">Entrada</span></a>
       <a class="nav-dot" href="#room-proyectos" data-target="room-proyectos" data-label="Exposición" data-label-en="Exhibition"><span class="n" aria-hidden="true">01</span><span class="nav-label">Exposición</span></a>
       <a class="nav-dot" href="#room-bastidor" data-target="room-bastidor" data-label="Bastidor" data-label-en="Studio"><span class="n" aria-hidden="true">02</span><span class="nav-label">Bastidor</span></a>

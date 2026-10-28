@@ -9,12 +9,15 @@ import { navDotsHtml } from "../cv/render.ts";
 
 const COVER_TOP = `<header class="hud">
   <div class="hud-inner">
-    <a class="brand" href="#hero" aria-label="Christian Luciani — ir a la entrada">
+    <a class="brand" href="#hero" aria-label="Christian Luciani — ir a la entrada"
+       data-aria-es="Christian Luciani — ir a la entrada"
+       data-aria-en="Christian Luciani — go to the entrance">
       <span class="brand-mark" aria-hidden="true">◈</span>
       <span class="brand-name">Christian Luciani</span>
     </a>
     <span class="hud-current" id="hud-current">Entrada</span>
-    <nav id="nav" class="hud-nav" aria-label="Salas del museo">
+    <nav id="nav" class="hud-nav" aria-label="Salas del museo"
+         data-aria-es="Salas del museo" data-aria-en="Museum rooms">
 `;
 
 const COVER_TAIL = `</nav>
