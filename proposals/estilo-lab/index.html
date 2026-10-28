@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prototipo · sitio con el lenguaje del laboratorio — Christian Luciani</title>
+<meta name="description" content="Prototipo A/B (issue #89): hero + navegación + Sala 01 del sitio principal traducidos al lenguaje visual del Laboratorio temporal. No productivo." />
+<meta name="robots" content="noindex" />
+<link rel="icon" href="https://christianluciani.github.io/assets/brand/favicon-aurea.svg" type="image/svg+xml" />
+<link rel="stylesheet" href="estilo.css" />
+</head>
+<body>
+<a class="skip-link" href="#hero">Saltar al contenido</a>
+
+<!-- ── HUD / navegación: el reemplazo del nav lateral de dots ───────── -->
+<header class="hud">
+  <div class="hud-inner">
+    <a class="brand" href="https://christianluciani.github.io/" aria-label="Christian Luciani — sitio actual">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <span class="brand-name">Christian Luciani</span>
+    </a>
+    <nav class="hud-nav" aria-label="Salas del museo">
+      <a href="#hero" aria-current="page"><span class="n">00</span>Entrada</a>
+      <a href="#sala-01"><span class="n">01</span>Exposición</a>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">02</span>Bastidor</span>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">03</span>Taller</span>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">04</span>Recorrido</span>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">05</span>Biblioteca</span>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">06</span>Constelación</span>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">07</span>Perfil</span>
+      <span class="ghost" title="Fuera del alcance de este prototipo"><span class="n">08</span>Contacto</span>
+    </nav>
+    <div class="hud-side">
+      <span class="hud-tag">ES</span>
+      <a class="hud-cta" href="https://christianluciani.github.io/">↓ CV</a>
+    </div>
+  </div>
+</header>
+
+<main class="lab">
+
+  <!-- ── HERO ──────────────────────────────────────────────────────── -->
+  <section class="hero" id="hero" aria-labelledby="hero-name">
+    <div class="hero-copy">
+      <p class="eyebrow">Museo de una trayectoria · Cuenca, Ecuador · 2026</p>
+
+      <h1 id="hero-name" class="hero-name">
+        <span class="hero-first">Christian</span>
+        <span class="hero-last">Luciani</span>
+        <span class="working">investigador independiente</span>
+      </h1>
+
+      <p class="lede">
+        Físico, inteligencia sintética y economía agéntica. Un museo de una
+        trayectoria: obra publicada, artefactos auditables y las preguntas que
+        todavía no tienen sala.
+      </p>
+
+      <dl class="hero-metrics">
+        <div><dt>Kontablo</dt><dd>195<span class="u"> jurisdicciones</span></dd></div>
+        <div><dt>Drahma</dt><dd>36<span class="u"> tutores</span></dd></div>
+        <div><dt>Física</dt><dd>20+<span class="u"> años</span></dd></div>
+      </dl>
+
+      <div class="hero-actions">
+        <a class="cta" href="#sala-01">Recorrer el museo ↓</a>
+        <a class="cta-quiet" href="../logo-timing/">↗ Laboratorio temporal</a>
+      </div>
+    </div>
+
+    <div class="hero-aside" aria-hidden="true">
+      <div class="hero-stage">
+        <span class="corner tl"></span>
+        <span class="corner tr"></span>
+        <span class="corner bl"></span>
+        <span class="corner br"></span>
+        <div class="stage-grid"></div>
+        <p class="stage-label">ESPIRÁNGULO · MARK DE MARCA</p>
+        <div class="stage-figure">
+          <svg viewBox="0 0 220 220" role="presentation">
+            <g fill="none" stroke-linecap="round">
+              <polygon points="110,22 190,166 30,166" stroke="#c9a84c" stroke-width="1" stroke-dasharray="3 9" opacity=".28"/>
+              <path d="M110 22 L170 132" stroke="#00c9c0" stroke-width="1.6" opacity=".85"/>
+              <path d="M170 132 L62 168" stroke="#7ad7ff" stroke-width="1.6" opacity=".8"/>
+              <path d="M62 168 L110 22" stroke="#c9a84c" stroke-width="1.4" opacity=".75"/>
+              <path d="M110 22 L124 96 L170 132" stroke="#00c9c0" stroke-width="1.1" opacity=".5"/>
+              <path d="M124 96 L62 168" stroke="#7ad7ff" stroke-width="1" opacity=".45"/>
+            </g>
+            <g fill="#e7edf6">
+              <circle cx="110" cy="22" r="3.2"/>
+              <circle cx="170" cy="132" r="2.6" fill="#00c9c0"/>
+              <circle cx="62" cy="168" r="2.6" fill="#7ad7ff"/>
+              <circle cx="124" cy="96" r="2" fill="#c9a84c"/>
+            </g>
+          </svg>
+        </div>
+        <p class="stage-meta"><span>GEOMETRÍA REAL</span><span>φ · 1,618</span></p>
+      </div>
+    </div>
+  </section>
+
+  <div class="rule"></div>
+
+  <!-- ── SALA 01 ───────────────────────────────────────────────────── -->
+  <section class="family" id="sala-01" aria-labelledby="sala-01-title">
+    <div class="family-head">
+      <div>
+        <p class="eyebrow">Sala 01</p>
+        <h2 id="sala-01-title">La <em>Exposición</em></h2>
+        <p>Obra publicada · artefacto auditable. Lo que ya tiene URL, DOI o
+          repositorio: se puede visitar sin pedir permiso.</p>
+      </div>
+      <p class="family-total">3 proyectos · 2024—2026</p>
+    </div>
+
+    <div class="grid">
+      <a class="card" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank" rel="noopener" style="--c:#00c9c0">
+        <span class="card-num">01</span>
+        <h3>Kontablo</h3>
+        <p>Ontología contable universal basada en grafos: un Esperanto para la
+          contabilidad que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y
+          a la economía agéntica (MCP · A2A · AP2).</p>
+        <div class="card-meta"><span>v0.1.0</span><span>BSL 1.1</span><span>Zenodo · SSRN</span></div>
+        <span class="card-open">Abrir repositorio →</span>
+      </a>
+
+      <a class="card" href="https://github.com/ChristianLuciani" target="_blank" rel="noopener" style="--c:#7ad7ff">
+        <span class="card-num">02</span>
+        <h3>Drahma</h3>
+        <p>36 tutores socráticos para el currículo ecuatoriano, probados en campo
+          amazónico dos meses antes de la disponibilidad pública de Khanmigo.</p>
+        <div class="card-meta"><span>Ago 2024</span><span>36 materias</span><span>Ecuador</span></div>
+        <span class="card-open">Ver la ficha →</span>
+      </a>
+
+      <a class="card" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener" style="--c:#c9a84c">
+        <span class="card-num">03</span>
+        <h3>profile-as-code</h3>
+        <p>Una sola fuente de verdad versionable compila a todas las superficies
+          públicas del perfil: renderers por plataforma, salida determinista y
+          hechos validados por schema.</p>
+        <div class="card-meta"><span>v0.3.6</span><span>MIT</span><span>D1–D22</span></div>
+        <span class="card-open">Abrir repositorio →</span>
+      </a>
+    </div>
+
+    <div class="detail" aria-labelledby="detalle-kontablo">
+      <div class="detail-head">
+        <h3 id="detalle-kontablo"><span class="card-num">01</span>Kontablo — detalle de la pieza</h3>
+        <p class="detail-note">Publicado en junio 2026 bajo Business Source License 1.1
+          (convierte a Apache 2.0 en 2030). Preprint no arbitrado en Zenodo y SSRN.</p>
+      </div>
+      <ul class="detail-body">
+        <li>Un UUID inamovible por concepto contable universal — los códigos son
+          etiquetas visuales; el UUID es la identidad canónica.</li>
+        <li>195 jurisdicciones soberanas mapeadas; 60 overlays de planes de
+          cuentas estatutarios (56 ejercidos contra fuentes primarias).</li>
+        <li><em>Deterministic Boundary Library</em>: un agente no puede proponer un
+          UUID que no exista en el grafo — elimina la clase clásica de alucinación
+          contable a nivel del harness.</li>
+        <li>Capa agent-native para la economía agéntica; resolución determinista en
+          tres niveles, con inteligencia sintética estocástica solo como último recurso.</li>
+      </ul>
+      <div class="detail-links">
+        <a href="https://doi.org/10.5281/zenodo.20738795" target="_blank" rel="noopener">↗ Zenodo DOI</a>
+        <a href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank" rel="noopener">↗ SSRN 6960598</a>
+        <a href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank" rel="noopener">↗ ResearchGate</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="lab-foot">
+    <p>
+      Prototipo A/B del <a href="https://github.com/ChristianLuciani/christianluciani.github.io/issues/89">issue #89</a>:
+      hero, navegación y Sala 01 del sitio con los tokens y la densidad del
+      Laboratorio temporal. No productivo, no publicado.
+    </p>
+    <p>
+      <a href="comparar.html">Comparación lado a lado</a> ·
+      <a href="NOTA.md">Nota de evaluación</a> ·
+      <a href="https://christianluciani.github.io/">Sitio actual</a>
+    </p>
+  </footer>
+
+</main>
+</body>
+</html>
