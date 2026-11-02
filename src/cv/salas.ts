@@ -37,6 +37,13 @@ export interface SalaDef {
   subtitulo: string;
   /** Traducción EN del subtítulo */
   subtituloEn: string;
+  /**
+   * Función real de la sala en lenguaje llano (ES). La metáfora del museo
+   * presenta; esta línea dice qué encuentra el lector adentro.
+   */
+  funcion: string;
+  /** Traducción EN de la función */
+  funcionEn: string;
   /** Etiqueta visible del HUD (ES) */
   navLabel: string;
   /** Etiqueta visible del HUD (EN) — el HUD se genera desde SALAS */
@@ -65,6 +72,10 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Frame</em>",
     subtitulo: `OBRA PUBLICADA · ARTEFACTO AUDITABLE · ${publicados.length} PROYECTOS`,
     subtituloEn: `PUBLISHED WORK · AUDITABLE ARTIFACT · ${publicados.length} PROJECTS`,
+    funcion:
+      "Proyectos publicados con repositorio, release o DOI que cualquiera puede abrir y verificar.",
+    funcionEn:
+      "Published projects with a repository, release or DOI that anyone can open and verify.",
     navLabel: "Marco",
     navLabelEn: "Frame",
     ilusion: "c-proyectos"
@@ -75,6 +86,10 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Stretcher</em>",
     subtitulo: `EN DESARROLLO · PROTOTIPOS E IDEAS · ${enDesarrollo.length} PROYECTOS`,
     subtituloEn: `IN DEVELOPMENT · PROTOTYPES AND IDEAS · ${enDesarrollo.length} PROJECTS`,
+    funcion:
+      "Proyectos en desarrollo: prototipos, investigaciones e ideas que todavía no tienen un artefacto público.",
+    funcionEn:
+      "Projects in development: prototypes, research and ideas that do not yet have a public artifact.",
     navLabel: "Bastidor",
     navLabelEn: "Stretcher",
     ilusion: "c-bastidor"
@@ -85,6 +100,10 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Palette</em>",
     subtitulo: "INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS",
     subtituloEn: "SYNTHETIC INTELLIGENCE · SOVEREIGNTY · OPEN SOURCE · LANGUAGES",
+    funcion:
+      "Competencias y herramientas: inteligencia sintética, codificación agéntica, soberanía tecnológica, open source e idiomas.",
+    funcionEn:
+      "Skills and tools: synthetic intelligence, agentic coding, technological sovereignty, open source and languages.",
     navLabel: "Paleta",
     navLabelEn: "Palette",
     ilusion: "c-comp"
@@ -95,6 +114,10 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Frieze</em>",
     subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
     subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
+    funcion:
+      "Trayectoria profesional: roles, organizaciones y resultados, de 2003 al presente.",
+    funcionEn:
+      "Professional trajectory: roles, organizations and results, from 2003 to the present.",
     navLabel: "Friso",
     navLabelEn: "Frieze",
     ilusion: "c-exp"
@@ -105,6 +128,10 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Library</em>",
     subtitulo: "PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026",
     subtituloEn: "SCIENTIFIC PUBLICATIONS · PREPRINTS · 2006–2026",
+    funcion:
+      "Publicaciones científicas y preprints, con DOI y enlace a la fuente.",
+    funcionEn:
+      "Scientific publications and preprints, with DOI and links to the source.",
     navLabel: "Biblioteca",
     navLabelEn: "Library",
     ilusion: "c-fisica"
@@ -115,6 +142,8 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Compass</em>",
     subtitulo: "RED · ÁREAS · PROYECTOS · CONEXIONES · 2026",
     subtituloEn: "NETWORK · AREAS · PROJECTS · CONNECTIONS · 2026",
+    funcion: "Mapa de relaciones entre áreas, proyectos y publicaciones.",
+    funcionEn: "Map of relationships between areas, projects and publications.",
     navLabel: "Compás",
     navLabelEn: "Compass",
     ilusion: "c-graph"
@@ -125,6 +154,10 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Self-Portrait</em>",
     subtitulo: "PERFIL PROFESIONAL · CUENCA, ECUADOR",
     subtituloEn: "PROFESSIONAL PROFILE · CUENCA, ECUADOR",
+    funcion:
+      "Quién soy, qué estudié, qué me interesa y desde dónde trabajo.",
+    funcionEn:
+      "Who I am, what I studied, what interests me and where I work from.",
     navLabel: "Autorretrato",
     navLabelEn: "Self-Portrait",
     ilusion: "c-necker"
@@ -135,6 +168,8 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Mailbox</em>",
     subtitulo: "CONTACTO · REDES · INVESTIGACIÓN",
     subtituloEn: "CONTACT · NETWORKS · RESEARCH",
+    funcion: "Cómo escribirme o encontrarme en la web.",
+    funcionEn: "How to write to me or find me on the web.",
     navLabel: "Buzón",
     navLabelEn: "Mailbox"
   },
@@ -144,6 +179,8 @@ export const SALAS: SalaDef[] = [
     tituloEn: "The <em>Archive</em>",
     subtitulo: "GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS",
     subtituloEn: "GALLERY · PHOTOGRAPHS · DOCUMENTS · MOMENTS",
+    funcion: "Archivo visual: fotografías, documentos y momentos.",
+    funcionEn: "Visual archive: photographs, documents and moments.",
     navLabel: "Archivo",
     navLabelEn: "Archive",
     hidden: true

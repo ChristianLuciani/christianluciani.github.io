@@ -113,12 +113,17 @@ Añade `data-delay="1"` a `data-delay="6"` para escalonar (×0.1s). Con
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 0X</div>
     <h2 class="room-title" data-scroll="zoom-in">Título <em>Acento</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">METADATA · CONTEXTO</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Función real de la sala, en lenguaje llano</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">METADATA · CONTEXTO</div>
     <!-- contenido -->
   </div>
 </section>
 <div class="room-divider"></div>
 ```
+
+- `.room-function`: qué encuentra el lector en la sala, sin metáfora. La
+  narrativa del museo presenta; esta línea evita que el título poético deje al
+  lector sin saber de qué se trata. Se deriva de `SALAS[].funcion`.
 
 - `.room--alt`: sala sobre `--bg-1` (alternancia).
 - `.room--contact`: contacto compacto (min-height 55vh).
@@ -141,7 +146,7 @@ Añade `data-delay="1"` a `data-delay="6"` para escalonar (×0.1s). Con
 ### `.project-grid` + `.project-card` — tarjetas de proyecto (3/2/1)
 ```html
 <div class="project-grid">
-  <div class="project-card" data-scroll="from-left">
+  <div class="project-card" data-scroll="from-left" data-recencia="2026-07-24">
     <span class="project-status status-active">En desarrollo</span>
     <!-- status-active | status-private | status-paused -->
     <div class="project-title"><em>Nombre</em> — Subtítulo</div>
@@ -151,6 +156,11 @@ Añade `data-delay="1"` a `data-delay="6"` para escalonar (×0.1s). Con
   </div>
 </div>
 ```
+
+- El orden de las tarjetas se deriva de `Proyecto.recencia` (inicio del
+  proyecto): más reciente primero. No se reordena el array a mano; una ficha
+  sin fecha verificable queda al final.
+- `data-recencia` expone esa fecha en el DOM para tests y depuración.
 
 ### `.gallery-grid` — galería con placeholders
 ```html

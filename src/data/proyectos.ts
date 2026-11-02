@@ -22,6 +22,16 @@ export interface Proyecto {
   /** Nombre para lectores de pantalla y tests; la tarjeta lleva su propio <em>. */
   nombre: string;
   etapa: Etapa;
+  /**
+   * Inicio del proyecto (YYYY-MM-DD). Define el ORDEN de las tarjetas dentro de
+   * cada sala: más reciente primero, más lejano al final. Sin fecha verificable
+   * (hoy NOOS) queda al final; no se inventa una.
+   *
+   * Fuente: primer commit del repositorio del proyecto, salvo donde el trabajo
+   * empezó antes de que existiera repo (Drahma se probó en campo en ago-2024;
+   * Physics Lab Book nace con las guías de USFQ en 2019).
+   */
+  recencia?: string;
   /** Qué le falta para pasar a El Marco (solo `desarrollo`). */
   falta?: string;
   /**
@@ -38,6 +48,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "kontablo",
     nombre: "Kontablo",
     etapa: "publicado",
+    recencia: "2026-01-27",
     html: `      <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
       <div class="project-title"><em>Kontablo</em> — Ontología Contable Universal</div>
       <div class="project-tagline">Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)</div>
@@ -59,12 +70,14 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "drahma",
     nombre: "Drahma",
     etapa: "publicado",
-    sinTarjeta: true
+    sinTarjeta: true,
+    recencia: "2024-08-01"
   },
   {
     id: "profile-as-code",
     nombre: "profile-as-code",
     etapa: "publicado",
+    recencia: "2026-08-07",
     html: `      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
       <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
       <div class="project-tagline">Una sola fuente de verdad versionable compila a todas las superficies públicas del perfil: renderers por plataforma, salida determinista y hechos validados por schema</div>
@@ -83,6 +96,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "zentropy",
     nombre: "ZENTROPY",
     etapa: "desarrollo",
+    recencia: "2026-03-07",
     falta: "repositorio público con licencia y release — el schema, la ingesta y la arquitectura multi-tenant ya existen.",
     html: `      <span class="project-status status-private">Prototipo · Sin artefacto público</span>
       <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
@@ -99,6 +113,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "estelectica",
     nombre: "Estel\u00e9ctica",
     etapa: "desarrollo",
+    recencia: "2026-03-09",
     falta: "el paper (es candidata a publicación académica); el repositorio es privado.",
     html: `      <span class="project-status status-private">Investigación activa</span>
       <div class="project-title"><em>Esteléctica</em> — Epistemología del Diálogo Poli-dialéctico Destilado</div>
@@ -115,9 +130,10 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "clapps",
     nombre: "CLAPPS.AI",
     etapa: "desarrollo",
+    recencia: "2026-05-24",
     falta: "primer contenido real (Noesis y Noetix) y una versión navegable.",
     html: `      <span class="project-status status-private">Concepto activo</span>
-      <div class="project-title"><em>CLAPPS.AI</em> — Learning Applications Platform</div>
+      <div class="project-title"><em>CLAPPS.AI</em> — Comprehensive Learning Applications</div>
       <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional</div>
       <ul class="project-body">
         <li>Los LMS (Learning Management Systems) son en realidad plataformas de <em>registro y control de enseñanza</em>: tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real</li>
@@ -146,6 +162,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "topia",
     nombre: "Topia",
     etapa: "desarrollo",
+    recencia: "2026-07-24",
     falta: "el primer número publicado.",
     html: `      <span class="project-status status-private">En diseño</span>
       <div class="project-title"><em>Topia</em> — Motor editorial de newsletter</div>
@@ -159,6 +176,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "nelson-companion",
     nombre: "Nelson Companion",
     etapa: "desarrollo",
+    recencia: "2026-04-24",
     falta: "repositorio público y licencia — el uso ya es real.",
     html: `      <span class="project-status status-private">En uso · Sin artefacto público</span>
       <div class="project-title"><em>Nelson Companion</em> — PWA de voz asistida</div>
@@ -172,6 +190,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "physics-lab-book",
     nombre: "Physics Lab Book",
     etapa: "desarrollo",
+    recencia: "2019-01-01",
     falta: "repositorio público (hoy privado); las 36 guías y su uso en USFQ ya existen.",
     html: `      <span class="project-status status-paused">En uso · Repositorio privado</span>
       <div class="project-title"><em>Physics Lab Book</em> — Laboratorio de física interactivo</div>
@@ -183,8 +202,20 @@ export const PROYECTOS: readonly Proyecto[] = [
   }
 ];
 
+/**
+ * Orden de tarjetas: más reciente primero. `recencia` es ISO, así que el orden
+ * lexicográfico es el cronológico; una ficha sin fecha verificable (NOOS) va al
+ * final en vez de recibir una inventada.
+ */
+const porRecencia = (a: Proyecto, b: Proyecto): number =>
+  (b.recencia ?? "").localeCompare(a.recencia ?? "");
+
 /** Obra publicada y auditable: lo que El Marco puede colgar. */
-export const publicados = PROYECTOS.filter((p) => p.etapa === "publicado");
+export const publicados = PROYECTOS.filter((p) => p.etapa === "publicado")
+  .slice()
+  .sort(porRecencia);
 
 /** En desarrollo: prototipos, investigaciones e ideas, cada uno con su `falta`. */
-export const enDesarrollo = PROYECTOS.filter((p) => p.etapa === "desarrollo");
+export const enDesarrollo = PROYECTOS.filter((p) => p.etapa === "desarrollo")
+  .slice()
+  .sort(porRecencia);

@@ -78,6 +78,17 @@ describe("SALAS — integridad", () => {
       expect(sub).toBe(sub.replace(/\s+/g, " ").trim());
     }
   });
+
+  it("cada sala declara su función real, en ES y EN, sin espacios sueltos", () => {
+    for (const s of SALAS) {
+      expect(s.funcion.length, `funcion de ${s.id}`).toBeGreaterThan(0);
+      expect(s.funcionEn.length, `funcionEn de ${s.id}`).toBeGreaterThan(0);
+      expect(s.funcion).toBe(s.funcion.replace(/\s+/g, " ").trim());
+      expect(s.funcionEn).toBe(s.funcionEn.replace(/\s+/g, " ").trim());
+    }
+    // La línea llana no repite la metadata en mayúsculas de la sala.
+    for (const s of SALAS) expect(s.funcion).not.toBe(s.subtitulo);
+  });
 });
 
 describe("render — derivados puros", () => {
@@ -138,8 +149,12 @@ describe("render — derivados puros", () => {
     expect(extra["EL FRISO"]).toBe("THE FRIEZE");
     expect(extra["EL COMPÁS"]).toBe("THE COMPASS");
     expect(extra["EL AUTORRETRATO"]).toBe("THE SELF-PORTRAIT");
+    // Función real de cada sala: entra al MAP para que EN no muestre ES.
+    expect(extra["Mapa de relaciones entre áreas, proyectos y publicaciones."]).toBe(
+      "Map of relationships between areas, projects and publications."
+    );
     expect(extra["SALA"]).toBe("ROOM");
-    expect(Object.keys(extra).length).toBe(8 + 9 + 9 + 1); // números + subtítulos + títulos + SALA
+    expect(Object.keys(extra).length).toBe(8 + 9 + 9 + 9 + 1); // números + subtítulos + funciones + títulos + SALA
   });
 
   it("navDotsHtml: hero + salas visibles con data-target/data-label en orden", () => {
