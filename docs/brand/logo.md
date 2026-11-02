@@ -122,7 +122,9 @@ Superficies:
   estrellas se conservan.
 
 Todo esto es **tratamiento de render**: `cPathD`, centros, radios y anchos
-siguen siendo la fuente de verdad y el gate de fidelidad no cambia.
+siguen siendo la fuente de verdad. El gate de fidelidad no la reemplaza:
+verifica que el acabado se **declare** en `defs` **y** se **pinte** en el DOM
+(§4), no la fórmula geométrica con la que se calculó.
 
 **Ambiente night aprobado** (no documentado antes — agregado por review
 fresco): el HTML usa `--bg-0 #050810` y `--bg-1 #0b1120` (= `--deep` del
@@ -166,11 +168,32 @@ ancla C ≡ fórmula base a 7 generaciones (0.0000 px), ratios internos = φ
 exacto por generación, twist = 3°×φ, determinismo, y fidelidad DOM
 (`node tools/logo/verify-dom-fidelity.mjs`). El gate de fidelidad compara la
 **geometría de referencia** (centros, segmentos, cielo y constelación) contra
-el DOM aprobado. Desde #55, el gate verifica además el **contorno de la
-banda** (`cBand`: marco y terminales), que la **máscara de revelado** esté
-aplicada en el render normal, y que el acabado completo (bisel, barrido y
-bloom) coincida con `cFinish`; los assets se generan desde esa misma
-geometría. Desde #59 el gate corre en **CI** (`.github/workflows/ci.yml`: Chrome
+el DOM aprobado. Desde #55 verifica además el **contorno de la banda**
+(`cBand`: marco y terminales) y que la **máscara de revelado** esté aplicada
+en el render normal; los assets se generan desde esa misma geometría.
+
+El **acabado** de la C se verifica en dos capas, y el gate declara las dos
+(«declarado» no implica «pintado»: #91):
+
+- **Declaración** en `defs`: rampas de `c-perp-1`/`c-perp-2` ≡
+  `cFinish.perp`, stops/opacidades de `c-tint-1`/`c-tint-2` ≡
+  `cFinish.tint`, y `stdDeviation` de `c-bloom` ≡ `cFinish.bloom.blur`.
+- **Pintura** en el DOM (dump reducido), anclada en referencias y no en el
+  markup literal: dentro de `.c-band`, por cada brazo `k ∈ {1,2}`, un grupo
+  con `clip-path="url(#c-clip-k)"` que contiene un `path` con
+  `fill="url(#c-perp-k)"` (bisel) y otro con `fill="url(#c-tint-k)"`
+  (barrido); el `path` de `.c-glow` con `filter="url(#c-bloom)"`; y cada
+  `linearGradient id="c-perp-k"` con eje real (`x1≠x2 || y1≠y2`, los cuatro
+  valores presentes).
+- **No verifica**: los valores numéricos del eje del gradiente más allá de
+  «no degenerado», el orden z de las capas, el color/ancho del stroke del
+  glow, ni atributos de presentación que no sean esas referencias. Un
+  refactor que conserve las referencias puede cambiar el markup sin poner el
+  gate rojo.
+
+La lógica de pintura vive en `tools/logo/finish-paint.mjs` (pura, sin Chrome)
+y cada mutación del issue #91 tiene su test en `finish-paint.test.mjs`.
+Desde #59 el gate corre en **CI** (`.github/workflows/ci.yml`: Chrome
 headless de linux + `npm run logo:verify`), así que el merge queda bloqueado si
 el puerto diverge del DOM aprobado.
 
