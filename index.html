@@ -721,6 +721,9 @@ a { color:inherit; }
   gap:12px;
   margin-bottom:12px;
 }
+/* Dos fichas: sin una tercera columna vacía (El Marco: Kontablo + profile-as-code;
+   Drahma va como showcase, no como tarjeta). */
+.project-grid--pair { grid-template-columns:repeat(2, minmax(0,1fr)); }
 .project-card {
   display:flex; flex-direction:column;
   position:relative; overflow:hidden;
@@ -1220,7 +1223,7 @@ a { color:inherit; }
   .hero-name { font-size:clamp(44px,15vw,64px); }
   .hero-metrics { grid-template-columns:minmax(0,1fr); max-width:none; }
   .hero-tagline { font-size:15px; }
-  .project-grid, .skills-grid, .drahma-grid { grid-template-columns:minmax(0,1fr); }
+  .project-grid, .project-grid--pair, .skills-grid, .drahma-grid { grid-template-columns:minmax(0,1fr); }
   .gallery-grid.cols-2, .gallery-grid.cols-3, .gallery-grid.cols-4 { grid-template-columns:minmax(0,1fr); }
   .pub-item { grid-template-columns:52px 48px minmax(0,1fr); gap:10px 12px; }
   .pub-thumb { width:48px; height:36px; }
@@ -1540,7 +1543,7 @@ a { color:inherit; }
     <div class="room-number" data-scroll="up">SALA 01</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Marco</em></h2>
     <div class="room-subtitle" data-scroll="up" data-delay="1">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 3 PROYECTOS</div>
-<div class="project-grid">
+<div class="project-grid project-grid--pair">
     <div class="project-card" data-scroll="from-left">
       <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
       <div class="project-title"><em>Kontablo</em> — Ontología Contable Universal</div>
@@ -1561,12 +1564,6 @@ a { color:inherit; }
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="1">
-      <span class="project-status status-active">Publicado · Agosto 2024 · Repositorio público</span>
-      <div class="project-title"><em>Drahma</em> — Inteligencia Sintética Educativa</div>
-      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="2">
       <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
       <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
       <div class="project-tagline">Una sola fuente de verdad versionable compila a todas las superficies públicas del perfil: renderers por plataforma, salida determinista y hechos validados por schema</div>
@@ -1582,6 +1579,7 @@ a { color:inherit; }
       </div>
     </div>
 </div><div class="drahma-showcase" data-scroll="up">
+      <span class="project-status status-active">Publicado · Agosto 2024 · Repositorio público</span>
       <div class="drahma-showcase-head">
         <img src="/assets/images/drahman-logo.png"
              alt="Drahma logo" width="44" height="44" loading="lazy" decoding="async"
@@ -1589,6 +1587,7 @@ a { color:inherit; }
              onerror="this.style.display='none'">
         <h3 class="drahma-showcase-title">Proyecto <em>Drahma</em></h3>
       </div>
+      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
       <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
 
       <div class="drahma-columns two-col-drahma">
@@ -1659,10 +1658,6 @@ a { color:inherit; }
         </ul>
       </div>
     </div><!-- /showcase drahma -->
-
-  </div><!-- /room-content -->
-</section>
-<div class="room-divider"></div>
 
   </div><!-- /room-content -->
 </section>
