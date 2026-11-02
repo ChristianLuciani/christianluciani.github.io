@@ -299,9 +299,45 @@ function splitName(name: string): { givenName: string; familyName: string } {
   return { givenName: parts[0] ?? "", familyName: parts.slice(1).join(" ") };
 }
 
+/**
+ * Normalización v1 → CV data model (SPEC §5.2).
+ *
+ * DECISIÓN DE CONSUMIDOR (declarada 2026-11-02, deuda abierta — #101):
+ * profile-as-code SPEC §7.5 dice que `visibility` es renderer-owned y que el
+ * perfil normalizado ES el SSOT, no una superficie renderizada. Acá el filtro
+ * vive en la capa de datos porque `profile.generated.ts` se COMMITEA en un repo
+ * público: no hay renderer aguas abajo que pueda filtrar antes de publicar.
+ * El filtro alcanza entradas (credentials/artifacts) y REFERENCIAS (§18.5
+ * `no-private-in-public-output`): `projects[].links` y `evidence[].source` que
+ * apunten a un locator/verifyUrl no público se descartan. Deuda: cuando el
+ * engine exponga una noción de salida pública, el filtro se muda al consumidor
+ * y este normalizador vuelve a ser fiel al SSOT.
+ */
 export function normalize(raw: Record<string, unknown>, report: SyncReport): CVProfile {
   const identity = (raw.identity ?? {}) as Record<string, unknown>;
   const { givenName, familyName } = splitName(String(identity.name ?? ""));
+
+  // §18.5 (profile-as-code SPEC): un render público emite SOLO `visibility: public`
+  // (ausente = public, $defs.visibility). Este archivo se commitea en un repo
+  // público, así que private/unlisted no salen del workspace — ni como entradas
+  // ni como referencias (fuga de PII, de obras privadas y de sus punteros).
+  const isPublic = (entry: Record<string, unknown>): boolean =>
+    (entry.visibility ?? "public") === "public";
+
+  /** Targets que sólo pueden vivir en el workspace privado. Cualquier referencia
+   *  desde otras raíces (`projects[].links`, `projects[].evidence[].source`) se
+   *  descarta: la privacidad de la entrada no equivale a la del hecho que la cita. */
+  const privateTargets = new Set<string>();
+  for (const a of (raw.artifacts as Record<string, unknown>[]) ?? []) {
+    if (isPublic(a)) continue;
+    const locator = (a.locator ?? {}) as Record<string, unknown>;
+    if (typeof locator.url === "string") privateTargets.add(locator.url);
+    if (typeof locator.path === "string") privateTargets.add(locator.path);
+  }
+  for (const c of (raw.credentials as Record<string, unknown>[]) ?? []) {
+    if (isPublic(c)) continue;
+    if (typeof c.verifyUrl === "string") privateTargets.add(c.verifyUrl);
+  }
 
   const experience: ExperienceItem[] = ((raw.experience as Record<string, unknown>[]) ?? []).map(
     (e) => ({
@@ -333,13 +369,18 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
     name: String(p.name ?? ""),
     ...(p.status ? { status: String(p.status) } : {}),
     ...(p.description ? { description: p.description as LangText } : {}),
-    links: ((p.links as string[]) ?? []).map(String),
+    // Los punteros a un artifact/credential no público no se emiten (§18.5):
+    // la entrada privada ya se filtró, pero el hecho que la referencia seguía
+    // publicando su URL (p. ej. evidence.source → repo privado).
+    links: ((p.links as string[]) ?? []).map(String).filter((u) => !privateTargets.has(u)),
     keywords: ((p.keywords as string[]) ?? []).map(String),
-    evidence: ((p.evidence as Record<string, unknown>[]) ?? []).map((ev) => ({
-      claim: ev.claim as LangText,
-      source: String(ev.source ?? ""),
-      ...(ev.verified ? { verified: String(ev.verified) } : {})
-    }))
+    evidence: ((p.evidence as Record<string, unknown>[]) ?? [])
+      .map((ev) => ({
+        claim: ev.claim as LangText,
+        source: String(ev.source ?? ""),
+        ...(ev.verified ? { verified: String(ev.verified) } : {})
+      }))
+      .filter((ev) => !privateTargets.has(ev.source))
   }));
 
   const publications: PublicationItem[] = ((raw.publications as Record<string, unknown>[]) ?? []).map(
@@ -368,12 +409,6 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
       ? { platformWeights: s.platformWeights as Record<string, number> }
       : {})
   }));
-
-  // §18.5 (profile-as-code SPEC): un render público emite SOLO `visibility: public`.
-  // Este archivo se commitea en un repo público, así que private/unlisted no salen
-  // del workspace (fuga de PII y de obras privadas).
-  const isPublic = (entry: Record<string, unknown>): boolean =>
-    (entry.visibility ?? "public") === "public";
 
   const credentials: CredentialItem[] = ((raw.credentials as Record<string, unknown>[]) ?? [])
     .filter(isPublic)

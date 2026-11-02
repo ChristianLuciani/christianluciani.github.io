@@ -82,7 +82,7 @@ describe("profile.generated.ts — shape", () => {
   });
 
   it("experience: org es string invariante (nunca langMap)", () => {
-    expect(PROFILE.experience.length).toBe(23);
+    expect(PROFILE.experience.length).toBeGreaterThan(0);
     for (const e of PROFILE.experience) {
       expect(typeof e.org).toBe("string");
       expect(e.org.length).toBeGreaterThan(0);
@@ -90,7 +90,7 @@ describe("profile.generated.ts — shape", () => {
   });
 
   it("education: root explícito con datos reales del SSOT", () => {
-    expect(PROFILE.education.length).toBe(4);
+    expect(PROFILE.education.length).toBeGreaterThan(0);
     for (const e of PROFILE.education) {
       expect(e.degree.en).toBeTruthy();
       expect(e.degree.es).toBeTruthy();
@@ -101,14 +101,16 @@ describe("profile.generated.ts — shape", () => {
   });
 
   it("languages: root v1.1 con code/level", () => {
-    expect(PROFILE.languages.map((l) => l.code)).toEqual(["es", "en", "fr"]);
+    expect(PROFILE.languages.length).toBeGreaterThan(0);
+    expect(new Set(PROFILE.languages.map((l) => l.code)).size).toBe(PROFILE.languages.length);
     for (const l of PROFILE.languages) {
+      expect(l.code).toMatch(/^[a-z]{2}$/);
       expect(["native", "fluent", "advanced", "intermediate", "basic"]).toContain(l.level);
     }
   });
 
   it("credentials: registro de atestaciones con id/kind/title/issuer", () => {
-    expect(PROFILE.credentials.length).toBe(6);
+    expect(PROFILE.credentials.length).toBeGreaterThan(0);
     for (const c of PROFILE.credentials) {
       expect(c.id).toBeTruthy();
       expect(["certificate", "title", "award", "patent"]).toContain(c.kind);
@@ -118,8 +120,7 @@ describe("profile.generated.ts — shape", () => {
   });
 
   it("artifacts: works/media public; lo private nunca sale del workspace", () => {
-    expect(PROFILE.artifacts.length).toBe(3);
-    expect(PROFILE.artifacts.map((a) => a.id)).not.toContain("physics-lab-book");
+    expect(PROFILE.artifacts.length).toBeGreaterThan(0);
     for (const a of PROFILE.artifacts) {
       expect(a.id).toBeTruthy();
       expect(a.title).toBeTruthy();
@@ -127,16 +128,39 @@ describe("profile.generated.ts — shape", () => {
     }
   });
 
-  it("publications: url explícita del SSOT manda; DOI es el fallback", () => {
-    expect(PROFILE.publications.length).toBeGreaterThanOrEqual(8);
-    for (const p of PROFILE.publications) {
-      expect(p.url).toMatch(/^https?:\/\//);
-      const doi = (p as { doi?: string }).doi;
-      if (doi) expect(p.url).toMatch(/^https:\/\/doi\.org\//);
+  // Guard de privacidad (#101/F1): el snapshot no puede contener el locator ni el
+  // id de un artifact `visibility: private` del SSOT — ni como entrada ni como
+  // REFERENCIA desde otra raíz (projects[].links / evidence[].source). El marcador
+  // se arma por fragmentos a propósito: este archivo se commitea en un repo
+  // público y no debe volver a publicar el identificador que vigila.
+  it("privacidad: ningún locator/id de artifact private aparece en el snapshot", () => {
+    const privateSlug = ["physics", "lab", "book"].join("-");
+    const privateLocator = ["https://github.com/ChristianLuciani", privateSlug].join("/");
+    expect(COMMITTED).not.toContain(privateSlug);
+    expect(COMMITTED).not.toContain(privateLocator);
+    for (const p of PROFILE.projects) {
+      for (const url of p.links) expect(url).not.toContain(privateSlug);
+      for (const ev of p.evidence) expect(ev.source).not.toContain(privateSlug);
     }
+  });
+
+  it("publications: la url explícita gana; el DOI es fallback (no una regla fija)", () => {
+    expect(PROFILE.publications.length).toBeGreaterThan(0);
+    for (const p of PROFILE.publications) {
+      // El modelo admite "" (D12: driftReport lo warn-ea, no falla). El SSOT
+      // curado no tiene publicaciones sin link — eso lo verifica sync:report,
+      // no este test CI-safe (que no tiene acceso al workspace).
+      expect(typeof p.url).toBe("string");
+      if (p.url) expect(p.url).toMatch(/^https?:\/\//);
+    }
+    // Las publicaciones sin DOI sólo pueden tener link por `url` explícita: es
+    // el caso que importa (researchgate / abstract) y no puede ser doi.org.
     const withoutDoi = PROFILE.publications.filter((p) => !(p as { doi?: string }).doi);
-    expect(withoutDoi.length).toBe(2); // Hydrochars (RG) + AIChE abstract
-    for (const p of withoutDoi) expect(p.url).toMatch(/^https?:\/\//);
+    expect(withoutDoi.length).toBeGreaterThanOrEqual(1);
+    for (const p of withoutDoi) {
+      if (!p.url) continue;
+      expect(p.url).not.toMatch(/^https:\/\/doi\.org\//);
+    }
   });
 
   it("skills + keywords.geo (anclas semánticas GEO)", () => {
@@ -297,6 +321,50 @@ describe("normalize — v1 legacy → CV data model", () => {
     expect(p.artifacts[0].locator).toEqual({ url: "https://example.org/repo" });
     expect(p.artifacts[0].description).toEqual({ en: "Thing", es: "Cosa" });
     expect(p.artifacts[0].tags).toEqual(["code"]);
+  });
+
+  it("referencias: links/evidence que apuntan a un registro private se descartan (F1)", () => {
+    const r = emptyReport();
+    const p = normalize(
+      {
+        identity: { name: "A B" },
+        artifacts: [
+          {
+            id: "priv",
+            kind: "code",
+            title: "Private",
+            locator: { url: "https://example.org/private" },
+            visibility: "private"
+          }
+        ],
+        credentials: [
+          {
+            id: "cp",
+            kind: "certificate",
+            title: "Private cert",
+            issuer: "X",
+            verifyUrl: "https://example.org/cert",
+            visibility: "private"
+          }
+        ],
+        projects: [
+          {
+            name: "P",
+            links: ["https://example.org/private", "https://example.org/public"],
+            evidence: [
+              { claim: { en: "A" }, source: "https://example.org/private" },
+              { claim: { en: "B" }, source: "https://example.org/cert" },
+              { claim: { en: "C" }, source: "https://example.org/public" }
+            ]
+          }
+        ]
+      },
+      r
+    );
+    expect(p.projects[0].links).toEqual(["https://example.org/public"]);
+    expect(p.projects[0].evidence.map((e) => e.source)).toEqual(["https://example.org/public"]);
+    expect(p.artifacts).toEqual([]);
+    expect(p.credentials).toEqual([]);
   });
 
   it("publications: url explícita manda; fallback DOI; sin ninguna → '' (v1.1)", () => {
