@@ -682,6 +682,14 @@ a { color:inherit; }
   margin-bottom:14px;
 }
 .room-title em { color:var(--gold); font-style:normal; font-weight:500; }
+/* Función real de la sala, en lenguaje llano: la metáfora del museo no
+   reemplaza decir qué hay adentro. */
+.room-function {
+  font-size:clamp(14px,1.35vw,16px);
+  color:var(--ink-dim); line-height:1.55;
+  max-width:68ch; margin:0 0 14px;
+  text-wrap:pretty;
+}
 .room-subtitle {
   font-family:var(--font-mono); font-size:10px;
   color:var(--ink-meta); letter-spacing:.14em; text-transform:uppercase;
@@ -1547,9 +1555,26 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 01</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Marco</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 3 PROYECTOS</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Proyectos publicados con repositorio, release o DOI que cualquiera puede abrir y verificar.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 3 PROYECTOS</div>
 <div class="project-grid project-grid--pair">
-    <div class="project-card" data-scroll="from-left">
+    <div class="project-card" data-scroll="from-left" data-recencia="2026-08-07">
+      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
+      <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
+      <div class="project-tagline">Una sola fuente de verdad versionable compila a todas las superficies públicas del perfil: renderers por plataforma, salida determinista y hechos validados por schema</div>
+      <ul class="project-body">
+        <li>El perfil no se edita a mano en cada plataforma: cada artefacto es función pura del SSOT (YAML + JSON Schema v1.13)</li>
+        <li>Contrato especificado antes del código (D1–D22), con gates de CI sobre schema, inventario de paquetes y links de documentación</li>
+        <li>Ledger de deploy por entrada: qué está publicado, dónde, y si quedó stale. Este CV consume la misma fuente</li>
+        <li>El README de perfil de GitHub que publico es su output</li>
+      </ul>
+      <div class="project-note">
+        Publicado bajo licencia MIT, con releases etiquetados.<br>
+        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank">↗ Repositorio</a>
+      </div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="1" data-recencia="2026-01-27">
       <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
       <div class="project-title"><em>Kontablo</em> — Ontología Contable Universal</div>
       <div class="project-tagline">Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)</div>
@@ -1565,22 +1590,6 @@ a { color:inherit; }
         <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank">↗ Zenodo DOI 10.5281/zenodo.20738795</a>
         <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank">↗ SSRN 6960598</a>
         <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank">↗ ResearchGate</a>
-      </div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="1">
-      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
-      <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
-      <div class="project-tagline">Una sola fuente de verdad versionable compila a todas las superficies públicas del perfil: renderers por plataforma, salida determinista y hechos validados por schema</div>
-      <ul class="project-body">
-        <li>El perfil no se edita a mano en cada plataforma: cada artefacto es función pura del SSOT (YAML + JSON Schema v1.13)</li>
-        <li>Contrato especificado antes del código (D1–D22), con gates de CI sobre schema, inventario de paquetes y links de documentación</li>
-        <li>Ledger de deploy por entrada: qué está publicado, dónde, y si quedó stale. Este CV consume la misma fuente</li>
-        <li>El README de perfil de GitHub que publico es su output</li>
-      </ul>
-      <div class="project-note">
-        Publicado bajo licencia MIT, con releases etiquetados.<br>
-        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank">↗ Repositorio</a>
       </div>
     </div>
 </div><div class="drahma-showcase" data-scroll="up">
@@ -1679,23 +1688,45 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 02</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Bastidor</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">EN DESARROLLO · PROTOTIPOS E IDEAS · 7 PROYECTOS</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Proyectos en desarrollo: prototipos, investigaciones e ideas que todavía no tienen un artefacto público.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">EN DESARROLLO · PROTOTIPOS E IDEAS · 7 PROYECTOS</div>
 <div class="project-grid">
-    <div class="project-card" data-scroll="from-left">
-      <span class="project-status status-private">Prototipo · Sin artefacto público</span>
-      <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
-      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética</div>
+    <div class="project-card" data-scroll="from-left" data-recencia="2026-07-24">
+      <span class="project-status status-private">En diseño</span>
+      <div class="project-title"><em>Topia</em> — Motor editorial de newsletter</div>
+      <div class="project-tagline">De la distopía a eutopías alcanzables: un ensayo a la vez, cada claim con fuente, cada tesis falsable</div>
       <ul class="project-body">
-        <li>Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema <em>zentropia</em>)</li>
-        <li>Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (<code>ingest.py</code>)</li>
-        <li>Módulo central del ecosistema de cognición sintética: integra con CLAPPS, UCVE, NOOS, Kontablo</li>
-        <li>Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter</li>
+        <li>El rigor epistémico como formato editorial: trazabilidad de fuentes y falsabilidad de cada tesis</li>
+        <li>Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas</li>
       </ul>
-      <div class="project-note">La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público con licencia y release — el schema, la ingesta y la arquitectura multi-tenant ya existen.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el primer número publicado.</div>
     </div>
 
-    <div class="project-card" data-scroll="from-left" data-delay="1">
+    <div class="project-card" data-scroll="from-left" data-delay="1" data-recencia="2026-05-24">
+      <span class="project-status status-private">Concepto activo</span>
+      <div class="project-title"><em>CLAPPS.AI</em> — Comprehensive Learning Applications</div>
+      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional</div>
+      <ul class="project-body">
+        <li>Los LMS (Learning Management Systems) son en realidad plataformas de <em>registro y control de enseñanza</em>: tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real</li>
+        <li>CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad</li>
+        <li>Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias</li>
+        <li>Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos</li>
+      </ul>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> primer contenido real (Noesis y Noetix) y una versión navegable.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="2" data-recencia="2026-04-24">
+      <span class="project-status status-private">En uso · Sin artefacto público</span>
+      <div class="project-title"><em>Nelson Companion</em> — PWA de voz asistida</div>
+      <div class="project-tagline">PWA guiada por voz para mi padre (76, afasia post-ACV): offline-first, cero telemetría</div>
+      <ul class="project-body">
+        <li>Uso real y diario: el usuario objetivo es el usuario real</li>
+        <li>Offline-first y sin telemetría — la accesibilidad no puede depender de una conexión ni de un servidor ajeno</li>
+      </ul>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público y licencia — el uso ya es real.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="3" data-recencia="2026-03-09">
       <span class="project-status status-private">Investigación activa</span>
       <div class="project-title"><em>Esteléctica</em> — Epistemología del Diálogo Poli-dialéctico Destilado</div>
       <div class="project-tagline">Propuesta filosófica sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética</div>
@@ -1709,20 +1740,32 @@ a { color:inherit; }
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el paper (es candidata a publicación académica); el repositorio es privado.</div>
     </div>
 
-    <div class="project-card" data-scroll="from-left" data-delay="2">
-      <span class="project-status status-private">Concepto activo</span>
-      <div class="project-title"><em>CLAPPS.AI</em> — Learning Applications Platform</div>
-      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional</div>
+    <div class="project-card" data-scroll="from-left" data-delay="4" data-recencia="2026-03-07">
+      <span class="project-status status-private">Prototipo · Sin artefacto público</span>
+      <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
+      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética</div>
       <ul class="project-body">
-        <li>Los LMS (Learning Management Systems) son en realidad plataformas de <em>registro y control de enseñanza</em>: tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real</li>
-        <li>CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad</li>
-        <li>Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias</li>
-        <li>Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos</li>
+        <li>Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema <em>zentropia</em>)</li>
+        <li>Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (<code>ingest.py</code>)</li>
+        <li>Módulo central del ecosistema de cognición sintética: integra con CLAPPS, UCVE, NOOS, Kontablo</li>
+        <li>Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter</li>
       </ul>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> primer contenido real (Noesis y Noetix) y una versión navegable.</div>
+      <div class="project-note">La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público con licencia y release — el schema, la ingesta y la arquitectura multi-tenant ya existen.</div>
     </div>
 
-    <div class="project-card" data-scroll="from-left" data-delay="3">
+    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="2019-01-01">
+      <span class="project-status status-paused">En uso · Repositorio privado</span>
+      <div class="project-title"><em>Physics Lab Book</em> — Laboratorio de física interactivo</div>
+      <div class="project-tagline">36 guías interactivas HTML5 de laboratorio de física universitaria, originalmente escritas para USFQ</div>
+      <ul class="project-body">
+        <li>800+ estudiantes anuales en USFQ</li>
+        <li>36 guías originales: ingenierías, ciencias de la salud y ciencias puras</li>
+      </ul>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público (hoy privado); las 36 guías y su uso en USFQ ya existen.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
       <span class="project-status status-private">Investigación privada</span>
       <div class="project-title"><em>NOOS</em> — Natural Organization Operating System</div>
       <div class="project-tagline">Reducir la entropía organizacional mediante inteligencia sintética distribuida y grafos de conocimiento</div>
@@ -1734,39 +1777,6 @@ a { color:inherit; }
       </ul>
       <div class="project-note">Investigación en curso. Publicación académica planificada.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el marco conceptual como publicación; hoy es investigación privada.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="4">
-      <span class="project-status status-private">En diseño</span>
-      <div class="project-title"><em>Topia</em> — Motor editorial de newsletter</div>
-      <div class="project-tagline">De la distopía a eutopías alcanzables: un ensayo a la vez, cada claim con fuente, cada tesis falsable</div>
-      <ul class="project-body">
-        <li>El rigor epistémico como formato editorial: trazabilidad de fuentes y falsabilidad de cada tesis</li>
-        <li>Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas</li>
-      </ul>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el primer número publicado.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="5">
-      <span class="project-status status-private">En uso · Sin artefacto público</span>
-      <div class="project-title"><em>Nelson Companion</em> — PWA de voz asistida</div>
-      <div class="project-tagline">PWA guiada por voz para mi padre (76, afasia post-ACV): offline-first, cero telemetría</div>
-      <ul class="project-body">
-        <li>Uso real y diario: el usuario objetivo es el usuario real</li>
-        <li>Offline-first y sin telemetría — la accesibilidad no puede depender de una conexión ni de un servidor ajeno</li>
-      </ul>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público y licencia — el uso ya es real.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="5">
-      <span class="project-status status-paused">En uso · Repositorio privado</span>
-      <div class="project-title"><em>Physics Lab Book</em> — Laboratorio de física interactivo</div>
-      <div class="project-tagline">36 guías interactivas HTML5 de laboratorio de física universitaria, originalmente escritas para USFQ</div>
-      <ul class="project-body">
-        <li>800+ estudiantes anuales en USFQ</li>
-        <li>36 guías originales: ingenierías, ciencias de la salud y ciencias puras</li>
-      </ul>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público (hoy privado); las 36 guías y su uso en USFQ ya existen.</div>
     </div>
 </div>
     <p class="room-closing" data-scroll="up">
@@ -1786,7 +1796,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 03</div>
     <h2 class="room-title"   data-scroll="zoom-in">La <em>Paleta</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Competencias y herramientas: inteligencia sintética, codificación agéntica, soberanía tecnológica, open source e idiomas.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS</div>
 
     <div class="skills-grid" data-scroll="from-center">
       <div class="skill-block">
@@ -1876,7 +1887,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 04</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Friso</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">EXPERIENCIA PROFESIONAL · 2003 – PRESENTE</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Trayectoria profesional: roles, organizaciones y resultados, de 2003 al presente.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">EXPERIENCIA PROFESIONAL · 2003 – PRESENTE</div>
 
     <div class="two-col">
       <!-- Columna A -->
@@ -1966,7 +1978,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 05</div>
     <h2 class="room-title"   data-scroll="zoom-out">La <em>Biblioteca</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Publicaciones científicas y preprints, con DOI y enlace a la fuente.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026</div>
 
     <div class="pub-layout two-col-pub">
 
@@ -2095,7 +2108,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 06</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Compás</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">RED · ÁREAS · PROYECTOS · CONEXIONES · 2026</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Mapa de relaciones entre áreas, proyectos y publicaciones.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">RED · ÁREAS · PROYECTOS · CONEXIONES · 2026</div>
     <p class="graph-lede" data-scroll="up" data-delay="2">
       No solo amplitud: la conexión entre áreas, trabajos y proyectos.
       <span class="hl">Teal</span>, publicado · <span class="is-grey">gris</span>, en desarrollo · <span class="hl-gold">dorado</span>, todavía una idea.
@@ -2117,7 +2131,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 07</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Autorretrato</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">PERFIL PROFESIONAL · CUENCA, ECUADOR</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Quién soy, qué estudié, qué me interesa y desde dónde trabajo.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">PERFIL PROFESIONAL · CUENCA, ECUADOR</div>
 
     <div class="profile-grid">
 
@@ -2201,7 +2216,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 08</div>
     <h2 class="room-title"   data-scroll="zoom-out">El <em>Buzón</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">CONTACTO · REDES · INVESTIGACIÓN</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Cómo escribirme o encontrarme en la web.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">CONTACTO · REDES · INVESTIGACIÓN</div>
 
     <div class="contact-grid">
       <div class="contact-links" data-scroll="from-center" data-delay="2">
@@ -2244,7 +2260,8 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 05</div>
     <h2 class="room-title"   data-scroll="zoom-out">El <em>Archivo</em></h2>
-    <div class="room-subtitle" data-scroll="up" data-delay="1">GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Archivo visual: fotografías, documentos y momentos.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">GALERÍA · FOTOGRAFÍAS · DOCUMENTOS · MOMENTOS</div>
 
     <!-- Sub-galería: Drahma y campo amazónico -->
     <div data-scroll="up" data-delay="1">

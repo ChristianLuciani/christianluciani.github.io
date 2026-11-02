@@ -62,7 +62,7 @@ Object.assign(MAP, {
   "dorado": "golden",
   ", todavía una idea.": ", still an idea.",
   "Concepto activo": "Active concept",
-  "— Learning Applications Platform": "— Learning Applications Platform",
+  "— Comprehensive Learning Applications": "— Comprehensive Learning Applications",
   "— Natural Organization Operating System": "— Natural Organization Operating System",
   "— Zero Entropy Intelligence Station": "— Zero Entropy Intelligence Station",
   "Integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo": "Integrates Noesis and Noetix — a taxonomy of thought perspectives and its agentic engine — as material for a dialogue epistemology",
