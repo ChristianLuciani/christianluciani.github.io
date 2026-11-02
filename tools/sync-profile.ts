@@ -40,10 +40,55 @@ export interface Link {
 
 export interface ExperienceItem {
   role: LangText;
-  org: LangText;
+  /** Proper noun — invariant across languages: the schema declares `org` as a plain
+   *  string, never a langMap (SPEC §11/§15.6). Passing it through toLang() emitted
+   *  one false "falta ES" per experience row. */
+  org: string;
   start: string;
   end: string;
   highlights?: { en: string[]; es?: string[] };
+}
+
+/** v1.1/v1.3: formal education (root `education[]`), keep inside experience[] on v1. */
+export interface EducationItem {
+  id?: string;
+  degree: LangText;
+  /** Proper noun — institutions are never translated (schema: plain string). */
+  institution: string;
+  field?: LangText;
+  start: string;
+  end?: string;
+  note?: LangText;
+}
+
+/** v1.1: spoken languages (root `languages[]`). */
+export interface LanguageItem {
+  code: string;
+  level: string;
+}
+
+/** v1.4 (D17/§18): third-party attestations — the proof registry, not "evidence". */
+export interface CredentialItem {
+  id: string;
+  kind: string;
+  title: string;
+  issuer: string;
+  credentialId?: string;
+  verifyUrl?: string;
+  issued?: string;
+  expires?: string;
+}
+
+/** v1.4 (D17/§18): works/media registry, pointer-first (`locator` XOR url|path). */
+export interface ArtifactItem {
+  id: string;
+  kind: string;
+  title: string;
+  description?: LangText;
+  locator: { url?: string; path?: string };
+  checksum?: string;
+  license?: string;
+  tags?: string[];
 }
 
 export interface ProjectItem {
@@ -61,7 +106,8 @@ export interface PublicationItem {
   year: number;
   doi?: string;
   orcidId?: string;
-  /** Derivado: https://doi.org/<doi> si hay DOI; "" si no (v1.1 añade url explícita). */
+  /** `url` explícita del SSOT (v1.1) o fallback derivado https://doi.org/<doi>;
+   *  "" si no hay ninguna de las dos. */
   url: string;
 }
 
@@ -92,13 +138,16 @@ export interface CVProfile {
   };
   headlines: { platform: string; lang: string; text: string }[];
   experience: ExperienceItem[];
-  /** v1: vacío (la formación v1 vive en experience[] con role = título). v1.1: campo explícito. */
-  education: { role: LangText; org: LangText; start: string; end: string }[];
+  /** v1.1: explicit root `education[]` (v1 legacy kept it in experience[] role = título). */
+  education: EducationItem[];
   projects: ProjectItem[];
   publications: PublicationItem[];
   skills: SkillItem[];
-  /** v1: vacío (los idiomas viven como comentario en skills.yaml). v1.1: [{ code, level }]. */
-  languages: { code: string; level: string }[];
+  /** v1.1: [{ code, level }] from root `languages[]`. */
+  languages: LanguageItem[];
+  /** v1.4/§18: registry roots; only `visibility: public` entries reach this public snapshot. */
+  credentials: CredentialItem[];
+  artifacts: ArtifactItem[];
   keywords: {
     seo: Record<string, string[]>;
     geo: { associations: string[]; claims: string[] };
@@ -141,8 +190,12 @@ const CONTENT_FILES = [
   "headlines",
   "skills",
   "experience",
+  "education",
+  "languages",
   "projects",
   "publications",
+  "credentials",
+  "artifacts",
   "keywords"
 ] as const;
 
@@ -197,9 +250,11 @@ export function driftReport(profile: Record<string, unknown>): SyncReport {
     }
   }
 
-  const pubs = profile.publications as { title: string; doi?: string }[] | undefined;
+  const pubs = profile.publications as { title: string; doi?: string; url?: string }[] | undefined;
   for (const p of pubs ?? []) {
-    if (!p.doi) report.publicationsWithoutLink.push(p.title);
+    // Una `url` explícita (v1.1) resuelve el link igual que un DOI: sin ninguna de
+    // las dos no hay ancla citable (preprints RG / abstracts sin DOI).
+    if (!p.doi && !p.url) report.publicationsWithoutLink.push(p.title);
   }
   return report;
 }
@@ -251,12 +306,28 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
   const experience: ExperienceItem[] = ((raw.experience as Record<string, unknown>[]) ?? []).map(
     (e) => ({
       role: toLang(e.role, "experience.role", report),
-      org: toLang(e.org, "experience.org", report),
+      // `org` es nombre propio invariante en el contrato: string, jamás langMap.
+      org: String(e.org ?? ""),
       start: String(e.start ?? ""),
       end: String(e.end ?? "present"),
       ...(e.highlights ? { highlights: highlightsToArray(e.highlights) } : {})
     })
   );
+
+  const education: EducationItem[] = ((raw.education as Record<string, unknown>[]) ?? []).map((e) => ({
+    ...(e.id ? { id: String(e.id) } : {}),
+    degree: toLang(e.degree, "education.degree", report),
+    institution: String(e.institution ?? ""),
+    ...(e.field != null ? { field: toLang(e.field, "education.field", report) } : {}),
+    start: String(e.start ?? ""),
+    ...(e.end != null ? { end: String(e.end) } : {}),
+    ...(e.note != null ? { note: toLang(e.note, "education.note", report) } : {})
+  }));
+
+  const languages: LanguageItem[] = ((raw.languages as Record<string, unknown>[]) ?? []).map((l) => ({
+    code: String(l.code ?? ""),
+    level: String(l.level ?? "")
+  }));
 
   const projects: ProjectItem[] = ((raw.projects as Record<string, unknown>[]) ?? []).map((p) => ({
     name: String(p.name ?? ""),
@@ -274,13 +345,16 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
   const publications: PublicationItem[] = ((raw.publications as Record<string, unknown>[]) ?? []).map(
     (p) => {
       const doi = typeof p.doi === "string" ? p.doi : undefined;
+      // La `url` explícita del SSOT (v1.1) manda; el DOI solo es fallback.
+      const explicitUrl =
+        typeof p.url === "string" && p.url.trim().length > 0 ? p.url.trim() : undefined;
       return {
         title: String(p.title ?? ""),
         venue: String(p.venue ?? ""),
         year: Number(p.year ?? 0),
         ...(doi ? { doi } : {}),
         ...(typeof p.orcidId === "string" ? { orcidId: p.orcidId } : {}),
-        url: doi ? `https://doi.org/${doi}` : ""
+        url: explicitUrl ?? (doi ? `https://doi.org/${doi}` : "")
       };
     }
   );
@@ -294,6 +368,46 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
       ? { platformWeights: s.platformWeights as Record<string, number> }
       : {})
   }));
+
+  // §18.5 (profile-as-code SPEC): un render público emite SOLO `visibility: public`.
+  // Este archivo se commitea en un repo público, así que private/unlisted no salen
+  // del workspace (fuga de PII y de obras privadas).
+  const isPublic = (entry: Record<string, unknown>): boolean =>
+    (entry.visibility ?? "public") === "public";
+
+  const credentials: CredentialItem[] = ((raw.credentials as Record<string, unknown>[]) ?? [])
+    .filter(isPublic)
+    .map((c) => ({
+      id: String(c.id ?? ""),
+      kind: String(c.kind ?? ""),
+      title: String(c.title ?? ""),
+      issuer: String(c.issuer ?? ""),
+      ...(c.credentialId ? { credentialId: String(c.credentialId) } : {}),
+      ...(c.verifyUrl ? { verifyUrl: String(c.verifyUrl) } : {}),
+      ...(c.issued ? { issued: String(c.issued) } : {}),
+      ...(c.expires ? { expires: String(c.expires) } : {})
+    }));
+
+  const artifacts: ArtifactItem[] = ((raw.artifacts as Record<string, unknown>[]) ?? [])
+    .filter(isPublic)
+    .map((a) => {
+      const locator = (a.locator ?? {}) as Record<string, unknown>;
+      return {
+        id: String(a.id ?? ""),
+        kind: String(a.kind ?? ""),
+        title: String(a.title ?? ""),
+        ...(a.description != null
+          ? { description: toLang(a.description, "artifacts.description", report) }
+          : {}),
+        locator: {
+          ...(locator.url ? { url: String(locator.url) } : {}),
+          ...(locator.path ? { path: String(locator.path) } : {})
+        },
+        ...(a.checksum ? { checksum: String(a.checksum) } : {}),
+        ...(a.license ? { license: String(a.license) } : {}),
+        ...(a.tags ? { tags: (a.tags as string[]).map(String) } : {})
+      };
+    });
 
   const positioning = (raw.positioning ?? {}) as Record<string, unknown>;
   const geo = (positioning.geo ?? {}) as Record<string, unknown>;
@@ -331,11 +445,13 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
       text: String(h.text ?? "")
     })),
     experience,
-    education: [],
+    education,
     projects,
     publications,
     skills,
-    languages: [],
+    languages,
+    credentials,
+    artifacts,
     keywords: (raw.keywords ?? {}) as CVProfile["keywords"],
     source: {
       repo: "",

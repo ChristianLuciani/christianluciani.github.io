@@ -10,7 +10,9 @@
  * - "shape" (siempre): el archivo existe, es AUTO-GENERATED y tiene el contrato
  *   mínimo del CV data model (SPEC §5.2).
  * - "normalizador" (siempre, fixture): dual-shape v1/v1.1 — highlights string →
- *   array, role/org → langMap, url derivada de DOI, determinismo byte a byte.
+ *   array, role → langMap, `org` string invariante sin warnings, url explícita de
+ *   publications (fallback DOI), y los roots education/languages/credentials/artifacts,
+ *   determinismo byte a byte.
  */
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -61,7 +63,7 @@ describe("profile.generated.ts — shape", () => {
     for (const e of PROFILE.experience) {
       expect(e.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       expect(e.end).toMatch(/^\d{4}-\d{2}-\d{2}$|^present$/);
-      if (e.highlights) {
+      if ("highlights" in e) {
         expect(Array.isArray(e.highlights.en)).toBe(true);
         expect(e.highlights.en.length).toBeGreaterThan(0);
         for (const h of e.highlights.en) expect(h.length).toBeGreaterThan(0);
@@ -79,15 +81,62 @@ describe("profile.generated.ts — shape", () => {
     }
   });
 
-  it("publications: url derivada de DOI; sin DOI → url vacía (v1.1 pendiente)", () => {
+  it("experience: org es string invariante (nunca langMap)", () => {
+    expect(PROFILE.experience.length).toBe(23);
+    for (const e of PROFILE.experience) {
+      expect(typeof e.org).toBe("string");
+      expect(e.org.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("education: root explícito con datos reales del SSOT", () => {
+    expect(PROFILE.education.length).toBe(4);
+    for (const e of PROFILE.education) {
+      expect(e.degree.en).toBeTruthy();
+      expect(e.degree.es).toBeTruthy();
+      expect(typeof e.institution).toBe("string");
+      expect(e.institution.length).toBeGreaterThan(0);
+      expect(e.start).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    }
+  });
+
+  it("languages: root v1.1 con code/level", () => {
+    expect(PROFILE.languages.map((l) => l.code)).toEqual(["es", "en", "fr"]);
+    for (const l of PROFILE.languages) {
+      expect(["native", "fluent", "advanced", "intermediate", "basic"]).toContain(l.level);
+    }
+  });
+
+  it("credentials: registro de atestaciones con id/kind/title/issuer", () => {
+    expect(PROFILE.credentials.length).toBe(6);
+    for (const c of PROFILE.credentials) {
+      expect(c.id).toBeTruthy();
+      expect(["certificate", "title", "award", "patent"]).toContain(c.kind);
+      expect(c.title).toBeTruthy();
+      expect(c.issuer).toBeTruthy();
+    }
+  });
+
+  it("artifacts: works/media public; lo private nunca sale del workspace", () => {
+    expect(PROFILE.artifacts.length).toBe(3);
+    expect(PROFILE.artifacts.map((a) => a.id)).not.toContain("physics-lab-book");
+    for (const a of PROFILE.artifacts) {
+      expect(a.id).toBeTruthy();
+      expect(a.title).toBeTruthy();
+      expect("url" in a.locator !== "path" in a.locator).toBe(true); // XOR url|path
+    }
+  });
+
+  it("publications: url explícita del SSOT manda; DOI es el fallback", () => {
     expect(PROFILE.publications.length).toBeGreaterThanOrEqual(8);
     for (const p of PROFILE.publications) {
+      expect(p.url).toMatch(/^https?:\/\//);
       const doi = (p as { doi?: string }).doi;
-      if (doi) expect(p.url).toBe(`https://doi.org/${doi}`);
-      else expect(p.url).toBe("");
+      if (doi) expect(p.url).toMatch(/^https:\/\/doi\.org\//);
     }
     const withoutDoi = PROFILE.publications.filter((p) => !(p as { doi?: string }).doi);
-    expect(withoutDoi.length).toBe(2); // Hydrochars (RG) + AIChE abstract — v1.1 los resuelve
+    expect(withoutDoi.length).toBe(2); // Hydrochars (RG) + AIChE abstract
+    for (const p of withoutDoi) expect(p.url).toMatch(/^https?:\/\//);
   });
 
   it("skills + keywords.geo (anclas semánticas GEO)", () => {
@@ -100,6 +149,10 @@ describe("profile.generated.ts — shape", () => {
     expect(PROFILE.source.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(PROFILE.source.repo).toContain("profile-data");
     expect(PROFILE.source.syncedAt).toMatch(/^\d{4}-\d{2}-\d{2}T/);
+  });
+
+  it("header: el pin declarado es el commit del snapshot", () => {
+    expect(COMMITTED).toContain(`source: profile-data @ ${PROFILE.source.commit}`);
   });
 });
 
@@ -147,38 +200,130 @@ describe("normalize — v1 legacy → CV data model", () => {
     expect(p.experience[0].highlights?.en).toEqual(["One", "Two"]);
   });
 
-  it("role/org string → langMap {en} + report.missingEs (v1.1 completa el ES)", () => {
+  it("role string → langMap {en} + missingEs; org queda string SIN warning", () => {
     const r = emptyReport();
     const p = normalize(
       { identity: { name: "A B" }, experience: [{ role: "Role", org: "Org", start: "2020-01-01" }] },
       r
     );
     expect(p.experience[0].role).toEqual({ en: "Role" });
-    expect(p.experience[0].org).toEqual({ en: "Org" });
+    expect(p.experience[0].org).toBe("Org");
     expect(r.missingEs).toContain("experience.role");
-    expect(r.missingEs).toContain("experience.org");
+    expect(r.missingEs).not.toContain("experience.org");
   });
 
-  it("publications: url derivada de DOI; sin DOI → url '' (v1.1)", () => {
+  it("education: root explícito normalizado (degree/field langMap, institution string)", () => {
+    const r = emptyReport();
+    const p = normalize(
+      {
+        identity: { name: "A B" },
+        education: [
+          {
+            id: "edu-1",
+            degree: { en: "B.Sc. in Physics", es: "Licenciatura en Física" },
+            institution: "Universidad Central de Venezuela",
+            field: "Physics",
+            start: "1997-01-01",
+            end: "2003-12-01",
+            note: { en: "Thesis on D-branes", es: "Tesis sobre D-branas" }
+          }
+        ]
+      },
+      r
+    );
+    expect(p.education).toHaveLength(1);
+    expect(p.education[0].degree).toEqual({ en: "B.Sc. in Physics", es: "Licenciatura en Física" });
+    expect(p.education[0].institution).toBe("Universidad Central de Venezuela");
+    expect(p.education[0].field).toEqual({ en: "Physics" });
+    expect(p.education[0].id).toBe("edu-1");
+  });
+
+  it("languages: root → [{ code, level }] (v1.1)", () => {
+    const r = emptyReport();
+    const p = normalize(
+      { identity: { name: "A B" }, languages: [{ code: "es", level: "native" }, { code: "en", level: "intermediate" }] },
+      r
+    );
+    expect(p.languages).toEqual([
+      { code: "es", level: "native" },
+      { code: "en", level: "intermediate" }
+    ]);
+  });
+
+  it("credentials: solo visibility public (private/unlisted no salen del workspace)", () => {
+    const r = emptyReport();
+    const p = normalize(
+      {
+        identity: { name: "A B" },
+        credentials: [
+          { id: "c1", kind: "title", title: "B.Sc.", issuer: "UCV", issued: "2003-12-01", visibility: "public" },
+          { id: "c2", kind: "certificate", title: "Private cert", issuer: "X", visibility: "private" },
+          { id: "c3", kind: "award", title: "Unlisted award", issuer: "Y", visibility: "unlisted" }
+        ]
+      },
+      r
+    );
+    expect(p.credentials.map((c) => c.id)).toEqual(["c1"]);
+    expect(p.credentials[0].issued).toBe("2003-12-01");
+  });
+
+  it("artifacts: locator url|path normalizado y solo public", () => {
+    const r = emptyReport();
+    const p = normalize(
+      {
+        identity: { name: "A B" },
+        artifacts: [
+          {
+            id: "a1",
+            kind: "code",
+            title: "Repo",
+            description: { en: "Thing", es: "Cosa" },
+            locator: { url: "https://example.org/repo" },
+            tags: ["code"],
+            visibility: "public"
+          },
+          {
+            id: "a2",
+            kind: "document",
+            title: "Private doc",
+            locator: { path: "media/private.pdf" },
+            visibility: "private"
+          }
+        ]
+      },
+      r
+    );
+    expect(p.artifacts).toHaveLength(1);
+    expect(p.artifacts[0].locator).toEqual({ url: "https://example.org/repo" });
+    expect(p.artifacts[0].description).toEqual({ en: "Thing", es: "Cosa" });
+    expect(p.artifacts[0].tags).toEqual(["code"]);
+  });
+
+  it("publications: url explícita manda; fallback DOI; sin ninguna → '' (v1.1)", () => {
     const r = emptyReport();
     const raw = {
       identity: { name: "A B" },
       publications: [
         { title: "T1", venue: "V", year: 2026, doi: "10.5281/zenodo.20738795" },
-        { title: "T2", venue: "V", year: 2023 }
+        { title: "T2", venue: "V", year: 2023, url: "https://example.org/preprint" },
+        { title: "T3", venue: "V", year: 2022, doi: "10.1000/x", url: "https://example.org/explicit" },
+        { title: "T4", venue: "V", year: 2021 }
       ]
     };
     const p = normalize(raw, r);
     expect(p.publications[0].url).toBe("https://doi.org/10.5281/zenodo.20738795");
-    expect(p.publications[1].url).toBe("");
+    expect(p.publications[1].url).toBe("https://example.org/preprint");
+    expect(p.publications[2].url).toBe("https://example.org/explicit"); // explícita gana al DOI
+    expect(p.publications[3].url).toBe("");
   });
 
-  it("driftReport: pub sin DOI → publicationsWithoutLink (regla warn, D12)", () => {
+  it("driftReport: pub sin DOI ni url → publicationsWithoutLink (regla warn, D12)", () => {
     const raw = {
       identity: { name: "A B" },
       publications: [
         { title: "T1", venue: "V", year: 2026, doi: "10.5281/zenodo.20738795" },
-        { title: "T2", venue: "V", year: 2023 }
+        { title: "T2", venue: "V", year: 2023 },
+        { title: "T3", venue: "V", year: 2022, url: "https://example.org/explicit" }
       ]
     };
     const dr = driftReport(raw as unknown as Record<string, unknown>);
