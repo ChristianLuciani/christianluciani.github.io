@@ -737,6 +737,9 @@ a { color:inherit; }
   gap:12px;
   margin-bottom:12px;
 }
+/* Dos fichas: sin una tercera columna vacía (El Marco: Kontablo + profile-as-code;
+   Drahma va como showcase, no como tarjeta). */
+.project-grid--pair { grid-template-columns:repeat(2, minmax(0,1fr)); }
 .project-card {
   display:flex; flex-direction:column;
   position:relative; overflow:hidden;
@@ -1236,7 +1239,7 @@ a { color:inherit; }
   .hero-name { font-size:clamp(44px,15vw,64px); }
   .hero-metrics { grid-template-columns:minmax(0,1fr); max-width:none; }
   .hero-tagline { font-size:15px; }
-  .project-grid, .skills-grid, .drahma-grid { grid-template-columns:minmax(0,1fr); }
+  .project-grid, .project-grid--pair, .skills-grid, .drahma-grid { grid-template-columns:minmax(0,1fr); }
   .gallery-grid.cols-2, .gallery-grid.cols-3, .gallery-grid.cols-4 { grid-template-columns:minmax(0,1fr); }
   .pub-item { grid-template-columns:52px 48px minmax(0,1fr); gap:10px 12px; }
   .pub-thumb { width:48px; height:36px; }

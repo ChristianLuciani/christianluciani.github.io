@@ -24,8 +24,13 @@ export interface Proyecto {
   etapa: Etapa;
   /** Qué le falta para pasar a El Marco (solo `desarrollo`). */
   falta?: string;
-  /** HTML interno de la tarjeta (.project-status + título + copy). */
-  html: string;
+  /**
+   * true = no se renderiza como tarjeta: su ficha completa es el showcase
+   * dedicado de la sala (hoy solo Drahma). Evita la entrada duplicada.
+   */
+  sinTarjeta?: boolean;
+  /** HTML interno de la tarjeta (.project-status + título + copy); ausente si `sinTarjeta`. */
+  html?: string;
 }
 
 export const PROYECTOS: readonly Proyecto[] = [
@@ -54,9 +59,7 @@ export const PROYECTOS: readonly Proyecto[] = [
     id: "drahma",
     nombre: "Drahma",
     etapa: "publicado",
-    html: `      <span class="project-status status-active">Publicado · Agosto 2024 · Repositorio público</span>
-      <div class="project-title"><em>Drahma</em> — Inteligencia Sintética Educativa</div>
-      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>`
+    sinTarjeta: true
   },
   {
     id: "profile-as-code",
