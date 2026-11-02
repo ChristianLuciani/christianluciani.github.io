@@ -54,6 +54,12 @@ function htmlRoomSubtitle(id: string): string {
   return m![1];
 }
 
+function htmlRoomFunction(id: string): string {
+  const m = /<p class="room-function"[^>]*>([^<]+)<\/p>/.exec(htmlSectionBlock(id));
+  expect(m, `room-function de ${id}`).not.toBeNull();
+  return m![1];
+}
+
 /** Pares data-target/data-label del <nav id="nav"> en orden. */
 function htmlNavDots(): { target: string; label: string }[] {
   const navStart = INDEX_HTML.search(/<nav id="nav"[^>]*>/);
@@ -102,6 +108,14 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
     for (const s of SALAS) {
       expect(htmlRoomSubtitle(s.id), `room-subtitle de ${s.id}`).toBe(s.subtitulo);
       expect(extra[s.subtitulo], `EN de ${s.subtitulo}`).toBeDefined();
+    }
+  });
+
+  it("la función real de cada sala == SALAS.funcion y cubre su clave EN", () => {
+    const extra = mapExtra();
+    for (const s of SALAS) {
+      expect(htmlRoomFunction(s.id), `room-function de ${s.id}`).toBe(s.funcion);
+      expect(extra[s.funcion], `EN de ${s.funcion}`).toBe(s.funcionEn);
     }
   });
 

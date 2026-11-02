@@ -220,7 +220,7 @@ function tarjetas(lista: readonly Proyecto[]): string {
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> ${p.falta}</div>`
         : "";
       return `
-    <div class="project-card" data-scroll="from-left"${delay}>
+    <div class="project-card" data-scroll="from-left"${delay} data-recencia="${p.recencia ?? ""}">
 ${p.html ?? ""}${falta}
     </div>
 `;
@@ -714,7 +714,9 @@ function roomHeader(s: SalaDef): string {
 ` +
     `    <h2 class="room-title"   data-scroll="${meta.titleScroll}">${s.titulo}</h2>
 ` +
-    `    <div class="room-subtitle" data-scroll="up" data-delay="1">${s.subtitulo}</div>
+    `    <p class="room-function" data-scroll="up" data-delay="1">${s.funcion}</p>
+` +
+    `    <div class="room-subtitle" data-scroll="up" data-delay="2">${s.subtitulo}</div>
 `
   );
 }
