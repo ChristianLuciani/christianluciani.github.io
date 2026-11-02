@@ -53,7 +53,7 @@ const COVER_TAIL = `</nav>
 
 <div id="loader">
   <div id="intro-block">
-    <p id="intro-phrase" class="intro-phrase">Arte, Ciencia, Filosofía.</p>
+    <p id="intro-phrase" class="intro-phrase">Arte Ciencias Filosofía</p>
   </div>
 </div>
 `;

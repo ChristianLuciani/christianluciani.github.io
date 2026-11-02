@@ -442,7 +442,7 @@ a { color:inherit; }
   min-height:4.2rem;
   display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:center;
   font-family:var(--font-display);
-  font-size:clamp(1.4rem, 3.6vw, 2.4rem);
+  font-size:clamp(1.15rem, 3vw, 1.9rem);
   line-height:1.4;
   color:var(--ink);
   opacity:0;
@@ -475,12 +475,12 @@ a { color:inherit; }
   max-width:min(640px, 92vw);
   min-height:9.5rem;
   display:grid;
-  grid-template-columns:repeat(3, minmax(0,1fr));
+  grid-template-columns:auto auto auto;
   grid-template-rows:auto auto;
   align-items:center;
+  justify-content:center;
   justify-items:center;
-  gap:.55rem 1rem;
-  font-size:clamp(1.05rem, 3vw, 1.85rem);
+  gap:.55rem clamp(1rem, 4vw, 2.5rem);
   line-height:1.2;
 }
 .intro-phrase--triangle .p-word { margin:0; white-space:nowrap; }
@@ -488,34 +488,39 @@ a { color:inherit; }
 .intro-phrase--triangle .p-word:nth-child(2) { grid-column:1; grid-row:2; }
 .intro-phrase--triangle .p-word:nth-child(3) { grid-column:3; grid-row:2; }
 
-/* ── Frase final · TRAZA DE ORO ───────────────────────────────────────────
-   Los DOS ÚLTIMOS trazos del Espirángulo (la C) dibujados en oro bajo
-   «Instancia Humana». La geometría sale del propio logo (svg.dataset.c), no de
-   una imitación; el SVG lo crea intro.ts → drawGoldTrace(). */
-/* La caja de la frase final es el SISTEMA DE COORDENADAS de la C: la traza y
-   las dos palabras comparten el mismo encaje (meet centrado), así el texto
-   se apoya sobre los dos últimos tramos en vez de flotar cerca de ellos. */
-.intro-phrase--final {
-  display:block;
-  width:min(520px, 90vw);
-  height:clamp(230px, 40vh, 360px);
-  margin:0 auto;
+/* ── Frase 2 · TRES LÍNEAS ────────────────────────────────────────────────
+   «Perspectivas / del / Universo», una palabra por línea, centradas. */
+.intro-phrase--stack {
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:.12em;
+  line-height:1.15;
 }
-.intro-phrase--final .p-word:nth-child(1) {
-  position:absolute; left:50%; top:0;
-  transform:translateX(-50%);
-  white-space:nowrap;
+.intro-phrase--stack .p-word { margin:0; white-space:nowrap; }
+
+/* ── Frase 3 · DOS FILAS ──────────────────────────────────────────────────
+   «Una» sobre «Humana», con «Instancia» a la izquierda en la fila de abajo.
+   Alineación recta, sin traza ni rotaciones. */
+.intro-phrase--signature {
+  display:grid;
+  grid-template-columns:auto auto;
+  grid-template-rows:auto auto;
+  align-items:center;
+  justify-content:center;
+  justify-items:start;
+  column-gap:1.2em;
+  row-gap:.12em;
+  line-height:1.15;
 }
-.intro-phrase--final .p-word:nth-child(n+2) { white-space:nowrap; }
-.intro-trace {
-  position:absolute; inset:0;
-  width:100%; height:100%;
-  pointer-events:none;
-  z-index:0;
-}
+.intro-phrase--signature .p-word { margin:0; white-space:nowrap; }
+.intro-phrase--signature .p-word:nth-child(1) { grid-column:2; grid-row:1; }
+.intro-phrase--signature .p-word:nth-child(2) { grid-column:1; grid-row:2; }
+.intro-phrase--signature .p-word:nth-child(3) { grid-column:2; grid-row:2; }
+
 @media (max-width:620px) {
-  .intro-phrase--triangle { min-height:8rem; gap:.4rem .5rem; }
-  .intro-phrase--final { width:min(360px, 92vw); height:clamp(200px, 34vh, 280px); }
+  .intro-phrase--triangle { min-height:8rem; gap:.4rem clamp(.8rem, 4vw, 1.5rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1423,7 +1428,7 @@ a { color:inherit; }
 
 <div id="loader">
   <div id="intro-block">
-    <p id="intro-phrase" class="intro-phrase">Arte, Ciencia, Filosofía.</p>
+    <p id="intro-phrase" class="intro-phrase">Arte Ciencias Filosofía</p>
   </div>
 </div>
 <!-- ════════════════════════════════════════════════════
