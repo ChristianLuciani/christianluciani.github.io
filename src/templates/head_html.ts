@@ -693,6 +693,14 @@ a { color:inherit; }
   margin-bottom:14px;
 }
 .room-title em { color:var(--gold); font-style:normal; font-weight:500; }
+/* Función real de la sala, en lenguaje llano: la metáfora del museo no
+   reemplaza decir qué hay adentro. */
+.room-function {
+  font-size:clamp(14px,1.35vw,16px);
+  color:var(--ink-dim); line-height:1.55;
+  max-width:68ch; margin:0 0 14px;
+  text-wrap:pretty;
+}
 .room-subtitle {
   font-family:var(--font-mono); font-size:10px;
   color:var(--ink-meta); letter-spacing:.14em; text-transform:uppercase;
