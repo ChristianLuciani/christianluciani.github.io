@@ -173,29 +173,40 @@ el DOM aprobado. Desde #55 verifica además el **contorno de la banda**
 en el render normal; los assets se generan desde esa misma geometría.
 
 El **acabado** de la C se verifica en dos capas, y el gate declara las dos
-(«declarado» no implica «pintado»: #91):
+(«declarado» no implica «pintado», y «referenciado» no implica «dibujado»:
+#91, #100):
 
 - **Declaración** en `defs`: rampas de `c-perp-1`/`c-perp-2` ≡
   `cFinish.perp`, stops/opacidades de `c-tint-1`/`c-tint-2` ≡
   `cFinish.tint`, y `stdDeviation` de `c-bloom` ≡ `cFinish.bloom.blur`.
-- **Pintura** en el DOM (dump reducido), anclada en referencias y no en el
-  markup literal: dentro de `.c-band`, por cada brazo `k ∈ {1,2}`, un grupo
-  con `clip-path="url(#c-clip-k)"` que contiene un `path` con
+- **Pintura** en el DOM (dump reducido), anclada en referencias y en la
+  dibujabilidad del `d`, nunca en el markup literal: dentro de `.c-band`, por
+  cada brazo `k ∈ {1,2}`, un grupo con `clip-path="url(#c-clip-k)"` cuyo
+  `clipPath` contiene al menos un nodo de geometría (y, si es un `path`, un
+  `d` que dibuja: moveto + segmento + más de un punto); un `path` con
   `fill="url(#c-perp-k)"` (bisel) y otro con `fill="url(#c-tint-k)"`
-  (barrido); el `path` de `.c-glow` con `filter="url(#c-bloom)"`; y cada
+  (barrido) que también dibujan; el `path` de `.c-glow` con
+  `filter="url(#c-bloom)"`, que también dibuja; y cada
   `linearGradient id="c-perp-k"` con eje real (`x1≠x2 || y1≠y2`, los cuatro
-  valores presentes).
-- **No verifica**: los valores numéricos del eje del gradiente más allá de
-  «no degenerado», el orden z de las capas, el color/ancho del stroke del
-  glow, ni atributos de presentación que no sean esas referencias. Un
-  refactor que conserve las referencias puede cambiar el markup sin poner el
-  gate rojo.
+  valores presentes). Un `d="M 0 0"` o un `clipPath` vacío cuentan como no
+  pintado, aunque la referencia esté adjunta.
+- **No verifica**: la FORMA de lo dibujado (un contorno o clip distinto, si
+  dibuja geometría real, pasa), ni el contenido semántico del render (qué
+  cubre exactamente el recorte, dónde cae el barrido), ni los valores
+  numéricos del eje del gradiente más allá de «no degenerado», ni el orden z
+  de las capas, ni el color/ancho del stroke del glow, ni atributos de
+  presentación que no sean esas referencias y el `d`. Un refactor que
+  conserve las referencias y una geometría dibujable puede cambiar el markup
+  y la forma sin poner el gate rojo.
 
 La lógica de pintura vive en `tools/logo/finish-paint.mjs` (pura, sin Chrome)
-y cada mutación del issue #91 tiene su test en `finish-paint.test.mjs`.
-Desde #59 el gate corre en **CI** (`.github/workflows/ci.yml`: Chrome
-headless de linux + `npm run logo:verify`), así que el merge queda bloqueado si
-el puerto diverge del DOM aprobado.
+y cada mutación del issue #91 —adaptada al render, porque el artefacto arma el
+DOM por JS— más las contrapruebas de `clipPath` vacío y `d` degenerado tienen
+su test en `finish-paint.test.mjs`. La adquisición sigue fuera de CI: el exit
+del gate completo se mide con Chrome (local/CI vía `logo:verify` sobre el HTML
+sano), no en `npm test`. Desde #59 el gate corre en **CI**
+(`.github/workflows/ci.yml`: Chrome headless de linux + `npm run logo:verify`),
+así que el merge queda bloqueado si el puerto diverge del DOM aprobado.
 
 ## 5. Tipografía
 

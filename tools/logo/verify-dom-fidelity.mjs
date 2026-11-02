@@ -156,11 +156,13 @@ function verify(version, htmlPath, { fail, canNotMeasure }) {
 
     /* #91: las declaraciones de `defs` no prueban que el acabado se PINTe. El
        chequeo vive en `finish-paint.mjs` (puro, sin Chrome) para que cada
-       mutación del issue tenga un test que la vea: recorte de la bisectriz,
-       barrido por brazo, filter del glow y eje real del gradiente. */
+       mutación del issue —adaptada al render: el HTML arma el DOM por JS— y
+       cada contraprueba de la capa nueva tengan un test que las vea: recorte
+       con geometría, barrido por brazo, filter del glow y eje real del
+       gradiente. */
     const paint = finishPaintFindings(dumpR);
     if (paint.length) for (const msg of paint) fail(`${version}: ${msg}`);
-    else console.log(`✅ ${version}: la pintura del acabado está aplicada (recorte, barrido y glow)`);
+    else console.log(`✅ ${version}: la pintura del acabado aplica geometría real (recorte, barrido y glow)`);
   }
 
   /* ── modo normal: cielo + constelación ── */
