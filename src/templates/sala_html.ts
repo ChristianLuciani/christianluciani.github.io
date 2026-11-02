@@ -118,6 +118,7 @@ const ROOM_TAIL = `
 
 /** Showcase Drahma — obra publicada; se conserva tal cual tras las tarjetas. */
 const TALLER_DRAHMA = `<div class="drahma-showcase" data-scroll="up">
+      <span class="project-status status-active">Publicado · Agosto 2024 · Repositorio público</span>
       <div class="drahma-showcase-head">
         <img src="/assets/images/drahman-logo.png"
              alt="Drahma logo" width="44" height="44" loading="lazy" decoding="async"
@@ -125,6 +126,7 @@ const TALLER_DRAHMA = `<div class="drahma-showcase" data-scroll="up">
              onerror="this.style.display='none'">
         <h3 class="drahma-showcase-title">Proyecto <em>Drahma</em></h3>
       </div>
+      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
       <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
 
       <div class="drahma-columns two-col-drahma">
@@ -195,10 +197,6 @@ const TALLER_DRAHMA = `<div class="drahma-showcase" data-scroll="up">
         </ul>
       </div>
     </div><!-- /showcase drahma -->
-
-  </div><!-- /room-content -->
-</section>
-<div class="room-divider"></div>
 ${ROOM_TAIL}`;
 
 /** Cierre de El Bastidor: la sala declara por qué existe. */
@@ -223,12 +221,14 @@ function tarjetas(lista: readonly Proyecto[]): string {
         : "";
       return `
     <div class="project-card" data-scroll="from-left"${delay}>
-${p.html}${falta}
+${p.html ?? ""}${falta}
     </div>
 `;
     })
     .join("");
-  return `<div class="project-grid">${cards}</div>`;
+  // Con dos fichas la grilla de tres columnas dejaría un hueco: se declara par.
+  const pairing = lista.length === 2 ? " project-grid--pair" : "";
+  return `<div class="project-grid${pairing}">${cards}</div>`;
 }
 
 export const ROOM_BODY: Record<string, string> = {
@@ -309,7 +309,8 @@ export const ROOM_BODY: Record<string, string> = {
 
 
 `,
-  proyectos: `${tarjetas(publicados)}${TALLER_DRAHMA}`,
+  // Drahma no lleva tarjeta: su ficha completa es el showcase que sigue.
+  proyectos: `${tarjetas(publicados.filter((p) => !p.sinTarjeta))}${TALLER_DRAHMA}`,
   bastidor: `${tarjetas(enDesarrollo)}${CIERRE_BASTIDOR}`,
   experiencia: `
     <div class="two-col">

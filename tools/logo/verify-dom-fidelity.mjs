@@ -31,6 +31,7 @@ import {
 } from "./geometry.mjs";
 import { dumpDom } from "./chrome.mjs";
 import { artifactProblem, renderedNothing, runGate } from "./gate.mjs";
+import { finishPaintFindings } from "./finish-paint.mjs";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 
@@ -152,6 +153,16 @@ function verify(version, htmlPath, { fail, canNotMeasure }) {
     if (!bloomM || !close(parseFloat(bloomM[1]), cfg.cFinish.bloom.blur))
       fail(`${version}: el bloom de la C no usa cFinish.bloom.blur`);
     else console.log(`✅ ${version}: acabado de la C ≡ cFinish (bisel, barrido y bloom)`);
+
+    /* #91: las declaraciones de `defs` no prueban que el acabado se PINTe. El
+       chequeo vive en `finish-paint.mjs` (puro, sin Chrome) para que cada
+       mutación del issue —adaptada al render: el HTML arma el DOM por JS— y
+       cada contraprueba de la capa nueva tengan un test que las vea: recorte
+       con geometría, barrido por brazo, filter del glow y eje real del
+       gradiente. */
+    const paint = finishPaintFindings(dumpR);
+    if (paint.length) for (const msg of paint) fail(`${version}: ${msg}`);
+    else console.log(`✅ ${version}: la pintura del acabado aplica geometría real (recorte, barrido y glow)`);
   }
 
   /* ── modo normal: cielo + constelación ── */
