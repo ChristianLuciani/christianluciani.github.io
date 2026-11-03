@@ -127,6 +127,22 @@ function assertEngineVersion(version: string): void {
   }
 }
 
+/** Major del payload de export que este consumidor entiende (SPEC §7.5 del engine:
+ *  «a consumer refuses a version it does not know rather than guessing»). */
+const SUPPORTED_SCHEMA_VERSION = "1";
+
+/** FAIL (no warning) ante una versión de contrato desconocida: proyectar un payload
+ *  de otra generación con los supuestos viejos es el drift que #107 quiere cerrar. */
+export function assertSchemaVersion(version: string): void {
+  if (version !== SUPPORTED_SCHEMA_VERSION) {
+    throw new Error(
+      `pasco export profile: schemaVersion "${version || "(ausente)"}" desconocida; ` +
+        `este consumidor sólo entiende v${SUPPORTED_SCHEMA_VERSION} (profile-as-code SPEC §7.5). ` +
+        `Actualizá el consumidor o fijá el engine con el que se genera el snapshot.`
+    );
+  }
+}
+
 /** El perfil compilado + metadata del contrato (SPEC §7.5). */
 export function exportProfile(
   workspace: string,
@@ -152,6 +168,7 @@ export function exportProfile(
   }
   const { engine, source, profile, schemaVersion } = envelope.data;
   assertEngineVersion(String(engine?.version ?? ""));
+  assertSchemaVersion(String(schemaVersion ?? ""));
   return {
     engine,
     schemaVersion,
@@ -192,20 +209,59 @@ function str(v: unknown): string {
   return typeof v === "string" ? v : v == null ? "" : String(v);
 }
 
-function lang(v: unknown): LangText {
+/**
+ * Dual-shape v1 → langMap (SPEC §5.2): el engine NO normaliza las uniones
+ * `string | langMap` del schema (su `normalizeProfile()` sólo defaultea roots-lista),
+ * así que un workspace schema-válido puede traer `role: "Engineer"`. La proyección
+ * normaliza acá (string → `{ en: valor }`) y lo DECLARA en el reporte: nunca degrada
+ * a `{ en: "" }` en silencio.
+ */
+function lang(v: unknown, path: string, report: SyncReport): LangText {
+  if (typeof v === "string") {
+    if (v.length) report.unexpectedShape.push(`${path}: string (shape v1) → langMap {en}`);
+    return { en: v };
+  }
   const o = asRecord(v);
-  return { en: str(o.en), ...(typeof o.es === "string" ? { es: o.es } : {}) };
+  if (typeof o.en === "string") {
+    return { en: o.en, ...(typeof o.es === "string" ? { es: o.es } : {}) };
+  }
+  if (v != null) report.unexpectedShape.push(`${path}: sin {en: string}`);
+  return { en: "" };
 }
 
-/** Highlights del engine ya vienen como `{ en: string[], es?: string[] }` (v1.1).
- *  La proyección NO los re-deriva: sólo valida la forma que el CV consume. */
-function pickHighlights(v: unknown): { en: string[]; es?: string[] } | undefined {
+/** Highlights dual-shape: v1.1 ya es `{ en: string[], es?: string[] }`; el v1 legacy
+ *  es un string de frases separadas por ". " (el "·" agrupa sub-items dentro de una
+ *  frase, como renderiza el CV). Devuelve `undefined` sólo si no hay EN. */
+function pickHighlights(
+  v: unknown,
+  path: string,
+  report: SyncReport
+): { en: string[]; es?: string[] } | undefined {
+  if (!v || typeof v !== "object") {
+    if (v != null) report.unexpectedShape.push(`${path}: forma desconocida (${typeof v})`);
+    return undefined;
+  }
   const o = asRecord(v);
-  if (!Array.isArray(o.en)) return undefined;
-  return {
-    en: o.en.map(str).filter((s) => s.length > 0),
-    ...(Array.isArray(o.es) ? { es: o.es.map(str).filter((s) => s.length > 0) } : {})
+  let sawV1 = false;
+  const split = (value: unknown): string[] | undefined => {
+    if (typeof value === "string") {
+      sawV1 = true;
+      return value
+        .split(/\.\s+/)
+        .map((s) => s.trim().replace(/\.$/, ""))
+        .filter((s) => s.length > 0);
+    }
+    if (Array.isArray(value)) return value.map(str).filter((s) => s.length > 0);
+    return undefined;
   };
+  const en = split(o.en);
+  if (!en) {
+    report.unexpectedShape.push(`${path}: sin highlights.en`);
+    return undefined;
+  }
+  const es = split(o.es);
+  if (sawV1) report.unexpectedShape.push(`${path}: string (shape v1) → array de bullets`);
+  return { en, ...(es ? { es } : {}) };
 }
 
 function splitName(name: string): { givenName: string; familyName: string } {
@@ -233,7 +289,8 @@ function splitName(name: string): { givenName: string; familyName: string } {
  */
 export function projectProfile(
   raw: Record<string, unknown>,
-  source: CvSource = { repo: "", commit: "", generatedAt: null }
+  source: CvSource = { repo: "", commit: "", generatedAt: null },
+  report: SyncReport = emptyReport()
 ): CvProfile {
   const identity = asRecord(raw.identity);
   const name = str(identity.name);
@@ -271,9 +328,9 @@ export function projectProfile(
   const geo = asRecord(positioning.geo);
 
   const experience: ExperienceItem[] = asArray(raw.experience).map((e) => {
-    const highlights = pickHighlights(e.highlights);
+    const highlights = pickHighlights(e.highlights, "experience.highlights", report);
     return {
-      role: lang(e.role),
+      role: lang(e.role, "experience.role", report),
       // `org` es nombre propio invariante en el contrato: string, jamás langMap.
       org: str(e.org),
       start: str(e.start),
@@ -284,12 +341,12 @@ export function projectProfile(
 
   const education: EducationItem[] = asArray(raw.education).map((e) => ({
     ...(e.id ? { id: str(e.id) } : {}),
-    degree: lang(e.degree),
+    degree: lang(e.degree, "education.degree", report),
     institution: str(e.institution),
-    ...(e.field != null ? { field: lang(e.field) } : {}),
+    ...(e.field != null ? { field: lang(e.field, "education.field", report) } : {}),
     start: str(e.start),
     ...(e.end != null ? { end: str(e.end) } : {}),
-    ...(e.note != null ? { note: lang(e.note) } : {})
+    ...(e.note != null ? { note: lang(e.note, "education.note", report) } : {})
   }));
 
   const languages: LanguageItem[] = asArray(raw.languages).map((l) => ({
@@ -300,7 +357,7 @@ export function projectProfile(
   const projects: ProjectItem[] = asArray(raw.projects).map((p) => ({
     name: str(p.name),
     ...(p.status ? { status: str(p.status) } : {}),
-    ...(p.description != null ? { description: lang(p.description) } : {}),
+    ...(p.description != null ? { description: lang(p.description, "projects.description", report) } : {}),
     // Los punteros a un artifact/credential no público no se emiten (§18.5):
     // la entrada privada ya se filtró, pero el hecho que la referencia seguía
     // publicando su URL (p. ej. evidence.source → repo privado).
@@ -308,7 +365,7 @@ export function projectProfile(
     keywords: Array.isArray(p.keywords) ? p.keywords.map(str) : [],
     evidence: asArray(p.evidence)
       .map((ev) => ({
-        claim: lang(ev.claim),
+        claim: lang(ev.claim, "projects.evidence.claim", report),
         source: str(ev.source),
         ...(ev.verified ? { verified: str(ev.verified) } : {})
       }))
@@ -358,7 +415,7 @@ export function projectProfile(
         id: str(a.id),
         kind: str(a.kind),
         title: str(a.title),
-        ...(a.description != null ? { description: lang(a.description) } : {}),
+        ...(a.description != null ? { description: lang(a.description, "artifacts.description", report) } : {}),
         locator: {
           ...(locator.url ? { url: str(locator.url) } : {}),
           ...(locator.path ? { path: str(locator.path) } : {})
@@ -379,9 +436,12 @@ export function projectProfile(
       links
     },
     positioning: {
-      statement: lang(positioning.statement),
+      statement: lang(positioning.statement, "positioning.statement", report),
       audiences: Object.fromEntries(
-        Object.entries(asRecord(positioning.audiences)).map(([k, v]) => [k, lang(v)])
+        Object.entries(asRecord(positioning.audiences)).map(([k, v]) => [
+          k,
+          lang(v, `positioning.audiences.${k}`, report)
+        ])
       ),
       ...(Object.keys(geo).length
         ? {
@@ -389,7 +449,7 @@ export function projectProfile(
               ...(Array.isArray(geo.semanticAssociations)
                 ? { semanticAssociations: geo.semanticAssociations.map(str) }
                 : {}),
-              ...(geo.citationsGoal != null ? { citationsGoal: lang(geo.citationsGoal) } : {})
+              ...(geo.citationsGoal != null ? { citationsGoal: lang(geo.citationsGoal, "positioning.geo.citationsGoal", report) } : {})
             }
           }
         : {})
@@ -435,6 +495,13 @@ export interface SyncReport {
   missingEs: string[];
   publicationsWithoutLink: string[];
   urlsOutsideIdentity: string[];
+  /** Formas que no son las esperadas por el contrato del CV (p. ej. dual-shape v1
+   *  del engine): la proyección las normaliza y las declara acá — nunca en silencio. */
+  unexpectedShape: string[];
+}
+
+export function emptyReport(): SyncReport {
+  return { missingEs: [], publicationsWithoutLink: [], urlsOutsideIdentity: [], unexpectedShape: [] };
 }
 
 /** Validación de hechos no expresables en JSON Schema (drift-lite, D12: warn no fail).
@@ -442,7 +509,7 @@ export interface SyncReport {
  *  Excepciones documentadas: identity.photo (asset) y evidence[].source (fuente de
  *  verificación externa) NO se chequean contra links canónicos. */
 export function driftReport(profile: CvProfile): SyncReport {
-  const report: SyncReport = { missingEs: [], publicationsWithoutLink: [], urlsOutsideIdentity: [] };
+  const report = emptyReport();
   const known = new Set(profile.identity.links.map((l) => l.url));
 
   const walkLang = (prefix: string, v: unknown): void => {
@@ -479,7 +546,7 @@ export function renderSource(
 ): string {
   const header = [
     "// AUTO-GENERATED by tools/sync-profile.ts — DO NOT EDIT.",
-    `// source: profile-data @ ${profile.source.commit || "?"} · generatedAt ${profile.source.generatedAt ?? "null"}`,
+    `// source: profile-data @ ${profile.source.commit || "?"} · generatedAt ${JSON.stringify(profile.source.generatedAt ?? null)}`,
     `// engine @ ${engine} · schema v${schema}`,
     "// Regenerate: npm run sync:profile  (docs/SPEC.md §5.1 — editar hechos = editar profile-data)"
   ].join("\n");
@@ -523,8 +590,12 @@ export function generateAll(opts?: { workspace?: string; now?: string }) {
     commit: compiled.commit || git.commit,
     generatedAt: compiled.generatedAt
   };
-  const profile = projectProfile(compiled.profile, source);
-  const report = driftReport(profile);
+  const report = emptyReport();
+  const profile = projectProfile(compiled.profile, source, report);
+  const drift = driftReport(profile);
+  report.missingEs.push(...drift.missingEs);
+  report.publicationsWithoutLink.push(...drift.publicationsWithoutLink);
+  report.urlsOutsideIdentity.push(...drift.urlsOutsideIdentity);
 
   return {
     source: renderSource(profile, compiled.engine.version, schema),
@@ -558,7 +629,14 @@ async function main(): Promise<void> {
       console.log(`⚠️  publicaciones sin DOI/link (${report.publicationsWithoutLink.length}):\n  ${report.publicationsWithoutLink.join("\n  ")}`);
     if (report.urlsOutsideIdentity.length)
       console.log(`⚠️  URLs fuera de identity.links (${report.urlsOutsideIdentity.length}):\n  ${report.urlsOutsideIdentity.join("\n  ")}`);
-    if (!report.missingEs.length && !report.publicationsWithoutLink.length && !report.urlsOutsideIdentity.length)
+    if (report.unexpectedShape.length)
+      console.log(`⚠️  formas inesperadas normalizadas (${report.unexpectedShape.length}):\n  ${report.unexpectedShape.join("\n  ")}`);
+    if (
+      !report.missingEs.length &&
+      !report.publicationsWithoutLink.length &&
+      !report.urlsOutsideIdentity.length &&
+      !report.unexpectedShape.length
+    )
       console.log("✅ report limpio: sin warnings de drift.");
   }
 }

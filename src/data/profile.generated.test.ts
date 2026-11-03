@@ -17,7 +17,16 @@ import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { driftReport, generateAll, projectProfile, resolvePaths } from "../../tools/sync-profile";
+import {
+  assertSchemaVersion,
+  driftReport,
+  emptyReport,
+  generateAll,
+  projectProfile,
+  renderSource,
+  resolvePaths,
+  schemaLabel
+} from "../../tools/sync-profile";
 import type { CvProfile } from "./profile.types";
 import { PROFILE } from "./profile.generated";
 
@@ -26,7 +35,7 @@ const COMMITTED = readFileSync(GENERATED, "utf8");
 const SYNC_TOOL = readFileSync(resolve(process.cwd(), "tools", "sync-profile.ts"), "utf8");
 const { workspace } = resolvePaths();
 
-function sourceOf(commit = "cd77b60a4611578da90157271c14d4bb2885b880"): CvProfile["source"] {
+function sourceOf(commit = PROFILE.source.commit): CvProfile["source"] {
   return { repo: "https://github.com/ChristianLuciani/profile-data.git", commit, generatedAt: null };
 }
 
@@ -70,7 +79,46 @@ describe("profile.generated.ts — shape", () => {
   it("header: pin de profile-data + engine + schema + generatedAt", () => {
     expect(COMMITTED).toMatch(/"generatedAt": (null|"\d{4}-\d{2}-\d{2}T)/);
     expect(COMMITTED).toMatch(/\/\/ source: profile-data @ [0-9a-f]{40} · generatedAt (null|"\d{4}-)/);
-    expect(COMMITTED).toMatch(/\/\/ engine @ \d+\.\d+\.\d+ · schema v1\.15/);
+    // La etiqueta se DERIVA del engine (`pasco doctor`); el test no fija el minor.
+    expect(COMMITTED).toMatch(/\/\/ engine @ \d+\.\d+\.\d+ · schema v\d+\.\d+/);
+  });
+
+  it.skipIf(!workspace)("header: la etiqueta de schema es la que reporta el engine", () => {
+    expect(COMMITTED).toContain(`· schema v${schemaLabel(workspace!)}`);
+  });
+
+  // F3: la rama --now del header debe satisfacer el mismo regex que la rama null.
+  // Se prueba end-to-end (generateAll con now) y en la unidad de render.
+  it.skipIf(!workspace)("--now: el header con fecha pasa su propio regex y el JSON coincide", () => {
+    const now = "2026-11-03T12:00:00.000Z";
+    const { source } = generateAll({ now });
+    expect(source).toMatch(/\/\/ source: profile-data @ [0-9a-f]{40} · generatedAt "2026-11-03T12:00:00\.000Z"/);
+    expect(source).toMatch(/"generatedAt": "2026-11-03T12:00:00\.000Z"/);
+    expect(source).not.toBe(COMMITTED);
+  });
+
+  it("renderSource: generatedAt se emite igual en header y JSON (null y con fecha)", () => {
+    const nullSrc = renderSource({ ...(PROFILE as unknown as CvProfile), source: sourceOf() }, "0.3.7", "1.15");
+    expect(nullSrc).toMatch(/· generatedAt null/);
+    expect(nullSrc).toMatch(/"generatedAt": null/);
+
+    const dated = renderSource(
+      {
+        ...(PROFILE as unknown as CvProfile),
+        source: { ...sourceOf(), generatedAt: "2026-11-03T12:00:00.000Z" }
+      },
+      "0.3.7",
+      "1.15"
+    );
+    expect(dated).toMatch(/· generatedAt "2026-11-03T12:00:00\.000Z"/);
+    expect(dated).toMatch(/"generatedAt": "2026-11-03T12:00:00\.000Z"/);
+  });
+
+  // F2: el contrato del engine (SPEC §7.5) obliga a rechazar una versión desconocida.
+  it("schemaVersion: v1 acepta; cualquier otra generación FAIL con razón", () => {
+    expect(() => assertSchemaVersion("1")).not.toThrow();
+    expect(() => assertSchemaVersion("2")).toThrow(/schemaVersion "2" desconocida/);
+    expect(() => assertSchemaVersion("")).toThrow(/desconocida/);
   });
 
   it("identity: nombre + links canónicos (ancla GEO)", () => {
@@ -239,6 +287,73 @@ describe("projectProfile — LoadedProfile → CvProfile (fixture)", () => {
     expect(p.experience[0]).not.toHaveProperty("id"); // proyección, no dump
     const r = driftReport(p);
     expect(r.missingEs).toEqual([]);
+  });
+
+  it("dual-shape v1: role/degree/field string → langMap {en} y se declara en el reporte", () => {
+    const r = emptyReport();
+    const p = projectProfile(
+      {
+        identity: { name: "A B" },
+        experience: [{ role: "Role", org: "Org", start: "2020-01-01" }],
+        education: [{ degree: "B.Sc. in Mathematics", institution: "UCV", field: "Mathematics", start: "1997-01-01" }]
+      },
+      sourceOf(),
+      r
+    );
+    expect(p.experience[0].role).toEqual({ en: "Role" });
+    expect(p.experience[0].org).toBe("Org");
+    expect(p.education[0].degree).toEqual({ en: "B.Sc. in Mathematics" });
+    expect(p.education[0].field).toEqual({ en: "Mathematics" });
+    // No degrada en silencio: la forma v1 queda declarada como warning.
+    expect(r.unexpectedShape).toEqual(
+      expect.arrayContaining(["experience.role: string (shape v1) → langMap {en}", "education.degree: string (shape v1) → langMap {en}"])
+    );
+    expect(driftReport(p).missingEs.some((x) => x.includes("role"))).toBe(true);
+  });
+
+  it("dual-shape v1: highlights string → bullets por '. ' (preserva el '·' interno)", () => {
+    const r = emptyReport();
+    const p = projectProfile(
+      {
+        identity: { name: "A B" },
+        experience: [
+          {
+            role: { en: "R" },
+            org: "O",
+            start: "2020-01-01",
+            highlights: { en: "Alpha · beta. Gamma. Delta with 1.000 pax.", es: "Alfa · beta." }
+          }
+        ]
+      },
+      sourceOf(),
+      r
+    );
+    expect(p.experience[0].highlights?.en).toEqual(["Alpha · beta", "Gamma", "Delta with 1.000 pax"]);
+    expect(p.experience[0].highlights?.es).toEqual(["Alfa · beta"]);
+    expect(r.unexpectedShape).toEqual(
+      expect.arrayContaining(["experience.highlights: string (shape v1) → array de bullets"])
+    );
+  });
+
+  it("dual-shape v1.1: arrays pasan directo sin warning de forma", () => {
+    const r = emptyReport();
+    const p = projectProfile(
+      {
+        identity: { name: "A B" },
+        experience: [
+          {
+            role: { en: "R", es: "Rol" },
+            org: "O",
+            start: "2020-01-01",
+            highlights: { en: ["One", "Two"] }
+          }
+        ]
+      },
+      sourceOf(),
+      r
+    );
+    expect(p.experience[0].highlights?.en).toEqual(["One", "Two"]);
+    expect(r.unexpectedShape).toEqual([]);
   });
 
   it("education/languages: roots normalizados pasan directo", () => {

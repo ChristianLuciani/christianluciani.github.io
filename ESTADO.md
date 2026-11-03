@@ -1,7 +1,7 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-08-10 (audio pulido: icono plano, sin salto inicial, 0.7s de negro en el intro)
+> Última actualización: 2026-11-03 (sync de perfil: `pasco export profile`, `CvProfile` y reconciliación del pase freso)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
@@ -15,12 +15,13 @@ https://christianluciani.github.io/  (raíz · base "/")
   Sin parseo de YAML ni validación Ajv local; error explícito con el comando de instalación
   si el engine falta o es viejo.
 - Header del snapshot: `profile-data @ <sha>` (el pinPattern del gate de `profile-data`),
-  `engine @ 0.3.7 · schema v1.15` y `generatedAt` (`null` salvo `--now`). Contrato documentado
+  `engine @ 0.3.7 · schema v1.15` (label vigente al 2026-11-03, derivada de `pasco doctor`)
+  y `generatedAt` (`null` salvo `--now`). Contrato documentado
   en `docs/SPEC.md` §5.1/§5.2.
 - Proyección pública: `credentials`/`artifacts` filtrados a `visibility: public` (ausente =
-  público) y referencias a registros privados descartadas; regresar el snapshot no introduce
+  público) y referencias a registros privados descartadas; regenerar el snapshot no introduce
   datos privados al repo público.
-- `src/data/profile.generated.ts` regenerado byte a byte (paridad verde, 29 tests del módulo).
+- `src/data/profile.generated.ts` regenerado byte a byte (paridad verde, 36 tests del módulo).
 
 ---
 

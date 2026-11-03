@@ -154,8 +154,9 @@ sync-profile [--now <iso8601>] [--report]
      `visibility: public` (ausente = público, §18.5) y se descartan las referencias
      (projects[].links / evidence[].source) a locators o verifyUrls no públicos.
   5. emit  src/data/profile.generated.ts con header AUTO-GENERATED + metadata:
-     `profile-data @ <sha>` (pinPattern del gate), `engine @ <version> · schema v1.15`
-     y `generatedAt` (null salvo --now) — GEO/auditabilidad.
+     `profile-data @ <sha>` (pinPattern del gate), `engine @ <version> · schema v<label>`
+     (label = `schema.version` de `pasco doctor`; vigente al 2026-11-03: v1.15) y
+     `generatedAt` (null salvo --now) — GEO/auditabilidad.
   6. --report: lista hechos sin traducción ES, urls fuera de identity.links, etc.
 ```
 
