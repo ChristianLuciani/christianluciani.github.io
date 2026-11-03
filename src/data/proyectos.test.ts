@@ -27,7 +27,7 @@ describe("PROYECTOS — orden de tarjetas por recencia", () => {
       "nelson-companion",
       "estelectica",
       "zentropy",
-      "physics-lab-book",
+      "physics-lab-guides",
       "noos"
     ]);
     const conFecha = enDesarrollo.filter((p) => p.recencia);
