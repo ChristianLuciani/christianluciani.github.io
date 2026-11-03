@@ -15,6 +15,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { PRINT_CV } from "../content/cv/print";
+import { orgEs } from "../content/cv/org";
 import { PROFILE } from "../data/profile.generated";
 import type { CvProfile } from "../data/profile.types";
 import { assembleHtml } from "./index";
@@ -145,6 +146,29 @@ describe("print-CV — footer de procedencia (solo print)", () => {
     expect(footer).toBeGreaterThan(ASSEMBLED.indexOf('id="print-cv"'));
     expect(footer).toBeLessThan(ASSEMBLED.indexOf('<header class="hud">'));
     expect(ASSEMBLED).toContain("#print-cv { display:none; }");
+  });
+});
+
+describe("print-CV — F2: Trayectoria y org localizado", () => {
+  it("titula las 23 filas «Trayectoria» (EN «Trajectory»), no «Experiencia profesional»", () => {
+    expect(PRINT_CV.sections.experience.es).toBe("Trayectoria");
+    expect(PRINT_CV.sections.experience.en).toBe("Trajectory");
+    expect(HTML).toContain("<h2>Trayectoria</h2>");
+    expect(HTML).not.toContain("Experiencia profesional");
+    expect(HTML).toContain("Empleo, formación y talleres");
+  });
+
+  it("localiza el org por token: país y glosa en ES, nombres propios intactos", () => {
+    expect(HTML).toContain("Independiente — Panamá / Ecuador");
+    expect(HTML).not.toContain("Independent — Panama / Ecuador");
+    expect(HTML).toContain("CERN — San Miguel Regla, México (beca)");
+    expect(HTML).toContain("Universidad San Francisco de Quito (USFQ) — Quito, Ecuador");
+  });
+
+  it("no toca un org cuyo «Mexico» no es el país («New Mexico State University»)", () => {
+    expect(orgEs("New Mexico State University")).toBe("New Mexico State University");
+    expect(orgEs("Fluge-Panamá")).toBe("Fluge-Panamá");
+    expect(orgEs("Panamá")).toBe("Panamá");
   });
 });
 

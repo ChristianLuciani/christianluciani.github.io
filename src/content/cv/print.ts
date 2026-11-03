@@ -9,8 +9,8 @@
  * sería un bug de arquitectura (SPEC §3), no una tarea de curación.
  *
  * IDIOMA: el print queda fuera del toggle ES/EN (`src/cv/i18n.ts` salta
- * `#print-cv`), así que hoy renderiza ES. `profile` lleva EN para cuando el
- * print tenga su propia versión bilingüe.
+ * `#print-cv`), así que hoy renderiza ES. Los campos `LangText` llevan EN para
+ * cuando el print tenga su propia versión bilingüe.
  */
 import type { LangText } from "../../data/profile.types.ts";
 
@@ -19,7 +19,15 @@ export interface PrintCvCuration {
   profile: LangText;
   sections: {
     profile: string;
-    experience: string;
+    /**
+     * «Trayectoria» / «Trajectory»: `experience[]` mezcla empleo y eventos
+     * formativos (el SSOT no los distingue con un campo), así que rotular las
+     * 23 filas «Experiencia profesional» mentiría sobre el inicio del empleo.
+     * Mismo criterio que la sala de la página (#118).
+     */
+    experience: LangText;
+    /** Aclara qué contiene la Trayectoria (sin conteos ni fechas: hechos del SSOT). */
+    experienceNote: LangText;
     education: string;
     publications: string;
     skills: string;
@@ -49,7 +57,11 @@ export const PRINT_CV: PrintCvCuration = {
   },
   sections: {
     profile: "Perfil",
-    experience: "Experiencia profesional",
+    experience: { es: "Trayectoria", en: "Trajectory" },
+    experienceNote: {
+      es: "Empleo, formación y talleres",
+      en: "Employment, education and workshops"
+    },
     education: "Formación",
     publications: "Publicaciones seleccionadas",
     skills: "Competencias"

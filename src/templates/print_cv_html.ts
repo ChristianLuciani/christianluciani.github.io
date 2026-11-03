@@ -17,6 +17,7 @@ import type {
   PublicationItem
 } from "../data/profile.types.ts";
 import { PRINT_CV } from "../content/cv/print.ts";
+import { orgEs } from "../content/cv/org.ts";
 
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
@@ -89,13 +90,23 @@ function highlightsFor(item: ExperienceItem): string[] {
   return item.highlights?.es?.length ? item.highlights.es : (item.highlights?.en ?? []);
 }
 
+/** Primer año de TODO `experience[]` (empleo + formación): se deriva, no se escribe. */
+function trajectoryStart(profile: CvProfile): string {
+  return (
+    profile.experience
+      .map((item) => year(item.start))
+      .filter((y) => /^\d{4}$/.test(y))
+      .sort()[0] ?? ""
+  );
+}
+
 function experienceHtml(item: ExperienceItem): string {
   const bullets = highlightsFor(item)
     .map((highlight) => `        <li>${esc(highlight)}</li>`)
     .join("\n");
   const list = bullets ? `\n      <ul>\n${bullets}\n      </ul>` : "";
   return `    <div class="p-entry p-exp">
-      <h3>${esc(esText(item.role))} — ${esc(item.org)}</h3>
+      <h3>${esc(esText(item.role))} — ${esc(orgEs(item.org))}</h3>
       <div class="p-meta">${period(item.start, item.end)}</div>${list}
     </div>`;
 }
@@ -142,6 +153,7 @@ export function printCvHtml(profile: CvProfile): string {
   const site = displayUrl(websiteLink(profile));
   const contact = contactHtml(profile);
   const experience = sortByRecency(profile.experience).map(experienceHtml).join("\n");
+  const trajectoryNote = `${esText(PRINT_CV.sections.experienceNote)} · ${trajectoryStart(profile)} – ${PRINT_CV.labels.present}`;
   const education = sortByRecency(profile.education).map(educationHtml).join("\n");
   const publications = profile.publications.map(publicationHtml).join("\n");
   const footerDate = profile.source.commitDate ?? PRINT_CV.labels.footerNoDate;
@@ -178,7 +190,8 @@ export function printCvHtml(profile: CvProfile): string {
   </div>
 
   <div class="p-section">
-    <h2>${PRINT_CV.sections.experience}</h2>
+    <h2>${esc(esText(PRINT_CV.sections.experience))}</h2>
+    <div class="p-meta">${esc(trajectoryNote)}</div>
 ${experience}
   </div>
 
