@@ -4,6 +4,14 @@
 **Fecha:** 2026-10-25 · **Autor:** sesión `dsh/sprint/57`
 **Alcance declarado:** `Cubre: servir los assets que el HTML/TS publicados referencian (favicons, OG, thumbs de papers) desde una CDN versionada · No cubre: hosting del sitio (HTML/JS/CSS y bundles), audio de salas (se queda en Pages), iconos y QR (tamaño irrelevante), DNS, analítica, los PNG print que el sitio no sirve, ni el hotlink externo, resuelto en #84 con copia propia · as_of: 2026-10-27`
 
+> **Actualización 2026-11-03 — favicon teal (16 sólo teal).** El sitio declara
+> el **tile teal** del brand kit (`favicon-aurea-teal.svg` + `-teal-32.png` +
+> `-teal-16.png`) y deja de declarar el transparente; el pin subió a
+> `cluciani-brand-kit@v1.1.0` (`brand-kit.lock.json`, 66 assets) y
+> `vars.BRAND_KIT_CDN_BASE` debe apuntar al mismo tag. La copia publicada en
+> `/assets/brand/` pasa de 3 a 4 favicons y `data-local` de 7 a 8. Medido a
+> 2026-11-03.
+
 > **Actualización 2026-10-27 — marca separada del runtime.** Los 3 favicons ya
 > no se resuelven contra el repo del sitio: se sirven desde
 > `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (mapa

@@ -34,8 +34,9 @@ export function headHtml(): string {
 <meta name="twitter:title" content="Christian Luciani — Investigador independiente">
 <meta name="twitter:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Física, inteligencia sintética y tecnología educativa.">
 <meta name="twitter:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
-<link rel="icon" type="image/svg+xml" ${assetAttrsFor("href", "/assets/brand/favicon-aurea.svg")}>
-<link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-32.png")}>
+<link rel="icon" type="image/svg+xml" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal.svg")}>
+<link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-32.png")}>
+<link rel="icon" type="image/png" sizes="16x16" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-16.png")}>
 <link rel="apple-touch-icon" sizes="180x180" ${assetAttrsFor("href", "/assets/brand/apple-touch-icon-aurea.png")}>
 <script type="application/ld+json">
 {

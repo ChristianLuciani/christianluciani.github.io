@@ -1,5 +1,10 @@
 # Plan — Migración de assets a CDN (agnóstica)
 
+> **Actualización 2026-11-03 — favicon teal.** El sitio sirve el tile teal
+> (`favicon-aurea-teal{,-32,-16}`) desde `cluciani-brand-kit@v1.1.0`; el
+> transparente queda en el espejo para superficies controladas. Cuatro
+> favicons en `/assets/brand/`, `data-local` 8 en modo CDN.
+
 > **Actualización 2026-10-27 — marca separada.** Los 3 favicons ya se resuelven
 > desde `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (deploy:
 > `vars.BRAND_KIT_CDN_BASE`); el OG y las 4 thumbs siguen en este repo. El

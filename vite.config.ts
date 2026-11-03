@@ -3,13 +3,17 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 
-/* Los 3 favicons son la copia vendored del brand kit canónico
- * (cluciani-brand-kit@tag, pinneada en brand-kit.lock.json). Vite no publica
- * assets absolutos de la raíz (sólo public/), así que este plugin los copia a
- * dist/assets/brand/ en cada build; el espejo se verifica con brand:verify. */
+/* Los 4 favicons del sitio son la copia vendored del brand kit canónico
+ * (cluciani-brand-kit@tag, pinneada en brand-kit.lock.json). El icono es el
+ * tile teal —único que se lee a 16 px— en SVG + 32 + 16; el transparente
+ * (`favicon-aurea.svg`/`-32.png`) queda para superficies controladas y no se
+ * publica como icono del sitio. Vite no publica assets absolutos de la raíz
+ * (sólo public/), así que este plugin los copia a dist/assets/brand/ en cada
+ * build; el espejo se verifica con brand:verify. */
 const FAVICON_FILES = [
-  "favicon-aurea.svg",
-  "favicon-aurea-32.png",
+  "favicon-aurea-teal.svg",
+  "favicon-aurea-teal-32.png",
+  "favicon-aurea-teal-16.png",
   "apple-touch-icon-aurea.png",
 ];
 

@@ -14,7 +14,7 @@
 > wordmark sigue siendo «Christian Luciani».
 >
 > **Hogar canónico del mark estático:** `ChristianLuciani/cluciani-brand-kit`
-> (tag `v1.0.1`, commit `5a536e0`). Este repo es el **consumidor runtime**;
+> (tag `v1.1.0`, commit `1234c67`). Este repo es el **consumidor runtime**;
 > `assets/brand/logo/` es un espejo vendored pinneado en `brand-kit.lock.json`
 > y verificado con `npm run brand:verify`. No se edita a mano.
 > La **animación** y su geometría runtime viven acá; el brand kit sincroniza
@@ -249,7 +249,13 @@ light, además, se omite `logo-background` y los halos de la constelación
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
 | **settled** | el mark completo (espiral + C + supernova + cielo) SIN las estrellas de vértices — el estado final de la animación | contextos medianos |
-| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox | favicon 16/32, contextos <24px |
+| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox; el icono llena el tile (~91%) y la barra se engrosa ×4 | favicon 16/32, contextos <24px |
+
+Variantes del favicon (política del brand kit, `docs/logo.md` §3.2 — canónica
+allá): **`-teal`** (tile teal + C night, 9.7:1) es la **única que se publica a
+16 px** y la que usa el sitio; **`-teal-gold`** (tile + la C con el acabado del
+mark) sólo 32/SVG; la **transparente** queda en 32/SVG para night, negro,
+transparente o blanco controlado.
 
 ## 7. Uso correcto
 
@@ -314,13 +320,19 @@ assets/brand/logo/
   logo-{aurea|base}-print-{a4|a3}.png             # 300dpi transparente
   logo-{aurea|base}-print-{a4|a3}-dark.png        # 300dpi night
   logo-{aurea|base}-print-{a4|a3}-light.png       # 300dpi blanco
-  favicon-{aurea|base}-{16|32}.png
+  favicon-{aurea|base}.svg            # transparente, 32/SVG (superficies controladas)
+  favicon-{aurea|base}-32.png
+  favicon-{aurea|base}-teal.svg       # tile teal: el icono del sitio, 16/32/SVG
+  favicon-{aurea|base}-teal-16.png
+  favicon-{aurea|base}-teal-32.png
+  favicon-{aurea|base}-teal-gold.svg  # tile teal + acabado del mark, 32/SVG
+  favicon-{aurea|base}-teal-gold-32.png
   apple-touch-icon-{aurea|base}.png   # 180, fondo night
   og-image-{aurea|base}.png           # 1200×630 dark + nombre
 ```
 
 El inventario y la regeneración canónicos viven en `cluciani-brand-kit`
-(tag `v1.0.1`). En este repo `assets/brand/logo/` es un espejo vendored: se
+(tag `v1.1.0`). En este repo `assets/brand/logo/` es un espejo vendored: se
 verifica con `npm run brand:verify`; no se regenera acá. El script local
 `tools/logo/generate-logo.mjs` queda deprecado como referencia/sync.
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — salida **0** limpio
