@@ -8,6 +8,22 @@ https://christianluciani.github.io/  (raíz · base "/")
 
 ---
 
+## ✅ Sync de perfil — `pasco export profile` (rama `dsh/sprint/107`, #107)
+
+- `tools/sync-profile.ts` dejó de reimplementar el motor: consume `pasco export profile --json`
+  (engine >= 0.3.7) y proyecta `LoadedProfile → CvProfile` (`src/data/profile.types.ts`).
+  Sin parseo de YAML ni validación Ajv local; error explícito con el comando de instalación
+  si el engine falta o es viejo.
+- Header del snapshot: `profile-data @ <sha>` (el pinPattern del gate de `profile-data`),
+  `engine @ 0.3.7 · schema v1.15` y `generatedAt` (`null` salvo `--now`). Contrato documentado
+  en `docs/SPEC.md` §5.1/§5.2.
+- Proyección pública: `credentials`/`artifacts` filtrados a `visibility: public` (ausente =
+  público) y referencias a registros privados descartadas; regresar el snapshot no introduce
+  datos privados al repo público.
+- `src/data/profile.generated.ts` regenerado byte a byte (paridad verde, 29 tests del módulo).
+
+---
+
 ## ✅ Fix de sesión — audio pulido (rama `aionui/pi/audio-pulido`)
 
 - **Botón plano tipo silueta**: el emoji 🔊/🔇 se reemplazó por dos SVG inline (altavoz + ondas /

@@ -141,18 +141,26 @@ arquitectura (duplicación), no una tarea.
 ### 5.1 `tools/sync-profile.ts` (pipeline de dependencia)
 
 ```
-sync-profile [--path <workspace>] [--out <file>] [--report]
-  1. read  workspace (por defecto: $PROFILE_DATA_PATH del entorno; .env / .pacrc)
-  2. merge content/*.yaml → un solo Profile
-  3. validate contra schema/profile.schema.json (JSON Schema — D3 de profile-as-code;
-     violación de schema = FAIL; drift/geo = warn en --report)
-  4. normalize → CV data model (sección 5.2)
-  5. emit  src/data/profile.generated.ts con header AUTO-GENERATED + metadata de
-     procedencia (repo, commit, fecha) — GEO/auditabilidad
+sync-profile [--now <iso8601>] [--report]
+  1. workspace: $PROFILE_DATA_PATH del entorno (o .env)
+  2. engine (>= 0.3.7): `pasco export profile --json --workspace <ws>` — la ÚNICA
+     fuente de datos. El script no parsea YAML ni valida con Ajv: consume el
+     `LoadedProfile` compilado por el motor (profile-as-code SPEC §7.5, #348).
+     Si pasco falta o es viejo, el error imprime el comando de instalación exacto.
+  3. `pasco doctor --json` aporta la etiqueta completa del contrato (`schema.version`);
+     el export 0.3.7 sólo trae el major.
+  4. proyección explícita LoadedProfile → CvProfile (sección 5.2; NO es un dump):
+     sólo los roots/fields que el CV usa. `credentials[]`/`artifacts[]` se filtran a
+     `visibility: public` (ausente = público, §18.5) y se descartan las referencias
+     (projects[].links / evidence[].source) a locators o verifyUrls no públicos.
+  5. emit  src/data/profile.generated.ts con header AUTO-GENERATED + metadata:
+     `profile-data @ <sha>` (pinPattern del gate), `engine @ <version> · schema v1.15`
+     y `generatedAt` (null salvo --now) — GEO/auditabilidad.
   6. --report: lista hechos sin traducción ES, urls fuera de identity.links, etc.
 ```
 
 Puro, determinista, sin red: mismo input → mismo output byte a byte (komuno VI/X).
+El reloj no entra: `source.generatedAt` es `null` salvo `--now` explícito.
 
 ### 5.2 Shape de `profile.generated.ts` (normalizado, NO espejo del schema)
 
@@ -169,9 +177,14 @@ export const PROFILE = {
   publications: Publication[],// con url (v1.1); DOI/ORCID resolubles (ancla GEO)
   skills: Skill[],            // + languages: [{ code, level }] (v1.1)
   keywords: { seo, geo },
-  source: { repo, commit, syncedAt }   // procedencia (GEO + auditoría)
+  source: { repo, commit, generatedAt }   // procedencia (GEO + auditoría); generatedAt null por defecto
 } as const;
 ```
+
+Tipos en `src/data/profile.types.ts` (`CvProfile`). El archivo es una **proyección, no el
+`LoadedProfile`**: quedan afuera `bios`, `faq`, `flavor`, `deployments`, `checks`,
+`socialHandles`, `press`, `releases`, `active`, `email`, `handle`, `timezone`,
+`nationality`, `authors`, `kind`, `artifactRefs` y los ids de fila que el CV no usa.
 
 ### 5.3 Capa de curación (`src/content/cv/`) — el único otro lugar editable por humano
 
