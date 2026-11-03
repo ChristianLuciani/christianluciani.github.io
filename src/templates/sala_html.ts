@@ -210,7 +210,18 @@ ${ROOM_TAIL}`;
  * Tarjetas de una sala: la envoltura (scroll/delay/última) la añade el renderer,
  * el copy viene de `src/data/proyectos.ts` (byte-idéntico: las claves del i18n
  * son el texto ES exacto) y el cierre de graduación solo existe en El Bastidor.
+ *
+ * Si la ficha tiene un artefacto, TODA la tarjeta abre el primero (el repo):
+ * un hit transparente cubre la ficha y los enlaces de la nota quedan por encima.
+ * Las fichas sin artefacto no fingen un click que no existe.
  */
+export function primerArtefacto(html: string | undefined): { href: string; blank: boolean } | null {
+  const first = html?.match(/<a\b([^>]*)>/i);
+  const href = first?.[1].match(/\bhref="([^"]+)"/i)?.[1];
+  if (!href) return null;
+  return { href, blank: /\btarget="_blank"/i.test(first![1]) };
+}
+
 function tarjetas(lista: readonly Proyecto[]): string {
   const cards = lista
     .map((p, i) => {
@@ -219,9 +230,15 @@ function tarjetas(lista: readonly Proyecto[]): string {
         ? `
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> ${p.falta}</div>`
         : "";
+      const artefacto = primerArtefacto(p.html);
+      const hit = artefacto
+        ? `
+      <a class="project-card-hit" href="${artefacto.href}"${artefacto.blank ? ' target="_blank" rel="noopener"' : ""}
+         aria-label="Abrir ${p.nombre}" data-aria-es="Abrir ${p.nombre}" data-aria-en="Open ${p.nombre}"></a>`
+        : "";
       return `
-    <div class="project-card" data-scroll="from-left"${delay} data-recencia="${p.recencia ?? ""}">
-${p.html ?? ""}${falta}
+    <div class="project-card${artefacto ? " project-card--linked" : ""}" data-scroll="from-left"${delay} data-recencia="${p.recencia ?? ""}">
+${hit}${p.html ?? ""}${falta}
     </div>
 `;
     })
