@@ -4,7 +4,7 @@ import { describe, expect, it } from "vitest";
 import { PROFILE } from "../../data/profile.generated";
 import type { CvProfile } from "../../data/profile.types";
 import { profileI18nPairs } from "./i18n";
-import { MARCO, orgEs } from "./museo";
+import { MARCO } from "./museo";
 
 const profile = PROFILE as unknown as CvProfile;
 const PAIRS = profileI18nPairs(profile);
@@ -67,22 +67,6 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
     }
     expect(MARCO.closingSomePublic(1).es).toContain("una ya enlaza material público");
     expect(MARCO.closingSomePublic(2).es).toContain("varias ya enlazan material público");
-  });
-
-  it("ORG_ES reemplaza tokens completos y no toca nombres propios (F8)", () => {
-    // Los 3 orgs del SSOT siguen presentándose bien en ES.
-    expect(orgEs("Independent — Panama / Ecuador")).toBe("Independiente — Panamá / Ecuador");
-    expect(orgEs("CERN — San Miguel Regla, Mexico (scholarship)")).toBe(
-      "CERN — San Miguel Regla, México (beca)"
-    );
-    // Nombres propios que CONTIENEN los tokens no se traducen.
-    for (const proper of [
-      "New Mexico State University",
-      "Independent University",
-      "Panama Canal Authority"
-    ]) {
-      expect(orgEs(proper)).toBe(proper);
-    }
   });
 
   it("el MAP no transporta el claim prohibido de claims.json (F7)", () => {

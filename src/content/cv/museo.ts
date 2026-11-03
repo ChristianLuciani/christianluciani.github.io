@@ -67,35 +67,12 @@ export const MARCO = {
 } as const;
 
 /**
- * Presentación ES del `org` del SSOT. El `org` es un string invariante (nunca
- * langMap, SPEC §11/§15.6): los nombres propios NO se traducen. Lo que sí se
- * presenta en ES es el rol del empleador ("Independent"), el país y la glosa
- * `(scholarship)`, que en el SSOT están en inglés por ser parte del nombre de
- * la fila.
- *
- * Se reemplaza por TOKEN COMPLETO (segmento separado por ` — `/` / `/`,/`(`),
- * nunca por substring: «New Mexico State University», «Independent University»
- * o «Panama Canal Authority» son nombres propios y quedan intactos.
+ * Presentación ES del `org`: la implementación vive en `org.ts` (única fuente,
+ * compartida con el print-CV). El `org` del SSOT es un string invariante; el
+ * toggle EN recupera el original vía los pares de `i18n.ts`. Se re-exporta acá
+ * para los consumidores de la página que ya importan desde `museo.ts`.
  */
-const ORG_ES: Readonly<Record<string, string>> = {
-  Independent: "Independiente",
-  Panama: "Panamá",
-  Mexico: "México",
-  scholarship: "beca"
-};
-
-/** Separadores que aíslan un token: guion, slash, coma y paréntesis. */
-const ORG_SEPARATOR = /(\s+[—–-]\s+|\s*\/\s*|\s*,\s*|\s*\(|\))/;
-
-/** `org` del SSOT → presentación ES; el EN vuelve al string original vía i18n. */
-export function orgEs(org: string): string {
-  return org
-    .split(ORG_SEPARATOR)
-    .map((part) =>
-      Object.prototype.hasOwnProperty.call(ORG_ES, part) ? ORG_ES[part] : part
-    )
-    .join("");
-}
+export { orgEs } from "./org.ts";
 
 /** Etiqueta de estado de una ficha, derivada de `published` + `status` del SSOT. */
 export function statusLabel(published: boolean, status: string | undefined): LangText {

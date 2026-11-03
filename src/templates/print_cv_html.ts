@@ -1,11 +1,163 @@
 /**
- * GENERADO por herramientas/extract-monolith (one-shot) desde index.html (Fase-1).
- * NO editar a mano el contenido extraído; editar la fuente original y regenerar,
- * o editar directamente si es un cambio intencional de contenido.
  * PRINT_CV: CV imprimible A4 (oculto en pantalla).
+ *
+ * Renderer determinista: recibe `PROFILE` (CvProfile) y no contiene hechos.
+ * Los textos de este museo viven en `src/content/cv/print.ts` (curación D2);
+ * fechas, cargos, organizaciones, publicaciones, conteos, idiomas y skills
+ * salen del SSOT. El layout/CSS es el histórico: sólo cambian los hechos.
+ *
+ * Solo print: el bloque entero está oculto en pantalla (`#print-cv { display:none }`)
+ * y el footer de procedencia vive dentro de él — nunca en la página.
  */
+import type {
+  CvProfile,
+  EducationItem,
+  ExperienceItem,
+  LangText,
+  PublicationItem
+} from "../data/profile.types.ts";
+import { PRINT_CV } from "../content/cv/print.ts";
+import { orgEs } from "../content/cv/org.ts";
 
-export function printCvHtml(): string {
+const ESCAPES: Record<string, string> = {
+  "&": "&amp;",
+  "<": "&lt;",
+  ">": "&gt;",
+  '"': "&quot;",
+  "'": "&#39;"
+};
+
+function esc(value: string): string {
+  return value.replace(/[&<>"']/g, (char) => ESCAPES[char] ?? char);
+}
+
+/** ES es el idioma del print; EN queda como fallback si faltara la traducción. */
+function esText(text: LangText | undefined): string {
+  return text?.es ?? text?.en ?? "";
+}
+
+function year(date: string): string {
+  return date.slice(0, 4);
+}
+
+/** Clave de recencia: `present` es el futuro y va primero; el resto compara ISO. */
+function recencyKey(item: { start: string; end?: string }): string {
+  const end = item.end ?? item.start;
+  return end === "present" ? "9999-12-31" : end;
+}
+
+/** end desc / start desc — el orden que pide el contrato del print. */
+function sortByRecency<T extends { start: string; end?: string }>(items: readonly T[]): T[] {
+  return [...items].sort(
+    (a, b) => recencyKey(b).localeCompare(recencyKey(a)) || b.start.localeCompare(a.start)
+  );
+}
+
+function period(start: string, end?: string): string {
+  if (!end) return year(start);
+  const from = year(start);
+  const to = end === "present" ? PRINT_CV.labels.present : year(end);
+  return from === to ? from : `${from} – ${to}`;
+}
+
+/** URL legible: sin protocolo ni slash final. */
+function displayUrl(url: string): string {
+  return url.replace(/^https?:\/\//, "").replace(/\/$/, "");
+}
+
+function levelLabel(level: string | undefined): string {
+  if (!level) return "";
+  return PRINT_CV.levelLabels[level] ?? level;
+}
+
+function languageName(code: string): string {
+  return PRINT_CV.languageNames[code] ?? code.toUpperCase();
+}
+
+function websiteLink(profile: CvProfile): string {
+  return profile.identity.links.find((link) => link.platform === "website")?.url ?? "";
+}
+
+function contactHtml(profile: CvProfile): string {
+  return PRINT_CV.contactPlatforms
+    .map((platform) => profile.identity.links.find((link) => link.platform === platform))
+    .filter((link) => link != null)
+    .map((link) => `<a href="${esc(link.url)}">${esc(displayUrl(link.url))}</a>`)
+    .join(" · ");
+}
+
+function highlightsFor(item: ExperienceItem): string[] {
+  return item.highlights?.es?.length ? item.highlights.es : (item.highlights?.en ?? []);
+}
+
+/** Primer año de TODO `experience[]` (empleo + formación): se deriva, no se escribe. */
+function trajectoryStart(profile: CvProfile): string {
+  return (
+    profile.experience
+      .map((item) => year(item.start))
+      .filter((y) => /^\d{4}$/.test(y))
+      .sort()[0] ?? ""
+  );
+}
+
+function experienceHtml(item: ExperienceItem): string {
+  const bullets = highlightsFor(item)
+    .map((highlight) => `        <li>${esc(highlight)}</li>`)
+    .join("\n");
+  const list = bullets ? `\n      <ul>\n${bullets}\n      </ul>` : "";
+  return `    <div class="p-entry p-exp">
+      <h3>${esc(esText(item.role))} — ${esc(orgEs(item.org))}</h3>
+      <div class="p-meta">${period(item.start, item.end)}</div>${list}
+    </div>`;
+}
+
+function educationHtml(item: EducationItem): string {
+  const meta = [
+    period(item.start, item.end),
+    esText(item.field),
+    esText(item.note)
+  ]
+    .filter((part) => part.length > 0)
+    .map((part) => esc(part))
+    .join(" · ");
+  return `    <div class="p-entry p-edu">
+      <h3>${esc(esText(item.degree))} — ${esc(item.institution)}</h3>
+      <div class="p-meta">${meta}</div>
+    </div>`;
+}
+
+function publicationHtml(item: PublicationItem): string {
+  const link = item.url
+    ? ` <a href="${esc(item.url)}">${esc(item.doi ? `doi.org/${item.doi}` : displayUrl(item.url))}</a>`
+    : "";
+  return `      <li class="p-pub"><strong>${item.year}</strong> — ${esc(item.title)}. <em>${esc(item.venue)}</em>.${link}</li>`;
+}
+
+function skillsHtml(profile: CvProfile): string {
+  const languages = profile.languages
+    .map((language) => `${esc(languageName(language.code))} (${esc(levelLabel(language.level))})`)
+    .join(" · ");
+  const skills = profile.skills
+    .map(
+      (skill) =>
+        `      <li class="p-skill"><strong>${esc(skill.name)}</strong> — ${esc(levelLabel(skill.level))}</li>`
+    )
+    .join("\n");
+  return [
+    `      <li class="p-lang"><strong>${PRINT_CV.labels.languages}:</strong> ${languages}</li>`,
+    skills
+  ].join("\n");
+}
+
+export function printCvHtml(profile: CvProfile): string {
+  const site = displayUrl(websiteLink(profile));
+  const contact = contactHtml(profile);
+  const experience = sortByRecency(profile.experience).map(experienceHtml).join("\n");
+  const trajectoryNote = `${esText(PRINT_CV.sections.experienceNote)} · ${trajectoryStart(profile)} – ${PRINT_CV.labels.present}`;
+  const education = sortByRecency(profile.education).map(educationHtml).join("\n");
+  const publications = profile.publications.map(publicationHtml).join("\n");
+  const footerDate = profile.source.commitDate ?? PRINT_CV.labels.footerNoDate;
+
   return `<!-- ── CV PLANO PARA IMPRESIÓN / PDF (oculto en pantalla, visible al imprimir) ── -->
 <div id="print-cv" aria-hidden="true">
   <style>
@@ -15,119 +167,54 @@ export function printCvHtml(): string {
     #print-cv .qr-wrap { text-align:center; }
     #print-cv .qr-wrap img { width:30mm; height:30mm; }
     #print-cv .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
+    /* Footer de procedencia: solo print (dentro del bloque oculto en pantalla) */
+    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; }
   </style>
   <div class="p-head">
     <div>
-      <h1>Christian Luciani</h1>
+      <h1>${esc(profile.identity.name)}</h1>
       <div class="p-meta">
-        Investigador independiente · Cuenca, Ecuador<br>
-        cluciani@gmail.com · WhatsApp +593 99 371 6335<br>
-        ORCID 0000-0002-6955-5384 · christianluciani.github.io · github.com/ChristianLuciani
+        ${esc(profile.identity.location ?? "")}<br>
+        ${contact}
       </div>
     </div>
     <div class="qr-wrap">
-      <img src="assets/qr-site.svg" alt="QR · Christian Luciani — christianluciani.github.io">
-      <div class="qr-note">christianluciani.github.io</div>
+      <img src="assets/qr-site.svg" alt="QR · ${esc(profile.identity.name)} — ${esc(site)}">
+      <div class="qr-note">${esc(site)}</div>
     </div>
   </div>
 
   <div class="p-section">
-    <h2>Perfil</h2>
-    <p>Físico (Universidad Central de Venezuela) con más de 20 años en la intersección entre investigación científica, tecnología educativa e inteligencia sintética.
-    Creador de Kontablo —ontología contable universal basada en grafos para la economía agéntica— y de
-    Drahma, sistema de tutores virtuales con inteligencia sintética y pedagogía socrática.</p>
+    <h2>${PRINT_CV.sections.profile}</h2>
+    <p>${esc(esText(PRINT_CV.profile))}</p>
   </div>
 
   <div class="p-section">
-    <h2>Experiencia profesional</h2>
-    <div class="p-entry">
-      <h3>Consultor estratégico de sistemas — Independiente (Panamá / Ecuador)</h3>
-      <div class="p-meta">2025 – presente</div>
-      <ul>
-        <li>Plataformas BI e infraestructura digital; Zoho ERP.</li>
-        <li>Sistema de auditoría y registro de efectivo para casino tipo C.</li>
-        <li>Arquitectura SaaS para gestión clínica (CLAPPS.AI).</li>
-      </ul>
-    </div>
-    <div class="p-entry">
-      <h3>Coordinador de Laboratorios de Física — USFQ (Quito, Ecuador)</h3>
-      <div class="p-meta">2019 – 2024</div>
-      <ul>
-        <li>800+ estudiantes anuales; 36 guías de laboratorio originales.</li>
-        <li>Técnico-operador de difractómetro de rayos X; 5 publicaciones co-autoradas.</li>
-        <li>Responsable de Seguridad Radiológica institucional.</li>
-      </ul>
-    </div>
-    <div class="p-entry">
-      <h3>Diseñador de sistemas / Luminotécnico — Grupo Angel / Fluge-Panamá</h3>
-      <div class="p-meta">2016 – 2018</div>
-      <ul>
-        <li>Sistema de registro de cuentas y bóveda para casinos; procedimientos de auditoría.</li>
-      </ul>
-    </div>
-    <div class="p-entry">
-      <h3>Logística BTL y relación con clientes — Magic Dreams Productions (Panamá)</h3>
-      <div class="p-meta">2010 – 2013</div>
-      <ul>
-        <li>Activaciones BTL en eventos masivos. Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, BAC Credomatic.</li>
-      </ul>
-    </div>
-    <div class="p-entry">
-      <h3>Fotografía · Edición · Docencia audiovisual — Venezuela</h3>
-      <div class="p-meta">2006 – 2010</div>
-      <ul>
-        <li><em>La Escalera de Patty</em> — prix du public, FECOVEN 2008; <em>9 Arepas</em> — selección ESPN 2008.</li>
-      </ul>
-    </div>
+    <h2>${esc(esText(PRINT_CV.sections.experience))}</h2>
+    <div class="p-meta">${esc(trajectoryNote)}</div>
+${experience}
   </div>
 
   <div class="p-section">
-    <h2>Formación</h2>
-    <div class="p-entry">
-      <h3>Licenciatura en Física — Universidad Central de Venezuela</h3>
-      <div class="p-meta">1997 – 2003 · Tesis: Modelos Cosmológicos N-Dimensionales</div>
-    </div>
-    <div class="p-entry">
-      <h3>Candidatura doctoral — Sistemas Complejos — Universidad Simón Bolívar</h3>
-      <div class="p-meta">2003 – 2006 · ABD</div>
-    </div>
-    <div class="p-entry">
-      <h3>Especialización en Audiovisuales — Escuela de Cine y TV, Caracas</h3>
-      <div class="p-meta">2006 – 2008 · Prix du Public FECOVEN 2008</div>
-    </div>
-    <div class="p-entry">
-      <h3>II Latin American School of High Energy Physics — CERN (beca)</h3>
-      <div class="p-meta">2003 · San Miguel Regla, México</div>
-    </div>
+    <h2>${PRINT_CV.sections.education}</h2>
+${education}
   </div>
 
   <div class="p-section">
-    <h2>Publicaciones seleccionadas</h2>
+    <h2>${PRINT_CV.sections.publications}</h2>
     <ul>
-      <li><strong>2026</strong> — Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy. Preprint, Zenodo &amp; SSRN. doi.org/10.5281/zenodo.20738795</li>
-      <li><strong>2025</strong> — Highly efficient caffeine-based PVA composite film for UV shielding. <em>Carbon Trends</em>. doi.org/10.1016/j.cartre.2025.100502</li>
-      <li><strong>2025</strong> — Tunable Dielectric Carbon Materials from Hydrothermally Nanostructured Organic Carbon Sources. <em>ChemPhysChem</em>. doi.org/10.1002/cphc.202400711</li>
-      <li><strong>2019–24</strong> — 36 guías de prácticas de laboratorio de física. USFQ (publicación institucional interna).</li>
-      <li><strong>2023</strong> — Optimization of microfibrillated cellulose isolation from cocoa pod husk. <em>Heliyon</em>. doi.org/10.1016/j.heliyon.2023.e17258</li>
-      <li><strong>2023</strong> — Hydrochars from Lignocellulosic Residues for Green Electronics, Environmental Remediation, Energy and Agricultural Applications. <em>ResearchGate</em> (preprint).</li>
-      <li><strong>2022</strong> — Optimization of Microcrystalline Cellulose Isolation from Cocoa Pod Husk. <em>SSRN</em>. doi.org/10.2139/ssrn.4307097</li>
-      <li><strong>2022</strong> — Ivory Nut (Phytelephas equatorialis) Residues: Chemical Composition… 2022 AIChE Annual Meeting (abstract).</li>
-      <li><strong>2006</strong> — Neural control on multiple time scales: insights from human stick balancing. <em>Condensed Matter Physics</em>. doi.org/10.5488/CMP.9.2.373</li>
-      <li><strong>2006</strong> — Balancing with Noise and Delay. <em>Progress of Theoretical Physics Supplement</em>. doi.org/10.1143/PTPS.161.314</li>
+${publications}
     </ul>
   </div>
 
   <div class="p-section">
-    <h2>Competencias</h2>
+    <h2>${PRINT_CV.sections.skills}</h2>
     <ul>
-      <li><strong>Idiomas:</strong> Español (nativo) · Inglés (intermedio) · Francés (B1).</li>
-      <li><strong>Ciencias:</strong> LaTeX · Difractometría de rayos X · Seguridad radiológica · Sistemas complejos.</li>
-      <li><strong>Programación:</strong> Python · TypeScript/JavaScript · Java · C · Agentes de inteligencia sintética.</li>
-      <li><strong>Plataformas:</strong> Zoho ERP · Supabase · Chatwoot · Linux/macOS/Windows.</li>
+${skillsHtml(profile)}
     </ul>
   </div>
+
+  <div class="p-footer">${PRINT_CV.labels.footer} ${esc(profile.source.commit)} · ${esc(footerDate)}</div>
 </div>
-
-<!-- ── BOTÓN IDIOMA ES/EN ── -->
 `;
 }

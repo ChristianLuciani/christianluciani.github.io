@@ -289,7 +289,7 @@ function splitName(name: string): { givenName: string; familyName: string } {
  */
 export function projectProfile(
   raw: Record<string, unknown>,
-  source: CvSource = { repo: "", commit: "", generatedAt: null },
+  source: CvSource = { repo: "", commit: "", commitDate: null, generatedAt: null },
   report: SyncReport = emptyReport()
 ): CvProfile {
   const identity = asRecord(raw.identity);
@@ -572,12 +572,24 @@ export const PROFILE = ${JSON.stringify(profile, null, 2)} as const;
 `;
 }
 
-function gitInfo(workspace: string): { repo: string; commit: string } {
+function gitInfo(workspace: string): { repo: string; commit: string; commitDate: string | null } {
   try {
     const commit = execFileSync("git", ["-C", workspace, "rev-parse", "HEAD"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"]
     }).trim();
+    // Fecha del commit del SSOT: determinista y siempre presente (a diferencia de
+    // `generatedAt`, que es null salvo `--now`). La consume el footer del print (#108).
+    let commitDate: string | null = null;
+    try {
+      commitDate =
+        execFileSync("git", ["-C", workspace, "show", "-s", "--format=%cs", "HEAD"], {
+          encoding: "utf8",
+          stdio: ["ignore", "pipe", "ignore"]
+        }).trim() || null;
+    } catch {
+      /* sin fecha — el footer declara la ausencia */
+    }
     let repo = "";
     try {
       repo = execFileSync("git", ["-C", workspace, "remote", "get-url", "origin"], {
@@ -587,9 +599,9 @@ function gitInfo(workspace: string): { repo: string; commit: string } {
     } catch {
       /* sin remote — ok */
     }
-    return { repo, commit };
+    return { repo, commit, commitDate };
   } catch {
-    return { repo: "", commit: "" };
+    return { repo: "", commit: "", commitDate: null };
   }
 }
 
@@ -605,6 +617,7 @@ export function generateAll(opts?: { workspace?: string; now?: string }) {
   const source: CvSource = {
     repo: git.repo,
     commit: compiled.commit || git.commit,
+    commitDate: git.commitDate,
     generatedAt: compiled.generatedAt
   };
   const report = emptyReport();
