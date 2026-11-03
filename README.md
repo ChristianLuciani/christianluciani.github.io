@@ -40,10 +40,17 @@ Sin frameworks ni dependencias de UI. La web publicada es un único `index.html`
 Los hechos del CV (trayectoria, proyectos, publicaciones, skills) viven en el repo
 privado `profile-data`; acá se commitea `src/data/profile.generated.ts`, una
 proyección pública que se regenera con `npm run sync:profile` (`PROFILE_DATA_PATH`).
-La frescura del pin no alcanza: `npm run sync:check` verifica que el archivo
-commiteado sea el render exacto del pipeline, y CI corre además un fixture
-anonimizado (determinismo + filtro de privados) y el guard de consumidores — un
-snapshot al día con cero consumidores ya no pasa verde en silencio (#99, #110).
+La frescura del pin no alcanza: `npm run sync:check` corre dos capas en CI —
+re-renderiza el `PROFILE` importado del propio archivo commiteado y exige
+byte-identidad (detecta cuerpo/header inconsistentes y drift del renderer, **no**
+autoría: un edit manual coherente es su propio render), y proyecta un fixture
+anonimizado (determinismo + filtro de `private`/`unlisted`, también en
+referencias). Esas capas **no invocan el pipeline** ni prueban paridad contra
+`profile-data`. Con `--workspace` (o `PROFILE_DATA_PATH`) se agrega la capa de
+paridad real: `pasco export` contra el SSOT y comparación byte a byte; el cierre
+declara `2/3` capas verificadas en CI y `3/3` con workspace. Además corre el guard
+de consumidores — un snapshot al día con cero consumidores ya no pasa verde en
+silencio (#99, #110).
 
 ## Despliegue
 

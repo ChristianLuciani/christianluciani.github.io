@@ -15,7 +15,8 @@
       "handle": "@ada",
       "timezone": "UTC",
       "links": [
-        { "platform": "github", "label": "GitHub", "url": "https://example.test/ada" }
+        { "platform": "github", "label": "GitHub", "url": "https://example.test/ada" },
+        { "platform": "opaque", "label": "Opaque private ref", "url": "https://example.test/anon/artifact-42" }
       ]
     },
     "positioning": {
@@ -67,11 +68,16 @@
         "status": "active",
         "description": { "en": "A published project.", "es": "Un proyecto publicado." },
         "artifactRefs": ["art-public"],
-        "links": ["https://example.test/public/repo", "https://example.test/private/credential"],
+        "links": [
+          "https://example.test/public/repo",
+          "https://example.test/private/credential",
+          "https://example.test/anon/credential-42"
+        ],
         "keywords": ["fixture"],
         "evidence": [
           { "claim": { "en": "It exists", "es": "Existe" }, "source": "https://example.test/public/evidence", "verified": "2026-09-01" },
-          { "claim": { "en": "Private proof", "es": "Prueba privada" }, "source": "https://example.test/private/artifact" }
+          { "claim": { "en": "Private proof", "es": "Prueba privada" }, "source": "https://example.test/private/artifact" },
+          { "claim": { "en": "Opaque proof", "es": "Prueba opaca" }, "source": "https://example.test/anon/artifact-42" }
         ]
       },
       {
@@ -115,6 +121,14 @@
         "issuer": "Example Institute",
         "verifyUrl": "https://example.test/private/credential",
         "visibility": "private"
+      },
+      {
+        "id": "unlisted-credential",
+        "kind": "certificate",
+        "title": "Unlisted Fixture Credential",
+        "issuer": "Example Institute",
+        "verifyUrl": "https://example.test/anon/credential-42",
+        "visibility": "unlisted"
       }
     ],
     "artifacts": [
@@ -131,6 +145,13 @@
         "title": "Private Fixture Artifact",
         "locator": { "url": "https://example.test/private/artifact" },
         "visibility": "private"
+      },
+      {
+        "id": "unlisted-artifact",
+        "kind": "repository",
+        "title": "Unlisted Fixture Artifact",
+        "locator": { "url": "https://example.test/anon/artifact-42" },
+        "visibility": "unlisted"
       }
     ],
     "keywords": {

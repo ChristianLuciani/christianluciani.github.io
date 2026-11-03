@@ -303,9 +303,10 @@ export function projectProfile(
   const isPublic = (entry: Record<string, unknown>): boolean =>
     (entry.visibility ?? "public") === "public";
 
-  /** Targets que sólo pueden vivir en el workspace privado. Cualquier referencia
-   *  desde otras raíces (`projects[].links`, `projects[].evidence[].source`) se
-   *  descarta: la privacidad de la entrada no equivale a la del hecho que la cita. */
+  /** Targets que sólo pueden vivir en el workspace privado (`private` o
+   *  `unlisted`, ver `isPublic`). Se descartan de TODA referencia emitida —
+   *  `identity.links`, `projects[].links` y `projects[].evidence[].source` —
+   *  porque la privacidad de la entrada no equivale a la del hecho que la cita. */
   const privateTargets = new Set<string>();
   for (const a of asArray(raw.artifacts)) {
     if (isPublic(a)) continue;
@@ -318,11 +319,13 @@ export function projectProfile(
     if (typeof c.verifyUrl === "string") privateTargets.add(c.verifyUrl);
   }
 
-  const links: Link[] = asArray(identity.links).map((l) => ({
-    platform: str(l.platform),
-    label: str(l.label),
-    url: str(l.url)
-  }));
+  const links: Link[] = asArray(identity.links)
+    .map((l) => ({
+      platform: str(l.platform),
+      label: str(l.label),
+      url: str(l.url)
+    }))
+    .filter((link) => !privateTargets.has(link.url));
 
   const positioning = asRecord(raw.positioning);
   const geo = asRecord(positioning.geo);

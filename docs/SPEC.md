@@ -151,8 +151,9 @@ sync-profile [--now <iso8601>] [--report]
      el export 0.3.7 sólo trae el major.
   4. proyección explícita LoadedProfile → CvProfile (sección 5.2; NO es un dump):
      sólo los roots/fields que el CV usa. `credentials[]`/`artifacts[]` se filtran a
-     `visibility: public` (ausente = público, §18.5) y se descartan las referencias
-     (projects[].links / evidence[].source) a locators o verifyUrls no públicos.
+     `visibility: public` (ausente = público; `private` y `unlisted` quedan fuera,
+     §18.5) y se descartan las referencias (`identity.links`, `projects[].links` /
+     `evidence[].source`) a locators o verifyUrls no públicos.
   5. emit  src/data/profile.generated.ts con header AUTO-GENERATED + metadata:
      `profile-data @ <sha>` (pinPattern del gate), `engine @ <version> · schema v<label>`
      (label = `schema.version` de `pasco doctor`; vigente al 2026-11-03: v1.15) y
@@ -171,18 +172,29 @@ consumidores** (#99). `sync:check` agrega el gate de render:
 sync-check [--workspace <path>] [--generated <path>]
   1. self:      header coherente con `PROFILE.source` y el archivo es
                 byte-idéntico a `renderSource(PROFILE, engine, schema)`.
+                Re-renderiza el `PROFILE` importado del propio archivo: prueba
+                consistencia interna (cuerpo ↔ header ↔ renderer), NO autoría —
+                un edit manual coherente es su propio render y pasa.
   2. fixture:   proyecta `src/data/fixtures/export-profile.json` —payload
                 anonimizado con la forma del engine— y exige determinismo y
-                filtro de credentials/artifacts privados (entradas Y referencias).
-  3. workspace: si hay `PROFILE_DATA_PATH` (o `--workspace`), corre el pipeline
-                real y compara byte a byte; exit 1 con archivo:línea exacto.
+                filtro de `private`/`unlisted` (entradas Y referencias desde
+                `identity.links`, `projects[].links` / `evidence[].source`).
+  3. workspace: si hay `PROFILE_DATA_PATH` (o `--workspace`), recién ahí corre
+                el pipeline real (`pasco export`) y compara byte a byte; exit 1
+                con archivo:línea exacto.
 ```
 
-CI corre las capas 1–2 (sin el repo privado) más el guard de consumidores
+Sin `--workspace` el pipeline **no se invoca**: la capa 1 compara el archivo
+consigo mismo y la capa 2 corre un fixture, así que ninguna prueba paridad de
+contenido contra el SSOT. El cierre cuenta sólo capas efectivamente verificadas
+y nombra las que quedaron fuera con su razón: en CI es `2/3 (self, fixture)` con
+`workspace` declarada no verificada; con `--workspace` es `3/3`. CI corre las
+capas 1–2 (sin el repo privado) más el guard de consumidores
 (`src/data/consumers.test.ts`): falla si ningún módulo no-test importa `PROFILE`
-o si una superficie ya migrada al SSOT (print-CV, El Friso/El Marco) deja de
-consumirlo. La capa 3 es local/agente y se declara como no verificada en CI:
-nunca finge paridad de contenido.
+(sin comentarios ni `import type`), si `templates/index.ts` deja de llamar
+`printCvHtml(PROFILE…)`, o si una superficie ya migrada al SSOT (El Friso/El
+Marco) deja de consumirlo. La capa 3 es local/agente: nunca finge paridad de
+contenido.
 
 ### 5.2 Shape de `profile.generated.ts` (normalizado, NO espejo del schema)
 

@@ -2,24 +2,30 @@
  * sync-check — gate de DRIFT del snapshot commiteado (issue #110).
  *
  * `sync:profile` verifica FRESCURA (el pin es ancestro de HEAD del SSOT); este
- * gate verifica RENDER: que `src/data/profile.generated.ts` sea exactamente lo
- * que el pipeline emite. Distinción que importa porque el gate de frescura
- * puede estar verde con CERO consumidores (bug #99): fresco no es lo mismo que
- * renderizado.
+ * gate verifica RENDER del snapshot commiteado. Distinción que importa porque el
+ * gate de frescura puede estar verde con CERO consumidores (bug #99): fresco no
+ * es lo mismo que renderizado.
  *
- * Tres capas, de menor a mayor alcance:
+ * Alcance real, capa por capa (no prometer de más):
  *
  *   1. self      (siempre): header coherente con `PROFILE.source` y el archivo
- *      byte-idéntico a `renderSource(PROFILE, engine, schema)`. Detecta edición
- *      a mano, header mentiroso y drift del renderer.
+ *      byte-idéntico a `renderSource(PROFILE, engine, schema)`. El `PROFILE` es
+ *      el importado del propio archivo: prueba consistencia interna
+ *      (cuerpo ↔ header ↔ renderer), no autoría. Un edit manual coherente es su
+ *      propio render y pasa; sólo muerde el edit inconsistente o el drift del
+ *      renderer.
  *   2. fixture   (sin workspace): proyecta `src/data/fixtures/export-profile.json`
  *      —payload anonimizado con forma del engine— y verifica determinismo y
- *      filtro de privados. Corre en CI, que NO tiene acceso a profile-data.
+ *      filtro de `private`/`unlisted`. Corre en CI, que NO tiene acceso a
+ *      profile-data.
  *   3. workspace (si hay `PROFILE_DATA_PATH` / `--workspace`): corre el pipeline
- *      real y compara byte a byte. Es la paridad de contenido contra el SSOT.
+ *      real (`pasco export`) y compara byte a byte. Es la ÚNICA capa que prueba
+ *      paridad de contenido contra el SSOT; sin ella el pipeline no se invoca.
  *
- * Exit 0 sólo si todas las capas aplicables pasan; cualquier drift sale 1 con
- * el archivo:línea exacto (expected/actual) — nunca un "algo cambió".
+ * La línea de cierre cuenta sólo capas verificadas y declara las que quedaron
+ * fuera (en CI: self + fixture = 2/3, workspace fuera con su razón). Exit 0 sólo
+ * si todas las capas aplicables pasan; cualquier drift sale 1 con el
+ * archivo:línea exacto (expected/actual) — nunca un "algo cambió".
  *
  * Uso:
  *   npm run sync:check
@@ -127,6 +133,17 @@ const FIXTURE_PRIVATE_MARKERS = [
   "https://example.test/private/credential"
 ];
 
+/** `unlisted` tampoco es render público (§18.5: sólo `public`, ausente = public).
+ *  Sin cobertura propia, una regresión a `visibility !== "private"` pasaría verde. */
+const FIXTURE_UNLISTED_MARKERS = [
+  "unlisted-artifact",
+  "https://example.test/anon/artifact-42",
+  "unlisted-credential",
+  "https://example.test/anon/credential-42"
+];
+
+const FIXTURE_HIDDEN_MARKERS = [...FIXTURE_PRIVATE_MARKERS, ...FIXTURE_UNLISTED_MARKERS];
+
 /** Proyecta el fixture con el MISMO código que el snapshot real. */
 export function renderFixture(raw: unknown): { source: string; profile: CvProfile } {
   const fixture = raw as FixtureEnvelope;
@@ -143,8 +160,10 @@ export function renderFixture(raw: unknown): { source: string; profile: CvProfil
 
 /**
  * Invariantes que CI SÍ puede probar sin el repo privado:
- * schema aceptado, determinismo byte a byte y filtro de credenciales/artifacts
- * privados (entradas Y referencias). Nunca publica los marcadores que vigila.
+ * schema aceptado, determinismo byte a byte y filtro de `private`/`unlisted`
+ * en credenciales/artifacts (entradas Y referencias, incluida `identity.links`
+ * y locators opacos que no llevan los marcadores canónicos). Nunca publica los
+ * marcadores que vigila.
  */
 export function checkFixture(raw: unknown): { problems: string[]; profile: CvProfile } {
   const problems: string[] = [];
@@ -158,22 +177,27 @@ export function checkFixture(raw: unknown): { problems: string[]; profile: CvPro
   }
 
   const { source, profile } = rendered;
-  for (const marker of FIXTURE_PRIVATE_MARKERS) {
-    if (source.includes(marker)) problems.push(`fuga: marcador privado del fixture en el snapshot (${marker})`);
+  for (const marker of FIXTURE_HIDDEN_MARKERS) {
+    if (source.includes(marker)) problems.push(`fuga: marcador no público del fixture en el snapshot (${marker})`);
   }
   if (profile.credentials.length !== 1) problems.push(`credentials: esperado 1 público, hay ${profile.credentials.length}`);
   if (profile.artifacts.length !== 1) problems.push(`artifacts: esperado 1 público, hay ${profile.artifacts.length}`);
   if (profile.experience.length !== 2) problems.push(`experience: esperado 2, hay ${profile.experience.length}`);
   if (profile.projects.length !== 2) problems.push(`projects: esperado 2, hay ${profile.projects.length}`);
+  for (const link of profile.identity.links) {
+    if (FIXTURE_HIDDEN_MARKERS.some((m) => link.url.includes(m))) {
+      problems.push(`fuga: identity.links referencia un locator no público (${link.url})`);
+    }
+  }
   for (const project of profile.projects) {
     for (const url of project.links) {
-      if (FIXTURE_PRIVATE_MARKERS.some((m) => url.includes(m))) {
-        problems.push(`fuga: projects[].links referencia un locator privado (${url})`);
+      if (FIXTURE_HIDDEN_MARKERS.some((m) => url.includes(m))) {
+        problems.push(`fuga: projects[].links referencia un locator no público (${url})`);
       }
     }
     for (const ev of project.evidence) {
-      if (FIXTURE_PRIVATE_MARKERS.some((m) => ev.source.includes(m))) {
-        problems.push(`fuga: evidence[].source referencia un locator privado (${ev.source})`);
+      if (FIXTURE_HIDDEN_MARKERS.some((m) => ev.source.includes(m))) {
+        problems.push(`fuga: evidence[].source referencia un locator no público (${ev.source})`);
       }
     }
   }
@@ -191,19 +215,58 @@ export interface CheckOptions {
   workspace?: string;
 }
 
+export type LayerName = "self" | "fixture" | "workspace";
+
+/** Estado de UNA capa. `verified` sólo es true si esa capa realmente corrió y
+ *  pasó: una capa ausente (p. ej. workspace sin `PROFILE_DATA_PATH`) se registra
+ *  `verified: false` con su razón, nunca como una nota de éxito más. */
+export interface CheckLayer {
+  name: LayerName;
+  verified: boolean;
+  note: string;
+  reason?: string;
+}
+
 export interface CheckResult {
   ok: boolean;
   failures: string[];
   notes: string[];
+  layers: CheckLayer[];
+}
+
+/**
+ * Línea de cierre del gate: cuenta SÓLO capas verificadas y nombra las que
+ * quedaron fuera con su razón. 2/3 en modo CI (self + fixture) y 3/3 con
+ * `--workspace`; nunca "3 capa(s)" cuando la paridad de contenido no corrió.
+ */
+export function summaryLine(layers: readonly CheckLayer[]): string {
+  const verified = layers.filter((layer) => layer.verified);
+  const skipped = layers.filter((layer) => !layer.verified);
+  let line = `✅ sync:check OK — ${verified.length}/${layers.length} capa(s) verificada(s): ${
+    verified.length ? verified.map((layer) => layer.name).join(", ") : "ninguna"
+  }`;
+  if (skipped.length) {
+    line += `\n   ↳ no verificada(s): ${skipped
+      .map((layer) => `${layer.name} — ${layer.reason ?? layer.note}`)
+      .join("; ")}`;
+  }
+  return line;
 }
 
 export function runCheck(opts: CheckOptions = {}): CheckResult {
   const generatedPath = opts.generatedPath ?? COMMITTED_PATH;
   const failures: string[] = [];
-  const notes: string[] = [];
+  const layers: CheckLayer[] = [];
+  const finish = (): CheckResult => ({
+    ok: failures.length === 0,
+    failures,
+    notes: layers.map((layer) => layer.note),
+    layers
+  });
 
   if (!existsSync(generatedPath)) {
-    return { ok: false, failures: [`no existe el snapshot: ${generatedPath}`], notes };
+    failures.push(`no existe el snapshot: ${generatedPath}`);
+    return finish();
   }
   const target = readFileSync(generatedPath, "utf8");
 
@@ -214,15 +277,28 @@ export function runCheck(opts: CheckOptions = {}): CheckResult {
   const header = parseHeader(canonical);
   if (!header) {
     failures.push(`${COMMITTED_PATH}: header AUTO-GENERATED ausente o malformado`);
+    layers.push({
+      name: "self",
+      verified: false,
+      note: "self: header AUTO-GENERATED ausente o malformado",
+      reason: "header ausente o malformado"
+    });
   } else {
     const profile = PROFILE as unknown as CvProfile;
     const expected = renderSource(profile, header.engine, header.schema);
     const diff = diffSources(expected, target);
     if (diff) failures.push(formatDiff(generatedPath, diff));
-    for (const problem of headerProblems(target, profile)) failures.push(`${generatedPath}: ${problem}`);
-    if (!diff && !headerProblems(target, profile).length) {
-      notes.push(`self: render byte-idéntico (${target.length} bytes)`);
-    }
+    const headerIssues = headerProblems(target, profile);
+    for (const problem of headerIssues) failures.push(`${generatedPath}: ${problem}`);
+    const verified = !diff && headerIssues.length === 0;
+    layers.push({
+      name: "self",
+      verified,
+      note: verified
+        ? `self: render byte-idéntico (${target.length} bytes)`
+        : "self: render con drift o header inconsistente",
+      reason: verified ? undefined : "drift byte a byte o header que no coincide con PROFILE"
+    });
   }
 
   /* 2. fixture: corre también con workspace, para no depender de él. */
@@ -236,33 +312,69 @@ export function runCheck(opts: CheckOptions = {}): CheckResult {
     if (fixture) {
       const { problems, profile } = checkFixture(fixture);
       failures.push(...problems.map((p) => `fixture: ${p}`));
-      if (!problems.length) {
-        notes.push(
-          `fixture: proyección determinista · ${profile.credentials.length} credential público · ` +
-            `${profile.artifacts.length} artifact público · 0 privados`
-        );
-      }
+      layers.push({
+        name: "fixture",
+        verified: problems.length === 0,
+        note:
+          problems.length === 0
+            ? `fixture: proyección determinista · ${profile.credentials.length} credential público · ` +
+              `${profile.artifacts.length} artifact público · 0 privados ni unlisted`
+            : "fixture: problemas de proyección/filtro",
+        reason: problems.length === 0 ? undefined : problems.join("; ")
+      });
+    } else {
+      layers.push({
+        name: "fixture",
+        verified: false,
+        note: "fixture: no se pudo proyectar",
+        reason: "JSON inválido"
+      });
     }
   } else {
     failures.push(`no existe el fixture export: ${FIXTURE_PATH}`);
+    layers.push({
+      name: "fixture",
+      verified: false,
+      note: "fixture: ausente",
+      reason: `no existe ${FIXTURE_PATH}`
+    });
   }
 
-  /* 3. workspace: paridad real contra profile-data (local/agente, nunca CI). */
+  /* 3. workspace: paridad real contra profile-data (local/agente, nunca CI).
+     Sin workspace el pipeline NO se invoca: la capa queda declarada fuera. */
   const workspace = opts.workspace ?? resolvePaths().workspace;
   if (workspace) {
     try {
       const { source } = generateAll({ workspace });
       const diff = diffSources(source, target);
       if (diff) failures.push(formatDiff(generatedPath, diff));
-      else notes.push(`workspace: sin drift contra ${workspace}`);
+      layers.push({
+        name: "workspace",
+        verified: !diff,
+        note: diff ? "workspace: drift contra el pipeline real" : `workspace: sin drift contra ${workspace}`,
+        reason: diff ? `drift en ${generatedPath}:${diff.line}` : undefined
+      });
     } catch (err) {
-      failures.push(`workspace: no se pudo regenerar (${(err as Error).message})`);
+      const message = (err as Error).message;
+      failures.push(`workspace: no se pudo regenerar (${message})`);
+      layers.push({
+        name: "workspace",
+        verified: false,
+        note: "workspace: no se pudo regenerar",
+        reason: message
+      });
     }
   } else {
-    notes.push("workspace: sin PROFILE_DATA_PATH — paridad de contenido NO verificada (modo CI)");
+    layers.push({
+      name: "workspace",
+      verified: false,
+      note: "workspace: sin PROFILE_DATA_PATH — paridad de contenido NO verificada (modo CI)",
+      reason:
+        "sin PROFILE_DATA_PATH ni --workspace; la paridad de contenido NO se verificó (modo CI)"
+    });
   }
 
-  return { ok: failures.length === 0, failures, notes };
+  return finish();
 }
 
 /* ──────────────────────────────────────────────
@@ -283,10 +395,10 @@ function main(): number {
     workspace: argValue("--workspace"),
     generatedPath: argValue("--generated")
   });
-  for (const note of result.notes) console.log(`✓ ${note}`);
+  for (const layer of result.layers) console.log(`${layer.verified ? "✓" : "–"} ${layer.note}`);
   for (const failure of result.failures) console.error(failure);
   if (result.ok) {
-    console.log(`✅ sync:check OK — ${result.notes.length} capa(s) verificada(s)`);
+    console.log(summaryLine(result.layers));
     return 0;
   }
   console.error(`❌ sync:check FAIL — ${result.failures.length} problema(s)`);

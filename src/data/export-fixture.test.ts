@@ -25,6 +25,16 @@ const PRIVATE_MARKERS = [
   "https://example.test/private/credential"
 ];
 
+/** `unlisted` tampoco es render público: el fixture lo ejercita aparte para que
+ *  una regresión `visibility !== "private"` no pase verde. Los URLs son opacos
+ *  (no llevan los marcadores canónicos): el filtro debe morder por target. */
+const UNLISTED_MARKERS = [
+  "unlisted-artifact",
+  "https://example.test/anon/artifact-42",
+  "unlisted-credential",
+  "https://example.test/anon/credential-42"
+];
+
 function sourceOf(fixture: FixtureEnvelope): CvSource {
   return {
     repo: fixture.source.repo ?? "",
@@ -68,28 +78,33 @@ describe("fixture export — proyección pública", () => {
     expect(p.artifacts).toHaveLength(1);
   });
 
-  it("publica sólo el artifact público (locator del privado fuera)", () => {
+  it("publica sólo el artifact público (locator del privado y del unlisted fuera)", () => {
     const p = project();
     expect(p.artifacts.map((a) => a.id)).toEqual(["art-public"]);
     expect(p.artifacts[0].locator).toEqual({ url: "https://example.test/public/artifact" });
   });
 
-  it("publica sólo la credential pública (verifyUrl de la privada fuera)", () => {
+  it("publica sólo la credential pública (verifyUrl de la privada y la unlisted fuera)", () => {
     const p = project();
     expect(p.credentials.map((c) => c.id)).toEqual(["cred-public"]);
     expect(p.credentials[0].verifyUrl).toBe("https://example.test/public/credential");
   });
 
-  it("descarta referencias a locators/verifyUrls privados desde projects[]", () => {
+  it("descarta referencias a locators/verifyUrls no públicos desde projects[]", () => {
     const p = project();
     const publicado = p.projects.find((x) => x.name === "Public Fixture Project")!;
     expect(publicado.links).toEqual(["https://example.test/public/repo"]);
     expect(publicado.evidence.map((e) => e.source)).toEqual(["https://example.test/public/evidence"]);
   });
 
-  it("el snapshot proyectado no contiene NINGÚN marcador privado", () => {
+  it("descarta una referencia opaca unlisted desde identity.links (filtro por target)", () => {
+    const p = project();
+    expect(p.identity.links.map((link) => link.url)).toEqual(["https://example.test/ada"]);
+  });
+
+  it("el snapshot proyectado no contiene NINGÚN marcador private ni unlisted", () => {
     const rendered = JSON.stringify(project());
-    for (const marker of PRIVATE_MARKERS) {
+    for (const marker of [...PRIVATE_MARKERS, ...UNLISTED_MARKERS]) {
       expect(rendered).not.toContain(marker);
     }
   });
@@ -130,5 +145,18 @@ describe("fixture export — chequeo de sync:check", () => {
     (leaky.profile.artifacts as Record<string, unknown>[])[2].visibility = "public";
     const { problems } = checkFixture(leaky);
     expect(problems.some((p) => p.includes("private-artifact"))).toBe(true);
+  });
+
+  it("si `unlisted` se tratara como público, la referencia opaca se reporta", () => {
+    const leaky = JSON.parse(JSON.stringify(RAW)) as FixtureEnvelope;
+    const unlisted = (leaky.profile.artifacts as Record<string, unknown>[]).find(
+      (a) => a.id === "unlisted-artifact"
+    )!;
+    unlisted.visibility = "public";
+    const { problems } = checkFixture(leaky);
+    // El URL opaco deja de ser target privado y sobrevive en identity.links:
+    // el chequeo tiene que nombrar la raíz, no depender de un marcador canónico.
+    expect(problems.some((p) => p.includes("identity.links"))).toBe(true);
+    expect(problems.some((p) => p.includes("https://example.test/anon/artifact-42"))).toBe(true);
   });
 });
