@@ -113,6 +113,10 @@ export interface SkillItem {
 export interface CvSource {
   repo: string;
   commit: string;
+  /** Fecha (`YYYY-MM-DD`) del commit del SSOT, leída de git (no del reloj).
+   *  La usa el footer de procedencia del print (#108): a diferencia de
+   *  `generatedAt`, siempre existe y es determinista. `null` si no se pudo resolver. */
+  commitDate: string | null;
   /** ISO 8601 cuando el caller pasa `--now`; `null` por defecto (sin reloj). */
   generatedAt: string | null;
 }

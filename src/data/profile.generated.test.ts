@@ -36,7 +36,12 @@ const SYNC_TOOL = readFileSync(resolve(process.cwd(), "tools", "sync-profile.ts"
 const { workspace } = resolvePaths();
 
 function sourceOf(commit = PROFILE.source.commit): CvProfile["source"] {
-  return { repo: "https://github.com/ChristianLuciani/profile-data.git", commit, generatedAt: null };
+  return {
+    repo: "https://github.com/ChristianLuciani/profile-data.git",
+    commit,
+    commitDate: PROFILE.source.commitDate,
+    generatedAt: null
+  };
 }
 
 /* ──────────────────────────────────────────────
@@ -57,6 +62,14 @@ describe("paridad con profile-data (drift gate)", () => {
     const head = execFileSync("git", ["-C", workspace!, "rev-parse", "HEAD"], { encoding: "utf8" }).trim();
     expect(PROFILE.source.commit).toBe(head);
     expect(COMMITTED).toContain(`source: profile-data @ ${head}`);
+  });
+
+  it.skipIf(!workspace)("source.commitDate == fecha real del commit de profile-data", () => {
+    const date = execFileSync("git", ["-C", workspace!, "show", "-s", "--format=%cs", "HEAD"], {
+      encoding: "utf8"
+    }).trim();
+    expect(PROFILE.source.commitDate).toBe(date);
+    expect(COMMITTED).toContain(`"commitDate": "${date}"`);
   });
 
   it("tools/sync-profile.ts no importa yaml ni ajv (la única fuente es pasco export profile)", () => {
@@ -255,6 +268,7 @@ describe("profile.generated.ts — shape", () => {
   it("source: procedencia del SSOT (GEO / auditoría)", () => {
     expect(PROFILE.source.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(PROFILE.source.repo).toContain("profile-data");
+    expect(PROFILE.source.commitDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(PROFILE.source.generatedAt).toBeNull(); // determinismo: sin --now no hay reloj
   });
 });

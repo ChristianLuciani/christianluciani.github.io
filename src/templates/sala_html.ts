@@ -351,7 +351,7 @@ export const ROOM_BODY: Record<string, string> = {
           <ul class="entry-body">
             <li>800+ estudiantes anuales · 36 guías de laboratorio originales</li>
             <li>Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento</li>
-            <li>Técnico-operador del difractómetro de rayos X · 5 publicaciones co-autoradas</li>
+            <li>Técnico-operador del difractómetro de rayos X · co-autor de 3 arbitradas, 2 preprints y 1 abstract de congreso (2022–2025)</li>
             <li>Responsable de Seguridad Radiológica institucional</li>
           </ul>
         </div>
@@ -370,7 +370,7 @@ export const ROOM_BODY: Record<string, string> = {
       <!-- Columna B -->
       <div>
         <div class="entry" data-scroll="from-right">
-          <div class="entry-period">2010 – 2013</div>
+          <div class="entry-period">2011 – 2014</div>
           <div class="entry-title">Logística BTL y Relación con Clientes</div>
           <div class="entry-org">Magic Dreams Productions · Panamá</div>
           <ul class="entry-body">

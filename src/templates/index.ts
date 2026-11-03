@@ -10,6 +10,8 @@ import { heroHtml } from "./hero_html.ts";
 import { planoHtml } from "./plano_html.ts";
 import { printCvHtml } from "./print_cv_html.ts";
 import { roomsHtml } from "./sala_html.ts";
+import type { CvProfile } from "../data/profile.types.ts";
+import { PROFILE } from "../data/profile.generated.ts";
 
 const FOOTER = `</body>
 </html>
@@ -20,7 +22,8 @@ export function assembleHtml(): string {
   return (
     headHtml() +
     BODY_OPEN +
-    printCvHtml() +
+    // El print deriva del SSOT (CvProfile): el snapshot es `as const`, de ahí el cast.
+    printCvHtml(PROFILE as unknown as CvProfile) +
     coverHtml() +
     heroHtml() +
     planoHtml() +
