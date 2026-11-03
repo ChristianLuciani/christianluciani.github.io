@@ -1,166 +1,51 @@
 /**
  * sync-profile — pipeline de dependencia: profile-data (SSOT) → src/data/profile.generated.ts
  *
- * SPEC: docs/SPEC.md §5.1 (Fase 1). La fuente factual del CV vive en el workspace privado
- * profile-data (content/*.yaml, contrato schema/profile.schema.json v1 del motor
- * profile-as-code). Este script la lee SOLO en build local / agente (D1, D14):
+ * SPEC: docs/SPEC.md §5.1. La fuente factual del CV vive en el workspace privado
+ * profile-data (content/*.yaml, contrato schema/profile.schema.json del motor
+ * profile-as-code). La ÚNICA lectura de ese workspace es el contrato de export del
+ * engine: `pasco export profile --json` (profile-as-code SPEC §7.5, #348). Este script
+ * ya NO parsea YAML, NO valida con Ajv y NO reimplementa el normalizador del motor:
+ * proyecta el `LoadedProfile` compilado (CvProfile, §5.2) — proyección explícita, no dump.
+ *
  * CI verifica paridad con el archivo commiteado (profile.generated.test.ts) sin acceso
- * al repo privado.
+ * al repo privado. El build local / agente sí necesita el engine instalado y el workspace.
  *
  * Uso:
- *   npm run sync:profile             # genera src/data/profile.generated.ts (determinista)
- *   npm run sync:profile -- --report # además imprime warnings (ES faltante, pubs sin DOI, …)
+ *   npm run sync:profile                        # genera src/data/profile.generated.ts (determinista)
+ *   npm run sync:profile -- --report            # además imprime warnings (ES faltante, pubs sin link, …)
+ *   npm run sync:profile -- --now <iso8601>     # fija source.generatedAt (default: null)
  *
  * Contrato de determinismo (komuno VI/X): mismo input → mismo output byte a byte.
- * Orden canónico de keys en cada objeto; langMaps normalizadas a [en, es]; sin red.
+ * Sin `--now` el reloj no entra: `source.generatedAt` = null.
  */
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { resolve, join } from "node:path";
+import { execFileSync } from "node:child_process";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { execSync } from "node:child_process";
-import { parse } from "yaml";
-import Ajv2020 from "ajv/dist/2020.js";
-import type { ValidateFunction } from "ajv";
-import addFormats from "ajv-formats";
+import type {
+  ArtifactItem,
+  CredentialItem,
+  CvProfile,
+  CvSource,
+  EducationItem,
+  ExperienceItem,
+  LangText,
+  LanguageItem,
+  Link,
+  ProjectItem,
+  PublicationItem,
+  SkillItem
+} from "../src/data/profile.types";
 
 /* ──────────────────────────────────────────────
-   Tipos (CV data model — SPEC §5.2)
+   Config del engine (parametrización — D14)
 ────────────────────────────────────────────── */
 
-export interface LangText {
-  en: string;
-  es?: string;
-}
-
-export interface Link {
-  platform: string;
-  label: string;
-  url: string;
-}
-
-export interface ExperienceItem {
-  role: LangText;
-  /** Proper noun — invariant across languages: the schema declares `org` as a plain
-   *  string, never a langMap (SPEC §11/§15.6). Passing it through toLang() emitted
-   *  one false "falta ES" per experience row. */
-  org: string;
-  start: string;
-  end: string;
-  highlights?: { en: string[]; es?: string[] };
-}
-
-/** v1.1/v1.3: formal education (root `education[]`), keep inside experience[] on v1. */
-export interface EducationItem {
-  id?: string;
-  degree: LangText;
-  /** Proper noun — institutions are never translated (schema: plain string). */
-  institution: string;
-  field?: LangText;
-  start: string;
-  end?: string;
-  note?: LangText;
-}
-
-/** v1.1: spoken languages (root `languages[]`). */
-export interface LanguageItem {
-  code: string;
-  level: string;
-}
-
-/** v1.4 (D17/§18): third-party attestations — the proof registry, not "evidence". */
-export interface CredentialItem {
-  id: string;
-  kind: string;
-  title: string;
-  issuer: string;
-  credentialId?: string;
-  verifyUrl?: string;
-  issued?: string;
-  expires?: string;
-}
-
-/** v1.4 (D17/§18): works/media registry, pointer-first (`locator` XOR url|path). */
-export interface ArtifactItem {
-  id: string;
-  kind: string;
-  title: string;
-  description?: LangText;
-  locator: { url?: string; path?: string };
-  checksum?: string;
-  license?: string;
-  tags?: string[];
-}
-
-export interface ProjectItem {
-  name: string;
-  status?: string;
-  description?: LangText;
-  links: string[];
-  keywords: string[];
-  evidence: { claim: LangText; source: string; verified?: string }[];
-}
-
-export interface PublicationItem {
-  title: string;
-  venue: string;
-  year: number;
-  doi?: string;
-  orcidId?: string;
-  /** `url` explícita del SSOT (v1.1) o fallback derivado https://doi.org/<doi>;
-   *  "" si no hay ninguna de las dos. */
-  url: string;
-}
-
-export interface SkillItem {
-  name: string;
-  level?: string;
-  keywords: string[];
-  geoKeywords?: string[];
-  platformWeights?: Record<string, number>;
-}
-
-export interface CVProfile {
-  identity: {
-    name: string;
-    givenName: string;
-    familyName: string;
-    location?: string;
-    photo?: string;
-    links: Link[];
-  };
-  positioning: {
-    statement: LangText;
-    audiences: Record<string, LangText>;
-    geo?: {
-      semanticAssociations?: string[];
-      citationsGoal?: LangText;
-    };
-  };
-  headlines: { platform: string; lang: string; text: string }[];
-  experience: ExperienceItem[];
-  /** v1.1: explicit root `education[]` (v1 legacy kept it in experience[] role = título). */
-  education: EducationItem[];
-  projects: ProjectItem[];
-  publications: PublicationItem[];
-  skills: SkillItem[];
-  /** v1.1: [{ code, level }] from root `languages[]`. */
-  languages: LanguageItem[];
-  /** v1.4/§18: registry roots; only `visibility: public` entries reach this public snapshot. */
-  credentials: CredentialItem[];
-  artifacts: ArtifactItem[];
-  keywords: {
-    seo: Record<string, string[]>;
-    geo: { associations: string[]; claims: string[] };
-  };
-  /** Procedencia del sync (GEO / auditabilidad). */
-  source: { repo: string; commit: string; syncedAt: string };
-}
-
-/* ──────────────────────────────────────────────
-   Config (parametrización — komuno XI; D14)
-────────────────────────────────────────────── */
-
-const DEFAULT_SCHEMA_REL = "../profile-as-code/schema/profile.schema.json";
+/** Mínimo del contrato de export: `pasco export profile` + `doctor --json` (SPEC §7.6). */
+const MIN_ENGINE_VERSION = "0.3.7";
+const ENGINE_INSTALL = "npm install -g @profile-as-code/cli@0.3.7";
+const ENGINE_HINT = `Instalá/actualizá el engine:\n  ${ENGINE_INSTALL}`;
 
 function loadDotEnv(file: string): void {
   if (!existsSync(file)) return;
@@ -170,128 +55,213 @@ function loadDotEnv(file: string): void {
   }
 }
 
-export function resolvePaths(cwd = process.cwd()) {
+export function resolvePaths(cwd = process.cwd()): { workspace?: string } {
   loadDotEnv(resolve(cwd, ".env"));
-  const workspace = process.env.PROFILE_DATA_PATH;
-  const schemaPath =
-    process.env.PROFILE_SCHEMA_PATH ??
-    (workspace ? resolve(workspace, DEFAULT_SCHEMA_REL) : "");
-  return { workspace, schemaPath };
+  return { workspace: process.env.PROFILE_DATA_PATH };
 }
 
 /* ──────────────────────────────────────────────
-   Lectura + validación del workspace
+   Engine: `pasco export profile --json` (contrato #348)
 ────────────────────────────────────────────── */
 
-const CONTENT_FILES = [
-  "identity",
-  "positioning",
-  "bios",
-  "headlines",
-  "skills",
-  "experience",
-  "education",
-  "languages",
-  "projects",
-  "publications",
-  "credentials",
-  "artifacts",
-  "keywords"
-] as const;
-
-/** Lee content/<file>.yaml y lo mergea por root property (mismo mapping que pac load). */
-export function readWorkspace(workspace: string): Record<string, unknown> {
-  const profile: Record<string, unknown> = {};
-  for (const f of CONTENT_FILES) {
-    const file = join(workspace, "content", `${f}.yaml`);
-    if (!existsSync(file)) continue;
-    profile[f] = parse(readFileSync(file, "utf8"));
-  }
-  return profile;
-}
-
-export function compileValidator(schemaPath: string): ValidateFunction {
-  const schema = JSON.parse(readFileSync(schemaPath, "utf8"));
-  const ajv = new Ajv2020({ strict: false, allErrors: true });
-  addFormats(ajv);
-  return ajv.compile(schema);
-}
-
-export interface SyncReport {
-  missingEs: string[];
-  publicationsWithoutLink: string[];
-  urlsOutsideIdentity: string[];
-}
-
-/** Validación de hechos no expresables en JSON Schema (drift-lite, D12: warn no fail).
- *  Reglas (SPEC §4): projects[].links ⊆ identity.links; pub sin DOI → aviso.
- *  Excepciones documentadas: identity.photo (asset) y evidence[].source (fuente de
- *  verificación externa) NO se chequean contra links canónicos. */
-export function driftReport(profile: Record<string, unknown>): SyncReport {
-  const report: SyncReport = { missingEs: [], publicationsWithoutLink: [], urlsOutsideIdentity: [] };
-  const identity = profile.identity as { links?: { url: string }[] } | undefined;
-  const known = new Set((identity?.links ?? []).map((l) => l.url));
-
-  const walkLang = (prefix: string, v: unknown): void => {
-    if (v && typeof v === "object") {
-      const o = v as Record<string, unknown>;
-      if (typeof o.en === "string" && !o.es && o.en.length > 0) {
-        report.missingEs.push(prefix);
-      }
-      for (const [k, val] of Object.entries(o)) walkLang(`${prefix}.${k}`, val);
-    }
+interface ExportEnvelope {
+  command: string;
+  ok: boolean;
+  exitCode: number;
+  data?: {
+    schemaVersion: string;
+    engine: { name: string; version: string };
+    source: { commit: string; generatedAt: string | null };
+    profile: Record<string, unknown>;
   };
-  for (const [root, value] of Object.entries(profile)) walkLang(root, value);
+}
 
-  const projects = profile.projects as { name?: string; links?: string[] }[] | undefined;
-  for (const [i, p] of (projects ?? []).entries()) {
-    for (const url of p.links ?? []) {
-      if (!known.has(url)) report.urlsOutsideIdentity.push(`projects.${i}.links = ${url}`);
+function pasco(args: string[]): string {
+  try {
+    return execFileSync("pasco", args, {
+      encoding: "utf8",
+      maxBuffer: 64 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+  } catch (err) {
+    const e = err as {
+      code?: string;
+      status?: number;
+      stdout?: string | Buffer;
+      stderr?: string | Buffer;
+    };
+    if (e.code === "ENOENT") {
+      throw new Error(`pasco no está instalado. ${ENGINE_HINT}`);
     }
+    const out = [e.stdout, e.stderr]
+      .map((v) => (v == null ? "" : String(v)))
+      .filter((s) => s.trim().length > 0)
+      .join("\n")
+      .trim();
+    throw new Error(
+      `pasco ${args.slice(0, 2).join(" ")} falló (exit ${e.status ?? "?"})${out ? `:\n${out}` : ""}\n` +
+        `${ENGINE_HINT}`
+    );
   }
+}
 
-  const pubs = profile.publications as { title: string; doi?: string; url?: string }[] | undefined;
-  for (const p of pubs ?? []) {
-    // Una `url` explícita (v1.1) resuelve el link igual que un DOI: sin ninguna de
-    // las dos no hay ancla citable (preprints RG / abstracts sin DOI).
-    if (!p.doi && !p.url) report.publicationsWithoutLink.push(p.title);
+function parseSemver(v: string): [number, number, number] {
+  const m = v.match(/^(\d+)\.(\d+)\.(\d+)/);
+  return m ? [Number(m[1]), Number(m[2]), Number(m[3])] : [0, 0, 0];
+}
+
+function semverLt(a: string, b: string): boolean {
+  const av = parseSemver(a);
+  const bv = parseSemver(b);
+  for (let i = 0; i < 3; i++) {
+    if (av[i] !== bv[i]) return av[i] < bv[i];
   }
-  return report;
+  return false;
+}
+
+function assertEngineVersion(version: string): void {
+  if (semverLt(version, MIN_ENGINE_VERSION)) {
+    throw new Error(
+      `pasco ${version} es anterior al mínimo ${MIN_ENGINE_VERSION}. ${ENGINE_HINT}`
+    );
+  }
+}
+
+/** Major del payload de export que este consumidor entiende (SPEC §7.5 del engine:
+ *  «a consumer refuses a version it does not know rather than guessing»). */
+const SUPPORTED_SCHEMA_VERSION = "1";
+
+/** FAIL (no warning) ante una versión de contrato desconocida: proyectar un payload
+ *  de otra generación con los supuestos viejos es el drift que #107 quiere cerrar. */
+export function assertSchemaVersion(version: string): void {
+  if (version !== SUPPORTED_SCHEMA_VERSION) {
+    throw new Error(
+      `pasco export profile: schemaVersion "${version || "(ausente)"}" desconocida; ` +
+        `este consumidor sólo entiende v${SUPPORTED_SCHEMA_VERSION} (profile-as-code SPEC §7.5). ` +
+        `Actualizá el consumidor o fijá el engine con el que se genera el snapshot.`
+    );
+  }
+}
+
+/** El perfil compilado + metadata del contrato (SPEC §7.5). */
+export function exportProfile(
+  workspace: string,
+  now?: string
+): {
+  engine: { name: string; version: string };
+  schemaVersion: string;
+  commit: string;
+  generatedAt: string | null;
+  profile: Record<string, unknown>;
+} {
+  const args = ["export", "profile", "--json", "--workspace", workspace];
+  if (now) args.push("--now", now);
+  let envelope: ExportEnvelope;
+  try {
+    envelope = JSON.parse(pasco(args)) as ExportEnvelope;
+  } catch (err) {
+    if (err instanceof SyntaxError) throw new Error(`pasco export profile: JSON inválido (${err.message})`);
+    throw err;
+  }
+  if (!envelope.ok || !envelope.data) {
+    throw new Error(`pasco export profile no devolvió ok (exit ${envelope.exitCode})`);
+  }
+  const { engine, source, profile, schemaVersion } = envelope.data;
+  assertEngineVersion(String(engine?.version ?? ""));
+  assertSchemaVersion(String(schemaVersion ?? ""));
+  return {
+    engine,
+    schemaVersion,
+    commit: source?.commit ?? "",
+    generatedAt: source?.generatedAt ?? null,
+    profile
+  };
+}
+
+/** `pasco doctor --json` reporta el CONTRATO que el engine valida (`schema.version`).
+ *  El export de 0.3.7 sólo trae el major (`schemaVersion: "1"`); el header del CV
+ *  necesita la etiqueta completa (v1.15). Metadata del engine, no datos del perfil. */
+export function schemaLabel(workspace: string): string {
+  const envelope = JSON.parse(pasco(["doctor", "--json", "--workspace", workspace])) as {
+    ok?: boolean;
+    data?: { schema?: { version?: string } };
+  };
+  const version = envelope.data?.schema?.version;
+  if (!version) throw new Error("pasco doctor no reportó la versión del contrato (schema.version).");
+  return version;
 }
 
 /* ──────────────────────────────────────────────
-   Normalización v1 → CV data model (SPEC §5.2)
-   Dual-shape: soporta v1 (strings) y v1.1 (langMaps/arrays) sin bloqueo.
+   Proyección pública (CvProfile — SPEC §5.2)
 ────────────────────────────────────────────── */
 
-function toLang(v: unknown, path: string, report: SyncReport): LangText {
-  if (v && typeof v === "object" && typeof (v as LangText).en === "string") return v as LangText;
+function asRecord(v: unknown): Record<string, unknown> {
+  return v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : {};
+}
+
+function asArray(v: unknown): Record<string, unknown>[] {
+  return Array.isArray(v)
+    ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === "object" && !Array.isArray(x))
+    : [];
+}
+
+function str(v: unknown): string {
+  return typeof v === "string" ? v : v == null ? "" : String(v);
+}
+
+/**
+ * Dual-shape v1 → langMap (SPEC §5.2): el engine NO normaliza las uniones
+ * `string | langMap` del schema (su `normalizeProfile()` sólo defaultea roots-lista),
+ * así que un workspace schema-válido puede traer `role: "Engineer"`. La proyección
+ * normaliza acá (string → `{ en: valor }`) y lo DECLARA en el reporte: nunca degrada
+ * a `{ en: "" }` en silencio.
+ */
+function lang(v: unknown, path: string, report: SyncReport): LangText {
   if (typeof v === "string") {
-    if (v.length) report.missingEs.push(path);
+    if (v.length) report.unexpectedShape.push(`${path}: string (shape v1) → langMap {en}`);
     return { en: v };
   }
-  return { en: String(v ?? "") };
+  const o = asRecord(v);
+  if (typeof o.en === "string") {
+    return { en: o.en, ...(typeof o.es === "string" ? { es: o.es } : {}) };
+  }
+  if (v != null) report.unexpectedShape.push(`${path}: sin {en: string}`);
+  return { en: "" };
 }
 
-/** v1: highlights = string langMap con frases separadas por ". " (el "·" agrupa sub-items
- *  dentro de una frase, como renderiza el CV). v1.1: array de strings ya. */
-export function highlightsToArray(v: unknown): { en: string[]; es?: string[] } | undefined {
-  if (!v || typeof v !== "object") return undefined;
-  const out = {} as { en: string[]; es?: string[] };
-  const map = v as Record<string, unknown>;
-  for (const lang of ["en", "es"] as const) {
-    const val = map[lang];
-    if (typeof val === "string") {
-      out[lang] = val
+/** Highlights dual-shape: v1.1 ya es `{ en: string[], es?: string[] }`; el v1 legacy
+ *  es un string de frases separadas por ". " (el "·" agrupa sub-items dentro de una
+ *  frase, como renderiza el CV). Devuelve `undefined` sólo si no hay EN. */
+function pickHighlights(
+  v: unknown,
+  path: string,
+  report: SyncReport
+): { en: string[]; es?: string[] } | undefined {
+  if (!v || typeof v !== "object") {
+    if (v != null) report.unexpectedShape.push(`${path}: forma desconocida (${typeof v})`);
+    return undefined;
+  }
+  const o = asRecord(v);
+  let sawV1 = false;
+  const split = (value: unknown): string[] | undefined => {
+    if (typeof value === "string") {
+      sawV1 = true;
+      return value
         .split(/\.\s+/)
         .map((s) => s.trim().replace(/\.$/, ""))
         .filter((s) => s.length > 0);
-    } else if (Array.isArray(val)) {
-      out[lang] = val.map((s) => String(s).trim()).filter((s) => s.length > 0);
     }
+    if (Array.isArray(value)) return value.map(str).filter((s) => s.length > 0);
+    return undefined;
+  };
+  const en = split(o.en);
+  if (!en) {
+    report.unexpectedShape.push(`${path}: sin highlights.en`);
+    return undefined;
   }
-  if (!out.en) return undefined;
-  return out;
+  const es = split(o.es);
+  if (sawV1) report.unexpectedShape.push(`${path}: string (shape v1) → array de bullets`);
+  return { en, ...(es ? { es } : {}) };
 }
 
 function splitName(name: string): { givenName: string; familyName: string } {
@@ -300,22 +270,31 @@ function splitName(name: string): { givenName: string; familyName: string } {
 }
 
 /**
- * Normalización v1 → CV data model (SPEC §5.2).
+ * Proyección pública `LoadedProfile → CvProfile` (SPEC §5.2).
  *
  * DECISIÓN DE CONSUMIDOR (declarada 2026-11-02, deuda abierta — #101):
- * profile-as-code SPEC §7.5 dice que `visibility` es renderer-owned y que el
- * perfil normalizado ES el SSOT, no una superficie renderizada. Acá el filtro
- * vive en la capa de datos porque `profile.generated.ts` se COMMITEA en un repo
- * público: no hay renderer aguas abajo que pueda filtrar antes de publicar.
- * El filtro alcanza entradas (credentials/artifacts) y REFERENCIAS (§18.5
- * `no-private-in-public-output`): `projects[].links` y `evidence[].source` que
- * apunten a un locator/verifyUrl no público se descartan. Deuda: cuando el
- * engine exponga una noción de salida pública, el filtro se muda al consumidor
- * y este normalizador vuelve a ser fiel al SSOT.
+ * profile-as-code SPEC §7.5 dice que `visibility` es renderer-owned y que el perfil
+ * normalizado ES el SSOT, no una superficie renderizada. Acá el filtro vive en la capa
+ * de datos porque `profile.generated.ts` se COMMITEA en un repo público: no hay renderer
+ * aguas abajo que pueda filtrar antes de publicar. El filtro alcanza entradas
+ * (credentials/artifacts) y REFERENCIAS (§18.5 `no-private-in-public-output`):
+ * `projects[].links` y `evidence[].source` que apunten a un locator/verifyUrl no público
+ * se descartan. Deuda: cuando el engine exponga una noción de salida pública, el filtro
+ * se muda al consumidor y esta proyección vuelve a ser fiel al SSOT.
+ *
+ * Proyección explícita, NO dump: sólo los roots/fields que el CV usa. Fuera del archivo
+ * commiteado quedan `bios`, `faq`, `flavor`, `deployments`, `checks`, `socialHandles`,
+ * `press`, `releases`, `active`, `email`, `handle`, `timezone`, `nationality`, `authors`,
+ * `kind`, `artifactRefs` e ids de fila que el contrato del CV no declara.
  */
-export function normalize(raw: Record<string, unknown>, report: SyncReport): CVProfile {
-  const identity = (raw.identity ?? {}) as Record<string, unknown>;
-  const { givenName, familyName } = splitName(String(identity.name ?? ""));
+export function projectProfile(
+  raw: Record<string, unknown>,
+  source: CvSource = { repo: "", commit: "", generatedAt: null },
+  report: SyncReport = emptyReport()
+): CvProfile {
+  const identity = asRecord(raw.identity);
+  const name = str(identity.name);
+  const { givenName, familyName } = splitName(name);
 
   // §18.5 (profile-as-code SPEC): un render público emite SOLO `visibility: public`
   // (ausente = public, $defs.visibility). Este archivo se commitea en un repo
@@ -328,156 +307,157 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
    *  desde otras raíces (`projects[].links`, `projects[].evidence[].source`) se
    *  descarta: la privacidad de la entrada no equivale a la del hecho que la cita. */
   const privateTargets = new Set<string>();
-  for (const a of (raw.artifacts as Record<string, unknown>[]) ?? []) {
+  for (const a of asArray(raw.artifacts)) {
     if (isPublic(a)) continue;
-    const locator = (a.locator ?? {}) as Record<string, unknown>;
+    const locator = asRecord(a.locator);
     if (typeof locator.url === "string") privateTargets.add(locator.url);
     if (typeof locator.path === "string") privateTargets.add(locator.path);
   }
-  for (const c of (raw.credentials as Record<string, unknown>[]) ?? []) {
+  for (const c of asArray(raw.credentials)) {
     if (isPublic(c)) continue;
     if (typeof c.verifyUrl === "string") privateTargets.add(c.verifyUrl);
   }
 
-  const experience: ExperienceItem[] = ((raw.experience as Record<string, unknown>[]) ?? []).map(
-    (e) => ({
-      role: toLang(e.role, "experience.role", report),
+  const links: Link[] = asArray(identity.links).map((l) => ({
+    platform: str(l.platform),
+    label: str(l.label),
+    url: str(l.url)
+  }));
+
+  const positioning = asRecord(raw.positioning);
+  const geo = asRecord(positioning.geo);
+
+  const experience: ExperienceItem[] = asArray(raw.experience).map((e) => {
+    const highlights = pickHighlights(e.highlights, "experience.highlights", report);
+    return {
+      role: lang(e.role, "experience.role", report),
       // `org` es nombre propio invariante en el contrato: string, jamás langMap.
-      org: String(e.org ?? ""),
-      start: String(e.start ?? ""),
-      end: String(e.end ?? "present"),
-      ...(e.highlights ? { highlights: highlightsToArray(e.highlights) } : {})
-    })
-  );
+      org: str(e.org),
+      start: str(e.start),
+      end: str(e.end) || "present",
+      ...(highlights ? { highlights } : {})
+    };
+  });
 
-  const education: EducationItem[] = ((raw.education as Record<string, unknown>[]) ?? []).map((e) => ({
-    ...(e.id ? { id: String(e.id) } : {}),
-    degree: toLang(e.degree, "education.degree", report),
-    institution: String(e.institution ?? ""),
-    ...(e.field != null ? { field: toLang(e.field, "education.field", report) } : {}),
-    start: String(e.start ?? ""),
-    ...(e.end != null ? { end: String(e.end) } : {}),
-    ...(e.note != null ? { note: toLang(e.note, "education.note", report) } : {})
+  const education: EducationItem[] = asArray(raw.education).map((e) => ({
+    ...(e.id ? { id: str(e.id) } : {}),
+    degree: lang(e.degree, "education.degree", report),
+    institution: str(e.institution),
+    ...(e.field != null ? { field: lang(e.field, "education.field", report) } : {}),
+    start: str(e.start),
+    ...(e.end != null ? { end: str(e.end) } : {}),
+    ...(e.note != null ? { note: lang(e.note, "education.note", report) } : {})
   }));
 
-  const languages: LanguageItem[] = ((raw.languages as Record<string, unknown>[]) ?? []).map((l) => ({
-    code: String(l.code ?? ""),
-    level: String(l.level ?? "")
+  const languages: LanguageItem[] = asArray(raw.languages).map((l) => ({
+    code: str(l.code),
+    level: str(l.level)
   }));
 
-  const projects: ProjectItem[] = ((raw.projects as Record<string, unknown>[]) ?? []).map((p) => ({
-    name: String(p.name ?? ""),
-    ...(p.status ? { status: String(p.status) } : {}),
-    ...(p.description ? { description: p.description as LangText } : {}),
+  const projects: ProjectItem[] = asArray(raw.projects).map((p) => ({
+    name: str(p.name),
+    ...(p.status ? { status: str(p.status) } : {}),
+    ...(p.description != null ? { description: lang(p.description, "projects.description", report) } : {}),
     // Los punteros a un artifact/credential no público no se emiten (§18.5):
     // la entrada privada ya se filtró, pero el hecho que la referencia seguía
     // publicando su URL (p. ej. evidence.source → repo privado).
-    links: ((p.links as string[]) ?? []).map(String).filter((u) => !privateTargets.has(u)),
-    keywords: ((p.keywords as string[]) ?? []).map(String),
-    evidence: ((p.evidence as Record<string, unknown>[]) ?? [])
+    links: (Array.isArray(p.links) ? p.links.map(str) : []).filter((u) => !privateTargets.has(u)),
+    keywords: Array.isArray(p.keywords) ? p.keywords.map(str) : [],
+    evidence: asArray(p.evidence)
       .map((ev) => ({
-        claim: ev.claim as LangText,
-        source: String(ev.source ?? ""),
-        ...(ev.verified ? { verified: String(ev.verified) } : {})
+        claim: lang(ev.claim, "projects.evidence.claim", report),
+        source: str(ev.source),
+        ...(ev.verified ? { verified: str(ev.verified) } : {})
       }))
       .filter((ev) => !privateTargets.has(ev.source))
   }));
 
-  const publications: PublicationItem[] = ((raw.publications as Record<string, unknown>[]) ?? []).map(
-    (p) => {
-      const doi = typeof p.doi === "string" ? p.doi : undefined;
-      // La `url` explícita del SSOT (v1.1) manda; el DOI solo es fallback.
-      const explicitUrl =
-        typeof p.url === "string" && p.url.trim().length > 0 ? p.url.trim() : undefined;
-      return {
-        title: String(p.title ?? ""),
-        venue: String(p.venue ?? ""),
-        year: Number(p.year ?? 0),
-        ...(doi ? { doi } : {}),
-        ...(typeof p.orcidId === "string" ? { orcidId: p.orcidId } : {}),
-        url: explicitUrl ?? (doi ? `https://doi.org/${doi}` : "")
-      };
-    }
-  );
+  const publications: PublicationItem[] = asArray(raw.publications).map((p) => {
+    const doi = typeof p.doi === "string" && p.doi.length > 0 ? p.doi : undefined;
+    // La `url` explícita del SSOT (v1.1) manda; el DOI solo es fallback.
+    const explicitUrl = typeof p.url === "string" && p.url.trim().length > 0 ? p.url.trim() : undefined;
+    return {
+      title: str(p.title),
+      venue: str(p.venue),
+      year: Number(p.year ?? 0),
+      ...(doi ? { doi } : {}),
+      ...(typeof p.orcidId === "string" ? { orcidId: p.orcidId } : {}),
+      url: explicitUrl ?? (doi ? `https://doi.org/${doi}` : "")
+    };
+  });
 
-  const skills: SkillItem[] = ((raw.skills as Record<string, unknown>[]) ?? []).map((s) => ({
-    name: String(s.name ?? ""),
-    ...(s.level ? { level: String(s.level) } : {}),
-    keywords: ((s.keywords as string[]) ?? []).map(String),
-    ...(s.geoKeywords ? { geoKeywords: (s.geoKeywords as string[]).map(String) } : {}),
-    ...(s.platformWeights
-      ? { platformWeights: s.platformWeights as Record<string, number> }
-      : {})
+  const skills: SkillItem[] = asArray(raw.skills).map((s) => ({
+    name: str(s.name),
+    ...(s.level ? { level: str(s.level) } : {}),
+    keywords: Array.isArray(s.keywords) ? s.keywords.map(str) : [],
+    ...(Array.isArray(s.geoKeywords) ? { geoKeywords: s.geoKeywords.map(str) } : {}),
+    ...(s.platformWeights ? { platformWeights: s.platformWeights as Record<string, number> } : {})
   }));
 
-  const credentials: CredentialItem[] = ((raw.credentials as Record<string, unknown>[]) ?? [])
+  const credentials: CredentialItem[] = asArray(raw.credentials)
     .filter(isPublic)
     .map((c) => ({
-      id: String(c.id ?? ""),
-      kind: String(c.kind ?? ""),
-      title: String(c.title ?? ""),
-      issuer: String(c.issuer ?? ""),
-      ...(c.credentialId ? { credentialId: String(c.credentialId) } : {}),
-      ...(c.verifyUrl ? { verifyUrl: String(c.verifyUrl) } : {}),
-      ...(c.issued ? { issued: String(c.issued) } : {}),
-      ...(c.expires ? { expires: String(c.expires) } : {})
+      id: str(c.id),
+      kind: str(c.kind),
+      title: str(c.title),
+      issuer: str(c.issuer),
+      ...(c.credentialId ? { credentialId: str(c.credentialId) } : {}),
+      ...(c.verifyUrl ? { verifyUrl: str(c.verifyUrl) } : {}),
+      ...(c.issued ? { issued: str(c.issued) } : {}),
+      ...(c.expires ? { expires: str(c.expires) } : {})
     }));
 
-  const artifacts: ArtifactItem[] = ((raw.artifacts as Record<string, unknown>[]) ?? [])
+  const artifacts: ArtifactItem[] = asArray(raw.artifacts)
     .filter(isPublic)
     .map((a) => {
-      const locator = (a.locator ?? {}) as Record<string, unknown>;
+      const locator = asRecord(a.locator);
       return {
-        id: String(a.id ?? ""),
-        kind: String(a.kind ?? ""),
-        title: String(a.title ?? ""),
-        ...(a.description != null
-          ? { description: toLang(a.description, "artifacts.description", report) }
-          : {}),
+        id: str(a.id),
+        kind: str(a.kind),
+        title: str(a.title),
+        ...(a.description != null ? { description: lang(a.description, "artifacts.description", report) } : {}),
         locator: {
-          ...(locator.url ? { url: String(locator.url) } : {}),
-          ...(locator.path ? { path: String(locator.path) } : {})
+          ...(locator.url ? { url: str(locator.url) } : {}),
+          ...(locator.path ? { path: str(locator.path) } : {})
         },
-        ...(a.checksum ? { checksum: String(a.checksum) } : {}),
-        ...(a.license ? { license: String(a.license) } : {}),
-        ...(a.tags ? { tags: (a.tags as string[]).map(String) } : {})
+        ...(a.checksum ? { checksum: str(a.checksum) } : {}),
+        ...(a.license ? { license: str(a.license) } : {}),
+        ...(Array.isArray(a.tags) ? { tags: a.tags.map(str) } : {})
       };
     });
 
-  const positioning = (raw.positioning ?? {}) as Record<string, unknown>;
-  const geo = (positioning.geo ?? {}) as Record<string, unknown>;
-
   return {
     identity: {
-      name: String(identity.name ?? ""),
+      name,
       givenName,
       familyName,
-      ...(identity.location ? { location: String(identity.location) } : {}),
-      ...(identity.photo ? { photo: String(identity.photo) } : {}),
-      links: ((identity.links as Record<string, unknown>[]) ?? []).map((l) => ({
-        platform: String(l.platform ?? ""),
-        label: String(l.label ?? ""),
-        url: String(l.url ?? "")
-      }))
+      ...(identity.location ? { location: str(identity.location) } : {}),
+      ...(identity.photo ? { photo: str(identity.photo) } : {}),
+      links
     },
     positioning: {
-      statement: positioning.statement as LangText,
-      audiences: (positioning.audiences ?? {}) as Record<string, LangText>,
+      statement: lang(positioning.statement, "positioning.statement", report),
+      audiences: Object.fromEntries(
+        Object.entries(asRecord(positioning.audiences)).map(([k, v]) => [
+          k,
+          lang(v, `positioning.audiences.${k}`, report)
+        ])
+      ),
       ...(Object.keys(geo).length
         ? {
             geo: {
-              ...(geo.semanticAssociations
-                ? { semanticAssociations: geo.semanticAssociations as string[] }
+              ...(Array.isArray(geo.semanticAssociations)
+                ? { semanticAssociations: geo.semanticAssociations.map(str) }
                 : {}),
-              ...(geo.citationsGoal ? { citationsGoal: geo.citationsGoal as LangText } : {})
+              ...(geo.citationsGoal != null ? { citationsGoal: lang(geo.citationsGoal, "positioning.geo.citationsGoal", report) } : {})
             }
           }
         : {})
     },
-    headlines: ((raw.headlines as Record<string, unknown>[]) ?? []).map((h) => ({
-      platform: String(h.platform ?? ""),
-      lang: String(h.lang ?? ""),
-      text: String(h.text ?? "")
+    headlines: asArray(raw.headlines).map((h) => ({
+      platform: str(h.platform),
+      lang: str(h.lang),
+      text: str(h.text)
     })),
     experience,
     education,
@@ -487,24 +467,88 @@ export function normalize(raw: Record<string, unknown>, report: SyncReport): CVP
     languages,
     credentials,
     artifacts,
-    keywords: (raw.keywords ?? {}) as CVProfile["keywords"],
-    source: {
-      repo: "",
-      commit: "",
-      syncedAt: ""
+    keywords: {
+      seo: Object.fromEntries(
+        Object.entries(asRecord(asRecord(raw.keywords).seo)).map(([k, v]) => [
+          k,
+          Array.isArray(v) ? v.map(str) : []
+        ])
+      ),
+      geo: {
+        associations: Array.isArray(asRecord(asRecord(raw.keywords).geo).associations)
+          ? (asRecord(asRecord(raw.keywords).geo).associations as unknown[]).map(str)
+          : [],
+        claims: Array.isArray(asRecord(asRecord(raw.keywords).geo).claims)
+          ? (asRecord(asRecord(raw.keywords).geo).claims as unknown[]).map(str)
+          : []
+      }
+    },
+    source
+  };
+}
+
+/* ──────────────────────────────────────────────
+   Drift-lite (D12: warn no fail) — sobre la proyección
+────────────────────────────────────────────── */
+
+export interface SyncReport {
+  missingEs: string[];
+  publicationsWithoutLink: string[];
+  urlsOutsideIdentity: string[];
+  /** Formas que no son las esperadas por el contrato del CV (p. ej. dual-shape v1
+   *  del engine): la proyección las normaliza y las declara acá — nunca en silencio. */
+  unexpectedShape: string[];
+}
+
+export function emptyReport(): SyncReport {
+  return { missingEs: [], publicationsWithoutLink: [], urlsOutsideIdentity: [], unexpectedShape: [] };
+}
+
+/** Validación de hechos no expresables en JSON Schema (drift-lite, D12: warn no fail).
+ *  Reglas (SPEC §4): projects[].links ⊆ identity.links; pub sin DOI → aviso.
+ *  Excepciones documentadas: identity.photo (asset) y evidence[].source (fuente de
+ *  verificación externa) NO se chequean contra links canónicos. */
+export function driftReport(profile: CvProfile): SyncReport {
+  const report = emptyReport();
+  const known = new Set(profile.identity.links.map((l) => l.url));
+
+  const walkLang = (prefix: string, v: unknown): void => {
+    if (v && typeof v === "object") {
+      const o = v as Record<string, unknown>;
+      if (typeof o.en === "string" && !o.es && o.en.length > 0) report.missingEs.push(prefix);
+      for (const [k, val] of Object.entries(o)) walkLang(`${prefix}.${k}`, val);
     }
   };
+  walkLang("profile", profile);
+
+  for (const [i, p] of profile.projects.entries()) {
+    for (const url of p.links) {
+      if (!known.has(url)) report.urlsOutsideIdentity.push(`projects.${i}.links = ${url}`);
+    }
+  }
+
+  // Una `url` explícita (v1.1) resuelve el link igual que un DOI: sin ninguna de
+  // las dos no hay ancla citable (preprints RG / abstracts sin DOI).
+  for (const p of profile.publications) {
+    if (!p.doi && !p.url) report.publicationsWithoutLink.push(p.title);
+  }
+  return report;
 }
 
 /* ──────────────────────────────────────────────
    Emisión (render) — byte-estable
 ────────────────────────────────────────────── */
 
-export function renderSource(profile: CVProfile, workspace: string): string {
+export function renderSource(
+  profile: CvProfile,
+  engine: string,
+  schema: string
+): string {
   const header = [
     "// AUTO-GENERATED by tools/sync-profile.ts — DO NOT EDIT.",
-    `// source: profile-data @ ${profile.source.commit || "?"} · synced ${profile.source.syncedAt}`,
-    "// Regenerate: npm run sync:profile  (docs/SPEC.md Fase 1 — editar hechos = editar profile-data)"
+    `// source: profile-data @ ${profile.source.commit || "?"} · generatedAt ${JSON.stringify(profile.source.generatedAt ?? null)}`,
+    `// engine @ ${engine} · schema v${schema}`,
+    "// Regenerate: npm run sync:profile  (docs/SPEC.md §5.1 — editar hechos = editar profile-data)"
   ].join("\n");
   return `${header}
 export const PROFILE = ${JSON.stringify(profile, null, 2)} as const;
@@ -513,13 +557,13 @@ export const PROFILE = ${JSON.stringify(profile, null, 2)} as const;
 
 function gitInfo(workspace: string): { repo: string; commit: string } {
   try {
-    const commit = execSync(`git -C "${workspace}" rev-parse HEAD`, {
+    const commit = execFileSync("git", ["-C", workspace, "rev-parse", "HEAD"], {
       encoding: "utf8",
       stdio: ["ignore", "pipe", "ignore"]
     }).trim();
     let repo = "";
     try {
-      repo = execSync(`git -C "${workspace}" remote get-url origin`, {
+      repo = execFileSync("git", ["-C", workspace, "remote", "get-url", "origin"], {
         encoding: "utf8",
         stdio: ["ignore", "pipe", "ignore"]
       }).trim();
@@ -532,31 +576,32 @@ function gitInfo(workspace: string): { repo: string; commit: string } {
   }
 }
 
-/** Pipeline completo: read → validate → drift → normalize → render. */
-export function generateAll(opts?: { workspace?: string; schemaPath?: string; now?: Date }) {
-  const { workspace: ws, schemaPath: sp } = resolvePaths();
+/** Pipeline completo: `pasco export profile` → proyección → render. */
+export function generateAll(opts?: { workspace?: string; now?: string }) {
+  const { workspace: ws } = resolvePaths();
   const workspace = opts?.workspace ?? ws;
-  const schemaPath = opts?.schemaPath ?? sp;
-  const now = opts?.now ?? new Date();
   if (!workspace) throw new Error("PROFILE_DATA_PATH no está definido (ver .env.example)");
-  if (!schemaPath || !existsSync(schemaPath))
-    throw new Error(`Schema no encontrado en PROFILE_SCHEMA_PATH: ${schemaPath || "(vacío)"}`);
 
-  const raw = readWorkspace(workspace);
-  const validate = compileValidator(schemaPath);
-  if (!validate(raw)) {
-    const detail = (validate.errors ?? [])
-      .map((e) => `${e.instancePath || "(root)"} ${e.message}`)
-      .join("\n  ");
-    throw new Error(`profile-data no valida contra el contrato (schema v1):\n  ${detail}`);
-  }
+  const compiled = exportProfile(workspace, opts?.now);
+  const schema = schemaLabel(workspace);
+  const git = gitInfo(workspace);
+  const source: CvSource = {
+    repo: git.repo,
+    commit: compiled.commit || git.commit,
+    generatedAt: compiled.generatedAt
+  };
+  const report = emptyReport();
+  const profile = projectProfile(compiled.profile, source, report);
+  const drift = driftReport(profile);
+  report.missingEs.push(...drift.missingEs);
+  report.publicationsWithoutLink.push(...drift.publicationsWithoutLink);
+  report.urlsOutsideIdentity.push(...drift.urlsOutsideIdentity);
 
-  const report = driftReport(raw);
-  const profile = normalize(raw, report);
-  const { repo, commit } = gitInfo(workspace);
-  profile.source = { repo, commit, syncedAt: now.toISOString() };
-
-  return { source: renderSource(profile, workspace), report, profile };
+  return {
+    source: renderSource(profile, compiled.engine.version, schema),
+    report,
+    profile
+  };
 }
 
 /* ──────────────────────────────────────────────
@@ -565,9 +610,15 @@ export function generateAll(opts?: { workspace?: string; schemaPath?: string; no
 
 const OUT = resolve(process.cwd(), "src", "data", "profile.generated.ts");
 
+function argValue(flag: string): string | undefined {
+  const i = process.argv.indexOf(flag);
+  return i >= 0 ? process.argv[i + 1] : undefined;
+}
+
 async function main(): Promise<void> {
   const reportFlag = process.argv.includes("--report");
-  const { source, report } = generateAll();
+  const now = argValue("--now");
+  const { source, report } = generateAll(now ? { now } : undefined);
   mkdirSync(join(process.cwd(), "src", "data"), { recursive: true });
   writeFileSync(OUT, source, "utf8");
   console.log(`✅ profile.generated.ts generado (${source.length} bytes) → ${OUT}`);
@@ -578,7 +629,14 @@ async function main(): Promise<void> {
       console.log(`⚠️  publicaciones sin DOI/link (${report.publicationsWithoutLink.length}):\n  ${report.publicationsWithoutLink.join("\n  ")}`);
     if (report.urlsOutsideIdentity.length)
       console.log(`⚠️  URLs fuera de identity.links (${report.urlsOutsideIdentity.length}):\n  ${report.urlsOutsideIdentity.join("\n  ")}`);
-    if (!report.missingEs.length && !report.publicationsWithoutLink.length && !report.urlsOutsideIdentity.length)
+    if (report.unexpectedShape.length)
+      console.log(`⚠️  formas inesperadas normalizadas (${report.unexpectedShape.length}):\n  ${report.unexpectedShape.join("\n  ")}`);
+    if (
+      !report.missingEs.length &&
+      !report.publicationsWithoutLink.length &&
+      !report.urlsOutsideIdentity.length &&
+      !report.unexpectedShape.length
+    )
       console.log("✅ report limpio: sin warnings de drift.");
   }
 }
