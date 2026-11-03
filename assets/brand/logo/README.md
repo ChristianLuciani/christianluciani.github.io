@@ -13,7 +13,7 @@ Estos 89 assets son una **copia fallback** del mark canónico que vive en
 El tag `v1.2.0` es **aditivo** sobre `v1.1.0`: los 66 assets anteriores conservan
 su contenido byte a byte y se suman los 23 del set **settled** (lockups
 `logo-*-lockup-settled*`, exports `logo-aurea-settled-*` y
-`og-image-aurea-settled.png`), que el sitio publica todavía no.
+`og-image-aurea-settled.png`), que el sitio todavía no publica.
 
 Los 4 favicons que publica el sitio (`favicon-aurea-teal.svg`,
 `favicon-aurea-teal-32.png`, `favicon-aurea-teal-16.png`,
