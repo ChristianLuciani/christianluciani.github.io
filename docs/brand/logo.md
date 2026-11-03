@@ -249,7 +249,7 @@ light, además, se omite `logo-background` y los halos de la constelación
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
 | **settled** | el mark completo (espiral + C + supernova + cielo) SIN las estrellas de vértices — el estado final de la animación | contextos medianos |
-| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox; el icono llena el tile (~91%) y la barra se engrosa ×4 | 32/SVG y apple-touch; **16 px sólo la variante `-teal`** (ver abajo) |
+| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox; el icono llena el tile (~91%) y la barra se engrosa ×4 | 32/SVG; **16 px sólo la variante `-teal`** (ver abajo) — el `apple-touch-icon` es un asset propio del mark *settled*, no de esta variante |
 
 Variantes del favicon (política del brand kit, `docs/logo.md` §3.2 — canónica
 allá): **`-teal`** (tile teal + C night, 9.7:1) es la **única que se publica a
