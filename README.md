@@ -6,7 +6,7 @@ El mark animado del sitio se llama **Espirángulo** (espiral + triángulo).
 
 El mark **estático** es canónico en
 [`cluciani-brand-kit`](https://github.com/ChristianLuciani/cluciani-brand-kit)
-(`v1.1.0`); `assets/brand/logo/` es un espejo vendored pinneado en
+(`v1.2.0`); `assets/brand/logo/` es un espejo vendored pinneado en
 `brand-kit.lock.json` y verificado con `npm run brand:verify`. La animación
 runtime y el clock viven en este repo.
 
@@ -22,7 +22,7 @@ christianluciani.github.io/
 ├── vite.config.ts        ← Build con Vite (base "/")
 ├── public/               ← Recursos servidos tal cual (audio, thumbs de papers, OG, QR)
 ├── src/ts/               ← Fractales/ilusiones en TypeScript (Koch, canvas)
-├── assets/               ← Iconos inline + espejo vendored de marca (brand kit v1.1.0)
+├── assets/               ← Iconos inline + espejo vendored de marca (brand kit v1.2.0)
 ├── docs/
 │   ├── CONTRIBUTING.md   ← Flujo de trabajo Git
 │   ├── STYLE_GUIDE.md    ← Sistema de diseño completo
