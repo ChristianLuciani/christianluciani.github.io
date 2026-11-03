@@ -1,8 +1,8 @@
 /**
  * Guard de privacidad de superficies legacy.
  *
- * El repositorio `physics-lab-book` es privado: su identificador y su URL no
- * pueden aparecer en NINGÚN archivo commiteado — ni en `src/` (data,
+ * El repositorio de laboratorio de física es privado: su identificador y su
+ * URL no pueden aparecer en NINGÚN archivo commiteado — ni en `src/` (data,
  * templates, i18n) ni en el `index.html` generado por `npm run build` (que sí
  * se commitea). El marcador se arma por fragmentos a propósito: este archivo
  * se publica en el mismo repo público y no debe volver a publicar el
