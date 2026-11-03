@@ -14,7 +14,7 @@
 > wordmark sigue siendo «Christian Luciani».
 >
 > **Hogar canónico del mark estático:** `ChristianLuciani/cluciani-brand-kit`
-> (tag `v1.1.0`, commit `1234c67`). Este repo es el **consumidor runtime**;
+> (tag `v1.2.0`, commit `3e14224`). Este repo es el **consumidor runtime**;
 > `assets/brand/logo/` es un espejo vendored pinneado en `brand-kit.lock.json`
 > y verificado con `npm run brand:verify`. No se edita a mano.
 > La **animación** y su geometría runtime viven acá; el brand kit sincroniza
@@ -245,6 +245,11 @@ light, además, se omite `logo-background` y los halos de la constelación
 
 ### Variantes de estrellas
 
+> **Composición canónica desde `v1.2.0` (brand kit):** el **settled** es la
+> composición por defecto documentada y el **full** queda como variante
+> permitida (print grande, og-image, hero). Este repo todavía usa el full en
+> hero/og; migrar el mark del sitio es una decisión de marca aparte.
+
 | Variante | Qué muestra | Uso |
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
@@ -315,7 +320,8 @@ transparente o blanco controlado.
 assets/brand/logo/
   logo-{aurea|base}-layers.svg        # master por capas (hero)
   logo-{aurea|base}-settled.svg       # estado final (favicons/print)
-  logo-{aurea|base}-lockup.svg        # mark + tipografía (800×940)
+  logo-{aurea|base}-lockup.svg        # mark + tipografía con constelación (800×940)
+  logo-{aurea|base}-lockup-settled.svg # lockup canónico sin constelación (v1.2.0)
   logo-{aurea|base}-*-light.svg       # masters para superficie clara
   logo-{aurea|base}-{512|1024|2048|4096}.png       # transparente
   logo-{aurea|base}-{512|1024|2048|4096}-dark.png  # fondo night
@@ -331,11 +337,14 @@ assets/brand/logo/
   favicon-{aurea|base}-teal-gold.svg  # tile teal + acabado del mark, 32/SVG
   favicon-{aurea|base}-teal-gold-32.png
   apple-touch-icon-{aurea|base}.png   # 180, fondo night
+  logo-aurea-settled-{512|1024|2048|4096}{,-dark,-light}.png  # set settled (v1.2.0)
+  logo-aurea-settled-print-{a4|a3}{,-dark,-light}.png         # 300dpi settled (v1.2.0)
   og-image-{aurea|base}.png           # 1200×630 dark + nombre
+  og-image-aurea-settled.png          # 1200×630 settled (v1.2.0)
 ```
 
 El inventario y la regeneración canónicos viven en `cluciani-brand-kit`
-(tag `v1.1.0`). En este repo `assets/brand/logo/` es un espejo vendored: se
+(tag `v1.2.0`). En este repo `assets/brand/logo/` es un espejo vendored: se
 verifica con `npm run brand:verify`; no se regenera acá. El script local
 `tools/logo/generate-logo.mjs` queda deprecado como referencia/sync.
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — salida **0** limpio

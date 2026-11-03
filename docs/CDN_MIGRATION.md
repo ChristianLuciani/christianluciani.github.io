@@ -1,7 +1,8 @@
 # Plan — Migración de assets a CDN (agnóstica)
 
 > **Actualización 2026-11-03 — favicon teal.** El sitio sirve el tile teal
-> (`favicon-aurea-teal{,-32,-16}`) desde `cluciani-brand-kit@v1.1.0`; el
+> (`favicon-aurea-teal{,-32,-16}`) desde el tag vigente del brand kit (hoy
+> `v1.2.0`); el
 > transparente queda en el espejo para superficies controladas. Cuatro
 > favicons en `/assets/brand/`, `data-local` 8 en modo CDN.
 
