@@ -4,7 +4,8 @@
  * asienta en blanco. Cada frase conserva su alineación original:
  *   · «Arte / Ciencias Filosofía» en triángulo;
  *   · «Perspectivas / del / Universo» en tres líneas centradas;
- *   · «Una / Instancia Humana» en dos filas, «Una» sobre «Humana».
+ *   · «Una / Instancia Humana» en dos filas, «Una» centrada sobre el hueco:
+ *     la U cae sobre la última «a» de «Instancia» y la «a» sobre la H de «Humana».
  * Sin traza de oro: el texto se sostiene solo.
  * Al terminar, el `.hero-name` aparece donde terminó la última frase y vuela a
  * su posición natural; al aterrizar vuelve a flow y el loader se oculta.

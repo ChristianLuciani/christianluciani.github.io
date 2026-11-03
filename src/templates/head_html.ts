@@ -517,7 +517,8 @@ a { color:inherit; }
 .intro-phrase--stack .p-word { margin:0; white-space:nowrap; }
 
 /* ── Frase 3 · DOS FILAS ──────────────────────────────────────────────────
-   «Una» sobre «Humana», con «Instancia» a la izquierda en la fila de abajo.
+   «Instancia Humana» abajo y «Una» centrada sobre el hueco entre ambas: la U
+   cae sobre la última «a» de «Instancia» y la «a» final sobre la H de «Humana».
    Alineación recta, sin traza ni rotaciones. */
 .intro-phrase--signature {
   display:grid;
@@ -525,13 +526,13 @@ a { color:inherit; }
   grid-template-rows:auto auto;
   align-items:center;
   justify-content:center;
-  justify-items:start;
+  justify-items:center;
   column-gap:1.2em;
   row-gap:.12em;
   line-height:1.15;
 }
 .intro-phrase--signature .p-word { margin:0; white-space:nowrap; }
-.intro-phrase--signature .p-word:nth-child(1) { grid-column:2; grid-row:1; }
+.intro-phrase--signature .p-word:nth-child(1) { grid-column:1 / -1; grid-row:1; justify-self:center; }
 .intro-phrase--signature .p-word:nth-child(2) { grid-column:1; grid-row:2; }
 .intro-phrase--signature .p-word:nth-child(3) { grid-column:2; grid-row:2; }
 
@@ -773,6 +774,16 @@ a { color:inherit; }
   border-color:rgba(0,201,192,.4);
   background:rgba(0,201,192,.04);
 }
+/* Toda la ficha con artefacto es un solo enlace: el hit transparente cubre la
+   tarjeta y los enlaces de la nota (repo, DOI, SSRN) quedan por encima. */
+.project-card--linked { cursor:pointer; }
+.project-card-hit {
+  position:absolute; inset:0;
+  z-index:1;
+  border-radius:inherit;
+}
+.project-card-hit:focus-visible { outline:2px solid var(--teal); outline-offset:-4px; }
+.project-card .pub-doi { position:relative; z-index:2; }
 .project-status {
   font-family:var(--font-mono); font-size:9px;
   letter-spacing:.12em; text-transform:uppercase;

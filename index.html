@@ -501,7 +501,8 @@ a { color:inherit; }
 .intro-phrase--stack .p-word { margin:0; white-space:nowrap; }
 
 /* ── Frase 3 · DOS FILAS ──────────────────────────────────────────────────
-   «Una» sobre «Humana», con «Instancia» a la izquierda en la fila de abajo.
+   «Instancia Humana» abajo y «Una» centrada sobre el hueco entre ambas: la U
+   cae sobre la última «a» de «Instancia» y la «a» final sobre la H de «Humana».
    Alineación recta, sin traza ni rotaciones. */
 .intro-phrase--signature {
   display:grid;
@@ -509,13 +510,13 @@ a { color:inherit; }
   grid-template-rows:auto auto;
   align-items:center;
   justify-content:center;
-  justify-items:start;
+  justify-items:center;
   column-gap:1.2em;
   row-gap:.12em;
   line-height:1.15;
 }
 .intro-phrase--signature .p-word { margin:0; white-space:nowrap; }
-.intro-phrase--signature .p-word:nth-child(1) { grid-column:2; grid-row:1; }
+.intro-phrase--signature .p-word:nth-child(1) { grid-column:1 / -1; grid-row:1; justify-self:center; }
 .intro-phrase--signature .p-word:nth-child(2) { grid-column:1; grid-row:2; }
 .intro-phrase--signature .p-word:nth-child(3) { grid-column:2; grid-row:2; }
 
@@ -757,6 +758,16 @@ a { color:inherit; }
   border-color:rgba(0,201,192,.4);
   background:rgba(0,201,192,.04);
 }
+/* Toda la ficha con artefacto es un solo enlace: el hit transparente cubre la
+   tarjeta y los enlaces de la nota (repo, DOI, SSRN) quedan por encima. */
+.project-card--linked { cursor:pointer; }
+.project-card-hit {
+  position:absolute; inset:0;
+  z-index:1;
+  border-radius:inherit;
+}
+.project-card-hit:focus-visible { outline:2px solid var(--teal); outline-offset:-4px; }
+.project-card .pub-doi { position:relative; z-index:2; }
 .project-status {
   font-family:var(--font-mono); font-size:9px;
   letter-spacing:.12em; text-transform:uppercase;
@@ -1558,8 +1569,10 @@ a { color:inherit; }
     <p class="room-function" data-scroll="up" data-delay="1">Proyectos publicados con repositorio, release o DOI que cualquiera puede abrir y verificar.</p>
     <div class="room-subtitle" data-scroll="up" data-delay="2">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 3 PROYECTOS</div>
 <div class="project-grid project-grid--pair">
-    <div class="project-card" data-scroll="from-left" data-recencia="2026-08-07">
-      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
+    <div class="project-card project-card--linked" data-scroll="from-left" data-recencia="2026-08-07">
+
+      <a class="project-card-hit" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener"
+         aria-label="Abrir profile-as-code" data-aria-es="Abrir profile-as-code" data-aria-en="Open profile-as-code"></a>      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
       <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
       <div class="project-tagline">Una sola fuente de verdad versionable compila a todas las superficies públicas del perfil: renderers por plataforma, salida determinista y hechos validados por schema</div>
       <ul class="project-body">
@@ -1574,8 +1587,10 @@ a { color:inherit; }
       </div>
     </div>
 
-    <div class="project-card" data-scroll="from-left" data-delay="1" data-recencia="2026-01-27">
-      <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
+    <div class="project-card project-card--linked" data-scroll="from-left" data-delay="1" data-recencia="2026-01-27">
+
+      <a class="project-card-hit" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank" rel="noopener"
+         aria-label="Abrir Kontablo" data-aria-es="Abrir Kontablo" data-aria-en="Open Kontablo"></a>      <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
       <div class="project-title"><em>Kontablo</em> — Ontología Contable Universal</div>
       <div class="project-tagline">Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)</div>
       <ul class="project-body">
