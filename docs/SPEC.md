@@ -174,7 +174,8 @@ export const PROFILE = {
                               // (bullets; normaliza string v1 "·"-separado → array v1.1)
   education: Education[],     // entrada deducida: experience[] con role=título (v1 legacy)
                               // o education[] explícito (v1.1) — el normalizador unifica
-  projects: Project[],        // con evidence[]; id estable para referencias desde curación
+  projects: Project[],        // con evidence[]; `published` DERIVADO de artifactRefs →
+                              // artifact público con locator.url (El Marco vs El Bastidor, #109)
   publications: Publication[],// con url (v1.1); DOI/ORCID resolubles (ancla GEO)
   skills: Skill[],            // + languages: [{ code, level }] (v1.1)
   keywords: { seo, geo },
@@ -185,7 +186,10 @@ export const PROFILE = {
 Tipos en `src/data/profile.types.ts` (`CvProfile`). El archivo es una **proyección, no el
 `LoadedProfile`**: quedan afuera `bios`, `faq`, `flavor`, `deployments`, `checks`,
 `socialHandles`, `press`, `releases`, `active`, `email`, `handle`, `timezone`,
-`nationality`, `authors`, `kind`, `artifactRefs` y los ids de fila que el CV no usa.
+`nationality`, `authors`, `kind`, `artifactRefs` (crudo) y los ids de fila que el CV no usa.
+El único derivado que sí viaja es `projects[].published`: artefacto público abrible, calculado
+en el pipeline; los IDs de `artifactRefs` no se emiten porque pueden apuntar a un artifact
+privado.
 
 ### 5.3 Capa de curación (`src/content/cv/`) — el único otro lugar editable por humano
 

@@ -556,6 +556,7 @@ export const PROFILE = {
         "en": "An Esperanto for accounting: graph-based ontology mapping the 195 sovereign jurisdictions to IFRS/XBRL and to the agentic economy (MCP · A2A · AP2). One immutable UUID per universal accounting concept; deterministic three-tier resolution.",
         "es": "Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2). Un UUID inamovible por concepto; resolución determinista en tres niveles."
       },
+      "published": true,
       "links": [
         "https://github.com/ChristianLuciani/accounting-esperanto"
       ],
@@ -599,6 +600,7 @@ export const PROFILE = {
         "en": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (Aug 2024) — roughly two months before Khanmigo went public. Built without external funding; model-agnostic via Poe; guardrails for minors.",
         "es": "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (ago 2024) — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo. Desarrollado sin financiamiento externo; agnóstico del modelo vía Poe; guardrails para menores."
       },
+      "published": true,
       "links": [
         "https://github.com/DRAHMAN-ORG/drahman-org"
       ],
@@ -632,6 +634,7 @@ export const PROFILE = {
         "en": "Personal cognitive operating system — captures, distills and organizes synthetic-cognition conversations. Solves dialectical entropy: flashes of clarity that vanish get stored in a structured database (Supabase). Universal ingestion: Claude JSON/ZIP, ChatGPT, Markdown.",
         "es": "Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética. Resuelve la entropía dialéctica: los destellos de claridad se guardan en base de datos estructurada (Supabase). Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "cognición sintética",
@@ -651,6 +654,7 @@ export const PROFILE = {
         "en": "Philosophical proposal and software architecture about the nature of collective knowledge in the age of synthetic cognition. Trunk/Rhizome model: the rhizome explores freely; the human–synthetic-cognition pair periodically distills toward the Trunk. Integrates Noesis and Noetix.",
         "es": "Propuesta filosófica y arquitectura de software sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética. Modelo Tronco/Rizoma: el rizoma explora libremente; el par humano-cognición sintética destila hacia el Tronco. Integra Noesis y Noetix."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "epistemología",
@@ -673,6 +677,7 @@ export const PROFILE = {
         "en": "Self-taught human-development platform — a counterpoint to the traditional LMS model. Structured, dynamic support for long-term skill development. Closest current reference: NotebookLM, but without structured competency progression.",
         "es": "Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional. Soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo. Referente más cercano: NotebookLM, pero sin progresión estructurada de competencias."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "LMS",
@@ -693,6 +698,7 @@ export const PROFILE = {
         "en": "Reduce organizational entropy through distributed synthetic cognition and knowledge graphs. Organizations modeled as thermodynamic systems with high/low-entropy states. Destination: high-value consulting for organizations in digital transition.",
         "es": "Reducir la entropía organizacional mediante cognición sintética distribuida y grafos de conocimiento. Las organizaciones modeladas como sistemas termodinámicos de alta/baja entropía. Destino: consultoría de alto valor para organizaciones en transición digital."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "entropía organizacional",
@@ -713,6 +719,7 @@ export const PROFILE = {
         "en": "From dystopia to achievable eutopias: a newsletter with epistemic rigor — one essay at a time, every claim traced, every thesis falsifiable. Maps the path to technological sovereignty, collective cognition and regenerative economies.",
         "es": "De la distopía a eutopías alcanzables: newsletter con rigor epistémico — un ensayo a la vez, cada claim con fuente, cada tesis falsable. Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "newsletter",
@@ -732,6 +739,7 @@ export const PROFILE = {
         "en": "Voice-guided PWA for my father (post-stroke aphasia). Offline-first, zero telemetry.",
         "es": "PWA guiada por voz para mi padre (afasia post-ACV). Offline-first, cero telemetría."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "PWA",
@@ -752,6 +760,7 @@ export const PROFILE = {
         "en": "36 interactive HTML5 laboratory manuals for university physics — originally written for USFQ (engineering, health sciences, pure sciences).",
         "es": "36 guías interactivas HTML5 de laboratorio de física universitaria — originalmente escritas para USFQ (ingenierías, ciencias de la salud, ciencias puras)."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "física",
@@ -771,6 +780,7 @@ export const PROFILE = {
         "en": "Every merged PR is infrastructure that belongs to everyone. Upstream contributions to the agentic-AI ecosystem — AionCore (Pi agent as built-in ACP), pi-acp (session/delete per ACP spec), AionUi (theme-aware logos), Ollama to local ACP agents.",
         "es": "Cada PR mergeado es infraestructura que pertenece a todos. Contribuciones upstream al ecosistema de IA agéntica — AionCore (agente Pi como ACP built-in), pi-acp (session/delete según spec ACP), AionUi (logos theme-aware), Ollama a agentes ACP locales."
       },
+      "published": false,
       "links": [],
       "keywords": [
         "upstream contributions",
@@ -821,6 +831,7 @@ export const PROFILE = {
         "en": "Spec-driven engine that compiles one versionable source of truth into every public profile surface: per-platform renderers, deterministic (byte-stable) output, schema-validated facts and a per-entry deploy ledger. This very profile is generated by it.",
         "es": "Motor spec-driven que compila una sola fuente de verdad versionable en todas las superficies públicas del perfil: renderers por plataforma, salida determinista (byte-stable), hechos validados por schema y un ledger de deploy por entrada. Este mismo perfil está generado por él."
       },
+      "published": true,
       "links": [
         "https://github.com/ChristianLuciani/profile-as-code"
       ],

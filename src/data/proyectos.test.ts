@@ -1,54 +1,90 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { PROYECTOS, enDesarrollo, publicados } from "./proyectos";
+import { projectKey } from "../content/cv/proyectos";
+import { PROFILE } from "./profile.generated";
+import type { ProjectItem } from "./profile.types";
+import { PROYECTOS, enDesarrollo, publicados, toProyecto } from "./proyectos";
 
 /**
- * El orden de las tarjetas NO es el orden de edición del array: es el que
- * deriva `recencia` (más reciente primero). Estos tests fijan ese contrato y
- * que una ficha sin fecha verificable quede al final, nunca inventada.
+ * El split El Marco / El Bastidor NO es editorial: se deriva de
+ * `PROFILE.projects[].published` (artifactRefs → artifact público con
+ * locator.url). El orden de tarjetas es curación (`recencia`): más reciente
+ * primero y las fichas sin fecha verificable al final, nunca inventadas.
  */
 
-const fechas = (lista: readonly { recencia?: string }[]) =>
-  lista.map((p) => p.recencia ?? "");
+const fechas = (lista: readonly { recencia?: string }[]) => lista.map((p) => p.recencia ?? "");
+const keys = (lista: readonly { id: string }[]) => lista.map((p) => p.id);
 
-describe("PROYECTOS — orden de tarjetas por recencia", () => {
-  it("El Marco: más reciente primero (profile-as-code, Kontablo, Drahma)", () => {
-    expect(publicados.map((p) => p.id)).toEqual([
-      "profile-as-code",
-      "kontablo",
-      "drahma"
-    ]);
-    expect(fechas(publicados)).toEqual([...fechas(publicados)].sort().reverse());
+describe("PROYECTOS — split derivado de artifactRefs", () => {
+  it("El Marco == proyectos con artifactRefs público (publicados del SSOT)", () => {
+    const esperados = PROFILE.projects
+      .filter((p) => p.published)
+      .map((p) => projectKey(p.name));
+    expect(keys(publicados)).toEqual(["profile-as-code", "Kontablo", "Drahma"]);
+    expect(new Set(keys(publicados))).toEqual(new Set(esperados));
   });
 
-  it("El Bastidor: más reciente primero y la ficha sin fecha al final", () => {
-    expect(enDesarrollo.map((p) => p.id)).toEqual([
-      "topia",
-      "clapps",
-      "nelson-companion",
-      "estelectica",
-      "zentropy",
-      "physics-lab-guides",
-      "noos"
+  it("El Bastidor == proyectos sin artifactRefs público", () => {
+    expect(keys(enDesarrollo)).toEqual([
+      "Topia",
+      "CLAPPS.AI",
+      "Nelson Companion",
+      "Esteléctica",
+      "ZENTROPY",
+      "Physics Lab Book",
+      "NOOS",
+      "Upstream Open Source Contributions"
     ]);
+    expect(enDesarrollo.every((p) => p.published === false)).toBe(true);
+    expect(publicados.every((p) => p.published === true)).toBe(true);
+  });
+
+  it("cada ficha del SSOT aparece exactamente una vez", () => {
+    expect(PROYECTOS.length).toBe(PROFILE.projects.length);
+    expect(new Set(PROYECTOS.map((p) => p.id)).size).toBe(PROYECTOS.length);
+    expect(PROYECTOS.length).toBe(publicados.length + enDesarrollo.length);
+  });
+
+  it("orden: más reciente primero y la ficha sin fecha al final", () => {
+    expect(fechas(publicados)).toEqual([...fechas(publicados)].sort().reverse());
     const conFecha = enDesarrollo.filter((p) => p.recencia);
     expect(fechas(conFecha)).toEqual([...fechas(conFecha)].sort().reverse());
     expect(enDesarrollo.filter((p) => !p.recencia).map((p) => p.id)).toEqual([
-      "noos"
+      "NOOS",
+      "Upstream Open Source Contributions"
     ]);
   });
 
-  it("ids únicos y fechas ISO cuando existen", () => {
-    const ids = PROYECTOS.map((p) => p.id);
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const p of PROYECTOS) {
-      if (p.recencia) expect(p.recencia).toMatch(/^\d{4}-\d{2}-\d{2}$/);
-    }
+  it("una ficha no publicada sin curación no inventa `falta`", () => {
+    const fixture: ProjectItem = {
+      name: "Proyecto sin curación",
+      published: false,
+      links: [],
+      keywords: [],
+      evidence: []
+    };
+    const vista = toProyecto(fixture);
+    expect(vista.falta).toBeUndefined();
+    expect(vista.html).toContain("Sin artefacto público");
   });
 
-  it("CLAPPS.AI declara el nombre completo, no solo el acrónimo", () => {
-    const clapps = PROYECTOS.find((p) => p.id === "clapps");
-    expect(clapps).toBeDefined();
-    expect(clapps!.html).toContain("Comprehensive Learning Applications");
-    expect(clapps!.html).not.toContain("Learning Applications Platform");
+  it("los hechos del SSOT entran a la tarjeta (nombre, descripción, links, estado)", () => {
+    const clapps = PROFILE.projects.find((p) => p.name.startsWith("CLAPPS.AI"))!;
+    const vista = PROYECTOS.find((p) => p.id === "CLAPPS.AI")!;
+    expect(vista.html).toContain("Comprehensive Learning Applications");
+    expect(vista.html).toContain(clapps.description!.es!);
+    expect(vista.html).toContain("En diseño · Sin artefacto público");
+    // Los links públicos del SSOT se renderizan; los privados no existen acá.
+    const kontablo = PROYECTOS.find((p) => p.id === "Kontablo")!;
+    expect(kontablo.links).toContain("https://github.com/ChristianLuciani/accounting-esperanto");
+    expect(kontablo.html).toContain("https://doi.org/10.5281/zenodo.20738795");
+  });
+
+  it("src/data/proyectos.ts no vuelve a decidir la etapa ni carga hechos", () => {
+    const source = readFileSync(resolve(process.cwd(), "src", "data", "proyectos.ts"), "utf8");
+    expect(source).not.toMatch(/etapa\s*:/);
+    expect(source).not.toMatch(/\b(19|20)\d{2} – (19|20)\d{2}\b/);
+    expect(source).not.toMatch(/USFQ|Magic Dreams|Grupo Angel/);
   });
 });

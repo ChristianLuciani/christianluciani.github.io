@@ -25,6 +25,13 @@
  */
 
 import { enDesarrollo, publicados } from "../data/proyectos.ts";
+import { PROFILE } from "../data/profile.generated.ts";
+
+/** Primer año del SSOT: subtítulo y función de El Friso no fijan un año a mano. */
+const EXPERIENCIA_DESDE = PROFILE.experience
+  .map((e) => e.start.slice(0, 4))
+  .filter((y) => /^\d{4}$/.test(y))
+  .sort()[0] ?? "";
 
 export interface SalaDef {
   /** id del <section> sin prefijo: 'perfil' → <section id="room-perfil"> */
@@ -112,12 +119,12 @@ export const SALAS: SalaDef[] = [
     id: "experiencia",
     titulo: "El <em>Friso</em>",
     tituloEn: "The <em>Frieze</em>",
-    subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
-    subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
+    subtitulo: `EXPERIENCIA PROFESIONAL · ${EXPERIENCIA_DESDE} – PRESENTE`,
+    subtituloEn: `PROFESSIONAL EXPERIENCE · ${EXPERIENCIA_DESDE} – PRESENT`,
     funcion:
-      "Trayectoria profesional: roles, organizaciones y resultados, de 2003 al presente.",
+      `Trayectoria profesional: roles, organizaciones y resultados, de ${EXPERIENCIA_DESDE} al presente.`,
     funcionEn:
-      "Professional trajectory: roles, organizations and results, from 2003 to the present.",
+      `Professional trajectory: roles, organizations and results, from ${EXPERIENCIA_DESDE} to the present.`,
     navLabel: "Friso",
     navLabelEn: "Frieze",
     ilusion: "c-exp"
