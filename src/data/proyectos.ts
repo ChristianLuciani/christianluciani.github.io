@@ -187,7 +187,7 @@ export const PROYECTOS: readonly Proyecto[] = [
       </ul>`
   },
   {
-    id: "physics-lab-book",
+    id: "physics-lab-guides",
     nombre: "Physics Lab Book",
     etapa: "desarrollo",
     recencia: "2019-01-01",
