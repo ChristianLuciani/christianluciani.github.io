@@ -249,7 +249,7 @@ light, además, se omite `logo-background` y los halos de la constelación
 |---|---|---|
 | **full** (layers) | constelación de vértices en pico + cielo + galaxia | hero, og-image, prints, masters |
 | **settled** | el mark completo (espiral + C + supernova + cielo) SIN las estrellas de vértices — el estado final de la animación | contextos medianos |
-| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox; el icono llena el tile (~91%) y la barra se engrosa ×4 | favicon 16/32, contextos <24px |
+| **favicon** (simplificado) | la C del mark (mismo contorno, terminales y esquinas) **en oro plano**, sin bisel ni bloom, + supernova; recortados al bbox; el icono llena el tile (~91%) y la barra se engrosa ×4 | 32/SVG y apple-touch; **16 px sólo la variante `-teal`** (ver abajo) |
 
 Variantes del favicon (política del brand kit, `docs/logo.md` §3.2 — canónica
 allá): **`-teal`** (tile teal + C night, 9.7:1) es la **única que se publica a
@@ -270,6 +270,9 @@ transparente o blanco controlado.
 - **Tamaño mínimo**: 24 px de alto para el mark completo. Los favicons 16/32
   usan la variante **simplificada** (sólo la C + supernova) — no el mark
   completo, que en <24px se vuelve ilegible.
+- **Favicon a 16 px**: usá **`-teal`** (tile opaco, 9.7:1). El transparente y
+  el `-teal-gold` no se publican a ese tamaño: el oro sin fondo no se aprecia
+  sobre un tab de color arbitrario. El sitio declara `-teal` en SVG, 32 y 16.
 - **Zona de respiro**: ≥ 12% del ancho del símbolo a cada lado.
 - **No reemplazar** la tipografía del lockup por otra familia sin decisión
   de marca.
