@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { PROFILE } from "../../data/profile.generated";
 import type { CvProfile } from "../../data/profile.types";
 import { profileI18nPairs } from "./i18n";
+import { MARCO, orgEs } from "./museo";
 
 const profile = PROFILE as unknown as CvProfile;
 const PAIRS = profileI18nPairs(profile);
@@ -54,5 +57,49 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
     expect(PAIRS["Publicado bajo licencia MIT, con releases etiquetados."]).toBe(
       "Published under the MIT license, with tagged releases."
     );
+  });
+
+  it("el cierre de El Bastidor traduce las dos variantes derivadas (F3)", () => {
+    for (const count of [1, 2]) {
+      const closing = MARCO.closingSomePublic(count);
+      expect(closing.es).toBeDefined();
+      expect(PAIRS[closing.es!]).toBe(closing.en);
+    }
+    expect(MARCO.closingSomePublic(1).es).toContain("una ya enlaza material público");
+    expect(MARCO.closingSomePublic(2).es).toContain("varias ya enlazan material público");
+  });
+
+  it("ORG_ES reemplaza tokens completos y no toca nombres propios (F8)", () => {
+    // Los 3 orgs del SSOT siguen presentándose bien en ES.
+    expect(orgEs("Independent — Panama / Ecuador")).toBe("Independiente — Panamá / Ecuador");
+    expect(orgEs("CERN — San Miguel Regla, Mexico (scholarship)")).toBe(
+      "CERN — San Miguel Regla, México (beca)"
+    );
+    // Nombres propios que CONTIENEN los tokens no se traducen.
+    for (const proper of [
+      "New Mexico State University",
+      "Independent University",
+      "Panama Canal Authority"
+    ]) {
+      expect(orgEs(proper)).toBe(proper);
+    }
+  });
+
+  it("el MAP no transporta el claim prohibido de claims.json (F7)", () => {
+    // El claim vive en `claims.json → forbidden[]` del SSOT. El diccionario
+    // runtime lo tenía hardcodeado y viajaba en el bundle: este guard falla si
+    // vuelve, por la vía del MAP o de cualquier par derivado.
+    const forbidden = [
+      "5 publicaciones co-autoradas",
+      "5 co-authored publications",
+      "5 co-authored papers"
+    ];
+    const mapSource = readFileSync(resolve(process.cwd(), "src", "cv", "i18n.ts"), "utf8");
+    for (const claim of forbidden) expect(mapSource, claim).not.toContain(claim);
+    for (const [es, en] of Object.entries(PAIRS)) {
+      for (const claim of forbidden) {
+        expect(`${es}\n${en}`, claim).not.toContain(claim);
+      }
+    }
   });
 });

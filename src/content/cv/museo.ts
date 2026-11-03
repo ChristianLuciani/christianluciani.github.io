@@ -53,30 +53,48 @@ export const MARCO = {
   /**
    * Cierre de El Bastidor cuando alguna ficha ya enlaza material público (p. ej.
    * PRs upstream) pero ninguna declara `artifactRefs`: decir "ninguna tiene un
-   * artefacto que abrir" sería falso.
+   * artefacto que abrir" sería falso. El cuantificador se DERIVA del número de
+   * fichas con links (`count`): «una» o «varias», nunca un plural fijo.
    */
-  closingSomePublic: {
-    es: "Ninguna ficha de esta sala declara todavía un artefacto en el SSOT que la gradúe a El Marco — varias ya enlazan material público — y cada una dice qué le falta.",
-    en: "No entry in this room declares an artifact in the SSOT that would graduate it to The Frame yet — several already link public material — and each one says what it is missing."
-  } satisfies LangText
+  closingSomePublic: (count: number): LangText => ({
+    es: `Ninguna ficha de esta sala declara todavía un artefacto en el SSOT que la gradúe a El Marco — ${
+      count === 1 ? "una ya enlaza material público" : "varias ya enlazan material público"
+    } — y cada una dice qué le falta.`,
+    en: `No entry in this room declares an artifact in the SSOT that would graduate it to The Frame yet — ${
+      count === 1 ? "one already links public material" : "several already link public material"
+    } — and each one says what it is missing.`
+  })
 } as const;
 
 /**
  * Presentación ES del `org` del SSOT. El `org` es un string invariante (nunca
  * langMap, SPEC §11/§15.6): los nombres propios NO se traducen. Lo que sí se
- * presenta en ES es el rol del empleador ("Independent") y el país/glosa, que
- * en el SSOT están en inglés por ser parte del nombre de la fila.
+ * presenta en ES es el rol del empleador ("Independent"), el país y la glosa
+ * `(scholarship)`, que en el SSOT están en inglés por ser parte del nombre de
+ * la fila.
+ *
+ * Se reemplaza por TOKEN COMPLETO (segmento separado por ` — `/` / `/`,/`(`),
+ * nunca por substring: «New Mexico State University», «Independent University»
+ * o «Panama Canal Authority» son nombres propios y quedan intactos.
  */
-const ORG_ES: ReadonlyArray<readonly [RegExp, string]> = [
-  [/\bIndependent\b/g, "Independiente"],
-  [/\bPanama\b/g, "Panamá"],
-  [/\bMexico\b/g, "México"],
-  [/\(scholarship\)/g, "(beca)"]
-];
+const ORG_ES: Readonly<Record<string, string>> = {
+  Independent: "Independiente",
+  Panama: "Panamá",
+  Mexico: "México",
+  scholarship: "beca"
+};
+
+/** Separadores que aíslan un token: guion, slash, coma y paréntesis. */
+const ORG_SEPARATOR = /(\s+[—–-]\s+|\s*\/\s*|\s*,\s*|\s*\(|\))/;
 
 /** `org` del SSOT → presentación ES; el EN vuelve al string original vía i18n. */
 export function orgEs(org: string): string {
-  return ORG_ES.reduce((acc, [pattern, replacement]) => acc.replace(pattern, replacement), org);
+  return org
+    .split(ORG_SEPARATOR)
+    .map((part) =>
+      Object.prototype.hasOwnProperty.call(ORG_ES, part) ? ORG_ES[part] : part
+    )
+    .join("");
 }
 
 /** Etiqueta de estado de una ficha, derivada de `published` + `status` del SSOT. */

@@ -2,10 +2,11 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { SALAS } from "../cv/salas";
+import { enDesarrolloDe } from "../data/proyectos";
 import { PROFILE } from "../data/profile.generated";
 import { PROFILE_COMMIT, PROFILE_ENGINE, provenanceHtml } from "../data/profile.provenance";
 import type { CvProfile } from "../data/profile.types";
-import { bastidorHtml, frisoHtml, marcoHtml, primerArtefacto } from "./sala_html";
+import { bastidorHtml, drahmaShowcase, frisoHtml, marcoHtml, primerArtefacto } from "./sala_html";
 
 const profile = PROFILE as unknown as CvProfile;
 const FRISO = frisoHtml(profile);
@@ -65,6 +66,10 @@ describe("El Friso — hechos desde PROFILE.experience (#109)", () => {
       .sort()[0];
     expect(experiencia.subtitulo).toBe(`TRAYECTORIA · ${minYear} – PRESENTE`);
     expect(experiencia.subtitulo).not.toMatch(/EXPERIENCIA PROFESIONAL/);
+    // La mitad EN tiene el mismo contrato: un cambio futuro que reintroduzca
+    // «PROFESSIONAL EXPERIENCE» en `subtituloEn` tiene que ponerse rojo (F5).
+    expect(experiencia.subtituloEn).toBe(`TRAJECTORY · ${minYear} – PRESENT`);
+    expect(experiencia.subtituloEn).not.toMatch(/PROFESSIONAL EXPERIENCE/);
     expect(experiencia.funcion).toContain("empleo, formación y talleres");
     expect(experiencia.funcion).not.toContain("Trayectoria profesional");
   });
@@ -139,13 +144,41 @@ describe("El Marco / El Bastidor — split desde artifactRefs (#109)", () => {
     expect(BASTIDOR).toContain("el primer número publicado.");
   });
 
-  it("el cierre no miente: hay fichas que ya enlazan material público (F3)", () => {
-    // Upstream Open Source Contributions enlaza 4 PRs públicos: la frase
-    // «ninguna tiene un artefacto que abrir» sería falsa.
-    expect(BASTIDOR).not.toContain(
-      "Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir"
-    );
-    expect(BASTIDOR).toContain("varias ya enlazan material público");
+  it("la píldora curada no pisa el status del SSOT si `published` no coincide (F4)", () => {
+    // Fixture cruzado: Drahma tiene statusLabel curado («Publicado · Agosto
+    // 2024 ·…»). Si el SSOT deja de publicarlo, la ficha no puede seguir
+    // afirmando «Publicado» desde la curación.
+    const noPublicado: CvProfile = {
+      ...profile,
+      projects: profile.projects.map((p) =>
+        p.name.startsWith("Drahma") ? { ...p, published: false } : p
+      )
+    };
+    const showcase = drahmaShowcase(noPublicado);
+    const pill = /<span class="project-status ([^"]+)">([^<]*)<\/span>/.exec(showcase);
+    expect(pill).not.toBeNull();
+    expect(pill![1]).toBe("status-private");
+    expect(pill![2]).not.toMatch(/Publicado/);
+    expect(pill![2]).toContain("Sin artefacto público");
+    expect(showcase).not.toContain("Publicado · Agosto 2024 · Repositorio público");
+  });
+
+  it("el cierre cuantifica el dato real: hoy una sola ficha enlaza material público (F3)", () => {
+    // 8 fichas en El Bastidor; sólo Upstream Open Source Contributions (4 PRs)
+    // enlaza material público. Afirmar «varias» sería falso: el cuantificador
+    // se deriva del número de fichas con links.
+    const conLinks = enDesarrolloDe(profile).filter((p) => p.links.length > 0);
+    expect(conLinks.map((p) => p.id)).toEqual(["Upstream Open Source Contributions"]);
+    expect(BASTIDOR).toContain("una ya enlaza material público");
+    expect(BASTIDOR).not.toContain("varias ya enlazan material público");
+    // El plural también es derivado: una segunda ficha con link → «varias».
+    const dosConLinks: CvProfile = {
+      ...profile,
+      projects: profile.projects.map((p) =>
+        p.name.startsWith("NOOS") ? { ...p, links: ["https://example.test/noos"] } : p
+      )
+    };
+    expect(bastidorHtml(dosConLinks)).toContain("varias ya enlazan material público");
     // Sin links públicos, vuelve la variante fuerte.
     const sinLinks: CvProfile = {
       ...profile,

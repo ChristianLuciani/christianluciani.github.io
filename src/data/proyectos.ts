@@ -97,9 +97,12 @@ function projectLinks(project: ProjectItem): { url: string; label?: string }[] {
 function cardHtml(project: ProjectItem): string {
   const key = projectKey(project.name);
   const curation = PROJECT_CURATION[key];
-  // El estado del SSOT decide la sala; la píldora curada sólo agrega el detalle
-  // editorial (licencia/versión/fecha) que `main` publicaba y el SSOT no lleva.
-  const status = curation?.statusLabel ?? statusLabel(project.published, project.status);
+  // El estado del SSOT decide la sala y la clase (`statusClass`); la píldora
+  // curada sólo agrega el detalle editorial (licencia/versión/fecha) que `main`
+  // publicaba y el SSOT no lleva, y sólo si `published` coincide: una ficha en
+  // El Bastidor no puede decir «Publicado» por curación (F4).
+  const derived = statusLabel(project.published, project.status);
+  const status = project.published ? (curation?.statusLabel ?? derived) : derived;
   const subtitle = curation?.subtitle ? ` — ${esc(curation.subtitle.es)}` : "";
   const description = project.description?.es ?? project.description?.en ?? "";
   const note = curation?.note ? `\n      <div class="project-note">${esc(curation.note.es)}</div>` : "";

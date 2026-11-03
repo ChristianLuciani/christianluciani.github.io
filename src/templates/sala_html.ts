@@ -157,8 +157,10 @@ export function drahmaShowcase(profile: CvProfile): string {
   const key = projectKey(project.name);
   const verified = project.evidence.find((e) => e.verified)?.verified;
   const date = formatMonthYear(verified);
-  // La píldora curada (licencia/fecha/repo) no la pisa el status del SSOT.
-  const status = PROJECT_CURATION[key]?.statusLabel ?? statusLabel(project.published, project.status);
+  // El status del SSOT decide sala y clase; la píldora curada (licencia/fecha/
+  // repo) sólo refina el detalle si `published` coincide (F4).
+  const derived = statusLabel(project.published, project.status);
+  const status = project.published ? (PROJECT_CURATION[key]?.statusLabel ?? derived) : derived;
   const description = project.description?.es ?? project.description?.en ?? "";
   const repo = project.links[0];
   const cells = DRAHMA.cells
@@ -231,8 +233,8 @@ ${ROOM_TAIL}`;
  * cierta en cuanto una ficha enlaza material público (p. ej. PRs upstream).
  */
 export function cierreBastidor(profile: CvProfile = P): string {
-  const somePublic = enDesarrolloDe(profile).some((p) => p.links.length > 0);
-  const closing = somePublic ? MARCO.closingSomePublic : MARCO.closing;
+  const conLinks = enDesarrolloDe(profile).filter((p) => p.links.length > 0).length;
+  const closing = conLinks > 0 ? MARCO.closingSomePublic(conLinks) : MARCO.closing;
   return `
     <p class="room-closing" data-scroll="up">
       ${esc(closing.es)}

@@ -49,7 +49,12 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
   add(FRISO.present.es, FRISO.present.en);
   add(MARCO.faltaLabel.es, MARCO.faltaLabel.en);
   add(MARCO.closing.es, MARCO.closing.en);
-  add(MARCO.closingSomePublic.es, MARCO.closingSomePublic.en);
+  // El cierre cuantifica según el número de fichas con links: el MAP cubre las
+  // dos variantes (singular y plural), no una cadena fija.
+  for (const count of [1, 2]) {
+    const closing = MARCO.closingSomePublic(count);
+    add(closing.es, closing.en);
+  }
   add(PROCEDENCIA.label.es, PROCEDENCIA.label.en);
   for (const estado of Object.values(ESTADO)) add(estado.es, estado.en);
 

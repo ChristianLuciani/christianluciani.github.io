@@ -81,6 +81,27 @@ describe("PROYECTOS — split derivado de artifactRefs", () => {
     expect(kontablo.html).toContain("https://doi.org/10.5281/zenodo.20738795");
   });
 
+  it("la píldora curada no contradice al SSOT: published=false → sin «Publicado» (F4)", () => {
+    // Kontablo tiene `statusLabel` curado («Publicado · v0.1.0 · Open-source»).
+    // Si el SSOT lo deja sin artifactRefs público, la ficha pasa a El Bastidor
+    // y NO puede seguir mostrando la píldora curada: manda `published`.
+    const kontablo = PROFILE.projects.find((p) => p.name.startsWith("Kontablo"))!;
+    const vista = toProyecto({
+      ...kontablo,
+      published: false,
+      links: [...kontablo.links],
+      keywords: [...kontablo.keywords],
+      evidence: [...kontablo.evidence]
+    });
+    expect(vista.published).toBe(false);
+    const pill = /<span class="project-status ([^"]+)">([^<]*)<\/span>/.exec(vista.html!);
+    expect(pill).not.toBeNull();
+    expect(pill![1]).toBe("status-private");
+    expect(pill![2]).not.toMatch(/Publicado/);
+    expect(pill![2]).toContain("Sin artefacto público");
+    expect(vista.html).not.toContain("Publicado · v0.1.0 · Open-source");
+  });
+
   it("src/data/proyectos.ts no vuelve a decidir la etapa ni carga hechos", () => {
     const source = readFileSync(resolve(process.cwd(), "src", "data", "proyectos.ts"), "utf8");
     expect(source).not.toMatch(/etapa\s*:/);

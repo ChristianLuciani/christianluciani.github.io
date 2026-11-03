@@ -41,8 +41,10 @@ Mientras tanto, el ecosistema `profile-*` ya definió el **SSOT** de esos mismos
   ("20+ years navigating" vs "over 20 years navigating between").
 - "36 guías de laboratorio" vive como publicación en la sala del CV y como **proyecto**
   (`Physics Lab Book`) en `projects.yaml`.
-- `experience.yaml` tiene `role`/`org` solo en EN; el CV renderiza ES — el SSOT no puede
-  servir al CV sin completar el idioma.
+- `experience.yaml` tiene `role` solo en EN; el CV renderiza ES — el SSOT no puede
+  servir al CV sin completar el idioma. `org` es un **nombre propio invariante**
+  (`string`, nunca langMap): no se traduce; la presentación ES sólo ajusta el rol
+  del empleador, el país y la glosa `(scholarship)` (SPEC §11/§15.6).
 - `publications.yaml` no puede representar outputs sin DOI (abstract AIChE, preprint RG,
   guías) — limitación ya documentada como propuesta v1.1 (SPEC §15.6).
 
@@ -132,7 +134,8 @@ arquitectura (duplicación), no una tarea.
 - "36 guías de laboratorio" = **proyecto** `Physics Lab Book` en el SSOT → la sala Biblioteca
   renderiza una entrada institucional con link al repo, **no** una publication.
 - Publications sin DOI (abstract AIChE, preprint RG) → el contrato v1.1 les da `url` (Fase 1.5).
-- `experience[].role/org` → langMap `{en, es}` (v1.1): el CV renderiza ES desde el SSOT.
+- `experience[].role` → langMap `{en, es}` (v1.1): el CV renderiza ES desde el SSOT.
+  `experience[].org` es `string` invariante (nombre propio): no entra en el langMap.
 
 ---
 
@@ -170,7 +173,8 @@ export const PROFILE = {
   identity: { name, givenName, familyName, location, photo, links: Link[] },
   positioning: { statement: LangText, audiences: Record<string, LangText>, geo },
   headlines: Headline[],
-  experience: Experience[],   // role/org: LangText; highlights: { en: string[]; es: string[] }
+  experience: Experience[],   // role: LangText; org: string (invariante, SPEC §11/§15.6);
+                              // highlights: { en: string[]; es: string[] }
                               // (bullets; normaliza string v1 "·"-separado → array v1.1)
   education: Education[],     // entrada deducida: experience[] con role=título (v1 legacy)
                               // o education[] explícito (v1.1) — el normalizador unifica
@@ -209,7 +213,7 @@ Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
 | D2 | **Curación museográfica en christianluciani.github.io** (`src/content/cv/*.ts`), no en profile-data | Son textos de ESTE museo con UN consumidor; no son hechos ni plataforma-cross. Meterlos en el schema contaminaría el contrato concreta de una superficie. |
 | D3 | **MAP generado** en build desde langMaps YAML + curación; queda diccionario UI pequeño manual | Elimina la clase de bug "edité ES y olvidé EN" (causa histórica de deriva). El walker runtime no cambia. |
 | D4 | **print-CV = renderer determinista** dentro de christianluciani.github.io, consumiendo `profile.generated.ts` | Deploy surface sin API; promovible a renderer `print` de profile-as-code después (M5+, queda anotado). |
-| D5 | **Extensión del contrato como profile-as-code** (schema v1.1, spec-first en profile-as-code, NO ad-hoc en el CV) | El contrato de datos es del motor: `highlights → array`, `role/org → langMap`, `publications.url`, `languages`, `education`. El CV normaliza ambos shapes (v1 legacy + v1.1) para no bloquear el refactor. |
+| D5 | **Extensión del contrato como profile-as-code** (schema v1.1, spec-first en profile-as-code, NO ad-hoc en el CV) | El contrato de datos es del motor: `highlights → array`, `role → langMap`, `org → string` invariante, `publications.url`, `languages`, `education`. El CV normaliza ambos shapes (v1 legacy + v1.1) para no bloquear el refactor. |
 | D6 | Integración por **path configurado** (`PROFILE_DATA_PATH` en `.env`/`.pacrc`, `.env` gitignored) | D14 de profile-as-code: sin symlink en el flujo normal; parametrización komuno XI. |
 | D7 | El sync **valida contra el schema del motor** (fail on schema, warn on drift — D12 profile-as-code) | Integridad del contrato sin romper flexibilidad de intención por plataforma. |
 
@@ -218,9 +222,10 @@ Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
 ## 7. Dependencias cross-repo (cadena de integración)
 
 1. **profile-as-code — schema v1.1 (spec-first):** amendar `docs/SPEC.md §15.6` + `schema/profile.schema.json`
-   (`highlights: array`, `role/org: langMap`, `publications.url`, `languages`, `education`) +
+   (`highlights: array`, `role: langMap`, `org: string`, `publications.url`, `languages`, `education`) +
    `gen-zod` + tests core. PR contra main de profile-as-code (merge: humano).
-2. **profile-data — contenido ES:** completar `role`/`org` ES de `experience.yaml` y
+2. **profile-data — contenido ES:** completar `role` ES de `experience.yaml` (`org` es
+   string invariante, no admite traducción) y
    verificar hechos contra el CV actual (CHECKLIST pendiente). PR en profile-data (merge: humano).
 3. **christianluciani.github.io — Fase 2 en adelante:** consume lo publicado por 1–2.
 
@@ -241,7 +246,7 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 - `tools/sync-profile.ts` (5.1) + `.env.example` (`PROFILE_DATA_PATH`) + `.gitignore` (.env).
 - `src/data/profile.generated.ts` generado y commiteado + `profile.generated.test.ts`
   (paridad byte a byte: commiteado == output del sync — el drift gate).
-- Test del normalizador: highlights string v1 → array, role/org langMap, publications sin
+- Test del normalizador: highlights string v1 → array, role langMap y org string, publications sin
   DOI, reconciliación "guías = proyecto".
 - **DoD:** pipeline corre, paridad enforced, ningún template consume todavía la data,
   salida visual idéntica (cero riesgo de regresión de contenido).

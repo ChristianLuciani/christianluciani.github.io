@@ -24,9 +24,10 @@ export interface ProjectCuration {
   sinTarjeta?: boolean;
   /**
    * Píldora de estado CURADA (licencia, versión, fecha de publicación) que
-   * reemplaza la derivada de `published`+`status`. El estado del SSOT manda en
-   * la CLASIFICACIÓN (la sala); esto sólo agrega el detalle editorial que `main`
-   * publicaba y el SSOT no lleva. Si se omite, se deriva del SSOT.
+   * REFINA la derivada de `published`+`status` sólo si `published` coincide. El
+   * estado del SSOT manda en la CLASIFICACIÓN (sala) y en la CLASE; esto sólo
+   * agrega el detalle editorial que `main` publicaba y el SSOT no lleva. Si se
+   * omite —o si el SSOT deja de publicar la ficha— se deriva del SSOT.
    */
   statusLabel?: LangText;
   /** Nota museográfica que `main` publicaba y no es derivable del SSOT. */
