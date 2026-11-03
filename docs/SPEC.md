@@ -187,9 +187,11 @@ Tipos en `src/data/profile.types.ts` (`CvProfile`). El archivo es una **proyecci
 `LoadedProfile`**: quedan afuera `bios`, `faq`, `flavor`, `deployments`, `checks`,
 `socialHandles`, `press`, `releases`, `active`, `email`, `handle`, `timezone`,
 `nationality`, `authors`, `kind`, `artifactRefs` (crudo) y los ids de fila que el CV no usa.
-El único derivado que sí viaja es `projects[].published`: artefacto público abrible, calculado
-en el pipeline; los IDs de `artifactRefs` no se emiten porque pueden apuntar a un artifact
-privado.
+Los derivados que sí viajan son `projects[].published` (artifact público abrible, calculado en
+el pipeline a partir de `artifactRefs`), `identity.givenName`/`familyName` (partidos del nombre),
+`publications[].url` (la `url` explícita del SSOT o el fallback `https://doi.org/<doi>`) y
+`experience[].end` default `"present"`. Los IDs de `artifactRefs` no se emiten porque pueden
+apuntar a un artifact privado.
 
 ### 5.3 Capa de curación (`src/content/cv/`) — el único otro lugar editable por humano
 

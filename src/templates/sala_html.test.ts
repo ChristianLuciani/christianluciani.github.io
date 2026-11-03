@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { SALAS } from "../cv/salas";
 import { PROFILE } from "../data/profile.generated";
 import { PROFILE_COMMIT, PROFILE_ENGINE, provenanceHtml } from "../data/profile.provenance";
 import type { CvProfile } from "../data/profile.types";
@@ -54,6 +55,28 @@ describe("El Friso — hechos desde PROFILE.experience (#109)", () => {
     expect(usfq).toBeLessThan(magic);
   });
 
+  it("el rótulo de la sala no miente sobre el inicio del empleo (F2)", () => {
+    // El SSOT mezcla empleo y eventos formativos sin un campo que los distinga;
+    // rotular «EXPERIENCIA PROFESIONAL» con el mínimo de TODO experience[] daría
+    // 1998 como inicio de empleo. La sala declara «TRAYECTORIA» y el rango real.
+    const experiencia = SALAS.find((s) => s.id === "experiencia")!;
+    const minYear = profile.experience
+      .map((e) => e.start.slice(0, 4))
+      .sort()[0];
+    expect(experiencia.subtitulo).toBe(`TRAYECTORIA · ${minYear} – PRESENTE`);
+    expect(experiencia.subtitulo).not.toMatch(/EXPERIENCIA PROFESIONAL/);
+    expect(experiencia.funcion).toContain("empleo, formación y talleres");
+    expect(experiencia.funcion).not.toContain("Trayectoria profesional");
+  });
+
+  it("presenta el org en ES sin traducir nombres propios (F5)", () => {
+    expect(FRISO).toContain("Independiente — Panamá / Ecuador");
+    expect(FRISO).not.toContain("Independent — Panama / Ecuador");
+    expect(FRISO).toContain("CERN — San Miguel Regla, México (beca)");
+    // El org del SSOT sigue siendo string invariante (regla de #115).
+    for (const e of profile.experience) expect(typeof e.org).toBe("string");
+  });
+
   it("un fixture con otro `role` cambia el HTML de El Friso", () => {
     const fixture: CvProfile = {
       ...profile,
@@ -101,7 +124,8 @@ describe("El Marco / El Bastidor — split desde artifactRefs (#109)", () => {
   it("el showcase de Drahma deriva nombre, estado, descripción, link y fecha", () => {
     const drahma = profile.projects.find((p) => p.name.startsWith("Drahma"))!;
     expect(MARCO).toContain("<em>Drahma</em>");
-    expect(MARCO).toContain("Publicado · Artefacto público");
+    // La píldora curada restaura el detalle de `main`; el SSOT decide la sala.
+    expect(MARCO).toContain("Publicado · Agosto 2024 · Repositorio público");
     expect(MARCO).toContain(drahma.description!.es!.slice(0, 60));
     expect(MARCO).toContain('href="https://github.com/DRAHMAN-ORG/drahman-org"');
     expect(MARCO).toContain("AGOSTO 2024");
@@ -113,6 +137,33 @@ describe("El Marco / El Bastidor — split desde artifactRefs (#109)", () => {
     );
     expect(BASTIDOR).toContain("Para publicarse");
     expect(BASTIDOR).toContain("el primer número publicado.");
+  });
+
+  it("el cierre no miente: hay fichas que ya enlazan material público (F3)", () => {
+    // Upstream Open Source Contributions enlaza 4 PRs públicos: la frase
+    // «ninguna tiene un artefacto que abrir» sería falsa.
+    expect(BASTIDOR).not.toContain(
+      "Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir"
+    );
+    expect(BASTIDOR).toContain("varias ya enlazan material público");
+    // Sin links públicos, vuelve la variante fuerte.
+    const sinLinks: CvProfile = {
+      ...profile,
+      projects: profile.projects.map((p) => ({ ...p, links: [], evidence: [] }))
+    };
+    expect(bastidorHtml(sinLinks)).toContain(
+      "Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir"
+    );
+  });
+
+  it("restaura la curación de `main` que el SSOT no lleva (F4)", () => {
+    expect(MARCO).toContain("Publicado · v0.1.0 · Open-source");
+    expect(MARCO).toContain("Publicado · MIT · v0.3.6");
+    expect(MARCO).toContain("Business Source License 1.1");
+    expect(MARCO).toContain("convierte a Apache 2.0");
+    expect(MARCO).toContain("papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598");
+    expect(MARCO).toContain("researchgate.net/publication/407549570");
+    expect(MARCO).toContain("Publicado bajo licencia MIT, con releases etiquetados.");
   });
 
   it("un proyecto que pasa a publicado cambia de sala (fixture)", () => {

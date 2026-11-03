@@ -10,7 +10,7 @@
  */
 import { PROFILE } from "../../data/profile.generated.ts";
 import type { CvProfile } from "../../data/profile.types.ts";
-import { DRAHMA, ESTADO, FRISO, MARCO, PROCEDENCIA, formatMonthYear, formatMonthYearEn, formatPeriod, statusLabel } from "./museo.ts";
+import { DRAHMA, ESTADO, FRISO, MARCO, PROCEDENCIA, formatMonthYear, formatMonthYearEn, formatPeriod, orgEs, statusLabel } from "./museo.ts";
 import { PROJECT_CURATION, projectKey } from "./proyectos.ts";
 
 export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvProfile): Record<string, string> {
@@ -20,10 +20,12 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
     pairs[es.normalize("NFC")] = en;
   };
 
-  // El Friso: período, rol y bullets (el `org` es nombre propio, no se traduce).
+  // El Friso: período, rol, org presentado en ES y bullets. El org del SSOT es
+  // un string invariante (nombre propio); el toggle EN lo devuelve tal cual.
   for (const item of profile.experience) {
     add(formatPeriod(item, "es"), formatPeriod(item, "en"));
     add(item.role.es, item.role.en);
+    add(orgEs(item.org), item.org);
     const es = item.highlights?.es ?? [];
     const en = item.highlights?.en ?? [];
     for (let i = 0; i < Math.min(es.length, en.length); i++) add(es[i], en[i]);
@@ -38,12 +40,16 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
       add(`— ${curation.subtitle.es}`, `— ${curation.subtitle.en}`);
     }
     add(curation?.falta?.es, curation?.falta?.en);
+    add(curation?.statusLabel?.es, curation?.statusLabel?.en);
+    add(curation?.note?.es, curation?.note?.en);
+    for (const link of curation?.extraLinks ?? []) add(link.label.es, link.label.en);
   }
 
   // Labels compartidos.
   add(FRISO.present.es, FRISO.present.en);
   add(MARCO.faltaLabel.es, MARCO.faltaLabel.en);
   add(MARCO.closing.es, MARCO.closing.en);
+  add(MARCO.closingSomePublic.es, MARCO.closingSomePublic.en);
   add(PROCEDENCIA.label.es, PROCEDENCIA.label.en);
   for (const estado of Object.values(ESTADO)) add(estado.es, estado.en);
 

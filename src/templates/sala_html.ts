@@ -6,8 +6,8 @@ import { assetAttrs } from "../ts/assets/url.ts";
  */
 import { SALAS, type SalaDef } from "../cv/salas.ts";
 import { numFor } from "../cv/render.ts";
-import { DRAHMA, MARCO, formatMonthYear, formatPeriod, statusClass, statusLabel } from "../content/cv/museo.ts";
-import { projectKey } from "../content/cv/proyectos.ts";
+import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
+import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
 import {
   enDesarrolloDe,
   publicadosDe,
@@ -157,7 +157,8 @@ export function drahmaShowcase(profile: CvProfile): string {
   const key = projectKey(project.name);
   const verified = project.evidence.find((e) => e.verified)?.verified;
   const date = formatMonthYear(verified);
-  const status = statusLabel(project.published, project.status);
+  // La píldora curada (licencia/fecha/repo) no la pisa el status del SSOT.
+  const status = PROJECT_CURATION[key]?.statusLabel ?? statusLabel(project.published, project.status);
   const description = project.description?.es ?? project.description?.en ?? "";
   const repo = project.links[0];
   const cells = DRAHMA.cells
@@ -224,11 +225,17 @@ ${DRAHMA.repo.items.map((item) => `          <li>${esc(item.es)}</li>`).join("\n
 ${ROOM_TAIL}`;
 }
 
-/** Cierre de El Bastidor: la sala declara por qué existe. */
-export function cierreBastidor(): string {
+/**
+ * Cierre de El Bastidor: la sala declara por qué existe. Hay dos variantes
+ * porque la afirmación «ninguna tiene un artefacto que abrir» deja de ser
+ * cierta en cuanto una ficha enlaza material público (p. ej. PRs upstream).
+ */
+export function cierreBastidor(profile: CvProfile = P): string {
+  const somePublic = enDesarrolloDe(profile).some((p) => p.links.length > 0);
+  const closing = somePublic ? MARCO.closingSomePublic : MARCO.closing;
   return `
     <p class="room-closing" data-scroll="up">
-      ${esc(MARCO.closing.es)}
+      ${esc(closing.es)}
     </p>
 ${ROOM_TAIL}`;
 }
@@ -254,7 +261,7 @@ function entradaFriso(item: ExperienceItem, columna: number, indice: number): st
         <div class="entry" data-scroll="${scroll}"${delay}>
           <div class="entry-period">${formatPeriod(item, "es")}</div>
           <div class="entry-title">${esc(role)}</div>
-          <div class="entry-org">${esc(item.org)}</div>${bullets ? `
+          <div class="entry-org">${esc(orgEs(item.org))}</div>${bullets ? `
           <ul class="entry-body">
 ${bullets}
           </ul>` : ""}
@@ -722,7 +729,7 @@ export function marcoHtml(profile: CvProfile = P): string {
 
 /** El Bastidor: sin artefacto público; cada ficha declara su `falta` curada. */
 export function bastidorHtml(profile: CvProfile = P): string {
-  return `${tarjetas(enDesarrolloDe(profile))}${cierreBastidor()}`;
+  return `${tarjetas(enDesarrolloDe(profile))}${cierreBastidor(profile)}`;
 }
 
 /** Body de una sala: estáticas por id; las tres de #109 se derivan del SSOT. */

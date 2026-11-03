@@ -36,4 +36,23 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
     expect(PAIRS["Activo · Sin artefacto público"]).toBe("Active · No public artifact");
   });
 
+  it("el org presentado en ES vuelve al string invariante del SSOT en EN (F5)", () => {
+    expect(PAIRS["Independiente — Panamá / Ecuador"]).toBe("Independent — Panama / Ecuador");
+    expect(PAIRS["CERN — San Miguel Regla, México (beca)"]).toBe(
+      "CERN — San Miguel Regla, Mexico (scholarship)"
+    );
+    // Nombres propios sin cambio no generan par (el MAP los deja tal cual).
+    expect(PAIRS["Grupo Angel — Panamá"]).toBeUndefined();
+  });
+
+  it("la curación restaurada de `main` también se traduce (F4)", () => {
+    expect(PAIRS["Publicado · v0.1.0 · Open-source"]).toBe("Published · v0.1.0 · Open-source");
+    expect(PAIRS["Publicado · MIT · v0.3.6"]).toBe("Published · MIT · v0.3.6");
+    expect(PAIRS["Publicado · Agosto 2024 · Repositorio público"]).toBe(
+      "Published · August 2024 · Public repository"
+    );
+    expect(PAIRS["Publicado bajo licencia MIT, con releases etiquetados."]).toBe(
+      "Published under the MIT license, with tagged releases."
+    );
+  });
 });

@@ -22,6 +22,17 @@ export interface ProjectCuration {
   recencia?: string;
   /** true = su ficha es el showcase dedicado, no una tarjeta duplicada. */
   sinTarjeta?: boolean;
+  /**
+   * Píldora de estado CURADA (licencia, versión, fecha de publicación) que
+   * reemplaza la derivada de `published`+`status`. El estado del SSOT manda en
+   * la CLASIFICACIÓN (la sala); esto sólo agrega el detalle editorial que `main`
+   * publicaba y el SSOT no lleva. Si se omite, se deriva del SSOT.
+   */
+  statusLabel?: LangText;
+  /** Nota museográfica que `main` publicaba y no es derivable del SSOT. */
+  note?: LangText;
+  /** Links curados que el SSOT no trae (se suman a links+evidence, sin duplicar). */
+  extraLinks?: { url: string; label: LangText }[];
 }
 
 /** Nombre corto estable: `Kontablo — Universal…` → `Kontablo`. */
@@ -32,15 +43,37 @@ export function projectKey(name: string): string {
 export const PROJECT_CURATION: Record<string, ProjectCuration> = {
   Kontablo: {
     subtitle: { es: "Ontología Contable Universal", en: "Universal Accounting Ontology" },
-    recencia: "2026-01-27"
+    recencia: "2026-01-27",
+    statusLabel: { es: "Publicado · v0.1.0 · Open-source", en: "Published · v0.1.0 · Open-source" },
+    note: {
+      es: "Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.",
+      en: "Published in June 2026 under Business Source License 1.1 (converts to Apache 2.0 in 2030). Preprint (not yet peer-reviewed) deposited on Zenodo and SSRN."
+    },
+    // Restaurados de `main`: el SSOT sólo trae repo y DOI de Zenodo en evidence.
+    extraLinks: [
+      { url: "https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598", label: { es: "SSRN 6960598", en: "SSRN 6960598" } },
+      {
+        url: "https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy",
+        label: { es: "ResearchGate", en: "ResearchGate" }
+      }
+    ]
   },
   Drahma: {
     sinTarjeta: true,
-    recencia: "2024-08-01"
+    recencia: "2024-08-01",
+    statusLabel: {
+      es: "Publicado · Agosto 2024 · Repositorio público",
+      en: "Published · August 2024 · Public repository"
+    }
   },
   "profile-as-code": {
     subtitle: { es: "Motor de perfil spec-first", en: "Spec-first profile engine" },
-    recencia: "2026-08-07"
+    recencia: "2026-08-07",
+    statusLabel: { es: "Publicado · MIT · v0.3.6", en: "Published · MIT · v0.3.6" },
+    note: {
+      es: "Publicado bajo licencia MIT, con releases etiquetados.",
+      en: "Published under the MIT license, with tagged releases."
+    }
   },
   ZENTROPY: {
     subtitle: { es: "Zero Entropy Intelligence Station", en: "Zero Entropy Intelligence Station" },

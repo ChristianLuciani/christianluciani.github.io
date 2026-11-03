@@ -82,27 +82,36 @@ function linkLabel(url: string): string {
   }
 }
 
-/** Links + fuentes de evidencia del SSOT, en orden y sin duplicados. */
-function projectLinks(project: ProjectItem): string[] {
-  const all = [...project.links, ...project.evidence.map((ev) => ev.source).filter(Boolean)];
-  return [...new Set(all.filter((url) => /^https?:\/\//.test(url)))];
+/** Links + fuentes de evidencia del SSOT, más los curados, sin duplicar URL. */
+function projectLinks(project: ProjectItem): { url: string; label?: string }[] {
+  const curation = PROJECT_CURATION[projectKey(project.name)];
+  const all = [
+    ...project.links.map((url) => ({ url, label: undefined as string | undefined })),
+    ...project.evidence.map((ev) => ({ url: ev.source, label: undefined as string | undefined })),
+    ...(curation?.extraLinks ?? []).map((l) => ({ url: l.url, label: l.label.es }))
+  ].filter((l) => /^https?:\/\//.test(l.url));
+  const seen = new Set<string>();
+  return all.filter((l) => (seen.has(l.url) ? false : (seen.add(l.url), true)));
 }
 
 function cardHtml(project: ProjectItem): string {
   const key = projectKey(project.name);
   const curation = PROJECT_CURATION[key];
-  const status = statusLabel(project.published, project.status);
+  // El estado del SSOT decide la sala; la píldora curada sólo agrega el detalle
+  // editorial (licencia/versión/fecha) que `main` publicaba y el SSOT no lleva.
+  const status = curation?.statusLabel ?? statusLabel(project.published, project.status);
   const subtitle = curation?.subtitle ? ` — ${esc(curation.subtitle.es)}` : "";
   const description = project.description?.es ?? project.description?.en ?? "";
+  const note = curation?.note ? `\n      <div class="project-note">${esc(curation.note.es)}</div>` : "";
   const anchors = projectLinks(project)
     .map(
-      (url) =>
-        `<a class="pub-doi" href="${esc(url)}" target="_blank" rel="noopener">↗ ${esc(linkLabel(url))}</a>`
+      ({ url, label }) =>
+        `<a class="pub-doi" href="${esc(url)}" target="_blank" rel="noopener">↗ ${esc(label ?? linkLabel(url))}</a>`
     )
     .join("\n        ");
   return `      <span class="project-status ${statusClass(project.published, project.status)}">${esc(status.es)}</span>
       <div class="project-title"><em>${esc(key)}</em>${subtitle}</div>
-      <div class="project-tagline">${esc(description)}</div>${
+      <div class="project-tagline">${esc(description)}</div>${note}${
         anchors ? `\n      <div class="project-note">\n        ${anchors}\n      </div>` : ""
       }`;
 }
@@ -119,7 +128,7 @@ export function toProyecto(project: ProjectItem): Proyecto {
     ...(curation?.recencia ? { recencia: curation.recencia } : {}),
     ...(curation?.falta && !project.published ? { falta: curation.falta.es } : {}),
     ...(curation?.sinTarjeta ? { sinTarjeta: true } : {}),
-    links: projectLinks(project),
+    links: projectLinks(project).map((l) => l.url),
     ...(curation?.sinTarjeta ? {} : { html: cardHtml(project) })
   };
 }

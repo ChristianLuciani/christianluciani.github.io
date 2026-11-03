@@ -27,8 +27,14 @@
 import { enDesarrollo, publicados } from "../data/proyectos.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 
-/** Primer año del SSOT: subtítulo y función de El Friso no fijan un año a mano. */
-const EXPERIENCIA_DESDE = PROFILE.experience
+/**
+ * Primer año del SSOT (eventos formativos incluidos). El SSOT NO distingue
+ * empleo de formación con un campo: `experience.yaml` sólo tiene `id` libres
+ * (`exp-*-workshop`, …) y la proyección pública descarta los ids. Por eso la
+ * sala se rotula «TRAYECTORIA» y no «EXPERIENCIA PROFESIONAL»: usar el mínimo
+ * de TODO `experience[]` como inicio del empleo publicaría 5 años de más.
+ */
+const TRAYECTORIA_DESDE = PROFILE.experience
   .map((e) => e.start.slice(0, 4))
   .filter((y) => /^\d{4}$/.test(y))
   .sort()[0] ?? "";
@@ -119,12 +125,12 @@ export const SALAS: SalaDef[] = [
     id: "experiencia",
     titulo: "El <em>Friso</em>",
     tituloEn: "The <em>Frieze</em>",
-    subtitulo: `EXPERIENCIA PROFESIONAL · ${EXPERIENCIA_DESDE} – PRESENTE`,
-    subtituloEn: `PROFESSIONAL EXPERIENCE · ${EXPERIENCIA_DESDE} – PRESENT`,
+    subtitulo: `TRAYECTORIA · ${TRAYECTORIA_DESDE} – PRESENTE`,
+    subtituloEn: `TRAJECTORY · ${TRAYECTORIA_DESDE} – PRESENT`,
     funcion:
-      `Trayectoria profesional: roles, organizaciones y resultados, de ${EXPERIENCIA_DESDE} al presente.`,
+      `Trayectoria: empleo, formación y talleres, de ${TRAYECTORIA_DESDE} al presente.`,
     funcionEn:
-      `Professional trajectory: roles, organizations and results, from ${EXPERIENCIA_DESDE} to the present.`,
+      `Trajectory: employment, education and workshops, from ${TRAYECTORIA_DESDE} to the present.`,
     navLabel: "Friso",
     navLabelEn: "Frieze",
     ilusion: "c-exp"
