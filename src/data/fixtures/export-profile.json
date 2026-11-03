@@ -1,0 +1,144 @@
+{
+  "schemaVersion": "1",
+  "engine": { "name": "profile-as-code", "version": "0.3.7" },
+  "source": {
+    "repo": "https://example.test/anon/profile-data.git",
+    "commit": "0123456789abcdef0123456789abcdef01234567",
+    "commitDate": "2026-10-01",
+    "generatedAt": null
+  },
+  "profile": {
+    "identity": {
+      "name": "Ada Lovelace",
+      "location": "Example City",
+      "email": "ada@example.test",
+      "handle": "@ada",
+      "timezone": "UTC",
+      "links": [
+        { "platform": "github", "label": "GitHub", "url": "https://example.test/ada" }
+      ]
+    },
+    "positioning": {
+      "statement": { "en": "Anonymized fixture profile.", "es": "Perfil de fixture anonimizado." },
+      "audiences": {},
+      "geo": {
+        "semanticAssociations": ["fixture"],
+        "citationsGoal": { "en": "none", "es": "ninguna" }
+      }
+    },
+    "headlines": [
+      { "platform": "generic", "lang": "en", "text": "Anonymized fixture headline" }
+    ],
+    "experience": [
+      {
+        "id": "exp-public",
+        "role": { "en": "Engineer", "es": "Ingeniera" },
+        "org": "Example Org",
+        "start": "2020-01-01",
+        "end": "present",
+        "highlights": { "en": ["Built things", "Shipped them"], "es": ["Construyó cosas", "Las publicó"] }
+      },
+      {
+        "id": "exp-old",
+        "role": { "en": "Analyst", "es": "Analista" },
+        "org": "Old Org",
+        "start": "2015-01-01",
+        "end": "2019-12-31",
+        "highlights": { "en": ["Analyzed data"], "es": ["Analizó datos"] }
+      }
+    ],
+    "education": [
+      {
+        "id": "edu-1",
+        "degree": { "en": "B.Sc. in Fixtures", "es": "Licenciatura en Fixtures" },
+        "institution": "Example University",
+        "field": { "en": "Fixtures", "es": "Fixtures" },
+        "start": "2010-01-01",
+        "end": "2014-12-31"
+      }
+    ],
+    "languages": [
+      { "code": "en", "level": "native" },
+      { "code": "es", "level": "fluent" }
+    ],
+    "projects": [
+      {
+        "name": "Public Fixture Project",
+        "status": "active",
+        "description": { "en": "A published project.", "es": "Un proyecto publicado." },
+        "artifactRefs": ["art-public"],
+        "links": ["https://example.test/public/repo", "https://example.test/private/credential"],
+        "keywords": ["fixture"],
+        "evidence": [
+          { "claim": { "en": "It exists", "es": "Existe" }, "source": "https://example.test/public/evidence", "verified": "2026-09-01" },
+          { "claim": { "en": "Private proof", "es": "Prueba privada" }, "source": "https://example.test/private/artifact" }
+        ]
+      },
+      {
+        "name": "Development Fixture Project",
+        "status": "in-development",
+        "description": { "en": "Still in development.", "es": "Aún en desarrollo." },
+        "artifactRefs": ["private-artifact"],
+        "links": [],
+        "keywords": ["fixture"],
+        "evidence": [
+          { "claim": { "en": "Work in progress", "es": "Trabajo en progreso" }, "source": "https://example.test/public/evidence" }
+        ]
+      }
+    ],
+    "publications": [
+      {
+        "title": "A Fixture Publication",
+        "venue": "Journal of Fixtures",
+        "year": 2024,
+        "doi": "10.0000/fixture.2024",
+        "orcidId": "0000-0000-0000-0000"
+      }
+    ],
+    "skills": [
+      { "name": "Fixtures", "level": "advanced", "keywords": ["json"], "geoKeywords": ["fixture"] },
+      { "name": "Testing", "level": "advanced", "keywords": ["vitest"] }
+    ],
+    "credentials": [
+      {
+        "id": "cred-public",
+        "kind": "certificate",
+        "title": "Public Fixture Credential",
+        "issuer": "Example Institute",
+        "verifyUrl": "https://example.test/public/credential",
+        "issued": "2025-01-01"
+      },
+      {
+        "id": "private-credential",
+        "kind": "certificate",
+        "title": "Private Fixture Credential",
+        "issuer": "Example Institute",
+        "verifyUrl": "https://example.test/private/credential",
+        "visibility": "private"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": "art-public",
+        "kind": "repository",
+        "title": "Public Fixture Artifact",
+        "locator": { "url": "https://example.test/public/artifact" },
+        "license": "MIT"
+      },
+      {
+        "id": "private-artifact",
+        "kind": "repository",
+        "title": "Private Fixture Artifact",
+        "locator": { "url": "https://example.test/private/artifact" },
+        "visibility": "private"
+      }
+    ],
+    "keywords": {
+      "seo": { "fixture": ["anonymized"] },
+      "geo": { "associations": ["fixture"], "claims": ["fixture claim"] }
+    },
+    "bios": { "en": "should not be projected", "es": "no debe proyectarse" },
+    "faq": [],
+    "active": true
+  }
+}

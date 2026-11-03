@@ -163,6 +163,27 @@ sync-profile [--now <iso8601>] [--report]
 Puro, determinista, sin red: mismo input → mismo output byte a byte (komuno VI/X).
 El reloj no entra: `source.generatedAt` es `null` salvo `--now` explícito.
 
+**Frescura ≠ render — `npm run sync:check` (#110).** El gate de frescura (pin
+ancestro de HEAD y `content/` sin cambios) puede estar verde con **cero
+consumidores** (#99). `sync:check` agrega el gate de render:
+
+```
+sync-check [--workspace <path>] [--generated <path>]
+  1. self:      header coherente con `PROFILE.source` y el archivo es
+                byte-idéntico a `renderSource(PROFILE, engine, schema)`.
+  2. fixture:   proyecta `src/data/fixtures/export-profile.json` —payload
+                anonimizado con la forma del engine— y exige determinismo y
+                filtro de credentials/artifacts privados (entradas Y referencias).
+  3. workspace: si hay `PROFILE_DATA_PATH` (o `--workspace`), corre el pipeline
+                real y compara byte a byte; exit 1 con archivo:línea exacto.
+```
+
+CI corre las capas 1–2 (sin el repo privado) más el guard de consumidores
+(`src/data/consumers.test.ts`): falla si ningún módulo no-test importa `PROFILE`
+o si una superficie ya migrada al SSOT (print-CV, El Friso/El Marco) deja de
+consumirlo. La capa 3 es local/agente y se declara como no verificada en CI:
+nunca finge paridad de contenido.
+
 ### 5.2 Shape de `profile.generated.ts` (normalizado, NO espejo del schema)
 
 ```ts

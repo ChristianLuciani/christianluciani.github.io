@@ -25,6 +25,14 @@ jobs:
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test
+      # Guard de cero consumidores (#110/#99): el gate de frescura de
+      # profile-data puede estar verde con la demo ciega. Falla si el sitio deja
+      # de importar PROFILE o si una superficie migrada al SSOT deja de consumirlo.
+      - run: npm run test:consumers
+      # Frescura ≠ render (#110): el snapshot commiteado debe ser el render del
+      # pipeline. Sin profile-data (CI) valida el render byte a byte + el fixture
+      # anonimizado (determinismo y filtro de privados); con --workspace, paridad real.
+      - run: npm run sync:check
       # el módulo del logo se genera desde la animación: sin drift
       - run: npm run brand:sync
       - run: git diff --exit-code -- src/ts/brand/logoAnim.js

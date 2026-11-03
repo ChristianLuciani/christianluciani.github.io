@@ -35,6 +35,16 @@ christianluciani.github.io/
 HTML · CSS · Canvas API · Vanilla JS · TypeScript (Vite) · Google Fonts
 Sin frameworks ni dependencias de UI. La web publicada es un único `index.html`.
 
+## Datos del CV (SSOT)
+
+Los hechos del CV (trayectoria, proyectos, publicaciones, skills) viven en el repo
+privado `profile-data`; acá se commitea `src/data/profile.generated.ts`, una
+proyección pública que se regenera con `npm run sync:profile` (`PROFILE_DATA_PATH`).
+La frescura del pin no alcanza: `npm run sync:check` verifica que el archivo
+commiteado sea el render exacto del pipeline, y CI corre además un fixture
+anonimizado (determinismo + filtro de privados) y el guard de consumidores — un
+snapshot al día con cero consumidores ya no pasa verde en silencio (#99, #110).
+
 ## Despliegue
 
 Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.io/`
