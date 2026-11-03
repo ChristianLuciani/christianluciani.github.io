@@ -1273,8 +1273,13 @@ a { color:inherit; }
     #print-cv .qr-wrap { text-align:center; }
     #print-cv .qr-wrap img { width:30mm; height:30mm; }
     #print-cv .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
+    /* Subsecciones de Trayectoria: empleo vs formación (curación D2) */
+    #print-cv .p-subsection { margin-top:10pt; }
+    #print-cv .p-subsection > .p-subhead { font-size:10.5pt; text-transform:uppercase; letter-spacing:.04em; color:#555; margin:10pt 0 4pt; }
     /* Footer de procedencia: solo print (dentro del bloque oculto en pantalla) */
-    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; }
+    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
+    /* F2: el footer no queda huérfano — tampoco se separa del bloque que lo precede */
+    #print-cv .p-section.p-keep { break-inside:avoid; break-before:avoid; }
   </style>
   <div class="p-head">
     <div>
@@ -1298,6 +1303,8 @@ a { color:inherit; }
   <div class="p-section">
     <h2>Trayectoria</h2>
     <div class="p-meta">Empleo, formación y talleres · 1998 – PRESENTE</div>
+    <div class="p-subsection">
+      <h3 class="p-subhead">Experiencia profesional</h3>
     <div class="p-entry p-exp">
       <h3>Consultor Estratégico de Sistemas — Independiente — Panamá / Ecuador</h3>
       <div class="p-meta">2025 – PRESENTE</div>
@@ -1352,10 +1359,6 @@ a { color:inherit; }
       </ul>
     </div>
     <div class="p-entry p-exp">
-      <h3>Taller de Fotografía de Moda — Alberto Hernández — AVECOFAN — Caracas</h3>
-      <div class="p-meta">2010</div>
-    </div>
-    <div class="p-entry p-exp">
       <h3>Asistente de Fotografía Fija — Frank Martínez &amp; Alberto Hernández — Caracas</h3>
       <div class="p-meta">2007 – 2010</div>
     </div>
@@ -1377,10 +1380,6 @@ a { color:inherit; }
       </ul>
     </div>
     <div class="p-entry p-exp">
-      <h3>Taller de Formulación de Proyectos Audiovisuales — MEDIAX — Caracas</h3>
-      <div class="p-meta">2009</div>
-    </div>
-    <div class="p-entry p-exp">
       <h3>Pasantía en Transferencia de Video a Cine — Produrama — Caracas</h3>
       <div class="p-meta">2008</div>
     </div>
@@ -1390,18 +1389,6 @@ a { color:inherit; }
       <ul>
         <li>Mantenimiento de equipos · supervisión de estudiantes · inventario · iluminación técnica</li>
       </ul>
-    </div>
-    <div class="p-entry p-exp">
-      <h3>Taller de Dirección de Fotografía Electrónica — Daniel Mendoza — VIART — Caracas</h3>
-      <div class="p-meta">2007</div>
-    </div>
-    <div class="p-entry p-exp">
-      <h3>Taller Pasaporte a Cinematografía Electrónica Cinealta — Jesús «Chuchi» Rivero — ANAC — Caracas</h3>
-      <div class="p-meta">2006</div>
-    </div>
-    <div class="p-entry p-exp">
-      <h3>Curso de Fotografía Documental — Universidad Central de Venezuela — Caracas</h3>
-      <div class="p-meta">2006</div>
     </div>
     <div class="p-entry p-exp">
       <h3>Profesional en Entrenamiento — Centro de Física y Reactor Nuclear — Instituto Venezolano de Investigaciones Científicas (IVIC) — Caracas</h3>
@@ -1415,6 +1402,29 @@ a { color:inherit; }
         <li>Preparador de Física I (abr–jul 2003)</li>
         <li>Investigación doctoral en sistemas complejos · primeras publicaciones</li>
       </ul>
+    </div>
+    </div>
+    <div class="p-subsection">
+      <h3 class="p-subhead">Formación y talleres</h3>
+    <div class="p-entry p-exp">
+      <h3>Taller de Fotografía de Moda — Alberto Hernández — AVECOFAN — Caracas</h3>
+      <div class="p-meta">2010</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Taller de Formulación de Proyectos Audiovisuales — MEDIAX — Caracas</h3>
+      <div class="p-meta">2009</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Taller de Dirección de Fotografía Electrónica — Daniel Mendoza — VIART — Caracas</h3>
+      <div class="p-meta">2007</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Taller Pasaporte a Cinematografía Electrónica Cinealta — Jesús «Chuchi» Rivero — ANAC — Caracas</h3>
+      <div class="p-meta">2006</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Curso de Fotografía Documental — Universidad Central de Venezuela — Caracas</h3>
+      <div class="p-meta">2006</div>
     </div>
     <div class="p-entry p-exp">
       <h3>I Taller Andino de Caos y Complejidad — UNET — San Cristóbal, Venezuela</h3>
@@ -1435,6 +1445,7 @@ a { color:inherit; }
     <div class="p-entry p-exp">
       <h3>Postgrado de Instrumentación — Universidad Central de Venezuela — Caracas</h3>
       <div class="p-meta">1998</div>
+    </div>
     </div>
   </div>
 
@@ -1473,7 +1484,7 @@ a { color:inherit; }
     </ul>
   </div>
 
-  <div class="p-section">
+  <div class="p-section p-keep">
     <h2>Competencias</h2>
     <ul>
       <li class="p-lang"><strong>Idiomas:</strong> Español (nativo) · Inglés (intermedio) · Francés (intermedio)</li>
