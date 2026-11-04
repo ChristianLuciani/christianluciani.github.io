@@ -63,7 +63,40 @@ export const MARCO = {
     en: `No entry in this room declares an artifact in the SSOT that would graduate it to The Frame yet — ${
       count === 1 ? "one already links public material" : "several already link public material"
     } — and each one says what it is missing.`
-  })
+  }),
+  /**
+   * Variante cuando ALGUNA ficha no publicada no declara `falta` (proyecto
+   * nuevo del SSOT sin curación): la mitad «cada una dice qué le falta» deja de
+   * ser cierta y el cierre cuantifica el hueco en vez de afirmarlo. Se deriva
+   * del dato, no del fixture: `conFalta`/`total` salen de `enDesarrolloDe`.
+   */
+  closingMissingFalta: (conLinks: number, conFalta: number, total: number): LangText => {
+    const baseEs =
+      conLinks > 0
+        ? `Ninguna ficha de esta sala declara todavía un artefacto en el SSOT que la gradúe a El Marco — ${
+            conLinks === 1 ? "una ya enlaza material público" : "varias ya enlazan material público"
+          }`
+        : "Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir";
+    const baseEn =
+      conLinks > 0
+        ? `No entry in this room declares an artifact in the SSOT that would graduate it to The Frame yet — ${
+            conLinks === 1 ? "one already links public material" : "several already link public material"
+          }`
+        : "No entry in this room has an artifact a third party can open yet";
+    const faltaEs =
+      conFalta === 0
+        ? "y ninguna declara qué le falta."
+        : conFalta === 1
+          ? `y sólo 1 de ${total} declara qué le falta.`
+          : `y sólo ${conFalta} de ${total} declaran qué les falta.`;
+    const faltaEn =
+      conFalta === 0
+        ? "and none declares what it is missing."
+        : conFalta === 1
+          ? `and only 1 of ${total} declares what it is missing.`
+          : `and only ${conFalta} of ${total} declare what it is missing.`;
+    return { es: `${baseEs} — ${faltaEs}`, en: `${baseEn} — ${faltaEn}` };
+  }
 } as const;
 
 /**

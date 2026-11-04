@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
+import { projectLinks } from "../../data/proyectos";
 import { PROFILE } from "../../data/profile.generated";
 import type { CvProfile } from "../../data/profile.types";
 import { profileI18nPairs } from "./i18n";
@@ -57,6 +58,20 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
     expect(PAIRS["Publicado bajo licencia MIT, con releases etiquetados."]).toBe(
       "Published under the MIT license, with tagged releases."
     );
+  });
+
+  it("los labels de link derivados tienen par EN, con el prefijo del ancla (F1)", () => {
+    // El walker traduce el nodo completo («↗ Repositorio · 618»), no el label
+    // pelado: el par se emite con el mismo prefijo que renderiza la tarjeta.
+    for (const project of profile.projects) {
+      for (const { label } of projectLinks(project)) {
+        if (label.es !== label.en) {
+          expect(PAIRS[`↗ ${label.es}`]).toBe(`↗ ${label.en}`);
+        }
+      }
+    }
+    expect(PAIRS["↗ Repositorio · 618"]).toBe("↗ Repository · 618");
+    expect(PAIRS["↗ Repositorio · ci-cd.md"]).toBe("↗ Repository · ci-cd.md");
   });
 
   it("el cierre de El Bastidor traduce las dos variantes derivadas (F3)", () => {

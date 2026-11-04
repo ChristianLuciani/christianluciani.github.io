@@ -122,12 +122,14 @@ arquitectura (duplicación), no una tarea.
 | keywords SEO/GEO | `profile-data/keywords.yaml` | hecho |
 | títulos museísticos ("El Autorretrato") | `src/content/cv/museo.ts` | curación |
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | curación + hecho |
-| estructura de salas (ids, ilusiones, nav/plano labels) | `src/content/cv/salas.ts` (ex `src/cv/salas.ts`) | presentación |
+| estructura de salas (ids, ilusiones, nav/plano labels) | `src/cv/salas.ts` | presentación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | curación |
-| showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/drahma.ts` | curación (hechos referencian `projects.yaml` por id) |
+| showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | curación (hechos referencian `projects.yaml` por id) |
+| curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | curación |
-| grafo constelación (nodos/aristas) | `src/content/cv/constelacion.ts` | curación (ref. `projects` SSOT) |
-| galería placeholders | `src/content/cv/galeria.ts` | curación |
+| curación del print-CV (prosa, títulos, labels) | `src/content/cv/print.ts` | curación |
+| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; hoy el copy vive en `src/templates/sala_html.ts` (§grafo) | curación (ref. `projects` SSOT) |
+| galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (§galeria) | curación |
 | CSS, ilusiones, animaciones, canvas | `src/presentation/` + `src/ts/` | presentación |
 
 **Reglas de reconciliación (deriva conocida, resuelta en el normalizador):**
@@ -200,8 +202,10 @@ apuntar a un artifact privado.
 ### 5.3 Capa de curación (`src/content/cv/`) — el único otro lugar editable por humano
 
 Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
-`drahma.ts` referencia `projects` con name "Drahma — Educational Synthetic Intelligence").
+`museo.ts` exporta `DRAHMA` y referencia `projects` con name "Drahma — Educational Synthetic Intelligence").
 `museo.ts` exporta títulos/subtítulos/quotes/frases con `{en, es}` para alimentar el MAP.
+`proyectos.ts` cura El Marco / El Bastidor (subtítulo, `falta`, orden y labels de link);
+`print.ts` cura el print-CV (ES-only por diseño).
 
 ---
 
@@ -259,7 +263,7 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 - `src/content/cv/*.ts` creada (mueve curación fuera de templates).
 - Sala Perfil: photo/statement/educación desde el perfil.
 - Sala Proyectos: cards desde `projects.yaml` (name/status/description/links/evidence);
-  showcase Drahma desde `content/cv/drahma.ts` (ref. id estable).
+  showcase Drahma desde `content/cv/museo.ts` (export `DRAHMA`, ref. id estable).
 - Sala Trayectoria: entries desde `experience.yaml` (periodo = start/end, bullets =
   highlights).
 - Sala Biblioteca: `publications.yaml` (+ entrada institucional "guías" → project).

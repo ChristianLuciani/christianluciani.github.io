@@ -18,8 +18,8 @@
  *   claves con `norm()` (colapso de espacios), así que el subtítulo en SALAS define
  *   la clave del MAP. El test de paridad (src/cv/parity.test.ts) lo garantiza.
  * - `subtitulo` NO lleva conteos escritos a mano: se derivan de `src/data/proyectos.ts`
- *   (la etapa de cada proyecto decide la sala). Un "6 PROYECTOS" hardcodeado miente en
- *   cuanto entra o sale una ficha.
+ *   (la sala se decide por `published`, derivado de `artifactRefs`; no existe un campo
+ *   editorial `etapa`). Un "6 PROYECTOS" hardcodeado miente en cuanto entra o sale una ficha.
  * - `ilusion` es el id del canvas de ilusión de la sala — metadato de preparación
  *   para el museo 3D (reutilizaría SALAS sin re-definir la estructura).
  */

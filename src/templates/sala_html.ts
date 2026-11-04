@@ -9,6 +9,7 @@ import { numFor } from "../cv/render.ts";
 import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
 import {
+  bastidorClosing,
   enDesarrolloDe,
   publicadosDe,
   showcaseProject,
@@ -228,13 +229,13 @@ ${ROOM_TAIL}`;
 }
 
 /**
- * Cierre de El Bastidor: la sala declara por qué existe. Hay dos variantes
- * porque la afirmación «ninguna tiene un artefacto que abrir» deja de ser
- * cierta en cuanto una ficha enlaza material público (p. ej. PRs upstream).
+ * Cierre de El Bastidor: la sala declara por qué existe. El texto se DERIVA del
+ * dato (`bastidorClosing`): cuántas fichas enlazan material público y cuántas
+ * declaran `falta`; si alguna no está curada, el cierre cuantifica el hueco en
+ * vez de afirmar que todas dicen qué les falta.
  */
 export function cierreBastidor(profile: CvProfile = P): string {
-  const conLinks = enDesarrolloDe(profile).filter((p) => p.links.length > 0).length;
-  const closing = conLinks > 0 ? MARCO.closingSomePublic(conLinks) : MARCO.closing;
+  const closing = bastidorClosing(profile);
   return `
     <p class="room-closing" data-scroll="up">
       ${esc(closing.es)}

@@ -189,6 +189,30 @@ describe("El Marco / El Bastidor — split desde artifactRefs (#109)", () => {
     );
   });
 
+  it("el cierre se deriva del dato: una ficha sin `falta` cambia la afirmación (F2)", () => {
+    // Fixture: un proyecto nuevo del SSOT, no publicado y sin curación. La
+    // tarjeta no tiene `falta`; el cierre no puede seguir afirmando que cada
+    // una dice qué le falta (lo hacía por accidente del SSOT 8/8).
+    const sinCuracion: CvProfile = {
+      ...profile,
+      projects: [
+        ...profile.projects,
+        {
+          name: "Proyecto sin curación",
+          published: false,
+          links: [],
+          keywords: [],
+          evidence: []
+        }
+      ]
+    };
+    const html = bastidorHtml(sinCuracion);
+    expect(occurrences(html, '<div class="project-card')).toBe(9);
+    expect(occurrences(html, 'class="project-falta"')).toBe(8);
+    expect(html).toContain("sólo 8 de 9 declaran qué les falta");
+    expect(html).not.toContain("y cada una dice qué le falta");
+  });
+
   it("restaura la curación de `main` que el SSOT no lleva (F4)", () => {
     expect(MARCO).toContain("Publicado · v0.1.0 · Open-source");
     expect(MARCO).toContain("Publicado · MIT · v0.3.6");

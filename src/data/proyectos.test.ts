@@ -79,6 +79,8 @@ describe("PROYECTOS — split derivado de artifactRefs", () => {
     const kontablo = PROYECTOS.find((p) => p.id === "Kontablo")!;
     expect(kontablo.links).toContain("https://github.com/ChristianLuciani/accounting-esperanto");
     expect(kontablo.html).toContain("https://doi.org/10.5281/zenodo.20738795");
+    // El label curado de `main` se conserva: no un «DOI» seco derivado del host.
+    expect(kontablo.html).toContain("↗ Zenodo DOI 10.5281/zenodo.20738795");
   });
 
   it("la píldora curada no contradice al SSOT: published=false → sin «Publicado» (F4)", () => {

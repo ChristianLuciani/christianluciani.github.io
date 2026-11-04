@@ -18,7 +18,7 @@
 import { MARCO, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
 import { PROFILE } from "./profile.generated.ts";
-import type { CvProfile, ProjectItem } from "./profile.types.ts";
+import type { CvProfile, LangText, ProjectItem } from "./profile.types.ts";
 
 export interface Proyecto {
   /** Nombre corto del SSOT (clave de curación; sin slug derivado de URLs). */
@@ -54,41 +54,56 @@ function esc(s: string | undefined): string {
     .replace(/"/g, "&quot;");
 }
 
-/** Etiqueta de presentación de un link (host → nombre corto). */
-const LINK_LABELS: Record<string, string> = {
-  "github.com": "Repositorio",
-  "doi.org": "DOI",
-  "papers.ssrn.com": "SSRN",
-  "ssrn.com": "SSRN",
-  "researchgate.net": "ResearchGate",
-  "www.researchgate.net": "ResearchGate",
-  "zenodo.org": "Zenodo",
-  "aiche.confex.com": "AIChE"
+/**
+ * Etiqueta de presentación de un link (host → nombre corto), en los dos
+ * idiomas: el HTML se emite en ES y `profileI18nPairs` deriva el par
+ * `↗ <es>` → `↗ <en>` para el MAP del toggle. Así ningún label derivado queda
+ * en español en la versión EN.
+ */
+const LINK_LABELS: Record<string, LangText> = {
+  "github.com": { es: "Repositorio", en: "Repository" },
+  "doi.org": { es: "DOI", en: "DOI" },
+  "papers.ssrn.com": { es: "SSRN", en: "SSRN" },
+  "ssrn.com": { es: "SSRN", en: "SSRN" },
+  "researchgate.net": { es: "ResearchGate", en: "ResearchGate" },
+  "www.researchgate.net": { es: "ResearchGate", en: "ResearchGate" },
+  "zenodo.org": { es: "Zenodo", en: "Zenodo" },
+  "aiche.confex.com": { es: "AIChE", en: "AIChE" }
 };
 
-function linkLabel(url: string): string {
+/** Etiqueta de un link; el repositorio con path agrega su último segmento. */
+export function linkLabel(url: string): LangText {
   try {
     const parsed = new URL(url);
-    const base = LINK_LABELS[parsed.hostname] ?? parsed.hostname.replace(/^www\./, "");
+    const base = LINK_LABELS[parsed.hostname] ?? {
+      es: parsed.hostname.replace(/^www\./, ""),
+      en: parsed.hostname.replace(/^www\./, "")
+    };
     // Un link a un archivo dentro del repo (p. ej. docs/ci-cd.md) no se
     // confunde con el repositorio mismo: se agrega el último segmento.
     const segments = parsed.pathname.split("/").filter(Boolean);
-    if (base === "Repositorio" && segments.length > 2) {
-      return `${base} · ${segments[segments.length - 1]}`;
+    if (base.es === LINK_LABELS["github.com"].es && segments.length > 2) {
+      const suffix = ` · ${segments[segments.length - 1]}`;
+      return { es: `${base.es}${suffix}`, en: `${base.en}${suffix}` };
     }
     return base;
   } catch {
-    return url;
+    return { es: url, en: url };
   }
 }
 
-/** Links + fuentes de evidencia del SSOT, más los curados, sin duplicar URL. */
-function projectLinks(project: ProjectItem): { url: string; label?: string }[] {
+/**
+ * Links + fuentes de evidencia del SSOT, más los curados, sin duplicar URL.
+ * Exportada para que `profileI18nPairs` derive el par EN de cada label sin
+ * duplicar la regla host→etiqueta.
+ */
+export function projectLinks(project: ProjectItem): { url: string; label: LangText }[] {
   const curation = PROJECT_CURATION[projectKey(project.name)];
+  const overrides = new Map((curation?.linkLabels ?? []).map((l) => [l.url, l.label]));
   const all = [
-    ...project.links.map((url) => ({ url, label: undefined as string | undefined })),
-    ...project.evidence.map((ev) => ({ url: ev.source, label: undefined as string | undefined })),
-    ...(curation?.extraLinks ?? []).map((l) => ({ url: l.url, label: l.label.es }))
+    ...project.links.map((url) => ({ url, label: overrides.get(url) ?? linkLabel(url) })),
+    ...project.evidence.map((ev) => ({ url: ev.source, label: overrides.get(ev.source) ?? linkLabel(ev.source) })),
+    ...(curation?.extraLinks ?? []).map((l) => ({ url: l.url, label: l.label }))
   ].filter((l) => /^https?:\/\//.test(l.url));
   const seen = new Set<string>();
   return all.filter((l) => (seen.has(l.url) ? false : (seen.add(l.url), true)));
@@ -109,7 +124,7 @@ function cardHtml(project: ProjectItem): string {
   const anchors = projectLinks(project)
     .map(
       ({ url, label }) =>
-        `<a class="pub-doi" href="${esc(url)}" target="_blank" rel="noopener">↗ ${esc(label ?? linkLabel(url))}</a>`
+        `<a class="pub-doi" href="${esc(url)}" target="_blank" rel="noopener">↗ ${esc(label.es)}</a>`
     )
     .join("\n        ");
   return `      <span class="project-status ${statusClass(project.published, project.status)}">${esc(status.es)}</span>
@@ -158,6 +173,22 @@ export function enDesarrolloDe(profile: CvProfile = PROFILE as unknown as CvProf
   return proyectosDe(profile).filter((p) => !p.published).sort(porRecencia);
 }
 
+/**
+ * Cierre de El Bastidor DERIVADO del dato: cuántas fichas enlazan material
+ * público y cuántas declaran `falta`. Si una ficha no publicada no está curada,
+ * el cierre cuantifica el hueco («sólo N de M declaran qué les falta») en vez
+ * de afirmar que todas lo hacen. El template sólo renderiza el LangText.
+ */
+export function bastidorClosing(profile: CvProfile = PROFILE as unknown as CvProfile): LangText {
+  const fichas = enDesarrolloDe(profile);
+  const conLinks = fichas.filter((p) => p.links.length > 0).length;
+  const conFalta = fichas.filter((p) => Boolean(p.falta)).length;
+  if (conFalta < fichas.length) {
+    return MARCO.closingMissingFalta(conLinks, conFalta, fichas.length);
+  }
+  return conLinks > 0 ? MARCO.closingSomePublic(conLinks) : MARCO.closing;
+}
+
 export const publicados: readonly Proyecto[] = publicadosDe();
 export const enDesarrollo: readonly Proyecto[] = enDesarrolloDe();
 
@@ -169,4 +200,4 @@ export function showcaseProject(
 }
 
 /** Label del cierre de El Bastidor (el template sólo lo renderiza). */
-export const CIERRE_BASTIDOR_TEXT = MARCO.closing.es;
+export const CIERRE_BASTIDOR_TEXT = bastidorClosing().es;

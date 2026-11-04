@@ -34,6 +34,12 @@ export interface ProjectCuration {
   note?: LangText;
   /** Links curados que el SSOT no trae (se suman a links+evidence, sin duplicar). */
   extraLinks?: { url: string; label: LangText }[];
+  /**
+   * Etiqueta curada para un link que YA viene del SSOT (links/evidence), por
+   * URL: restaura el texto de `main` sin duplicar el link (p. ej. el DOI de
+   * Zenodo de Kontablo). La derivada por host queda como fallback.
+   */
+  linkLabels?: { url: string; label: LangText }[];
 }
 
 /** Nombre corto estable: `Kontablo — Universal…` → `Kontablo`. */
@@ -56,6 +62,14 @@ export const PROJECT_CURATION: Record<string, ProjectCuration> = {
       {
         url: "https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy",
         label: { es: "ResearchGate", en: "ResearchGate" }
+      }
+    ],
+    // El label del DOI no es derivable del host: `main` publicaba el texto
+    // curado con el identificador («Zenodo DOI 10.5281/…»), no un «DOI» seco.
+    linkLabels: [
+      {
+        url: "https://doi.org/10.5281/zenodo.20738795",
+        label: { es: "Zenodo DOI 10.5281/zenodo.20738795", en: "Zenodo DOI 10.5281/zenodo.20738795" }
       }
     ]
   },

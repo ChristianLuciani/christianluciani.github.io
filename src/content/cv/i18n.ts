@@ -8,6 +8,7 @@
  * estos pares se derivan de la misma fuente, así que un hecho nuevo entra
  * traducido sin tocar el diccionario.
  */
+import { bastidorClosing, projectLinks } from "../../data/proyectos.ts";
 import { PROFILE } from "../../data/profile.generated.ts";
 import type { CvProfile } from "../../data/profile.types.ts";
 import { DRAHMA, ESTADO, FRISO, MARCO, PROCEDENCIA, formatMonthYear, formatMonthYearEn, formatPeriod, orgEs, statusLabel } from "./museo.ts";
@@ -42,7 +43,13 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
     add(curation?.falta?.es, curation?.falta?.en);
     add(curation?.statusLabel?.es, curation?.statusLabel?.en);
     add(curation?.note?.es, curation?.note?.en);
-    for (const link of curation?.extraLinks ?? []) add(link.label.es, link.label.en);
+    // El label del ancla es el texto completo con el prefijo «↗ »: ése es el
+    // nodo que el walker busca en el MAP, no el label pelado. Se deriva de
+    // `projectLinks` para cubrir también los labels calculados por host
+    // («Repositorio · 618» → «Repository · 618»).
+    for (const { label } of projectLinks(project)) {
+      add(`↗ ${label.es}`, `↗ ${label.en}`);
+    }
   }
 
   // Labels compartidos.
@@ -50,11 +57,14 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
   add(MARCO.faltaLabel.es, MARCO.faltaLabel.en);
   add(MARCO.closing.es, MARCO.closing.en);
   // El cierre cuantifica según el número de fichas con links: el MAP cubre las
-  // dos variantes (singular y plural), no una cadena fija.
+  // dos variantes (singular y plural), no una cadena fija. La variante por
+  // `falta` ausente se agrega con los conteos reales que renderiza el cierre.
   for (const count of [1, 2]) {
     const closing = MARCO.closingSomePublic(count);
     add(closing.es, closing.en);
   }
+  const bastidor = bastidorClosing(profile);
+  add(bastidor.es, bastidor.en);
   add(PROCEDENCIA.label.es, PROCEDENCIA.label.en);
   for (const estado of Object.values(ESTADO)) add(estado.es, estado.en);
 
