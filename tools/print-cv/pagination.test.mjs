@@ -4,6 +4,7 @@
  */
 import { deflateSync } from "node:zlib";
 import { describe, expect, it } from "vitest";
+import { Unmeasurable } from "../logo/fidelity-verdict.mjs";
 import {
   GateError,
   nonA4Pages,
@@ -69,26 +70,22 @@ describe("verify-pagination — precondición del footer", () => {
  */
 
 /**
- * PDF mínimo válido (xref incluida) con una página por entrada. Cada entrada es
- * la lista de coordenadas Y de sus líneas de texto, en unidades del stream.
+ * PDF mínimo válido (xref incluida) con una página por entrada de `contents`.
  * `compress` usa FlateDecode, como los PDFs de Chrome.
  */
-function buildPdf(pages, { compress = true } = {}) {
-  const pageNums = pages.map((_, index) => 3 + index * 2);
-  const contentNums = pages.map((_, index) => 4 + index * 2);
+function buildPdfContents(contents, { compress = true } = {}) {
+  const pageNums = contents.map((_, index) => 3 + index * 2);
+  const contentNums = contents.map((_, index) => 4 + index * 2);
   const bodies = new Map();
-  const maxNum = 2 + pages.length * 2;
+  const maxNum = 2 + contents.length * 2;
 
   bodies.set(1, "<< /Type /Catalog /Pages 2 0 R >>");
   bodies.set(
     2,
-    `<< /Type /Pages /Kids [${pageNums.map((num) => `${num} 0 R`).join(" ")}] /Count ${pages.length} >>`,
+    `<< /Type /Pages /Kids [${pageNums.map((num) => `${num} 0 R`).join(" ")}] /Count ${contents.length} >>`,
   );
-  pages.forEach((lines, index) => {
-    const text = lines
-      .map((y) => `BT /F1 9 Tf 1 0 0 1 57 ${y} Tm <0024> Tj ET`)
-      .join("\n");
-    const raw = Buffer.from(text, "latin1");
+  contents.forEach((content, index) => {
+    const raw = Buffer.from(content, "latin1");
     const payload = compress ? deflateSync(raw) : raw;
     bodies.set(
       pageNums[index],
@@ -124,6 +121,16 @@ function buildPdf(pages, { compress = true } = {}) {
   return Buffer.concat(chunks);
 }
 
+/** Una página por lista de coordenadas Y; una `Tm` por línea, como Chrome. */
+function buildPdf(pages, options = {}) {
+  return buildPdfContents(
+    pages.map((lines) =>
+      lines.map((y) => `BT /F1 9 Tf 1 0 0 1 57 ${y} Tm <0024> Tj ET`).join("\n"),
+    ),
+    options,
+  );
+}
+
 /** Líneas equiespaciadas: extensión `span` repartida en `count` líneas. */
 const linesAt = (count, { top = 100, span = 700 } = {}) =>
   Array.from({ length: count }, (_, index) => top + (count === 1 ? 0 : (span * index) / (count - 1)));
@@ -144,6 +151,35 @@ describe("verify-pagination — extensión de texto por página", () => {
 
   it("una página sin texto mide 0 líneas y extensión 0", () => {
     expect(pageTextExtents(buildPdf([[]]))).toEqual([{ lines: 0, extent: 0 }]);
+  });
+
+  /* F2 de la 3.ª ronda: la unidad medida no es «una Tm por línea». Se sigue la
+   * matriz de texto, así que avanzar con Td/TD/T* mide igual; si una versión de
+   * Chrome dejara de posicionar con esos operadores, el fallo es «no pude
+   * medir», no un falso rojo de «página vacía». */
+  it("cuenta líneas posicionadas con Td y T* (no sólo con Tm)", () => {
+    const content =
+      "BT /F1 9 Tf 1 0 0 1 57 700 Tm <0024> Tj 40 TL " +
+      "0 -40 Td <0024> Tj T* <0024> Tj ET";
+    expect(pageTextExtents(buildPdfContents([content]))).toEqual([{ lines: 3, extent: 80 }]);
+  });
+
+  it("cuenta líneas posicionadas con TD (que además fija el leading)", () => {
+    const content =
+      "BT /F1 9 Tf 1 0 0 1 57 700 Tm <0024> Tj 0 -40 TD <0024> Tj T* <0024> Tj ET";
+    expect(pageTextExtents(buildPdfContents([content]))).toEqual([{ lines: 3, extent: 80 }]);
+  });
+
+  it("no cuenta como líneas distintas los runs de la misma línea (Td horizontal)", () => {
+    const content = "BT /F1 9 Tf 1 0 0 1 57 700 Tm <0024> Tj 100 0 Td <0024> Tj ET";
+    expect(pageTextExtents(buildPdfContents([content]))).toEqual([{ lines: 1, extent: 0 }]);
+  });
+
+  it("un texto sin posiciones de línea se reporta como no medible, no como página vacía", () => {
+    const extents = pageTextExtents(buildPdfContents(["BT /F1 9 Tf <0024> Tj ET"]));
+    expect(extents).toEqual([{ lines: 0, extent: 0 }]);
+    expect(() => lastPageFillViolation(extents)).toThrow(Unmeasurable);
+    expect(() => lastPageFillViolation(extents)).toThrow(/no pude medir.*Tm/s);
   });
 });
 
@@ -171,10 +207,44 @@ describe("verify-pagination — piso de contenido de la última página", () => 
   });
 
   it("una única página sin texto (sólo quedaba el footer) también falla", () => {
-    expect(() => lastPageFillViolation(pageTextExtents(buildPdf([[]])))).toThrow(/no tiene texto medible/);
+    expect(() => lastPageFillViolation(pageTextExtents(buildPdf([[]])))).toThrow(Unmeasurable);
+    expect(() => lastPageFillViolation(pageTextExtents(buildPdf([[]])))).toThrow(/no pude medir/);
   });
 
   it("una única página con contenido no es una página huérfana", () => {
     expect(() => lastPageFillViolation(pageTextExtents(buildPdf([linesAt(20)])))).not.toThrow();
+  });
+
+  /* F3 de la 3.ª ronda: el span solo no es contenido. Dos líneas en el tope y
+   * el pie cubren el 100% de la extensión; el conteo de líneas las delata. */
+  it("no confunde span con contenido: 2 líneas al tope y al pie no son un bloque", () => {
+    const extents = pageTextExtents(buildPdf([linesAt(30), [0, 700]]));
+    expect(extents.at(-1)).toEqual({ lines: 2, extent: 700 });
+    expect(extents.at(-1).extent / Math.max(...extents.map((page) => page.extent))).toBe(1);
+    expect(() => lastPageFillViolation(extents)).toThrow(/casi vacía/);
+  });
+
+  /* F4 de la 3.ª ronda: el umbral queda ANCLADO. Antes, cualquier valor en
+   * (0%, 45,9%) dejaba la suite verde — 40% inclusive, que reprobaría el head
+   * real (34,3% de extensión y 32,4% de líneas). Estos dos fixtures son el
+   * mismo documento y difieren sólo en 2 unidades de extensión: 19,9% rojo,
+   * 20,1% verde. Si alguien cambia la constante sin actualizar el contrato,
+   * la aserción del valor exportado falla. */
+  it("ancla el umbral: 19,9% es rojo y 20,1% es verde sobre el mismo fixture", () => {
+    expect(MIN_LAST_PAGE_FILL).toBe(0.2);
+
+    const fullest = linesAt(11, { top: 0, span: 1000 }); // 11 líneas, extensión 1000
+    const withLastSpan = (span) => buildPdf([fullest, [100, 100 + span / 2, 100 + span]]);
+
+    const below = pageTextExtents(withLastSpan(199));
+    expect(below.at(-1)).toEqual({ lines: 3, extent: 199 });
+    expect(below.at(-1).extent / 1000).toBeCloseTo(0.199, 10);
+    expect(() => lastPageFillViolation(below)).toThrow(GateError);
+    expect(() => lastPageFillViolation(below)).toThrow(/casi vacía/);
+
+    const above = pageTextExtents(withLastSpan(201));
+    expect(above.at(-1)).toEqual({ lines: 3, extent: 201 });
+    expect(above.at(-1).extent / 1000).toBeCloseTo(0.201, 10);
+    expect(() => lastPageFillViolation(above)).not.toThrow();
   });
 });

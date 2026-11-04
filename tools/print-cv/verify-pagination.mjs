@@ -1,6 +1,6 @@
 /**
  * verify-pagination.mjs — gate real de paginación del print-CV (F3 de #119, F1
- * de la 2.ª ronda de #119).
+ * de la 2.ª ronda y F1–F4 de la 3.ª ronda de #119).
  *
  * Mide el PDF que produce Chrome con el CSS del propio repo (`@page` A4), no el
  * HTML ni el texto del CSS. Tres condiciones:
@@ -14,23 +14,38 @@
  * (p.6 = 1 skill + footer) el conteo es 6/6 y el gate pasaba. Por eso (3).
  *
  * (3) se mide sobre el PDF SIN footer (así el footer no cuenta como contenido):
- * para cada página se extrae la extensión vertical de sus líneas de texto
- * (matrices `Tm` de los bloques de texto, en unidades del stream, sin necesitar
- * fuentes ni conversión a puntos) y se exige que la última página cubra al menos
- * `MIN_LAST_PAGE_FILL` de la extensión de la página más llena del documento.
- * Es una medida RELATIVA a propósito: la escala CSS→PDF de Chrome no es
- * contrato público, y el documento es la referencia natural de «página llena».
+ * para cada página se extraen las posiciones de línea de sus bloques de texto
+ * siguiendo la matriz de texto (`Tm`, `Td`, `TD` y `T*` con su `TL`, dentro de
+ * `BT … ET`; en unidades del stream, sin fuentes ni conversión a puntos) y se
+ * exigen DOS medidas relativas a la página más llena del documento: al menos
+ * `MIN_LAST_PAGE_FILL` de su extensión vertical Y de su número de líneas. La
+ * extensión sola deja pasar una página con 2 líneas en el tope y el pie; el
+ * conteo solo deja pasar una página densa pero sin alto. El mínimo de ambas
+ * cierra los dos casos sin agregar constantes. Es una medida RELATIVA a
+ * propósito: la escala CSS→PDF de Chrome no es contrato público, y el documento
+ * es la referencia natural de «página llena».
  *
  * Medido con Chrome 156 (2026-11-04), imprimiendo desde `dist/` (así resuelven
- * los `assets/…`), sin footer, extensión de texto por página:
+ * los `assets/…`), sin footer, por página (líneas/extensión):
  *   · base 0e0c1e0 (huérfano): p.6 = 1 skill + footer; quitar el footer deja 1
- *     línea → extensión 0 (0% de la más llena, 933) y el conteo sigue 6/6.
+ *     línea → extensión 0 (0% de la más llena) y el conteo sigue 6/6.
  *   · head corregido: p.6 = cierre de Publicaciones + Competencias → 12 líneas,
- *     321 unidades = 34,4% de la más llena (934).
+ *     321 unidades = 34,4% de la extensión (934) y 12/37 = 32,4% de las líneas
+ *     de la página más llena (p.2, 37 líneas).
  * El umbral 20% queda entre ambos con margen: por debajo, la página no porta un
  * bloque real, sólo la cola de una sección. Un documento de una sola página no
  * tiene página huérfana (la más llena es ella misma); si esa única página no
  * tiene texto (p.ej. sólo el footer), la medición falla porque no hay contenido.
+ *
+ * ASUNCIÓN DECLARADA (F2 de la 3.ª ronda): el extractor reconoce líneas
+ * posicionadas por `Tm`/`Td`/`TD`/`T*`; si una versión de Chrome avanzara
+ * líneas con otro operador (o cambiara el modelo de texto), TODAS las páginas
+ * medirían 0. Ese caso se reporta como «no se pudo medir» (exit 2, mensaje
+ * explícito sobre el operador), nunca como «página vacía» y nunca como OK.
+ *
+ * Detección de invocación directa (F1 de la 3.ª ronda): Node realpath-ea el
+ * módulo de entrada (`import.meta.url`), no `argv[1]`; comparar ambos crudos
+ * da false por symlink y el gate salía 0 sin medir. Se comparan los realpaths.
  *
  * El binario lo resuelve `tools/logo/chrome.mjs` (misma precedencia que los
  * gates del logo: `CHROME_PATH` primero; en CI lo setea setup-chrome). No
@@ -41,12 +56,13 @@
  * Exit: 0 OK · 1 drift · 2 no se pudo medir (sin Chrome, sin build o PDF raro).
  */
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, realpathSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join, resolve } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { inflateSync } from "node:zlib";
 import { chromeFailure, chromePath } from "../logo/chrome.mjs";
+import { Unmeasurable } from "../logo/fidelity-verdict.mjs";
 
 /** A4 en puntos PostScript: 210mm × 297mm. */
 const A4 = { width: 595.28, height: 841.89 };
@@ -54,9 +70,10 @@ const A4 = { width: 595.28, height: 841.89 };
 const TOLERANCE_PT = 1;
 
 /**
- * Piso de contenido de la última página: 20% de la extensión de texto de la
- * página más llena del documento (ver la medición en el encabezado). Un cierre
- * con 1–2 líneas ronda el 0–3%; el cierre legítimo actual, el 34%.
+ * Piso de contenido de la última página: 20% de la página más llena, exigido
+ * sobre la extensión vertical Y sobre el número de líneas (ver la medición en
+ * el encabezado). Un cierre con 1–2 líneas ronda el 0–3%; el cierre legítimo
+ * actual, 34% de extensión y 32% de líneas.
  */
 export const MIN_LAST_PAGE_FILL = 0.2;
 
@@ -218,33 +235,86 @@ export function pageContents(pdf) {
 }
 
 /**
- * Extensión vertical del texto de cada página, en unidades del stream.
+ * Operadores que establecen una posición de línea de texto, en orden. Los seis
+ * números son `Tm` (fija la matriz); dos son `Td`/`TD` (desplazan la línea);
+ * `T*` avanza una línea con el `TL` vigente. `ET` cierra el bloque: fuera de
+ * `BT … ET` no hay posiciones de texto que medir.
+ */
+const TEXT_POSITION_RE =
+  /(BT)\b|(ET)\b|(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm\b|(-?[\d.]+)\s+(-?[\d.]+)\s+(TD|Td)\b|(T\*)|(-?[\d.]+)\s+TL\b/g;
+
+/**
+ * Coordenadas Y de cada línea posicionada en un stream de contenido.
  *
- * Chrome emite un `Tm` por línea (los runs de la misma línea se posicionan con
- * `Td`), dentro de bloques `BT … ET`; de ahí salen las líneas y la altura. Como
- * solo se comparan páginas del MISMO PDF, la escala común se cancela y no hace
- * falta convertir a puntos (ni leer fuentes).
+ * Chrome emite un `Tm` por línea, pero la medición no depende de eso: se
+ * sigue la matriz de texto (`Tm`, `Td`/`TD`, `T*` + `TL`), así que una versión
+ * que avance líneas con `Td`/`T*` mide igual. Solo importa Y (el documento no
+ * rota texto); los desplazamientos horizontales no agregan líneas porque se
+ * deduplican por Y. Asunción declarada en el encabezado: otro modelo de
+ * posicionamiento produce 0 líneas y se reporta como «no se pudo medir».
+ */
+function textLineYs(content) {
+  const ys = [];
+  let leading = 0;
+  let y = 0;
+  let inText = false;
+  for (const m of content.matchAll(TEXT_POSITION_RE)) {
+    if (m[1]) {
+      inText = true;
+      y = 0;
+      continue;
+    }
+    if (m[2]) {
+      inText = false;
+      continue;
+    }
+    if (!inText) continue;
+    if (m[3] !== undefined) {
+      y = Number(m[8]);
+      ys.push(y);
+      continue;
+    }
+    if (m[9] !== undefined) {
+      const ty = Number(m[10]);
+      if (m[11] === "TD") leading = -ty;
+      y += ty;
+      ys.push(y);
+      continue;
+    }
+    if (m[12]) {
+      y -= leading;
+      ys.push(y);
+      continue;
+    }
+    if (m[13] !== undefined) leading = Number(m[13]);
+  }
+  return ys;
+}
+
+/**
+ * Líneas y extensión vertical del texto de cada página, en unidades del stream.
+ *
+ * `lines` cuenta posiciones Y distintas (una `Tm`/`Td`/`T*` por línea); dos
+ * runs de la misma línea en distinta X colapsan a una. `extent` es el alto
+ * cubierto. Como solo se comparan páginas del MISMO PDF, la escala común se
+ * cancela y no hace falta convertir a puntos (ni leer fuentes).
  */
 export function pageTextExtents(pdf) {
   return pageContents(pdf).map((content) => {
-    const ys = [];
-    for (const block of content.matchAll(/BT([\s\S]*?)ET/g)) {
-      for (const tm of block[1].matchAll(
-        /(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+(-?[\d.]+)\s+Tm\b/g,
-      )) {
-        ys.push(Number(tm[6]));
-      }
-    }
+    const ys = textLineYs(content);
     if (ys.length === 0) return { lines: 0, extent: 0 };
-    const lines = new Set(ys.map((y) => y.toFixed(1))).size;
-    return { lines, extent: Math.max(...ys) - Math.min(...ys) };
+    return {
+      lines: new Set(ys.map((y) => y.toFixed(1))).size,
+      extent: Math.max(...ys) - Math.min(...ys),
+    };
   });
 }
 
 /**
- * Condición (3): la última página no puede ser casi vacía. Lanza GateError con
- * el caso medido; `pageExtents` es la salida de `pageTextExtents` sobre el PDF
- * SIN footer (por eso el footer no suma contenido).
+ * Condición (3): la última página no puede ser casi vacía. Mide EXTENSIÓN y
+ * LÍNEAS relativas a la página más llena; el mínimo de ambas es el piso (ver
+ * encabezado). Lanza GateError con el caso medido; `pageExtents` es la salida
+ * de `pageTextExtents` sobre el PDF SIN footer (por eso el footer no suma).
  */
 export function lastPageFillViolation(pageExtents) {
   if (pageExtents.length === 0) {
@@ -252,18 +322,27 @@ export function lastPageFillViolation(pageExtents) {
   }
   const fullest = Math.max(...pageExtents.map((page) => page.extent));
   if (fullest <= 0) {
-    throw new GateError(
-      "el print-CV no tiene texto medible sin el footer: la última página no porta contenido",
+    /* Ninguna página expone posiciones de texto: o el documento no tiene
+     * contenido, o el modelo de posicionamiento cambió. No se puede distinguir,
+     * así que se declara «no se pudo medir» (exit 2), nunca «página vacía». */
+    throw new Unmeasurable(
+      "no pude medir el texto del print-CV: ninguna página expone posiciones de línea " +
+        "(`Tm`/`Td`/`TD`/`T*` dentro de `BT … ET`) sin el footer — ¿cambió cómo Chrome " +
+        "posiciona el texto?",
     );
   }
   const last = pageExtents[pageExtents.length - 1];
-  const fill = last.extent / fullest;
+  const fullestLines = Math.max(...pageExtents.map((page) => page.lines));
+  const extentFill = last.extent / fullest;
+  const lineFill = fullestLines > 0 ? last.lines / fullestLines : 0;
+  const fill = Math.min(extentFill, lineFill);
   if (fill < MIN_LAST_PAGE_FILL) {
     throw new GateError(
-      `la última página quedó casi vacía: ${last.lines} línea(s) cubren el ` +
-        `${(fill * 100).toFixed(1)}% de la página más llena (mínimo ` +
-        `${(MIN_LAST_PAGE_FILL * 100).toFixed(0)}%) — el cierre no puede ser sólo ` +
-        "la cola de una sección",
+      `la última página quedó casi vacía: ${last.lines} línea(s) y ${last.extent} ` +
+        `unidades cubren el ${(lineFill * 100).toFixed(1)}% de las líneas y el ` +
+        `${(extentFill * 100).toFixed(1)}% de la extensión de la página más llena ` +
+        `(${fullestLines} líneas/${fullest}; mínimo ${(MIN_LAST_PAGE_FILL * 100).toFixed(0)}% ` +
+        "en ambas) — el cierre no puede ser sólo la cola de una sección",
     );
   }
 }
@@ -339,7 +418,8 @@ function main() {
     console.log(
       `✅ print-CV: ${withPages} páginas A4; el footer comparte la última ` +
         `(quitar el footer no reduce el conteo: ${withoutPages}) y la última ` +
-        `página cubre el contenido mínimo (≥${(MIN_LAST_PAGE_FILL * 100).toFixed(0)}% de la más llena)`,
+        `página cubre el contenido mínimo (≥${(MIN_LAST_PAGE_FILL * 100).toFixed(0)}% de la ` +
+        "extensión y de las líneas de la más llena)",
     );
   } catch (err) {
     if (err instanceof GateError) {
@@ -363,6 +443,20 @@ function main() {
   process.exitCode = exitCode;
 }
 
-const invokedDirectly =
-  process.argv[1] != null && import.meta.url === pathToFileURL(resolve(process.argv[1])).href;
-if (invokedDirectly) main();
+/* Invocación directa (F1 de la 3.ª ronda): `import.meta.url` es el path
+ * REALPATH-eado del módulo, mientras `argv[1]` conserva el path con que se
+ * invocó (p.ej. un symlink). Comparar los strings crudos da false y el gate
+ * salía 0 sin medir; comparar realpaths detecta también el caso symlink. Si no
+ * se puede resolver alguno, no se asume main: el módulo se importó. */
+function invokedDirectly() {
+  if (process.argv[1] == null) return false;
+  try {
+    return (
+      realpathSync(resolve(process.argv[1])) ===
+      realpathSync(fileURLToPath(import.meta.url))
+    );
+  } catch {
+    return false;
+  }
+}
+if (invokedDirectly()) main();
