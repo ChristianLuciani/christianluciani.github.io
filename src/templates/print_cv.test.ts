@@ -179,12 +179,32 @@ describe("print-CV — footer de procedencia (solo print)", () => {
 });
 
 describe("print-CV — F1: dos secciones de Trayectoria (curación D2)", () => {
-  it("la tabla asigna cada una de las 23 filas del SSOT exactamente una vez", () => {
-    const keys = profile.experience.map(experienceKey);
-    expect(keys).toHaveLength(23);
-    expect(new Set(keys).size).toBe(keys.length);
-    for (const key of keys) expect(EXPERIENCE_SECTIONS[key], key).toBeDefined();
-    expect(Object.keys(EXPERIENCE_SECTIONS).sort()).toEqual([...keys].sort());
+  // El universo sale de la proyección, no de una lista copiada a mano: si el
+  // SSOT agrega, renombra o quita una fila, este gate lo dice. La tabla de
+  // curación sólo puede espejar las claves de PROFILE.experience.
+  const profileKeys = profile.experience.map(experienceKey);
+
+  it("la tabla cubre exactamente las claves de PROFILE.experience (ni falta ni sobra)", () => {
+    expect(new Set(profileKeys).size, "claves de fila únicas").toBe(profile.experience.length);
+    const tableKeys = Object.keys(EXPERIENCE_SECTIONS).sort();
+    // Las dos direcciones: una fila nueva sin clasificar rompe, y una fila de la
+    // tabla que ya no existe en el SSOT (hecho renombrado/eliminado) también.
+    expect(tableKeys).toEqual([...profileKeys].sort());
+    expect(tableKeys).toHaveLength(profile.experience.length);
+    for (const key of profileKeys) expect(EXPERIENCE_SECTIONS[key], key).toBeDefined();
+  });
+
+  it("una entrada nueva del SSOT sin fila rompe la cobertura (no queda obsoleta en silencio)", () => {
+    const fixtureKeys = [
+      ...profileKeys,
+      experienceKey({ org: "Fixture Org", role: { en: "Fixture", es: "Fixture" }, start: "2020-01-01" })
+    ].sort();
+    // La tabla no cubre el universo del fixture: el gate de arriba fallaría con
+    // la clave faltante, y el render falla con el mensaje exacto.
+    expect(fixtureKeys).not.toEqual(Object.keys(EXPERIENCE_SECTIONS).sort());
+    expect(fixtureKeys.filter((key) => key in EXPERIENCE_SECTIONS)).toHaveLength(
+      profile.experience.length
+    );
   });
 
   it("las dos secciones se imprimen, en orden, y cada fila cae en la suya", () => {
@@ -203,7 +223,7 @@ describe("print-CV — F1: dos secciones de Trayectoria (curación D2)", () => {
     const count = (block: string) => occurrences(block, 'class="p-entry p-exp"');
     expect(count(professionalPart)).toBe(expected("professional"));
     expect(count(trainingPart)).toBe(expected("training"));
-    expect(count(professionalPart) + count(trainingPart)).toBe(23);
+    expect(count(professionalPart) + count(trainingPart)).toBe(profile.experience.length);
 
     for (const item of profile.experience) {
       const block = experienceSectionOf(item) === "professional" ? professionalPart : trainingPart;
@@ -265,6 +285,19 @@ describe("print-CV — F2: Trayectoria y org localizado", () => {
     expect(orgEs("New Mexico State University")).toBe("New Mexico State University");
     expect(orgEs("Fluge-Panamá")).toBe("Fluge-Panamá");
     expect(orgEs("Panamá")).toBe("Panamá");
+  });
+});
+
+describe("print-CV — F2 de #119: rótulos de formación desambiguados", () => {
+  it("«Formación y talleres» (experience) no compite con «Formación académica» (education)", () => {
+    // El subhead de talleres es una decisión registrada del operador (#108 §9):
+    // no se renombra; se desambigua el otro lado.
+    expect(PRINT_CV.sections.training).toBe("Formación y talleres");
+    expect(PRINT_CV.sections.education).toBe("Formación académica");
+    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`);
+    expect(HTML).toContain(`<h2>${PRINT_CV.sections.education}</h2>`);
+    expect(HTML).not.toContain("<h2>Formación</h2>");
+    expect(occurrences(HTML, "Formación académica")).toBe(1);
   });
 });
 

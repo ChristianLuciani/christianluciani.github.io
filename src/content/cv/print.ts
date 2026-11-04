@@ -8,11 +8,16 @@
  * publicaciones, conteos, idiomas y competencias salen de `PROFILE`
  * (`src/data/profile.generated.ts`). La tabla `EXPERIENCE_SECTIONS` sólo repite
  * la CLAVE de cada fila (`org|role|start`, o `id` si el SSOT lo expone) para
- * clasificarla: no imprime ninguno de esos valores. Si una fila del SSOT no está
- * en la tabla (o cambió su clave), el render falla — la deriva se ve, no se
- * adivina ni se esconde. Si un valor tuviera que cambiar en dos archivos para
- * mantenerse coherente, sería un bug de arquitectura (SPEC §3), no una tarea de
- * curación.
+ * clasificarla: no imprime ninguno de esos valores.
+ *
+ * EXCEPCIÓN DECLARADA (SPEC §5.3): la proyección no expone `id` de fila, así que
+ * esta curación referencia los hechos por clave derivada. Es la única excepción
+ * a «id estable» y tiene condición de salida: cuando el SSOT/proyección exponga
+ * `id` en `experience[]`, la tabla migra a id (`experienceKey` ya lo prefiere).
+ * Fuera de eso, si un valor tuviera que cambiar en dos archivos para mantenerse
+ * coherente, sería un bug de arquitectura (SPEC §3), no una tarea de curación.
+ * Si una fila del SSOT no está en la tabla (o cambió su clave), el render falla
+ * — la deriva se ve, no se adivina ni se esconde.
  *
  * IDIOMA: el print queda fuera del toggle ES/EN (`src/cv/i18n.ts` salta
  * `#print-cv`), así que hoy renderiza ES. Los campos `LangText` llevan EN para
@@ -39,6 +44,10 @@ export interface PrintCvCuration {
     professional: string;
     /** Subsección 2: postgrado, escuelas, talleres y becas. */
     training: string;
+    /**
+     * Sección de grados (`education[]`). Se rotula con el calificativo
+     * «académica» para no competir con el subhead «Formación y talleres».
+     */
     education: string;
     publications: string;
     skills: string;
@@ -91,8 +100,10 @@ export function experienceKey(item: {
  *
  * Los valores son CLAVES (identificadores de fila), no hechos que el print
  * muestre: si el SSOT cambia `org`, `role` o `start`, la clave deja de resolver
- * y el render falla en vez de clasificar mal o esconder la fila. El test
- * `print_cv.test.ts` exige cobertura total (hoy 23/23).
+ * y el render falla en vez de clasificar mal o esconder la fila. Excepción
+ * declarada en SPEC §5.3 (la proyección no expone `id` de fila). El test
+ * `print_cv.test.ts` exige cobertura total contra `PROFILE.experience` (hoy
+ * 23/23), no contra una lista copiada a mano.
  *
  * DUDOSAS (el rótulo no las delata; se resuelven por lo que la fila ES):
  * - «Pasantía en Transferencia de Video a Cine» (Produrama, 2008): pasantía
@@ -164,7 +175,7 @@ export const PRINT_CV: PrintCvCuration = {
     },
     professional: "Experiencia profesional",
     training: "Formación y talleres",
-    education: "Formación",
+    education: "Formación académica",
     publications: "Publicaciones seleccionadas",
     skills: "Competencias"
   },
