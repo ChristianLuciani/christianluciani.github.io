@@ -56,6 +56,7 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
   add(FRISO.present.es, FRISO.present.en);
   add(MARCO.faltaLabel.es, MARCO.faltaLabel.en);
   add(MARCO.closing.es, MARCO.closing.en);
+  add(MARCO.closingEmpty.es, MARCO.closingEmpty.en);
   // El cierre cuantifica según el número de fichas con links: el MAP cubre las
   // dos variantes (singular y plural), no una cadena fija. La variante por
   // `falta` ausente se agrega con los conteos reales que renderiza el cierre.

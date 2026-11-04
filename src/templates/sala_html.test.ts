@@ -213,6 +213,18 @@ describe("El Marco / El Bastidor — split desde artifactRefs (#109)", () => {
     expect(html).not.toContain("y cada una dice qué le falta");
   });
 
+  it("sala vacía: 0 tarjetas y un cierre que no afirma sobre entradas (F1)", () => {
+    const todasPublicadas: CvProfile = {
+      ...profile,
+      projects: profile.projects.map((p) => ({ ...p, published: true }))
+    };
+    const html = bastidorHtml(todasPublicadas);
+    expect(occurrences(html, '<div class="project-card')).toBe(0);
+    expect(html).toContain("Esta sala está vacía");
+    expect(html).not.toContain("y cada una dice qué le falta");
+    expect(html).not.toContain("Ninguna ficha");
+  });
+
   it("restaura la curación de `main` que el SSOT no lleva (F4)", () => {
     expect(MARCO).toContain("Publicado · v0.1.0 · Open-source");
     expect(MARCO).toContain("Publicado · MIT · v0.3.6");

@@ -2,9 +2,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { projectKey } from "../content/cv/proyectos";
+import { MARCO } from "../content/cv/museo";
 import { PROFILE } from "./profile.generated";
-import type { ProjectItem } from "./profile.types";
-import { PROYECTOS, enDesarrollo, publicados, toProyecto } from "./proyectos";
+import type { CvProfile, ProjectItem } from "./profile.types";
+import { PROYECTOS, bastidorClosing, enDesarrollo, enDesarrolloDe, publicados, toProyecto } from "./proyectos";
 
 /**
  * El split El Marco / El Bastidor NO es editorial: se deriva de
@@ -67,6 +68,21 @@ describe("PROYECTOS — split derivado de artifactRefs", () => {
     const vista = toProyecto(fixture);
     expect(vista.falta).toBeUndefined();
     expect(vista.html).toContain("Sin artefacto público");
+  });
+
+  it("sala vacía (0 fichas): el cierre no habla de entradas inexistentes (F1)", () => {
+    // Estado alcanzable: el split se deriva de `published`, así que publicar
+    // todos los proyectos deja El Bastidor en cero tarjetas. El cierre anterior
+    // afirmaba «y cada una dice qué le falta» sobre fichas que no existen.
+    const todasPublicadas = {
+      ...PROFILE,
+      projects: PROFILE.projects.map((p) => ({ ...p, published: true }))
+    } as unknown as CvProfile;
+    expect(enDesarrolloDe(todasPublicadas)).toEqual([]);
+    const closing = bastidorClosing(todasPublicadas);
+    expect(closing).toEqual(MARCO.closingEmpty);
+    expect(closing.es).not.toMatch(/cada una|Ninguna ficha/);
+    expect(closing.en).not.toMatch(/each one|No entry/);
   });
 
   it("los hechos del SSOT entran a la tarjeta (nombre, descripción, links, estado)", () => {

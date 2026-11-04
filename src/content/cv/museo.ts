@@ -51,6 +51,15 @@ export const MARCO = {
     en: "No entry in this room has an artifact a third party can open yet — and each one says what it is missing."
   } satisfies LangText,
   /**
+   * Cierre de El Bastidor cuando la sala NO tiene fichas: todos los proyectos
+   * del SSOT están publicados. No hay entradas de las que afirmar «ninguna» ni
+   * «cada una»; hablar de fichas inexistentes sería falso.
+   */
+  closingEmpty: {
+    es: "Esta sala está vacía: todas las piezas del SSOT ya están publicadas y viven en El Marco.",
+    en: "This room is empty: every entry in the SSOT is already published and lives in The Frame."
+  } satisfies LangText,
+  /**
    * Cierre de El Bastidor cuando alguna ficha ya enlaza material público (p. ej.
    * PRs upstream) pero ninguna declara `artifactRefs`: decir "ninguna tiene un
    * artefacto que abrir" sería falso. El cuantificador se DERIVA del número de

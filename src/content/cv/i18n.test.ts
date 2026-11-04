@@ -82,6 +82,8 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
     }
     expect(MARCO.closingSomePublic(1).es).toContain("una ya enlaza material público");
     expect(MARCO.closingSomePublic(2).es).toContain("varias ya enlazan material público");
+    // Sala vacía: la variante también viaja al MAP (F1 del 4.º pase).
+    expect(PAIRS[MARCO.closingEmpty.es]).toBe(MARCO.closingEmpty.en);
   });
 
   it("el MAP no transporta el claim prohibido de claims.json (F7)", () => {

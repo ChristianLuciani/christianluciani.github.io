@@ -23,7 +23,9 @@ interface GrafoEdge {
 }
 
 // status: raiz | area | pub (publicado) | desarrollo (sin artefacto público) | futuro (idea, dorado)
-const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
+// Exportados: `docs/SPEC.md` §4 los cita como fuente de los nodos/aristas y el
+// chequeo de punteros (`tools/docs/doc-pointers.test.ts`) verifica el export.
+export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
   { id: "raiz", label: "Christian Luciani", status: "raiz" },
   { id: "fisica", label: "Física", status: "area" },
   { id: "ia", label: "IA Sintética · Agentes", status: "area" },
@@ -42,7 +44,8 @@ const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
   { id: "nelson", label: "Nelson Companion", status: "desarrollo" }
 ];
 
-const LINKS: [string, string][] = [
+/** Aristas del grafo, por id de nodo (`[desde, hacia]`). */
+export const LINKS: [string, string][] = [
   ["raiz", "fisica"], ["raiz", "ia"], ["raiz", "sob"], ["raiz", "oss"], ["raiz", "edu"], ["raiz", "cog"],
   ["ia", "kontablo"], ["sob", "kontablo"], ["oss", "kontablo"],
   ["ia", "zentropy"], ["cog", "zentropy"],

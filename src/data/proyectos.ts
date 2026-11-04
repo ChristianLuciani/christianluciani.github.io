@@ -181,6 +181,9 @@ export function enDesarrolloDe(profile: CvProfile = PROFILE as unknown as CvProf
  */
 export function bastidorClosing(profile: CvProfile = PROFILE as unknown as CvProfile): LangText {
   const fichas = enDesarrolloDe(profile);
+  // Sala vacía: sin fichas no hay «ninguna» ni «cada una» que afirmar (todas
+  // las piezas del SSOT ya están en El Marco).
+  if (fichas.length === 0) return MARCO.closingEmpty;
   const conLinks = fichas.filter((p) => p.links.length > 0).length;
   const conFalta = fichas.filter((p) => Boolean(p.falta)).length;
   if (conFalta < fichas.length) {

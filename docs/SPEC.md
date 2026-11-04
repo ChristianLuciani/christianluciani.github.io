@@ -128,9 +128,9 @@ arquitectura (duplicación), no una tarea.
 | curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | curación |
 | curación del print-CV (prosa, títulos, labels) | `src/content/cv/print.ts` | curación |
-| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; hoy el copy vive en `src/templates/sala_html.ts` (§grafo) | curación (ref. `projects` SSOT) |
-| galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (§galeria) | curación |
-| CSS, ilusiones, animaciones, canvas | `src/presentation/` + `src/ts/` | presentación |
+| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
+| galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
+| CSS, ilusiones, animaciones, canvas | `src/templates/` + `src/ts/` | presentación |
 
 **Reglas de reconciliación (deriva conocida, resuelta en el normalizador):**
 - "36 guías de laboratorio" = **proyecto** `Physics Lab Book` en el SSOT → la sala Biblioteca
