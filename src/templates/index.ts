@@ -7,6 +7,7 @@ import { BODY_OPEN } from "./body_open.ts";
 import { coverHtml } from "./cover_html.ts";
 import { headHtml } from "./head_html.ts";
 import { heroHtml } from "./hero_html.ts";
+import { nowHtml } from "./now_html.ts";
 import { planoHtml } from "./plano_html.ts";
 import { printCvHtml } from "./print_cv_html.ts";
 import { roomsHtml } from "./sala_html.ts";
@@ -26,6 +27,9 @@ export function assembleHtml(): string {
     printCvHtml(PROFILE as unknown as CvProfile) +
     coverHtml() +
     heroHtml() +
+    // Feed estático (#117): chrome, no hecho citable; va bajo el bloque de
+    // identidad y por encima del plano del museo.
+    nowHtml() +
     planoHtml() +
     roomsHtml() +
     FOOTER

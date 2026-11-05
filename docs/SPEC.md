@@ -159,6 +159,7 @@ línea de registro (§8 FASE 5).
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | curación del print-CV (títulos, labels y clasificación de Trayectoria) | `src/content/cv/print.ts` | curación (hoy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
+| feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
 | galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
 | CSS: tokens, tipografía, densidad | `src/templates/head_html.ts` | presentación (hoy; destino §8 FASE 5) |

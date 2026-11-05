@@ -13,6 +13,7 @@
     "sync:entity": "tsx tools/sync-entity.ts",
     "sync:ai-policy": "tsx tools/sync-ai-policy.ts",
     "sync:check": "tsx tools/sync-check.ts",
+    "sync:now": "tsx tools/sync-now.ts",
     "test:watch": "vitest",
     "build:html": "tsx build.ts",
     "logo:verify": "node tools/logo/verify-dom-fidelity.mjs",
