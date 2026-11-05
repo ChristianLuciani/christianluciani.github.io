@@ -85,7 +85,15 @@ jobs:
             *) echo "HEAD no es un refresh: no se despacha"; exit 0 ;;
           esac
           for wf in ci.yml deploy.yml; do
-            if [ "$(gh run list --workflow "$wf" --commit "$HEAD_SHA" --limit 1 --json databaseId --jq 'length')" = "0" ]; then
-              gh workflow run "$wf" --ref main; echo "dispatch $wf @ $HEAD_SHA"
-            else echo "$wf ya tiene run para $HEAD_SHA"; fi
+            # Fail-closed: si la consulta falla, stdout vacío NO es "ya hay run"
+            # (antes ese error se leía como run existente y el commit quedaba en
+            # main sin CI ni deploy, en silencio).
+            if ! runs="$(gh run list --workflow "$wf" --commit "$HEAD_SHA" --limit 1 --json databaseId --jq 'length')"; then
+              echo "::error::no se pudo consultar runs de $wf"; exit 1
+            fi
+            case "$runs" in
+              0) gh workflow run "$wf" --ref main; echo "dispatch $wf @ $HEAD_SHA" ;;
+              ''|*[!0-9]*) echo "::error::respuesta no numérica de gh para $wf: '$runs'"; exit 1 ;;
+              *) echo "$wf ya tiene run para $HEAD_SHA" ;;
+            esac
           done

@@ -2,7 +2,7 @@
  * GOLDEN — regenera `tests/golden/museo.html` desde `assembleHtml()`.
  *
  * Se corre SÓLO en un PR que cambia el render a propósito (rediseño, copy,
- * estructura) o el snapshot del perfil (`Datos: cambia`), y el body lo declara.
+ * estructura) o un sync de datos (`Golden-Cambio: render|datos` en el commit).
  * En un PR de refactor el golden NO se toca: si el test falla, el refactor
  * cambió el render y hay que corregirlo.
  *
