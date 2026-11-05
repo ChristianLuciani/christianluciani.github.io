@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "../../src/templates/index.ts";
 import { describeDrift, firstDiff, sectionDrifts, sectionsOf } from "../../tools/golden/sections.ts";
+import { baselineFile } from "../../tools/golden/paths.ts";
 
 /**
  * GOLDEN DEL RENDER (SPEC §8 FASE 5, D9).
@@ -16,7 +17,7 @@ import { describeDrift, firstDiff, sectionDrifts, sectionsOf } from "../../tools
  * Regenerar SÓLO en un PR que cambia el render a propósito: `npm run golden:update`.
  */
 
-const GOLDEN_PATH = resolve(process.cwd(), "tests/golden/museo.html");
+const GOLDEN_PATH = baselineFile(process.cwd());
 const GOLDEN = existsSync(GOLDEN_PATH) ? readFileSync(GOLDEN_PATH, "utf8") : null;
 const LIVE = assembleHtml();
 

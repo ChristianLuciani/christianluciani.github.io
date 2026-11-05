@@ -46,8 +46,8 @@ con Pages como origen, igual que CI.
 ## Enforcement en CI
 
 `ci.yml` verifica que el golden no se mueva sin declararlo: si `tests/golden/museo.html`
-cambia respecto de la base y el body del PR no contiene una línea `Render: cambia`, el job
-falla con `::error::`. Así, un PR que cambia el render **y** regenera el golden no puede
+cambia respecto de la base y el body del PR no contiene una línea `Render: cambia` **ni**
+`Datos: cambia`, el job falla con `::error::`. Así, un PR que cambia el render **y** regenera el golden no puede
 pasar verde en silencio — que es la única forma de que el invariante sea real.
 
 El PR que introdujo el baseline queda exento (no hay contra qué comparar); la guarda rige

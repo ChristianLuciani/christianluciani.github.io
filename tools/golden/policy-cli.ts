@@ -8,8 +8,9 @@
  */
 import { execFileSync } from "node:child_process";
 import { changedSince, decide, existsIn, type PolicyResult } from "./policy.ts";
+import { BASELINE_PATH } from "./paths.ts";
 
-const PATH = "tests/golden/museo.html";
+const PATH = BASELINE_PATH;
 
 function main(): void {
   const base = process.env.BASE_SHA;

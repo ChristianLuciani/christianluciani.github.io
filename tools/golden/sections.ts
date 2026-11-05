@@ -48,7 +48,9 @@ export function sectionsOf(html: string): Section[] {
   if (close < 0) throw new Error(`golden: el documento no cierra el body (${BODY_CLOSE})`);
   marks.push({ name: "footer", at: close });
 
-  marks.sort((a, b) => a.at - b.at);
+  // Sin `sort`: los marcadores se empujan en el orden en que `assembleHtml()`
+  // los emite, y ordenarlos antes de validar dejaba el chequeo muerto (siempre
+  // pasaba). Un reordenamiento real tiene que fallar acá, no rotular mal.
   for (let i = 1; i < marks.length; i += 1) {
     if (marks[i].at <= marks[i - 1].at) {
       throw new Error(`golden: marcadores fuera de orden (${marks[i - 1].name} ≥ ${marks[i].name})`);
