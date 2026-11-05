@@ -66,10 +66,22 @@ jobs:
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      - name: Despachar CI y deploy sobre el commit nuevo
-        if: steps.commit.outputs.changed == 'true'
+      # Idempotente y recuperable: si el dispatch falló tras el push, un re-run
+      # (changed=false) igual lo completa; si ya hay run para ese commit, no duplica.
+      - name: Asegurar CI y deploy sobre el commit actual
+        if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh workflow run ci.yml --ref main
-          gh workflow run deploy.yml --ref main
+          git fetch --quiet origin main
+          HEAD_SHA="$(git rev-parse HEAD)"
+          git merge-base --is-ancestor "$HEAD_SHA" origin/main || { echo "HEAD no está en main: no se despacha"; exit 0; }
+          case "$(git log -1 --format=%s)" in
+            "chore(now): refresh snapshot from ChristianLuciani/now@"*) ;;
+            *) echo "HEAD no es un refresh: no se despacha"; exit 0 ;;
+          esac
+          for wf in ci.yml deploy.yml; do
+            if [ "$(gh run list --workflow "$wf" --commit "$HEAD_SHA" --limit 1 --json databaseId --jq 'length')" = "0" ]; then
+              gh workflow run "$wf" --ref main; echo "dispatch $wf @ $HEAD_SHA"
+            else echo "$wf ya tiene run para $HEAD_SHA"; fi
+          done

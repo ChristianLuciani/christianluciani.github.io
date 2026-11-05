@@ -7,8 +7,8 @@
  * reloj del output es `asOf`, un DATO del snapshot, no `Date.now()`. El build
  * NO corre este script y hace cero requests de red.
  *
- * Uso: `npm run sync:now` (fetch del pin) · `-- --tag vX.Y.Z` (re-pinear) ·
- * `-- --from F` (bytes locales) · `-- --check` (offline: lock ↔ snapshot ↔ generado).
+ * Uso: `npm run sync:now` (fetch del pin) · `-- --tag vX.Y.Z` (re-pinear, nunca
+ * hacia abajo) · `-- --check` (offline: lock ↔ snapshot ↔ generado).
  */
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -247,13 +247,25 @@ function readLockFile(): NowLock {
   return parseLock(readFileSync(LOCK_PATH, "utf8"));
 }
 
+/** Compara tags `vX.Y.Z` (negativo si `a < b`). */
+export function compareTags(a: string, b: string): number {
+  const pa = a.slice(1).split(".").map(Number);
+  const pb = b.slice(1).split(".").map(Number);
+  for (let i = 0; i < 3; i++) if (pa[i] !== pb[i]) return pa[i] - pb[i];
+  return 0;
+}
+
 /**
  * Lock que gobierna la corrida. Un tag NUEVO es un re-pin explícito (TOFU: se
  * registra el digest de esos bytes); el MISMO tag SIEMPRE se verifica contra el
- * digest ya pineado — un tag movido no se acepta en silencio.
+ * digest ya pineado — un tag movido no se acepta en silencio. Un tag MENOR que
+ * el pineado se rechaza: si el productor retira el pin, no se re-pinea hacia abajo.
  */
 export function targetLock(currentLock: NowLock, bytes: Buffer, tag?: string): NowLock {
   if (!tag || tag === currentLock.tag) return currentLock;
+  if (compareTags(tag, currentLock.tag) < 0) {
+    fail(`re-pin hacia abajo: ${tag} < ${currentLock.tag} (¿el productor retiró el pin?)`);
+  }
   return { repo: PRODUCER_REPO, tag, sha256: sha256Hex(bytes) };
 }
 

@@ -147,6 +147,8 @@ describe("snapshot now/v1 — contrato del productor", () => {
       tag: "v1.0.2",
       sha256: sha256Hex(moved)
     });
+    // un tag MENOR se rechaza: un pin retirado no re-pinea hacia abajo
+    expect(() => targetLock(LOCK, moved, "v1.0.0")).toThrow(/hacia abajo/);
   });
 });
 
@@ -237,25 +239,26 @@ function resolveImport(specifier: string, fromFile: string): string | null {
   return null;
 }
 
-/** Grafo de imports relativos alcanzable desde `build.ts` (lo que ensambla el HTML). */
-function buildGraph(entry: string): string[] {
+/** Grafo de imports alcanzable desde `build.ts` + TODOS los specifiers vistos. */
+function buildGraph(entry: string): { files: string[]; specifiers: string[] } {
   const seen = new Set<string>();
+  const specifiers: string[] = [];
   const queue = [entry];
   while (queue.length > 0) {
     const file = queue.pop()!;
     if (seen.has(file)) continue;
     seen.add(file);
-    const source = readFileSync(file, "utf8");
-    for (const match of source.matchAll(/(?:from|import)\s+["']([^"']+)["']/g)) {
+    for (const match of readFileSync(file, "utf8").matchAll(/(?:from|import)\s+["']([^"']+)["']/g)) {
+      specifiers.push(match[1]);
       const resolved = resolveImport(match[1], file);
       if (resolved) queue.push(resolved);
     }
   }
-  return [...seen];
+  return { files: [...seen], specifiers };
 }
 
 describe("npm run build — cero red", () => {
-  const graph = buildGraph(resolve(ROOT, "build.ts"));
+  const { files: graph, specifiers } = buildGraph(resolve(ROOT, "build.ts"));
   const rels = graph.map((file) => relative(ROOT, file));
 
   it("el grafo incluye la sección Ahora (el render está en el build)", () => {
@@ -266,6 +269,10 @@ describe("npm run build — cero red", () => {
   it("la única pieza con red (tools/sync-now.ts) NO está en el grafo", () => {
     expect(rels).not.toContain("tools/sync-now.ts");
     for (const rel of rels) expect(rel.startsWith("tools/")).toBe(false);
+  });
+
+  it("ningún import del build es de red — ni el side-effect `import \"node:https\"`", () => {
+    expect(specifiers.filter((s) => /^(node:)?(https?|http2|net|dgram|tls)$/.test(s))).toEqual([]);
   });
 
   it("ningún módulo del build importa node:http(s)/net ni usa fetch/XHR", () => {
