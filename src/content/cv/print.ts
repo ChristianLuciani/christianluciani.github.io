@@ -10,6 +10,12 @@
  * la CLAVE de cada fila (`org|role|start`, o `id` si el SSOT lo expone) para
  * clasificarla: no imprime ninguno de esos valores.
  *
+ * PROSA DE PERFIL (#122): NO es texto de este archivo. `profile` es una
+ * SELECCIÓN de campo del SSOT (`ProfileProseSelection`, resolver en
+ * `profile-prose.ts`) que consumen el print y la sala de Perfil: un mismo claim
+ * en dos archivos que hay que mantener coherentes es un defecto de arquitectura
+ * (SPEC §3), no una tarea de curación.
+ *
  * EXCEPCIÓN DECLARADA (SPEC §5.3): la proyección no expone `id` de fila, así que
  * esta curación referencia los hechos por clave derivada. Es la única excepción
  * a «id estable» y tiene condición de salida: cuando el SSOT/proyección exponga
@@ -24,10 +30,15 @@
  * cuando el print tenga su propia versión bilingüe.
  */
 import type { LangText } from "../../data/profile.types.ts";
+import { PROFILE_PROSE, type ProfileProseSelection } from "./profile-prose.ts";
 
 export interface PrintCvCuration {
-  /** Prosa de perfil: texto de este museo, no un hecho del SSOT. */
-  profile: LangText;
+  /**
+   * Prosa de perfil: SELECCIÓN de qué campo del SSOT se imprime (#122), nunca
+   * su texto. La resuelve `profileProse()`; el print y la sala de Perfil del
+   * sitio la comparten.
+   */
+  profile: ProfileProseSelection;
   sections: {
     profile: string;
     /**
@@ -162,10 +173,8 @@ export function experienceSectionOf(item: {
 }
 
 export const PRINT_CV: PrintCvCuration = {
-  profile: {
-    en: "Physicist (Universidad Central de Venezuela) with more than 20 years at the intersection of scientific research, educational technology and synthetic intelligence. Creator of Kontablo —a universal graph-based accounting ontology for the agentic economy— and of Drahma, a system of virtual tutors built on synthetic intelligence and Socratic pedagogy.",
-    es: "Físico (Universidad Central de Venezuela) con más de 20 años en la intersección entre investigación científica, tecnología educativa e inteligencia sintética. Creador de Kontablo —ontología contable universal basada en grafos para la economía agéntica— y de Drahma, sistema de tutores virtuales con inteligencia sintética y pedagogía socrática."
-  },
+  // #122: el dato vive en `PROFILE.positioning`; acá sólo se declara el campo.
+  profile: PROFILE_PROSE,
   sections: {
     profile: "Perfil",
     experience: { es: "Trayectoria", en: "Trajectory" },

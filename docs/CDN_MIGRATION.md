@@ -4,7 +4,8 @@
 > (`favicon-aurea-teal{,-32,-16}`) desde el tag vigente del brand kit (hoy
 > `v1.2.0`); el
 > transparente queda en el espejo para superficies controladas. Cuatro
-> favicons en `/assets/brand/`, `data-local` 8 en modo CDN.
+> favicons en `/assets/brand/`, `data-local` 9 en modo CDN (los 8 de #84 + el
+> logo del print-CV, #122).
 
 > **Actualización 2026-10-27 — marca separada.** Los 3 favicons ya se resuelven
 > desde `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (deploy:

@@ -3,10 +3,19 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { SALAS } from "../cv/salas";
 import { enDesarrolloDe } from "../data/proyectos";
+import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
 import { PROFILE_COMMIT, PROFILE_ENGINE, provenanceHtml } from "../data/profile.provenance";
 import type { CvProfile } from "../data/profile.types";
-import { bastidorHtml, drahmaShowcase, frisoHtml, marcoHtml, primerArtefacto } from "./sala_html";
+import {
+  bastidorHtml,
+  drahmaShowcase,
+  frisoHtml,
+  marcoHtml,
+  primerArtefacto,
+  roomBody,
+  roomsHtml
+} from "./sala_html";
 
 const profile = PROFILE as unknown as CvProfile;
 const FRISO = frisoHtml(profile);
@@ -269,5 +278,52 @@ describe("traza de procedencia (#109 / #108)", () => {
       .join("\n");
     expect(header).toContain(`engine @ ${PROFILE_ENGINE.version}`);
     expect(header).toContain(`schema v${PROFILE_ENGINE.schema}`);
+  });
+});
+
+describe("sala Perfil — una sola prosa, derivada del SSOT (#122)", () => {
+  const SALA_PERFIL = SALAS.find((s) => s.id === "perfil")!;
+  const ROOMS = roomsHtml();
+
+  it("la sala imprime `positioning.statement` y pierde el claim de años", () => {
+    expect(ROOMS).toContain(profileProse(profile).es!);
+    expect(ROOMS).not.toContain("más de 20 años");
+    expect(ROOMS).not.toContain("20 años");
+  });
+
+  it("mover el statement en el SSOT mueve la sala (misma pieza que el print)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "Prosa fixture del SSOT.", en: "Fixture statement." }
+      }
+    };
+    const body = roomBody(SALA_PERFIL, fixture);
+    expect(body).toContain("Prosa fixture del SSOT.");
+    expect(body).not.toContain(profileProse(profile).es!);
+  });
+
+  it("F1: un `es` vacío imprime el EN del MISMO campo (no un párrafo vacío)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "", en: "Statement only in English." } as never
+      }
+    };
+    const body = roomBody(SALA_PERFIL, fixture);
+    expect(body).toContain("Statement only in English.");
+    expect(body).not.toContain('<p class="profile-text"></p>');
+  });
+
+  it("sin `statement` la sala usa el fallback declarado (no una copia a mano)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: { ...profile.positioning, statement: undefined as never }
+    };
+    expect(roomBody(SALA_PERFIL, fixture)).toContain(
+      profile.positioning.audiences.recruiters.es!
+    );
   });
 });

@@ -11,7 +11,7 @@
  *   nunca en pantalla (el bloque está oculto por CSS).
  * - El layout histórico (A4, mismas clases/secciones, mismo CSS del QR) se sostiene.
  */
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
@@ -21,10 +21,12 @@ import {
   experienceSectionOf
 } from "../content/cv/print";
 import { orgEs } from "../content/cv/org";
+import { PROFILE_PROSE, profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
 import type { CvProfile } from "../data/profile.types";
 import { assembleHtml } from "./index";
 import { printCvHtml } from "./print_cv_html";
+import { PRINT_LOGO_PATH, PRINT_RULE_COLOR } from "./print-tokens";
 
 const profile = PROFILE as unknown as CvProfile;
 const HTML = printCvHtml(profile);
@@ -313,5 +315,98 @@ describe("print-CV — layout A4 intacto", () => {
 
   it("es determinista: mismo PROFILE → mismo HTML byte a byte", () => {
     expect(printCvHtml(profile)).toBe(HTML);
+  });
+});
+
+describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuente", () => {
+  const HEAD_RENDERER = readFileSync(
+    resolve(process.cwd(), "src", "templates", "head_html.ts"),
+    "utf8"
+  );
+
+  it("el encabezado imprime el logo print-A4 del brand kit, con alt no vacío", () => {
+    const img = HTML.match(/<img class="p-logo"[^>]*>/)?.[0] ?? "";
+    expect(img).not.toBe("");
+    expect(img).toContain(`src="${PRINT_LOGO_PATH}"`);
+    expect(img).toMatch(/alt="[^"]+"/);
+    expect(img).toMatch(/alt="[^"]*(Christian Luciani|logotipo|Logotipo)[^"]*"/);
+  });
+
+  it("el asset del logo existe en el espejo vendored del brand kit (no se inventa la ruta)", () => {
+    expect(PRINT_LOGO_PATH.startsWith("/assets/brand/")).toBe(true);
+    const file = resolve(process.cwd(), "assets", "brand", "logo", PRINT_LOGO_PATH.split("/").pop()!);
+    expect(existsSync(file)).toBe(true);
+  });
+
+  it("F2 del pase fresco: la marca impresa no es una hoja A4 (peso y encuadre)", () => {
+    // El print-only se descarga en cada visita: una composición de página A4
+    // (325 KB) metida en 16 mm no aporta resolución y encuadra mal. El gate
+    // fija el techo de peso del asset elegido.
+    const file = resolve(process.cwd(), "assets", "brand", "logo", PRINT_LOGO_PATH.split("/").pop()!);
+    const bytes = readFileSync(file).byteLength;
+    expect(bytes).toBeLessThan(200_000);
+  });
+
+  it("las reglas del CV salen de UNA constante declarada: el teal del brand", () => {
+    expect(PRINT_RULE_COLOR).toBe("#00c9c0");
+    // grep del print: no quedan grises fijos en las reglas del CV.
+    for (const source of [RENDERER, HEAD_RENDERER]) {
+      expect(source).not.toMatch(/#(ccc|ddd)\b/i);
+      // el color entra por interpolación de la constante, no por un literal
+      expect(source).toContain("${PRINT_RULE_COLOR}");
+    }
+    // y llega a las dos reglas: secciones (head) y footer (print_cv).
+    expect(ASSEMBLED).toContain(`border-bottom:1pt solid ${PRINT_RULE_COLOR}`);
+    expect(HTML).toContain(`border-top:1pt solid ${PRINT_RULE_COLOR}`);
+  });
+
+  it("la constante del print no driftea del token `--teal` de pantalla", () => {
+    const token = HEAD_RENDERER.match(/--teal:\s*(#[0-9a-fA-F]{6});/)?.[1];
+    expect(token).toBe(PRINT_RULE_COLOR);
+  });
+
+  it("la prosa de perfil del print es la del SSOT (no hay copia a mano)", () => {
+    expect(HTML).toContain(profileProse(profile).es!);
+    expect(HTML).not.toContain("más de 20 años");
+    expect(HTML).not.toContain("20 años");
+  });
+
+  it("PRINT_CV.profile es una SELECCIÓN de campo, no texto", () => {
+    expect(PRINT_CV.profile).toEqual(PROFILE_PROSE);
+    expect(JSON.stringify(PRINT_CV.profile)).not.toMatch(/Físico|Physicist|años|years/);
+  });
+
+  it("mover `positioning.statement` mueve la prosa del print (#109)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "Prosa fixture del SSOT.", en: "Fixture statement." }
+      }
+    };
+    const moved = printCvHtml(fixture);
+    expect(moved).toContain("Prosa fixture del SSOT.");
+    expect(moved).not.toContain(profileProse(profile).es!);
+  });
+
+  it("F1: un `es` vacío imprime el EN del MISMO campo (no un párrafo vacío)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "", en: "Statement only in English." } as never
+      }
+    };
+    const html = printCvHtml(fixture);
+    expect(html).toContain("Statement only in English.");
+    expect(html).not.toContain("<p></p>");
+  });
+
+  it("sin `statement` cae al fallback declarado del SSOT, no a una segunda copia", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: { ...profile.positioning, statement: undefined as never }
+    };
+    expect(printCvHtml(fixture)).toContain(profile.positioning.audiences.recruiters.es!);
   });
 });
