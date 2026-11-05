@@ -54,6 +54,21 @@ workspace y las tres capas verdes. Además corre el guard de consumidores — un
 snapshot al día sin ningún consumidor de **render** ya no pasa verde en
 silencio (#99, #110).
 
+## Feed «Ahora» (chrome, no hecho citable)
+
+El bloque «Ahora» de la portada se renderiza **en el build** desde el feed que
+publica `ChristianLuciani/now` (#117): `now.lock.json` pinea un tag inmutable
+(`vX.Y.Z`) y el sha256 de sus bytes; `npm run sync:now` verifica el digest antes
+de escribir `src/data/now.snapshot.json` y `src/data/now.generated.ts`, y
+`now.generated.test.ts` exige paridad offline en CI. `npm run build` no hace red:
+importa el módulo commiteado. El refresh corre en
+`.github/workflows/refresh-now.yml`, resuelve el tag más nuevo del productor y
+commitea el snapshot + el `index.html` reconstruido.
+
+Este bloque es **chrome**: no entra a JSON-LD, `llms.txt` ni `FAQPage`. Lo que
+deba ser citable por un motor de respuestas se promueve a `content/` en
+`profile-data` — curado, fechado, con fuente.
+
 ## Despliegue
 
 Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.io/`

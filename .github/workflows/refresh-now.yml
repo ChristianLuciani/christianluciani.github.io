@@ -1,0 +1,63 @@
+name: Refresh now
+
+# Refresca el feed «Ahora» desde el productor `ChristianLuciani/now` (issue #117).
+# El deploy queda determinista y offline: este job es el ÚNICO que va a la red,
+# y commitea el snapshot pineado + el módulo generado + el `index.html`
+# reconstruido. Si el pin y los bytes no cambian, no commitea nada.
+
+on:
+  schedule:
+    # una vez al día; el productor corre por hora, el sitio no necesita esa frecuencia
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: refresh-now
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+
+      - name: Resolver el tag más nuevo del productor (semver, inmutable)
+        id: tag
+        run: |
+          TAG="$(git ls-remote --tags --refs --sort=-v:refname https://github.com/ChristianLuciani/now.git 'v*' \
+                 | head -1 | sed 's#.*refs/tags/##')"
+          if [ -z "$TAG" ]; then
+            echo "el productor no expone tags v*: no hay nada que pinear"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+      # Verifica el digest del tag remoto y reescribe lock + snapshot + generado.
+      # Un tag con bytes inesperados o un shape fuera de contrato falla acá,
+      # antes de tocar el árbol.
+      - run: npm run sync:now -- --tag "${{ steps.tag.outputs.tag }}"
+
+      # El bloque «Ahora» es HTML estático: el index.html commiteado debe
+      # reconstruirse o build.test.ts (y el gate de CI) lo marcan como drift.
+      - run: npm run build:html
+      - run: npm test
+
+      - name: Commitear solo si el pin o los bytes cambiaron
+        run: |
+          if git diff --quiet -- now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html; then
+            echo "now: sin cambios (pin ${{ steps.tag.outputs.tag }}) — no se commitea"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html
+          git commit -m "chore(now): refresh snapshot from ChristianLuciani/now@${{ steps.tag.outputs.tag }}"
+          git push

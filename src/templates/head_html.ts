@@ -678,6 +678,46 @@ a { color:inherit; }
 }
 
 /* ══════════════════════════════════════════════
+   AHORA — feed estático (#117)
+   Chrome, no hecho citable. Cinco filas, fecha + link, sin animación: el
+   contenido llega en el HTML inicial (JS off lo ve) y no hay inserción
+   posterior, así que el bloque no produce layout shift.
+══════════════════════════════════════════════ */
+.now-strip {
+  position:relative;
+  padding:clamp(20px,3.2vw,32px) clamp(18px,4vw,52px);
+  border-bottom:1px solid var(--line-soft);
+  background:rgba(11,17,32,.35);
+}
+.now-inner { width:min(var(--container), 100%); margin:0 auto; }
+.now-title {
+  margin:0 0 12px;
+  font-family:var(--font-mono); font-size:10px;
+  color:var(--teal); letter-spacing:.2em; text-transform:uppercase;
+}
+.now-list { margin:0; padding:0; list-style:none; display:grid; gap:7px; max-width:920px; }
+.now-item {
+  display:grid; grid-template-columns:88px minmax(0,1fr);
+  gap:14px; align-items:baseline;
+  font-size:14px; line-height:1.5;
+}
+.now-date {
+  font-family:var(--font-mono); font-size:10.5px;
+  color:var(--ink-meta); letter-spacing:.04em;
+  font-variant-numeric:tabular-nums;
+}
+.now-link {
+  color:var(--ink-dim); text-decoration:none;
+  border-bottom:1px solid transparent; overflow-wrap:anywhere;
+}
+.now-link:hover, .now-link:focus-visible { color:var(--teal); border-bottom-color:currentColor; }
+.now-asof, .now-empty {
+  margin:12px 0 0;
+  font-family:var(--font-mono); font-size:9.5px;
+  color:var(--ink-faint); letter-spacing:.06em; text-transform:uppercase;
+}
+
+/* ══════════════════════════════════════════════
    ESTRUCTURA DE SALAS (contenedor 1220 px)
 ══════════════════════════════════════════════ */
 .room {
