@@ -33,9 +33,9 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       # Invariante I1 (ADR-001): el golden del render no se mueve en un PR de
-      # refactor. Si cambia, el PR tiene que declararlo ("Render: cambia" o
-      # "Datos: cambia" si lo movió sync:profile); sin declaración, un cambio de
-      # render + golden regenerado pasaría verde sin que nadie lo vea.
+      # refactor. Si cambia, algún commit tiene que traer el trailer
+      # "Golden-Cambio: render|datos"; sin él, un cambio de render + golden
+      # regenerado pasaría verde sin que nadie lo vea.
       - name: golden — regenerarlo exige declararlo en el PR
         if: github.event_name == 'pull_request'
         env:

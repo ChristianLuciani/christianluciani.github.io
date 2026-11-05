@@ -1,13 +1,16 @@
 /**
  * GOLDEN — política de declaración (invariante I1, ADR-001).
  *
- * Decisión pura y testeable: el baseline del render sólo puede moverse en un PR
- * que lo declara en el body. Vive acá —y no en YAML— para que la rama de fallo
- * tenga evidencia ejecutable: `tests/golden/policy.test.ts` cubre cada caso, y
- * `ci.yml` sólo aporta los datos (qué hay en la base, si cambió, qué dice el body).
+ * La declaración vive en un **trailer de commit** (`Golden-Cambio: render|datos`),
+ * no en el body del PR. El body es markdown: siempre hay una forma de escribirlo
+ * que el parser no vea (`> ``` `, `<pre>`, comentario HTML) o que vea de más, y
+ * ése fue el defecto que reapareció tres pases. Un trailer es metadata de git:
+ * se lee con `git log`, no se renderiza como ejemplo y no se puede esconder.
  */
 import { spawnSync } from "node:child_process";
 import { BASELINE_PATH, COMPARATOR_PATH } from "./paths.ts";
+
+export type Declaration = "render" | "datos";
 
 export interface PolicyInput {
   /** El archivo exacto existía en la base del PR. */
@@ -18,10 +21,10 @@ export interface PolicyInput {
   changed: boolean;
   /** El comparador (`golden.test.ts`) existe en el head: sin él no hay gate. */
   comparatorPresent: boolean;
-  /** `src/data/profile.generated.ts` cambió en el PR (condición de "Datos"). */
+  /** `src/data/profile.generated.ts` cambió en el PR (condición de "datos"). */
   dataChanged: boolean;
-  /** Body del PR, tal cual. */
-  body: string;
+  /** Trailer declarado en algún commit del PR. */
+  declaration: Declaration | null;
 }
 
 export interface PolicyResult {
@@ -29,57 +32,29 @@ export interface PolicyResult {
   reason: string;
 }
 
-/**
- * La declaración, al inicio de una línea: `Render: cambia` (cambió la
- * presentación) o `Datos: cambia` (cambió el snapshot del perfil y el render lo
- * refleja). Tolera las formas markdown habituales (`**Render:** cambia`,
- * `### Datos: cambia`).
- */
-export const RENDER_DECL = /^[ \t>*_#-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
-export const DATA_DECL = /^[ \t>*_#-]*datos[ \t*_]*:[ \t*_]*cambia\b/im;
+/** `Golden-Cambio: render` | `Golden-Cambio: datos` (case-insensitive, una línea). */
+export const TRAILER = /^Golden-Cambio:[ \t]*(render|datos)[ \t]*$/gim;
 
 /**
- * Qué declaró el PR, mirando sólo texto visible. `render` gana si están las dos:
- * es la declaración fuerte (alguien revisó el cambio de presentación).
+ * Declaración más fuerte entre los mensajes de commit del PR: si algún commit
+ * dice `render`, gana; `datos` sólo cuenta si no hay `render`.
  */
-export function declarationOf(body: string): "render" | "datos" | null {
-  const text = withoutCodeBlocks(body);
-  if (RENDER_DECL.test(text)) return "render";
-  if (DATA_DECL.test(text)) return "datos";
-  return null;
+export function parseDeclaration(messages: string): Declaration | null {
+  let found: Declaration | null = null;
+  for (const match of messages.matchAll(TRAILER)) {
+    if (match[1].toLowerCase() === "render") return "render";
+    found = "datos";
+  }
+  return found;
 }
 
-/**
- * El body sin código: un ejemplo documentado no es una declaración del PR.
- *
- * Máquina de estados por línea, no regex: un fence SIN cerrar deja el resto del
- * body como código (semántica markdown), y un fence de 4 backticks no lo cierra
- * uno de 3. Con regex el caso sin cerrar quedaba vivo y la guarda se
- * auto-satisfacía.
- */
-export function withoutCodeBlocks(body: string): string {
-  // Comentarios HTML: invisibles al leer el PR, pero el body los lleva. Un
-  // `<!-- Render: cambia -->` satisfacía la guarda sin que nadie lo viera.
-  const visible = body.replace(/<!--[\s\S]*?(-->|$)/g, "");
-  const out: string[] = [];
-  let fence: string | null = null;
-
-  for (const line of visible.split("\n")) {
-    const match = /^\s*(`{3,}|~{3,})/.exec(line);
-    if (fence) {
-      const closes = match && match[1][0] === fence[0] && match[1].length >= fence.length;
-      if (closes) fence = null;
-      continue;
-    }
-    if (match) {
-      fence = match[1];
-      continue;
-    }
-    // Bloque indentado (4 espacios o tab) también es código en markdown.
-    if (/^( {4}|\t)/.test(line)) continue;
-    out.push(line);
+/** Mensajes de commit entre `base` y `head` (git, sin red más allá del fetch). */
+export function declarationBetween(base: string, head = "HEAD", cwd = process.cwd()): Declaration | null {
+  const r = spawnSync("git", ["log", "--format=%B", `${base}..${head}`], { cwd, encoding: "utf8" });
+  if (r.status !== 0) {
+    throw new Error(`no se pudo leer el log ${base}..${head}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
   }
-  return out.join("\n");
+  return parseDeclaration(r.stdout);
 }
 
 export function decide(input: PolicyInput): PolicyResult {
@@ -95,38 +70,39 @@ export function decide(input: PolicyInput): PolicyResult {
   if (!input.changed) {
     return { ok: true, reason: "golden intacto: el render no cambió" };
   }
-  const declaration = declarationOf(input.body);
-  if (declaration === "render") {
-    return { ok: true, reason: "golden regenerado con 'Render: cambia'" };
+  if (input.declaration === "render") {
+    return { ok: true, reason: "golden regenerado con 'Golden-Cambio: render'" };
   }
-  if (declaration === "datos") {
-    // Sin el snapshot movido, "Datos" es la declaración más barata y serviría
+  if (input.declaration === "datos") {
+    // Sin el snapshot movido, "datos" es la declaración más barata y serviría
     // para mover el golden por presentación: no se acepta sin evidencia.
     if (!input.dataChanged) {
       return {
         ok: false,
-        reason: "'Datos: cambia' sin cambios en src/data/profile.generated.ts: declaralo como Render"
+        reason: "'Golden-Cambio: datos' sin cambios en src/data/profile.generated.ts: declaralo como render"
       };
     }
-    return { ok: true, reason: "golden regenerado con 'Datos: cambia' y snapshot movido" };
+    return { ok: true, reason: "golden regenerado con 'Golden-Cambio: datos' y snapshot movido" };
   }
   return {
     ok: false,
-    reason: `${BASELINE_PATH} cambió sin declarar 'Render: cambia' (o 'Datos: cambia') en el body del PR`
+    reason:
+      `${BASELINE_PATH} cambió sin declararlo: agregá el trailer ` +
+      `'Golden-Cambio: render' (o 'datos' si lo movió sync:profile) en un commit del PR`
   };
 }
 
 /**
- * Archivos del árbol de `base`.
+ * Archivos del árbol de una ref.
  *
  * Una sola lectura de git: `cat-file -e` devolvía el mismo fallo para "el
  * archivo no está" y "la ref no existe", y leerlo como "baseline nuevo"
  * apagaba la guarda justo cuando no podía responder.
  */
-export function treeOf(base: string, cwd = process.cwd()): string[] {
-  const r = spawnSync("git", ["ls-tree", "-r", "--name-only", base], { cwd, encoding: "utf8" });
+export function treeOf(ref: string, cwd = process.cwd()): string[] {
+  const r = spawnSync("git", ["ls-tree", "-r", "--name-only", ref], { cwd, encoding: "utf8" });
   if (r.status !== 0) {
-    throw new Error(`no se pudo leer la base ${base}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
+    throw new Error(`no se pudo leer ${ref}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
   }
   return r.stdout.split("\n").filter(Boolean);
 }

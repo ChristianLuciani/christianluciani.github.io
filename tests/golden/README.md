@@ -12,17 +12,21 @@ exactamente eso.
 
 ## Cuándo regenerarlo
 
-**Sólo** en un PR que cambia el render **a propósito**. Hay dos causas legítimas y cada una
-tiene su declaración en el body:
+**Sólo** en un PR que cambia el render **a propósito**, y se declara con un **trailer de
+commit** (no en el body: el body es markdown y cualquier parser de prosa es burlable):
 
 ```
-Render: cambia — <qué cambió y por qué>        (rediseño, copy, estructura)
-Datos: cambia — <snapshot del perfil movido>   (sync:profile; el HTML lleva el pin y la fecha)
+Golden-Cambio: render    # rediseño, copy, estructura
+Golden-Cambio: datos     # sync:profile movió el pin/fecha del print-CV
 ```
 
 El render depende de los hechos: `sync:profile` mueve el footer de procedencia del print-CV
 y por eso el golden cambia sin que nadie haya tocado la presentación. Ese caso se declara
-`Datos: cambia`; inventar un refactor para justificarlo sería mentirle al gate.
+`Golden-Cambio: datos`, y la guarda exige además que `src/data/profile.generated.ts` haya
+cambiado: sin eso, "datos" sería la declaración más barata para mover el golden por
+presentación. Inventar un refactor para justificarlo sería mentirle al gate.
+
+El trailer va en cualquier commit del PR; si hay varios, `render` gana.
 
 En cualquier otro PR —refactor, extracción de copy, tokens, i18n, selector de tema— el
 golden **no se toca**: si el test falla, el refactor cambió el render y hay que corregir
@@ -46,8 +50,9 @@ con Pages como origen, igual que CI.
 ## Enforcement en CI
 
 `ci.yml` verifica que el golden no se mueva sin declararlo: si `tests/golden/museo.html`
-cambia respecto de la base y el body del PR no contiene una línea `Render: cambia` **ni**
-`Datos: cambia`, el job falla con `::error::`. Así, un PR que cambia el render **y** regenera el golden no puede
+cambia respecto de la base y ningún commit del PR trae `Golden-Cambio: render|datos`, el
+job falla con `::error::`. También falla si el comparador (`golden.test.ts`) desaparece:
+sin test, el baseline no es un gate. Así, un PR que cambia el render **y** regenera el golden no puede
 pasar verde en silencio — que es la única forma de que el invariante sea real.
 
 El PR que introdujo el baseline queda exento (no hay contra qué comparar); la guarda rige

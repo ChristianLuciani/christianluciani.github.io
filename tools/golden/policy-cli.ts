@@ -1,14 +1,18 @@
 /**
  * GOLDEN — entrypoint de la guarda de CI.
  *
- * Separado de `policy.ts` a propósito: cuando la ejecución dependía de
- * `process.argv[1].endsWith("policy.ts")`, renombrar el archivo dejaba el step
- * de CI verde sin decidir nada. Acá el entrypoint siempre corre y su nombre es
- * el que invoca `package.json`.
+ * Separado de `policy.ts`: el entrypoint siempre corre, y su nombre es el que
+ * invoca `package.json`. La decisión es una función pura testeada.
  */
 import { execFileSync } from "node:child_process";
 import { BASELINE_PATH, COMPARATOR_PATH, DATA_PATH } from "./paths.ts";
-import { changedSince, decide, treeOf, type PolicyResult } from "./policy.ts";
+import {
+  changedSince,
+  declarationBetween,
+  decide,
+  treeOf,
+  type PolicyResult
+} from "./policy.ts";
 
 function main(): void {
   const base = process.env.BASE_SHA;
@@ -36,7 +40,7 @@ function main(): void {
       goldenFamilyInBase: tree.some((path) => path.startsWith("tests/golden/")),
       changed: changedSince(base, BASELINE_PATH),
       dataChanged: changedSince(base, DATA_PATH),
-      body: process.env.PR_BODY ?? ""
+      declaration: declarationBetween(base)
     });
   } catch (error) {
     console.error(`::error::${(error as Error).message}`);
