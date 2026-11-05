@@ -265,8 +265,15 @@ sync-check [--workspace <path>] [--generated <path>] [--entity <path>]
                 `citation`.
   6. entity-workspace: `pasco entity --jsonld` + `--json`, compara byte a byte.
   7. policy-self:      los 3 artefactos de `public/` existen y la postura no se
-                degradó: sin `User-agent: *`, con grupo de retrieval (`Allow: /`)
-                y de training (`Disallow: /`), `llms.txt` con heading de índice.
+                degradó ESTRUCTURALMENTE: `robots.txt` se parsea por grupos
+                (RFC 9309 §2.2.1), sin `User-agent: *`, con un grupo de retrieval
+                (`Allow: /` dentro de un grupo con `User-agent`) y otro de training
+                (`Disallow: /`), sin grupos que mezclen ambos (a igual match gana
+                `Allow`, §2.2.2) y sin reglas antes del primer `User-agent`;
+                `llms.txt` con heading de índice.
+                LÍMITE: NO verifica el mapa agente↔postura (qué crawler va en cada
+                grupo): ese registro es del engine y duplicarlo acá sería una
+                segunda fuente. Ese mapa sólo lo prueba `policy-workspace`.
   8. policy-workspace: `pasco export ai-policy` a un tmpdir y compara los 3 bytes.
 ```
 

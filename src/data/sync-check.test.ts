@@ -23,7 +23,13 @@ import {
   type CheckLayer
 } from "../../tools/sync-check";
 import { COMMITTED_ENTITY_PATH as ENTITY_COMMITTED_PATH } from "../../tools/sync-entity";
-import { POLICY_FILES, policyProblems, robotsDirectives, type PolicyFile } from "../../tools/sync-ai-policy";
+import {
+  POLICY_FILES,
+  policyProblems,
+  robotsDirectives,
+  robotsGroups,
+  type PolicyFile
+} from "../../tools/sync-ai-policy";
 import { resolvePaths } from "../../tools/sync-profile";
 
 const COMMITTED = readFileSync(COMMITTED_PATH, "utf8");
@@ -364,6 +370,36 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
       { key: "user-agent", value: "*" },
       { key: "allow", value: "/" }
     ]);
+  });
+
+  /**
+   * ESCALATE(1), 2.ª reaparición (pase 3): el tokenizador cerró la capa léxica,
+   * pero el gate medía presencia GLOBAL de la directiva. Un `Disallow: /` cuyo
+   * grupo de training perdió sus `User-agent` se cuelga del grupo de retrieval y
+   * el archivo dice exactamente lo contrario de lo que la política declara.
+   */
+  it("un `Disallow: /` huérfano (sin su grupo de agentes) invierte la postura", () => {
+    const problems = policyProblems(
+      files({ "robots.txt": "User-agent: Googlebot\nAllow: /\nDisallow: /\n" })
+    );
+    expect(problems.join("\n")).toMatch(/mezcla `Allow: \/` y `Disallow: \/`/);
+  });
+
+  it("una regla antes del primer `User-agent` no crea grupo (RFC 9309 §2.2.1)", () => {
+    const problems = policyProblems(files({ "robots.txt": "Allow: /\nDisallow: /\n" }));
+    expect(problems.join("\n")).toMatch(/sin grupo de retrieval/);
+    expect(problems.join("\n")).toMatch(/sin grupo de training/);
+  });
+
+  it("`robotsGroups` arma los grupos como los lee el crawler", () => {
+    const groups = robotsGroups(
+      "# cabecera\nUser-agent: Googlebot\nUser-agent: Bingbot\nAllow: / # retrieval\n\nUser-agent: GPTBot\nDisallow: /\n"
+    );
+    expect(groups).toHaveLength(2);
+    expect(groups[0].agents).toEqual(["Googlebot", "Bingbot"]);
+    expect(groups[0].rules).toEqual([{ key: "allow", value: "/" }]);
+    expect(groups[1].agents).toEqual(["GPTBot"]);
+    expect(groups[1].rules).toEqual([{ key: "disallow", value: "/" }]);
   });
 
   it("nombra los tres artefactos cuando faltan", () => {

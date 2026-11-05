@@ -48,11 +48,11 @@ export function readPolicy(dir = POLICY_DIR): Record<PolicyFile, string | null> 
  * el `user-agent` matchea case-insensitive.
  *
  * POR QUÉ UN PARSER Y NO UNA REGEX: la clase «el gate no lee la gramática que el
- * crawler sí lee» reapareció DOS veces (caja/indentación y después comentario de
- * fin de línea). La escalera de `review-damping` pide el INSTRUMENTO que cierra
- * la clase, no otra regex anclada: acá se tokeniza cada línea (comentario fuera,
- * `trim`, clave en minúscula) y después se compara por igualdad — cualquier
- * variante léxica válida cae en el mismo token.
+ * crawler sí lee» reapareció (caja/indentación, comentario de fin de línea y
+ * después la capa de GRUPOS). La escalera de `review-damping` pide el
+ * INSTRUMENTO que cierra la clase, no otra regex anclada: acá se tokeniza cada
+ * línea (comentario fuera, `trim`, clave en minúscula) y después se compara por
+ * igualdad — cualquier variante léxica válida cae en el mismo token.
  */
 export function robotsDirectives(text: string): { key: string; value: string }[] {
   const out: { key: string; value: string }[] = [];
@@ -70,11 +70,68 @@ export function robotsDirectives(text: string): { key: string; value: string }[]
   return out;
 }
 
+export interface RobotsGroup {
+  agents: string[];
+  rules: { key: string; value: string }[];
+}
+
+/**
+ * Agrupa las directivas como las lee un crawler (RFC 9309 §2.2.1):
+ *
+ * - un grupo empieza con una o más líneas `user-agent` y las reglas que siguen
+ *   le pertenecen;
+ * - un `user-agent` DESPUÉS de reglas abre un grupo nuevo (y una línea en blanco
+ *   cierra el anterior);
+ * - una regla antes del primer `user-agent` es inválida y se descarta.
+ *
+ * Pasar de «la directiva existe en el archivo» a «la directiva pertenece al
+ * grupo correcto» es lo que cierra la clase: sin esto, borrar los `user-agent`
+ * de training deja un `Disallow: /` huérfano que se aplica al grupo de retrieval
+ * y el gate seguía verde (sonda del pase 3).
+ */
+export function robotsGroups(text: string): RobotsGroup[] {
+  const groups: RobotsGroup[] = [];
+  let current: RobotsGroup | null = null;
+  for (const raw of text.split(/\r\n|\r|\n/)) {
+    const line = raw.replace(/#.*$/, "").trim();
+    if (line.length === 0) {
+      // Línea en blanco: cierra el grupo si ya tiene reglas. Si sólo acumuló
+      // `user-agent`, se conserva (varias líneas de agente = el mismo grupo).
+      if (current && current.rules.length > 0) {
+        groups.push(current);
+        current = null;
+      }
+      continue;
+    }
+    const colon = line.indexOf(":");
+    if (colon < 0) continue;
+    const key = line.slice(0, colon).trim().toLowerCase();
+    const value = line.slice(colon + 1).trim();
+    if (key === "user-agent") {
+      if (!current || current.rules.length > 0) {
+        if (current) groups.push(current);
+        current = { agents: [], rules: [] };
+      }
+      current.agents.push(value);
+      continue;
+    }
+    if (!current) continue; // regla sin `user-agent`: el RFC la ignora
+    current.rules.push({ key, value });
+  }
+  if (current) groups.push(current);
+  return groups;
+}
+
 /**
  * Invariantes de la postura, verificables SIN workspace (modo CI). El engine ya
  * los declara en su SPEC §12; acá se comprueba que el artefacto commiteado no se
- * degradó a mano (p. ej. un `User-agent: *` que bloquearía también a los motores
- * de búsqueda que la política no nombra).
+ * degradó a mano.
+ *
+ * LÍMITE DECLARADO: se verifica la ESTRUCTURA (grupos explícitos, retrieval
+ * permitido y training bloqueado, sin wildcard), NO el mapa agente↔postura —
+ * qué crawler pertenece a cada grupo vive en el registro del engine, y
+ * duplicarlo acá sería una segunda fuente. Ese mapa lo prueba `policy-workspace`
+ * (paridad byte a byte) o el `--check` del engine, que es su dueño.
  */
 export function policyProblems(files: Record<PolicyFile, string | null>): string[] {
   const problems: string[] = [];
@@ -85,14 +142,28 @@ export function policyProblems(files: Record<PolicyFile, string | null>): string
   }
   const robots = files["robots.txt"];
   if (robots) {
-    const directives = robotsDirectives(robots);
-    const has = (key: string, value: string) =>
-      directives.some((directive) => directive.key === key && directive.value === value);
-    if (has("user-agent", "*")) {
+    const groups = robotsGroups(robots);
+    const hasRule = (group: RobotsGroup, key: string, value: string) =>
+      group.rules.some((rule) => rule.key === key && rule.value === value);
+    const allowsRoot = (group: RobotsGroup) => hasRule(group, "allow", "/");
+    const disallowsRoot = (group: RobotsGroup) => hasRule(group, "disallow", "/");
+    if (groups.some((group) => group.agents.includes("*"))) {
       problems.push("robots.txt: grupo `User-agent: *` — la política es explícita, sin wildcard");
     }
-    if (!has("allow", "/")) problems.push("robots.txt: sin grupo de retrieval (`Allow: /`)");
-    if (!has("disallow", "/")) problems.push("robots.txt: sin grupo de training (`Disallow: /`)");
+    if (!groups.some(allowsRoot)) {
+      problems.push("robots.txt: sin grupo de retrieval (`Allow: /` dentro de un grupo con `User-agent`)");
+    }
+    if (!groups.some(disallowsRoot)) {
+      problems.push("robots.txt: sin grupo de training (`Disallow: /` dentro de un grupo con `User-agent`)");
+    }
+    // Un grupo que mezcla `Allow: /` y `Disallow: /` invierte la postura: a
+    // igual match el RFC 9309 §2.2.2 hace ganar `Allow`, así que el grupo
+    // «bloqueado» terminaría permitiendo.
+    if (groups.some((group) => allowsRoot(group) && disallowsRoot(group))) {
+      problems.push(
+        "robots.txt: un mismo grupo mezcla `Allow: /` y `Disallow: /` — la postura queda invertida (RFC 9309 §2.2.2)"
+      );
+    }
   }
   const llms = files["llms.txt"];
   if (llms && !/^#\s/m.test(llms)) problems.push("llms.txt: sin título de índice (se esperaba un heading `# `)");
