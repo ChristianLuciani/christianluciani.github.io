@@ -7,6 +7,9 @@
  */
 export const BASELINE_PATH = "tests/golden/museo.html";
 
+/** El test que convierte el baseline en gate: sin él, la guarda no tiene diente. */
+export const COMPARATOR_PATH = "tests/golden/golden.test.ts";
+
 /** Ruta absoluta del baseline para un root dado (build, test o CI). */
 export function baselineFile(root: string): string {
   return `${root.replace(/\/+$/, "")}/${BASELINE_PATH}`;

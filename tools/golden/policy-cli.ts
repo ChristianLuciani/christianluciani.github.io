@@ -7,7 +7,7 @@
  * el que invoca `package.json`.
  */
 import { execFileSync } from "node:child_process";
-import { BASELINE_PATH } from "./paths.ts";
+import { BASELINE_PATH, COMPARATOR_PATH } from "./paths.ts";
 import { changedSince, decide, treeOf, type PolicyResult } from "./policy.ts";
 
 function main(): void {
@@ -27,7 +27,9 @@ function main(): void {
   let result: PolicyResult;
   try {
     const tree = treeOf(base);
+    const head = treeOf("HEAD");
     result = decide({
+      comparatorPresent: head.includes(COMPARATOR_PATH),
       baselineInBase: tree.includes(BASELINE_PATH),
       // Si ya había baseline en la base, una ruta "nueva" es un rename, no la
       // introducción: no puede volver a ganar la exención.

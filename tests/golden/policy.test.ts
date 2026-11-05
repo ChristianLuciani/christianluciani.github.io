@@ -10,7 +10,7 @@ import { decide, existsIn } from "../../tools/golden/policy.ts";
  * acá, no en un `run:` de YAML que nunca se ejecuta en el PR que la introduce.
  */
 describe("golden — política de declaración", () => {
-  const base = { baselineInBase: true, goldenFamilyInBase: true, changed: true, body: "" };
+  const base = { baselineInBase: true, goldenFamilyInBase: true, changed: true, comparatorPresent: true, body: "" };
 
   it("pasa sin declaración cuando el render no cambió", () => {
     expect(decide({ ...base, changed: false }).ok).toBe(true);
@@ -76,6 +76,16 @@ describe("golden — política de declaración", () => {
 
   it("ignora un bloque de código indentado", () => {
     expect(decide({ ...base, body: "Ejemplo:\n\n    Render: cambia\n" }).ok).toBe(false);
+  });
+
+  it("ignora una declaración escondida en un comentario HTML", () => {
+    expect(decide({ ...base, body: "<!--\nRender: cambia\n-->\n\nRefactor." }).ok).toBe(false);
+  });
+
+  it("falla si el comparador no existe en el PR", () => {
+    const r = decide({ ...base, comparatorPresent: false });
+    expect(r.ok).toBe(false);
+    expect(r.reason).toContain("comparador");
   });
 
   it("un fence sin cerrar deja el resto del body como código", () => {

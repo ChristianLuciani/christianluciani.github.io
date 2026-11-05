@@ -7,7 +7,7 @@
  * `ci.yml` sólo aporta los datos (qué hay en la base, si cambió, qué dice el body).
  */
 import { spawnSync } from "node:child_process";
-import { BASELINE_PATH } from "./paths.ts";
+import { BASELINE_PATH, COMPARATOR_PATH } from "./paths.ts";
 
 export interface PolicyInput {
   /** El archivo exacto existía en la base del PR. */
@@ -16,6 +16,8 @@ export interface PolicyInput {
   goldenFamilyInBase: boolean;
   /** `tests/golden/museo.html` difiere entre base y head. */
   changed: boolean;
+  /** El comparador (`golden.test.ts`) existe en el head: sin él no hay gate. */
+  comparatorPresent: boolean;
   /** Body del PR, tal cual. */
   body: string;
 }
@@ -42,10 +44,13 @@ export const DECLARATION = /^[ \t>*_#-]*(render|datos)[ \t*_]*:[ \t*_]*cambia\b/
  * auto-satisfacía.
  */
 export function withoutCodeBlocks(body: string): string {
+  // Comentarios HTML: invisibles al leer el PR, pero el body los lleva. Un
+  // `<!-- Render: cambia -->` satisfacía la guarda sin que nadie lo viera.
+  const visible = body.replace(/<!--[\s\S]*?(-->|$)/g, "");
   const out: string[] = [];
   let fence: string | null = null;
 
-  for (const line of body.split("\n")) {
+  for (const line of visible.split("\n")) {
     const match = /^\s*(`{3,}|~{3,})/.exec(line);
     if (fence) {
       const closes = match && match[1][0] === fence[0] && match[1].length >= fence.length;
@@ -64,6 +69,12 @@ export function withoutCodeBlocks(body: string): string {
 }
 
 export function decide(input: PolicyInput): PolicyResult {
+  if (!input.comparatorPresent) {
+    return {
+      ok: false,
+      reason: `no existe ${COMPARATOR_PATH} en este PR: sin comparador, el baseline no es un gate`
+    };
+  }
   if (!input.baselineInBase && !input.goldenFamilyInBase) {
     return { ok: true, reason: "baseline nuevo en este PR: la guarda rige desde el próximo" };
   }
