@@ -27,8 +27,12 @@ el refactor, no el golden.
 
 ```bash
 npm run golden:update   # reescribe tests/golden/museo.html desde assembleHtml()
+npm run build           # reescribe index.html (build.test.ts exige que coincida)
 npm test                # verde antes de commitear
 ```
+
+`index.html` también es un artefacto generado: si el render cambió y no lo regenerás,
+`build.test.ts` falla y el golden queda verde en falso respecto del sitio publicado.
 
 Requiere el entorno **sin CDN** (`VITE_ASSET_BASE_URL` y `VITE_BRAND_KIT_BASE_URL`
 vacías): las rutas de assets se resuelven al importar los templates y el golden se congela

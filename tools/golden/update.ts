@@ -22,10 +22,11 @@ const { assembleHtml } = await import("../../src/templates/index.ts");
 const { sectionsOf } = await import("./sections.ts");
 
 const html = assembleHtml();
+// Validar ANTES de escribir: si un marcador se rompió, el árbol queda como
+// estaba en vez de reescribir el baseline y fallar después.
+const sections = sectionsOf(html);
 mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, html, "utf8");
-
-const sections = sectionsOf(html);
 const bytes = Buffer.byteLength(html, "utf8");
 console.log(`✅ golden regenerado: ${bytes} bytes (${html.length} chars) · ${sections.length} secciones`);
 console.log(`   ${sections.map((s) => s.name).join(" · ")}`);

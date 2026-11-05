@@ -39,4 +39,13 @@ describe("golden — política de declaración", () => {
   it("no acepta la palabra suelta en medio de una frase", () => {
     expect(decide({ ...base, body: "esto cambia el render: cambia todo\n" }).ok).toBe(false);
   });
+
+  it("acepta la forma markdown en negrita", () => {
+    expect(decide({ ...base, body: "**Render:** cambia (rediseño)" }).ok).toBe(true);
+  });
+
+  it("ignora un ejemplo dentro de un bloque de código", () => {
+    const body = "```\nRender: cambia\n```\n\nEste PR sólo refactoriza.";
+    expect(decide({ ...base, body }).ok).toBe(false);
+  });
 });
