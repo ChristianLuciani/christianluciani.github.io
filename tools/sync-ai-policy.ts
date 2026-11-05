@@ -44,30 +44,22 @@ export function readPolicy(dir = POLICY_DIR): Record<PolicyFile, string | null> 
 }
 
 /**
- * Directivas de `robots.txt` según RFC 9309 §2.2.1: `EOL = *WS [comment] NL` y
- * el `user-agent` matchea case-insensitive.
- *
- * POR QUÉ UN PARSER Y NO UNA REGEX: la clase «el gate no lee la gramática que el
- * crawler sí lee» reapareció (caja/indentación, comentario de fin de línea y
- * después la capa de GRUPOS). La escalera de `review-damping` pide el
- * INSTRUMENTO que cierra la clase, no otra regex anclada: acá se tokeniza cada
- * línea (comentario fuera, `trim`, clave en minúscula) y después se compara por
- * igualdad — cualquier variante léxica válida cae en el mismo token.
+ * Una directiva `key: value` ya normalizada: comentario fuera, `trim`, clave en
+ * minúscula (RFC 9309 §2.2.1: `EOL = *WS [comment] NL`, `user-agent`
+ * case-insensitive). ÚNICA superficie de tokenización: `robotsGroups()` la
+ * consume; tener dos parsers de la misma gramática era cobertura ilusoria
+ * (pase 6, F2).
  */
-export function robotsDirectives(text: string): { key: string; value: string }[] {
-  const out: { key: string; value: string }[] = [];
-  for (const raw of text.split(/\r\n|\r|\n/)) {
-    // `#` abre comentario en cualquier posición de la línea (RFC 9309 §2.2.1).
-    const line = raw.replace(/#.*$/, "").trim();
-    if (line.length === 0) continue;
-    const colon = line.indexOf(":");
-    if (colon < 0) continue; // línea sin directiva: el RFC la ignora
-    out.push({
-      key: line.slice(0, colon).trim().toLowerCase(),
-      value: line.slice(colon + 1).trim()
-    });
-  }
-  return out;
+export function robotsDirective(raw: string): { key: string; value: string } | null {
+  // `#` abre comentario en cualquier posición de la línea.
+  const line = raw.replace(/#.*$/, "").trim();
+  if (line.length === 0) return null;
+  const colon = line.indexOf(":");
+  if (colon < 0) return null; // línea sin directiva: el RFC la ignora
+  return {
+    key: line.slice(0, colon).trim().toLowerCase(),
+    value: line.slice(colon + 1).trim()
+  };
 }
 
 export interface RobotsGroup {
@@ -97,13 +89,10 @@ export function robotsGroups(text: string): RobotsGroup[] {
   const groups: RobotsGroup[] = [];
   let current: RobotsGroup | null = null;
   for (const raw of text.split(/\r\n|\r|\n/)) {
-    const line = raw.replace(/#.*$/, "").trim();
+    const directive = robotsDirective(raw);
     // `emptyline` no termina el grupo (RFC 9309 §2.1: termina un `user-agent` o EOF).
-    if (line.length === 0) continue;
-    const colon = line.indexOf(":");
-    if (colon < 0) continue;
-    const key = line.slice(0, colon).trim().toLowerCase();
-    const value = line.slice(colon + 1).trim();
+    if (!directive) continue;
+    const { key, value } = directive;
     if (key === "user-agent") {
       if (!current || current.rules.length > 0) {
         if (current) groups.push(current);
@@ -128,13 +117,19 @@ export function robotsGroups(text: string): RobotsGroup[] {
 const PRODUCT_TOKEN = /^(?:\*|[A-Za-z_-]+)$/;
 
 /**
- * Patrón que cubre TODO el sitio: `/`, `/*`, `/$`, `/*$` (RFC 9309 §2.2.3: `*`
- * matchea cualquier secuencia y `$` ancla el fin). Comparar sólo contra `"/"`
- * daba un falso positivo con `Disallow: /*` — que bloquea tanto como `/` — y un
- * falso negativo con `Allow: /*` (pase 5, F4).
+ * Patrón que cubre TODO el sitio. RFC 9309 §2.2.3: `*` matchea cualquier
+ * secuencia y `$` ancla el fin del match.
+ *
+ * - `/`  → todo (el prefijo raíz).
+ * - `/*` → todo: `*` cubre cualquier resto del path.
+ * - `/*$` → todo, por lo mismo con el ancla.
+ * - `/$` → **sólo** el path `/` exacto: `$` no matchea lo que sigue, así que
+ *   NO cubre el sitio. Aceptarlo era fail-open: un `Disallow: /$` en el grupo
+ *   de training dejaba a esos crawlers permitidos en todo lo demás y el gate
+ *   los contaba como bloqueados (pase 6, F1).
  */
 export function isRootPattern(value: string): boolean {
-  return /^\/(?:\*|\$|\*\$)?$/.test(value);
+  return value === "/" || value === "/*" || value === "/*$";
 }
 
 /**

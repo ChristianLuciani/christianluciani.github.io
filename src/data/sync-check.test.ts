@@ -28,7 +28,6 @@ import {
   isRootPattern,
   policyProblems,
   robotsAgents,
-  robotsDirectives,
   robotsGroups,
   type PolicyFile
 } from "../../tools/sync-ai-policy";
@@ -363,8 +362,8 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
   /**
    * ESCALATE(1) del pase 2 — la clase («el gate no lee la gramática que el
    * crawler sí lee») reapareció: caja/indentación y después comentario de fin de
-   * línea. El instrumento es el tokenizador `robotsDirectives` (RFC 9309
-   * §2.2.1), no otra regex anclada; estos casos fijan sus dos caras.
+   * línea. El instrumento es el tokenizador de `robotsDirective` (RFC 9309
+   * §2.2.1), consumido por `robotsGroups`; estos casos fijan sus dos caras.
    */
   it("`user-agent: *` con comentario de fin de línea ES el wildcard (RFC 9309 §2.2.1)", () => {
     const problems = policyProblems(
@@ -381,11 +380,10 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
   });
 
   it("el tokenizador normaliza caja, indentación, comentario y CRLF", () => {
-    const directives = robotsDirectives("  USER-AGENT :  *  # todo\r\nAllow:/ # raíz\r\n");
-    expect(directives).toEqual([
-      { key: "user-agent", value: "*" },
-      { key: "allow", value: "/" }
-    ]);
+    // Una sola superficie de tokenización (pase 6, F2): se ejercita a través de
+    // `robotsGroups`, que es quien la consume.
+    const groups = robotsGroups("  USER-AGENT :  Googlebot  # todo\r\n Allow:/ # raíz\r\n");
+    expect(groups).toEqual([{ agents: ["Googlebot"], rules: [{ key: "allow", value: "/" }] }]);
   });
 
   /**
@@ -500,7 +498,18 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
     );
     expect(problems).toEqual([]);
     expect(isRootPattern("/*")).toBe(true);
-    expect(isRootPattern("/$")).toBe(true);
+    expect(isRootPattern("/*$")).toBe(true);
     expect(isRootPattern("/privado")).toBe(false);
+  });
+
+  // Pase 6, F1: `$` ancla el fin del match, así que `/$` cubre SÓLO el path `/`.
+  // Aceptarlo contaba como «bloqueado» a un grupo que en realidad permitía todo
+  // lo demás (fail-open). Dirección segura: el gate reporta el grupo ausente.
+  it("`Disallow: /$` NO cubre el sitio (ancla de fin, §2.2.3)", () => {
+    const problems = policyProblems(
+      files({ "robots.txt": "User-agent: Googlebot\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /$\n" })
+    );
+    expect(problems.join("\n")).toMatch(/sin agente de training/);
+    expect(isRootPattern("/$")).toBe(false);
   });
 });
