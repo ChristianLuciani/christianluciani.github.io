@@ -126,7 +126,8 @@ christianluciani.github.io (PÚBLICO · deploy surface)
 Un copy se edita UNA vez en el pack del tema; un renderer genérico lo muestra. Si un valor
 tiene que cambiar en dos archivos para mantenerse coherente → es un bug de arquitectura
 (duplicación), no una tarea. **Corolario (ADR-001):** un tema nuevo no toca hechos,
-curación de otro tema, renderers ni el SSOT; toca sólo `src/themes/<id>/` + su registro.
+curación de otro tema, renderers ni el SSOT; toca sólo su propio directorio de tema y su
+línea de registro (§8 FASE 5).
 
 ---
 
@@ -142,25 +143,24 @@ curación de otro tema, renderers ni el SSOT; toca sólo `src/themes/<id>/` + su
 | publicaciones (title, venue, year, doi, url) | `profile-data/publications.yaml` | hecho |
 | skills + idiomas | `profile-data/skills.yaml` (+ `languages` v1.1) | hecho |
 | keywords SEO/GEO | `profile-data/keywords.yaml` | hecho |
-| títulos museísticos ("El Autorretrato") | `src/themes/museo/copy.ts` | copy del tema (D10) |
-| subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/themes/museo/copy.ts` | copy + hecho |
-| estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/themes/<id>/narrative.ts` | narrativa (D10) |
-| asignación de ilusión por sala | `src/themes/<id>/illusions.ts` | narrativa (D10) |
-| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/content/curation/<id>.ts` | curación (D8) |
-| quote-block ("La física me enseñó…") | `src/themes/museo/copy.ts` | copy del tema (D10) |
-| showcase Drahma (celdas, timeline, lab STEM) | `src/themes/museo/copy.ts` (export `DRAHMA`) | copy del tema (hechos referencian `projects.yaml` por id) |
-| curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/curation/museo.ts` | curación (ref. `projects` del SSOT por nombre) |
-| frases del intro | `src/themes/museo/copy.ts` | copy del tema (D10) |
-| curación del print-CV (prosa, títulos, labels) | `src/content/curation/museo.ts` | curación |
+| títulos museísticos ("El Autorretrato") | `src/content/cv/museo.ts` | copy (hoy; destino §8 FASE 5) |
+| subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
+| estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/cv/salas.ts` | estructura + narrativa (hoy) |
+| asignación de ilusión por sala | `src/cv/salas.ts` + `src/templates/sala_html.ts` | presentación (hoy) |
+| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/data/proyectos.ts` + `src/content/cv/proyectos.ts` | curación (hoy) |
+| quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | copy (hoy) |
+| showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
+| curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
+| frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
+| curación del print-CV (prosa, títulos, labels) | `src/content/cv/print.ts` | curación (hoy) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
 | galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
-| CSS: tokens, tipografía, densidad | `src/themes/<id>/skin.css` | piel (D11) |
-| CSS de renderers genéricos (layout compartido) | `src/presentation/` | presentación |
+| CSS: tokens, tipografía, densidad | `src/templates/head_html.ts` | presentación (hoy; destino §8 FASE 5) |
 | ilusiones, animaciones, canvas | `src/ts/` | presentación (no editable por temas) |
 
-Las filas de **copy/curación/narrativa/piel** indican el destino de la FASE 5; hoy ese
-material vive en `src/content/cv/`, `src/templates/` y `src/cv/salas.ts`, y se mueve sin
-cambio de contenido con el golden como gate (I1).
+Esta tabla es la frontera de **HOY**: todo puntero resuelve contra el árbol (gate
+`tools/docs/doc-pointers.test.ts`). El layout de la FASE 5 —pack de copy, curación, piel y
+registro de temas— se especifica en §8, que el gate excluye por nombrar archivos planeados.
 
 **Reglas de reconciliación (deriva conocida, resuelta en el normalizador):**
 - "36 guías de laboratorio" = **proyecto** `Physics Lab Book` en el SSOT → la sala Biblioteca
@@ -229,7 +229,7 @@ el pipeline a partir de `artifactRefs`), `identity.givenName`/`familyName` (part
 `experience[].end` default `"present"`. Los IDs de `artifactRefs` no se emiten porque pueden
 apuntar a un artifact privado.
 
-### 5.3 Capa de curación (`src/content/curation/`) — el único otro lugar editable por humano
+### 5.3 Capa de curación — el único otro lugar editable por humano
 
 Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable**. Separa dos
 cosas que hoy están mezcladas (D8):
@@ -238,11 +238,11 @@ cosas que hoy están mezcladas (D8):
   `reason`, `order`). Excluir **no borra**: el hecho sigue en el SSOT y en otros temas.
 - **copy** = cómo se nombra (vive en el pack del tema, no acá).
 
-Estado de migración: `src/content/cv/` (museo, `DRAHMA`, `proyectos.ts`, `print.ts`) se
-mueve sin cambios de contenido a `src/content/curation/museo.ts` + `src/themes/museo/`
-en la FASE 5, con golden byte a byte como gate (I1).
+Estado de migración: el material actual de `src/content/cv/` (`museo.ts`, `proyectos.ts`,
+`print.ts`) se mueve **sin cambios de contenido** al layout de §8 FASE 5, con el golden
+byte a byte como gate (I1).
 
-### 5.4 Contrato de narrativa (`src/themes/<id>/narrative.ts`)
+### 5.4 Contrato de narrativa — `narrative.ts` del tema
 
 ```ts
 export interface NarrativeManifest {
@@ -255,11 +255,11 @@ export interface NarrativeManifest {
 }
 ```
 
-Reglas: ningún template conoce el id del tema; el selector es `SITE_THEME` resuelto en
-`src/themes/index.ts`; `meta` alimenta `<title>`, `og:*`, `twitter:*`, `canonical` y
-`og:url` con el origen y el subpath del tema.
+Reglas: ningún template conoce el id del tema; el selector es `SITE_THEME` resuelto en el
+registro de temas; `meta` alimenta `<title>`, `og:*`, `twitter:*`, `canonical` y `og:url`
+con el origen y el subpath del tema.
 
-### 5.5 Curación (`src/content/curation/<id>.ts`)
+### 5.5 Curación — `curation.ts` por tema
 
 ```ts
 export interface Curation {
@@ -272,7 +272,7 @@ export interface Curation {
 Gate I3: `curation --report` lista todo hecho del perfil sin decisión (mostrado o excluido
 con razón) y no permite un `exclude` sin `reason`.
 
-### 5.6 Piel (`src/themes/<id>/skin.css`)
+### 5.6 Piel — `skin.css` del tema
 
 Sólo tokens (`--bg-*`, `--ink*`, `--line*`, acentos, `--radius`, `--container`, tipografía)
 y reglas que los consumen. Prohibido: literales de color fuera del bloque de tokens,
@@ -286,16 +286,16 @@ pares texto/fondo declarados.
 | # | Decisión | Racional |
 |---|---|---|
 | D1 | **Archivo generado + commiteado** en christianluciani.github.io (`src/data/profile.generated.ts`) | Mismo patrón que `index.html` (build.test.ts): CI solo verifica paridad; la generación es local/agente; cero credenciales de repo privado en CI. Contrato enforced por test. |
-| D2 | **Curación en christianluciani.github.io** (`src/content/curation/`), no en profile-data | Son decisiones de esta superficie (qué se presenta a qué audiencia), no hechos ni plataforma-cross. Meterlas en el schema contaminaría el contrato con una decisión de presentación. La curación es **por tema** y nunca borra: un `exclude` deja el hecho vivo en el SSOT y en los demás temas. |
-| D3 | **Copy por tema con claves semánticas** (`themes/<id>/copy.ts`), resuelto en render; el MAP generado sobrevive sólo para el texto de UI | Elimina la clase de bug "edité ES y olvidé EN" **y** la de "cambié una coma y la traducción quedó huérfana" (240 claves por string exacto, 20 ya huérfanas). Con N narrativas, keyear por texto del DOM multiplica la deuda. |
+| D2 | **Curación en christianluciani.github.io** (contenido de curación del repo), no en profile-data | Son decisiones de esta superficie (qué se presenta a qué audiencia), no hechos ni plataforma-cross. Meterlas en el schema contaminaría el contrato con una decisión de presentación. La curación es **por tema** y nunca borra: un `exclude` deja el hecho vivo en el SSOT y en los demás temas. |
+| D3 | **Copy por tema con claves semánticas** (`copy.ts` del tema), resuelto en render; el MAP generado sobrevive sólo para el texto de UI | Elimina la clase de bug "edité ES y olvidé EN" **y** la de "cambié una coma y la traducción quedó huérfana" (240 claves por string exacto, 20 ya huérfanas). Con N narrativas, keyear por texto del DOM multiplica la deuda. |
 | D4 | **print-CV = renderer determinista** dentro de christianluciani.github.io, consumiendo `profile.generated.ts` | Deploy surface sin API; promovible a renderer `print` de profile-as-code después (M5+, queda anotado). |
 | D5 | **Extensión del contrato como profile-as-code** (schema v1.1, spec-first en profile-as-code, NO ad-hoc en el CV) | El contrato de datos es del motor: `highlights → array`, `role → langMap`, `org → string` invariante, `publications.url`, `languages`, `education`. El CV normaliza ambos shapes (v1 legacy + v1.1) para no bloquear el refactor. |
 | D6 | Integración por **path configurado** (`PROFILE_DATA_PATH` en `.env`/`.pacrc`, `.env` gitignored) | D14 de profile-as-code: sin symlink en el flujo normal; parametrización komuno XI. |
 | D7 | El sync **valida contra el schema del motor** (fail on schema, warn on drift — D12 profile-as-code) | Integridad del contrato sin romper flexibilidad de intención por plataforma. |
 | D8 | **Curación explícita y reversible** (`include`/`exclude`/`order` + `reason`), por tema | "Qué presentar sin borrar" necesita representación y gate: sin `reason` y sin reporte de cobertura, un tema puede ocultar trabajo en silencio y nadie lo ve. |
 | D9 | **Paridad por tema (golden)**, no contra un único `index.html` | El refactor de la FASE 5 debe dejar el tema default byte-idéntico; con dos temas, el gate histórico se vuelve rojo o se borra. Golden por tema = instrumento único de "el render no cambió". |
-| D10 | **Narrativa = datos** (`themes/<id>/narrative.ts` + `copy.ts`), no markup | Es la diferencia entre "otra piel" y "otra audiencia". Tocar templates para cambiar de voz reintroduce la duplicación que esta SPEC cierra. |
-| D11 | **Piel = tokens** (`themes/<id>/skin.css`), sin literales de color | Un segundo tema hoy exige tocar 74 literales de color y 30 tintes teal con alpha propio: sin tokens, cada piel es un fork del CSS. |
+| D10 | **Narrativa = datos** (`narrative.ts` + `copy.ts` del tema), no markup | Es la diferencia entre "otra piel" y "otra audiencia". Tocar templates para cambiar de voz reintroduce la duplicación que esta SPEC cierra. |
+| D11 | **Piel = tokens** (`skin.css` del tema), sin literales de color | Un segundo tema hoy exige tocar 74 literales de color y 30 tintes teal con alpha propio: sin tokens, cada piel es un fork del CSS. |
 | D12 | **Topología: subpath con selector `SITE_THEME`**; un sitio Pages, un artefacto de deploy | El "switch" es la URL en cualquier topología; el subdominio exige un segundo sitio Pages (otro repo) y duplica pipeline, secretos y rollback. `SITE_BASE`/`SITE_ORIGIN` por tema dejan la migración a subdominio como configuración, no refactor. |
 
 ---
@@ -446,6 +446,6 @@ golden de `museo` no cambia en ningún PR de la fase.
   otros deploy surfaces (GitHub README ya genera profile-as-code); el CV es el primero en
   consumir el perfil compilado — dogfood de M5.
 - **Temas:** leer `docs/CREAR-TEMA.md` antes de crear uno; el plan y los gates están en
-  `docs/epics/temas-narrativas.md`. Un tema nuevo **no** toca `src/data/**`,
-  `src/content/curation/` de otro tema, ni `src/ts/illusions/**`; las decisiones de modelo
-  están en ADR-001 (`docs/adr/ADR-001-temas-y-narrativas.md`).
+  `docs/epics/temas-narrativas.md`. Un tema nuevo **no** toca `src/data/**`, la curación de
+  otro tema, ni `src/ts/illusions/**`; las decisiones de modelo están en
+  `docs/adr/ADR-001-temas-y-narrativas.md`.
