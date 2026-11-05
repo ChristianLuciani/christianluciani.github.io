@@ -35,9 +35,14 @@ export const DECLARATION = /^[ \t>*_#-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
  * que la guarda se auto-satisfaga.
  */
 export function withoutCodeBlocks(body: string): string {
-  // ``` y ~~~ son fences válidos en markdown: si sólo se quita uno, el ejemplo
-  // del otro se lee como declaración.
-  return body.replace(/(```|~~~)[\s\S]*?\1/g, "");
+  // Fences de 3+ backticks o tildes (``` y ~~~ son equivalentes; un fence de 4
+  // no lo cierra uno de 3) y bloques indentados de 4 espacios / tab, que también
+  // son código en markdown. Quitar de más sólo hace la guarda más estricta.
+  const withoutFences = body.replace(/(`{3,}|~{3,})[\s\S]*?\1/g, "");
+  return withoutFences
+    .split("\n")
+    .filter((line) => !/^( {4}|\t)/.test(line))
+    .join("\n");
 }
 
 export function decide(input: PolicyInput): PolicyResult {
@@ -56,14 +61,19 @@ export function decide(input: PolicyInput): PolicyResult {
   };
 }
 
-/** ¿El archivo existe en el commit `base`? */
-function existsIn(base: string, path: string): boolean {
-  try {
-    execFileSync("git", ["cat-file", "-e", `${base}:${path}`], { stdio: "ignore" });
-    return true;
-  } catch {
-    return false;
+/**
+ * ¿El archivo existe en el commit `base`?
+ *
+ * Lista el árbol y busca el path: `cat-file -e` devolvía el mismo fallo para
+ * "el archivo no está" y "la ref no existe", y leerlo como "baseline nuevo"
+ * apagaba la guarda justo cuando no podía responder.
+ */
+export function existsIn(base: string, path: string, cwd = process.cwd()): boolean {
+  const r = spawnSync("git", ["ls-tree", "-r", "--name-only", base], { cwd, encoding: "utf8" });
+  if (r.status !== 0) {
+    throw new Error(`no se pudo leer la base ${base}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
   }
+  return r.stdout.split("\n").includes(path);
 }
 
 /**
