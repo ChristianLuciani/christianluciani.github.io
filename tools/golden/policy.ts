@@ -21,7 +21,7 @@ export interface PolicyInput {
   changed: boolean;
   /** El comparador (`golden.test.ts`) existe en el head: sin él no hay gate. */
   comparatorPresent: boolean;
-  /** `src/data/profile.generated.ts` cambió en el PR (condición de "datos"). */
+  /** Algún artefacto de datos cambió en el PR (condición de "datos"). */
   dataChanged: boolean;
   /** Trailer declarado en algún commit del PR. */
   declaration: Declaration | null;
@@ -54,6 +54,13 @@ export function declarationBetween(base: string, head = "HEAD", cwd = process.cw
   if (r.status !== 0) {
     throw new Error(`no se pudo leer el log ${base}..${head}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
   }
+  // `base..HEAD` vacío = historial insuficiente (checkout shallow o base no
+  // ancestro): devolver null ahí apagaría la guarda en silencio. El workflow
+  // hace checkout con `fetch-depth: 0`, así que este caso es un error duro.
+  const count = spawnSync("git", ["rev-list", "--count", `${base}..${head}`], { cwd, encoding: "utf8" });
+  if (count.status !== 0 || Number.parseInt(count.stdout.trim(), 10) === 0) {
+    throw new Error(`historial insuficiente para ${base}..${head}: revisá fetch-depth en el workflow`);
+  }
   return parseDeclaration(r.stdout);
 }
 
@@ -79,7 +86,7 @@ export function decide(input: PolicyInput): PolicyResult {
     if (!input.dataChanged) {
       return {
         ok: false,
-        reason: "'Golden-Cambio: datos' sin cambios en src/data/profile.generated.ts: declaralo como render"
+        reason: "'Golden-Cambio: datos' sin cambios en los artefactos de datos: declaralo como render"
       };
     }
     return { ok: true, reason: "golden regenerado con 'Golden-Cambio: datos' y snapshot movido" };

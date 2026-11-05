@@ -7,8 +7,11 @@
  */
 export const BASELINE_PATH = "tests/golden/museo.html";
 
-/** El snapshot del perfil: su cambio es la única causa legítima de "Datos". */
-export const DATA_PATH = "src/data/profile.generated.ts";
+/**
+ * Artefactos de datos que el render consume. Su cambio es la única causa
+ * legítima de "Datos" (hoy el perfil y el feed «Ahora»).
+ */
+export const DATA_PATHS = ["src/data/profile.generated.ts", "src/data/now.generated.ts"] as const;
 
 /** El test que convierte el baseline en gate: sin él, la guarda no tiene diente. */
 export const COMPARATOR_PATH = "tests/golden/golden.test.ts";

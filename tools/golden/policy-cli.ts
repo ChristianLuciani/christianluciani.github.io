@@ -5,7 +5,7 @@
  * invoca `package.json`. La decisión es una función pura testeada.
  */
 import { execFileSync } from "node:child_process";
-import { BASELINE_PATH, COMPARATOR_PATH, DATA_PATH } from "./paths.ts";
+import { BASELINE_PATH, COMPARATOR_PATH, DATA_PATHS } from "./paths.ts";
 import {
   changedSince,
   declarationBetween,
@@ -39,7 +39,7 @@ function main(): void {
       // introducción: no puede volver a ganar la exención.
       goldenFamilyInBase: tree.some((path) => path.startsWith("tests/golden/")),
       changed: changedSince(base, BASELINE_PATH),
-      dataChanged: changedSince(base, DATA_PATH),
+      dataChanged: DATA_PATHS.some((path) => changedSince(base, path)),
       declaration: declarationBetween(base)
     });
   } catch (error) {

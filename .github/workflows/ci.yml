@@ -4,11 +4,7 @@ name: CI
 # build or failing test is caught before it reaches the deployed site.
 
 on:
-  # `edited` no es cosmético: la guarda del golden lee el body del PR, así que
-  # quitar o agregar la declaración "Render: cambia" tiene que re-ejecutar el
-  # job — si no, un verde viejo sobrevive al body que lo justificaba.
   pull_request:
-    types: [opened, synchronize, reopened, edited]
   # `main` también: un push directo (o un merge) no puede quedar sin tests. El
   # index.html commiteado y el módulo del logo se verifican acá; el deploy los
   # construye pero no corre la suite.
@@ -25,7 +21,12 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
     steps:
+      # Historial completo: la guarda del golden lee los trailers
+      # (`Golden-Cambio:`) de los commits del PR, y con el checkout shallow por
+      # defecto sólo existe el merge sintético — el trailer quedaría invisible.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -39,7 +40,6 @@ jobs:
       - name: golden — regenerarlo exige declararlo en el PR
         if: github.event_name == 'pull_request'
         env:
-          PR_BODY: ${{ github.event.pull_request.body }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
         run: npm run golden:policy
       # el espejo local de marca debe coincidir con el pin del brand kit
