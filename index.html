@@ -632,6 +632,20 @@ a { color:inherit; }
   color:var(--ink);
 }
 .hero-metrics .u { color:var(--ink-meta); font-size:.55em; letter-spacing:.02em; }
+/* Traza de procedencia (#109): línea discreta y verificable del pin del SSOT. */
+.hero-provenance {
+  margin:14px 0 0;
+  font-family:var(--font-mono); font-size:10px; line-height:1.6;
+  color:var(--ink-meta);
+  letter-spacing:.02em; word-break:break-all;
+  opacity:0; animation:fadeUp .8s .8s both;
+}
+.hero-provenance a {
+  color:var(--ink-meta); text-decoration:none;
+  border-bottom:1px dotted var(--line);
+}
+.hero-provenance a:hover, .hero-provenance a:focus-visible { color:var(--teal); border-bottom-color:currentColor; }
+.hero-provenance code { font-family:inherit; color:var(--ink-faint); }
 .hero-scroll {
   position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
   font-family:var(--font-mono); font-size:9.5px; color:var(--ink-meta);
@@ -1576,6 +1590,10 @@ a { color:inherit; }
       <div><dt>Drahma</dt><dd>36<span class="u"> tutores</span></dd></div>
       <div><dt>Física</dt><dd>20+<span class="u"> años</span></dd></div>
     </dl>
+
+    <p class="hero-provenance">
+      <a href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener" title="profile-data @ 3feb777d21578c16bdd1f805bf0153fd0a12056e · pasco 0.3.7 · schema v1.15">generado desde profile-data @ <code>3feb777d21578c16bdd1f805bf0153fd0a12056e</code> · pasco 0.3.7</a>
+    </p>
   </div>
 
   <div class="hero-scroll">SCROLL PARA RECORRER</div>
@@ -1689,16 +1707,11 @@ a { color:inherit; }
       <a class="project-card-hit" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener"
          aria-label="Abrir profile-as-code" data-aria-es="Abrir profile-as-code" data-aria-en="Open profile-as-code"></a>      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
       <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
-      <div class="project-tagline">Una sola fuente de verdad versionable compila a todas las superficies públicas del perfil: renderers por plataforma, salida determinista y hechos validados por schema</div>
-      <ul class="project-body">
-        <li>El perfil no se edita a mano en cada plataforma: cada artefacto es función pura del SSOT (YAML + JSON Schema v1.13)</li>
-        <li>Contrato especificado antes del código (D1–D22), con gates de CI sobre schema, inventario de paquetes y links de documentación</li>
-        <li>Ledger de deploy por entrada: qué está publicado, dónde, y si quedó stale. Este CV consume la misma fuente</li>
-        <li>El README de perfil de GitHub que publico es su output</li>
-      </ul>
+      <div class="project-tagline">Motor spec-driven que compila una sola fuente de verdad versionable en todas las superficies públicas del perfil: renderers por plataforma, salida determinista (byte-stable), hechos validados por schema y un ledger de deploy por entrada. Este mismo perfil está generado por él.</div>
+      <div class="project-note">Publicado bajo licencia MIT, con releases etiquetados.</div>
       <div class="project-note">
-        Publicado bajo licencia MIT, con releases etiquetados.<br>
-        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank">↗ Repositorio</a>
+        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener">↗ Repositorio</a>
+        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code/blob/main/docs/ci-cd.md" target="_blank" rel="noopener">↗ Repositorio · ci-cd.md</a>
       </div>
     </div>
 
@@ -1707,19 +1720,13 @@ a { color:inherit; }
       <a class="project-card-hit" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank" rel="noopener"
          aria-label="Abrir Kontablo" data-aria-es="Abrir Kontablo" data-aria-en="Open Kontablo"></a>      <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
       <div class="project-title"><em>Kontablo</em> — Ontología Contable Universal</div>
-      <div class="project-tagline">Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2)</div>
-      <ul class="project-body">
-        <li>Un UUID inamovible por cada concepto contable universal — los códigos son etiquetas visuales; el UUID es la identidad canónica</li>
-        <li>195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)</li>
-        <li><em>Deterministic Boundary Library</em>: un agente no puede proponer un UUID que no exista en el grafo — elimina la clase clásica de alucinación contable a nivel del harness</li>
-        <li>Capa agent-native para la economía agéntica; resolución determinista en tres niveles, con inteligencia sintética estocástica solo como último recurso</li>
-      </ul>
+      <div class="project-tagline">Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2). Un UUID inamovible por concepto; resolución determinista en tres niveles.</div>
+      <div class="project-note">Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.</div>
       <div class="project-note">
-        Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030). Preprint (aún no arbitrado) depositado en Zenodo y SSRN.<br>
-        <a class="pub-doi" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank">↗ Repositorio</a>
-        <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank">↗ Zenodo DOI 10.5281/zenodo.20738795</a>
-        <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank">↗ SSRN 6960598</a>
-        <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank">↗ ResearchGate</a>
+        <a class="pub-doi" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank" rel="noopener">↗ Repositorio</a>
+        <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank" rel="noopener">↗ Zenodo DOI 10.5281/zenodo.20738795</a>
+        <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank" rel="noopener">↗ SSRN 6960598</a>
+        <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank" rel="noopener">↗ ResearchGate</a>
       </div>
     </div>
 </div><div class="drahma-showcase" data-scroll="up">
@@ -1731,14 +1738,14 @@ a { color:inherit; }
              onerror="this.style.display='none'">
         <h3 class="drahma-showcase-title">Proyecto <em>Drahma</em></h3>
       </div>
-      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
+      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (ago 2024) — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo. Desarrollado sin financiamiento externo; agnóstico del modelo vía Poe; guardrails para menores.</div>
       <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
 
       <div class="drahma-columns two-col-drahma">
         <div>
           <div class="timeline-note" data-scroll="from-left">
             <strong>LÍNEA TEMPORAL</strong>
-            Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.
+            Aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.
           </div>
           <div class="drahma-grid">
             <div class="drahma-cell" data-scroll="from-center" data-delay="1">
@@ -1756,12 +1763,12 @@ a { color:inherit; }
               <div class="drahma-cell-label">Alcance</div>
               <div class="drahma-cell-text">36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.</div>
             </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="2">
+            <div class="drahma-cell" data-scroll="from-center" data-delay="4">
               <div class="drahma-cell-icon">⚙️</div>
               <div class="drahma-cell-label">Arquitectura</div>
               <div class="drahma-cell-text">Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.</div>
             </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="3">
+            <div class="drahma-cell" data-scroll="from-center" data-delay="4">
               <div class="drahma-cell-icon">🛡️</div>
               <div class="drahma-cell-label">Seguridad</div>
               <div class="drahma-cell-text">Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.</div>
@@ -1800,6 +1807,7 @@ a { color:inherit; }
           <li>Repositorio privado: system prompts, documentos de contenido, notas de implementación</li>
           <li>Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes</li>
         </ul>
+        <a class="pub-doi" href="https://github.com/DRAHMAN-ORG/drahman-org" target="_blank" rel="noopener">↗ github.com</a>
       </div>
     </div><!-- /showcase drahma -->
 
@@ -1819,98 +1827,72 @@ a { color:inherit; }
     <div class="room-number" data-scroll="up">SALA 02</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Bastidor</em></h2>
     <p class="room-function" data-scroll="up" data-delay="1">Proyectos en desarrollo: prototipos, investigaciones e ideas que todavía no tienen un artefacto público.</p>
-    <div class="room-subtitle" data-scroll="up" data-delay="2">EN DESARROLLO · PROTOTIPOS E IDEAS · 7 PROYECTOS</div>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">EN DESARROLLO · PROTOTIPOS E IDEAS · 8 PROYECTOS</div>
 <div class="project-grid">
     <div class="project-card" data-scroll="from-left" data-recencia="2026-07-24">
-      <span class="project-status status-private">En diseño</span>
+      <span class="project-status status-private">En diseño · Sin artefacto público</span>
       <div class="project-title"><em>Topia</em> — Motor editorial de newsletter</div>
-      <div class="project-tagline">De la distopía a eutopías alcanzables: un ensayo a la vez, cada claim con fuente, cada tesis falsable</div>
-      <ul class="project-body">
-        <li>El rigor epistémico como formato editorial: trazabilidad de fuentes y falsabilidad de cada tesis</li>
-        <li>Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas</li>
-      </ul>
+      <div class="project-tagline">De la distopía a eutopías alcanzables: newsletter con rigor epistémico — un ensayo a la vez, cada claim con fuente, cada tesis falsable. Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el primer número publicado.</div>
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="1" data-recencia="2026-05-24">
-      <span class="project-status status-private">Concepto activo</span>
+      <span class="project-status status-private">En diseño · Sin artefacto público</span>
       <div class="project-title"><em>CLAPPS.AI</em> — Comprehensive Learning Applications</div>
-      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional</div>
-      <ul class="project-body">
-        <li>Los LMS (Learning Management Systems) son en realidad plataformas de <em>registro y control de enseñanza</em>: tracking de evaluación, entrega de contenidos, pensados para el sistema educativo tradicional — no para el aprendizaje real</li>
-        <li>CLAPPS propone un soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo, no solo entrega de contenido de alta calidad</li>
-        <li>Referente más cercano actual: NotebookLM — pero limitado a diversidad de material sobre un tema, sin sistema de progresión estructurada para el desarrollo de competencias</li>
-        <li>Primer contenido real: Noesis y Noetix — el mapa de perspectivas cognitivas y su motor de agentes compuestos</li>
-      </ul>
+      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional. Soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo. Referente más cercano: NotebookLM, pero sin progresión estructurada de competencias.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> primer contenido real (Noesis y Noetix) y una versión navegable.</div>
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="2" data-recencia="2026-04-24">
-      <span class="project-status status-private">En uso · Sin artefacto público</span>
+      <span class="project-status status-private">Activo · Sin artefacto público</span>
       <div class="project-title"><em>Nelson Companion</em> — PWA de voz asistida</div>
-      <div class="project-tagline">PWA guiada por voz para mi padre (76, afasia post-ACV): offline-first, cero telemetría</div>
-      <ul class="project-body">
-        <li>Uso real y diario: el usuario objetivo es el usuario real</li>
-        <li>Offline-first y sin telemetría — la accesibilidad no puede depender de una conexión ni de un servidor ajeno</li>
-      </ul>
+      <div class="project-tagline">PWA guiada por voz para mi padre (afasia post-ACV). Offline-first, cero telemetría.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público y licencia — el uso ya es real.</div>
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="3" data-recencia="2026-03-09">
-      <span class="project-status status-private">Investigación activa</span>
+      <span class="project-status status-private">Experimental · Sin artefacto público</span>
       <div class="project-title"><em>Esteléctica</em> — Epistemología del Diálogo Poli-dialéctico Destilado</div>
-      <div class="project-tagline">Propuesta filosófica sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética</div>
-      <ul class="project-body">
-        <li>Problema: toda conversación prolongada tiende hacia el ruido. El diálogo con cognición sintética lo acelera — la ventana de contexto se degrada, las sesiones no persisten</li>
-        <li>Propuesta: modelo <strong>Tronco/Rizoma</strong> — el rizoma explora libremente; periódicamente el par humano-cognición sintética destila hacia el Tronco (conocimiento estable)</li>
-        <li>Doble naturaleza: propuesta filosófica <em>y</em> arquitectura de software para gestión epistemológica</li>
-        <li>Integra Noesis y Noetix — taxonomía de perspectivas de pensamiento y su motor agéntico, como material de la epistemología del diálogo</li>
-      </ul>
-      <div class="project-note">Candidata a publicación académica.</div>
+      <div class="project-tagline">Propuesta filosófica y arquitectura de software sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética. Modelo Tronco/Rizoma: el rizoma explora libremente; el par humano-cognición sintética destila hacia el Tronco. Integra Noesis y Noetix.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el paper (es candidata a publicación académica); el repositorio es privado.</div>
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="4" data-recencia="2026-03-07">
-      <span class="project-status status-private">Prototipo · Sin artefacto público</span>
+      <span class="project-status status-private">Activo · Sin artefacto público</span>
       <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
-      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética</div>
-      <ul class="project-body">
-        <li>Resuelve la entropía dialéctica: cada conversación con cognición sintética produce destellos de claridad que desaparecen. ZENTROPY los captura en base de datos estructurada (Supabase, schema <em>zentropia</em>)</li>
-        <li>Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown — parser propio (<code>ingest.py</code>)</li>
-        <li>Módulo central del ecosistema de cognición sintética: integra con CLAPPS, UCVE, NOOS, Kontablo</li>
-        <li>Arquitectura multi-tenant lista para uso público. Stage 2: Open WebUI local con OpenRouter</li>
-      </ul>
-      <div class="project-note">La abundancia de herramientas cognitivas sin arquitectura es la forma más sofisticada de entropía.</div>
+      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética. Resuelve la entropía dialéctica: los destellos de claridad se guardan en base de datos estructurada (Supabase). Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público con licencia y release — el schema, la ingesta y la arquitectura multi-tenant ya existen.</div>
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="2019-01-01">
-      <span class="project-status status-paused">En uso · Repositorio privado</span>
+      <span class="project-status status-paused">Mantenido · Sin artefacto público</span>
       <div class="project-title"><em>Physics Lab Book</em> — Laboratorio de física interactivo</div>
-      <div class="project-tagline">36 guías interactivas HTML5 de laboratorio de física universitaria, originalmente escritas para USFQ</div>
-      <ul class="project-body">
-        <li>800+ estudiantes anuales en USFQ</li>
-        <li>36 guías originales: ingenierías, ciencias de la salud y ciencias puras</li>
-      </ul>
+      <div class="project-tagline">36 guías interactivas HTML5 de laboratorio de física universitaria — originalmente escritas para USFQ (ingenierías, ciencias de la salud, ciencias puras).</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público (hoy privado); las 36 guías y su uso en USFQ ya existen.</div>
     </div>
 
     <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
-      <span class="project-status status-private">Investigación privada</span>
+      <span class="project-status status-private">Experimental · Sin artefacto público</span>
       <div class="project-title"><em>NOOS</em> — Natural Organization Operating System</div>
-      <div class="project-tagline">Reducir la entropía organizacional mediante inteligencia sintética distribuida y grafos de conocimiento</div>
-      <ul class="project-body">
-        <li>Marco conceptual que aplica teoría de sistemas complejos al diseño organizacional</li>
-        <li>Propuesta: las organizaciones pueden modelarse como sistemas termodinámicos con estados de alta/baja entropía</li>
-        <li>Arquitectura: inteligencia sintética distribuida + bases de datos en grafo para mapear flujos de decisión y conocimiento tácito</li>
-        <li>Destino: consultoría de alto valor para organizaciones en transición digital</li>
-      </ul>
-      <div class="project-note">Investigación en curso. Publicación académica planificada.</div>
+      <div class="project-tagline">Reducir la entropía organizacional mediante cognición sintética distribuida y grafos de conocimiento. Las organizaciones modeladas como sistemas termodinámicos de alta/baja entropía. Destino: consultoría de alto valor para organizaciones en transición digital.</div>
       <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el marco conceptual como publicación; hoy es investigación privada.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
+      <span class="project-status status-private">Activo · Sin artefacto público</span>
+      <div class="project-title"><em>Upstream Open Source Contributions</em> — Contribuciones upstream</div>
+      <div class="project-tagline">Cada PR mergeado es infraestructura que pertenece a todos. Contribuciones upstream al ecosistema de IA agéntica — AionCore (agente Pi como ACP built-in), pi-acp (session/delete según spec ACP), AionUi (logos theme-aware), Ollama a agentes ACP locales.</div>
+      <div class="project-note">
+        <a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener">↗ Repositorio · 618</a>
+        <a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener">↗ Repositorio · 76</a>
+        <a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/626" target="_blank" rel="noopener">↗ Repositorio · 626</a>
+        <a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener">↗ Repositorio · 3614</a>
+      </div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> un artefacto propio declarado en artifactRefs — hoy su producción son PRs upstream, listados en la evidencia del SSOT.</div>
     </div>
 </div>
     <p class="room-closing" data-scroll="up">
-      Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir — y cada una dice qué le falta.
+      Ninguna ficha de esta sala declara todavía un artefacto en el SSOT que la gradúe a El Marco — una ya enlaza material público — y cada una dice qué le falta.
     </p>
 
   </div><!-- /room-content -->
@@ -2017,16 +1999,15 @@ a { color:inherit; }
   <div class="room-content">
     <div class="room-number" data-scroll="up">SALA 04</div>
     <h2 class="room-title"   data-scroll="zoom-in">El <em>Friso</em></h2>
-    <p class="room-function" data-scroll="up" data-delay="1">Trayectoria profesional: roles, organizaciones y resultados, de 2003 al presente.</p>
-    <div class="room-subtitle" data-scroll="up" data-delay="2">EXPERIENCIA PROFESIONAL · 2003 – PRESENTE</div>
+    <p class="room-function" data-scroll="up" data-delay="1">Trayectoria: empleo, formación y talleres, de 1998 al presente.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">TRAYECTORIA · 1998 – PRESENTE</div>
 
     <div class="two-col">
-      <!-- Columna A -->
       <div>
         <div class="entry" data-scroll="from-left">
           <div class="entry-period">2025 – PRESENTE</div>
           <div class="entry-title">Consultor Estratégico de Sistemas</div>
-          <div class="entry-org">Independiente · Panamá / Ecuador</div>
+          <div class="entry-org">Independiente — Panamá / Ecuador</div>
           <ul class="entry-body">
             <li>Plataformas BI e infraestructura digital · Zoho ERP</li>
             <li>Sistema de auditoría y registro de efectivo para casino tipo C (Salsa-Casino)</li>
@@ -2035,9 +2016,18 @@ a { color:inherit; }
         </div>
 
         <div class="entry" data-scroll="from-left" data-delay="1">
+          <div class="entry-period">2025 – 2026</div>
+          <div class="entry-title">Auditor y Consultor</div>
+          <div class="entry-org">Grupo Angel — Panamá</div>
+          <ul class="entry-body">
+            <li>Segundo período — auditoría y consultoría del sistema de registro de bóveda</li>
+          </ul>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="2">
           <div class="entry-period">2019 – 2024</div>
           <div class="entry-title">Coordinador de Laboratorios de Física</div>
-          <div class="entry-org">USFQ · Quito, Ecuador</div>
+          <div class="entry-org">Universidad San Francisco de Quito (USFQ) — Quito, Ecuador</div>
           <ul class="entry-body">
             <li>800+ estudiantes anuales · 36 guías de laboratorio originales</li>
             <li>Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento</li>
@@ -2046,51 +2036,158 @@ a { color:inherit; }
           </ul>
         </div>
 
-        <div class="entry" data-scroll="from-left" data-delay="2">
-          <div class="entry-period">2016 – 2018</div>
-          <div class="entry-title">Diseñador de Sistemas / Luminotécnico</div>
-          <div class="entry-org">Grupo Angel / Fluge-Panamá</div>
+        <div class="entry" data-scroll="from-left" data-delay="3">
+          <div class="entry-period">2017 – 2018</div>
+          <div class="entry-title">Luminotécnico (freelance)</div>
+          <div class="entry-org">Fluge-Panamá</div>
           <ul class="entry-body">
-            <li>Sistema de registro de cuentas y bóveda para casinos · procedimientos de auditoría</li>
             <li>Luminotécnico freelance para eventos corporativos y de entretenimiento</li>
           </ul>
         </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="4">
+          <div class="entry-period">2016 – 2018</div>
+          <div class="entry-title">Oficial de Bóveda — Diseño del Sistema de Registro y Auditoría</div>
+          <div class="entry-org">Grupo Angel — Panamá</div>
+          <ul class="entry-body">
+            <li>Registro de todas las transacciones de la bóveda · ingresos y egresos · pagos a proveedores · conteos de efectivo</li>
+            <li>Diseño y optimización de la base de datos de la operación y de los procedimientos de auditoría</li>
+            <li>Organización, clasificación y almacenamiento de documentos</li>
+          </ul>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2011 – 2014</div>
+          <div class="entry-title">Productor y Ejecutivo de Cuentas — Logística BTL</div>
+          <div class="entry-org">Magic Dreams Productions — Panamá</div>
+          <ul class="entry-body">
+            <li>Logística y montaje de activaciones BTL en eventos masivos, según proyecto</li>
+            <li>Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic, HSBC, +Móvil, TVXC, Canada Dry, Nissan/Panamotors, Elmor, Alcaldía de Panamá</li>
+            <li>Coordinación del Desfile de Navidad Panamá 2013</li>
+            <li>Producción evento Extravaganza Herbalife 2012</li>
+            <li>Participación en: Cirque du Soleil (Dralion), Aerosmith, Shakira, Juan Luis Guerra, Juanes, Jennifer Lopez, Franco de Vita, Prince Royce, Natalia Jiménez, Daddy Yankee, Yanni, Copa Mundial de Béisbol 2011</li>
+          </ul>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2010</div>
+          <div class="entry-title">Taller de Fotografía de Moda — Alberto Hernández</div>
+          <div class="entry-org">AVECOFAN — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2007 – 2010</div>
+          <div class="entry-title">Asistente de Fotografía Fija</div>
+          <div class="entry-org">Frank Martínez &amp; Alberto Hernández — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2006 – 2010</div>
+          <div class="entry-title">Cámara · Edición · Dirección de Fotografía (freelance)</div>
+          <div class="entry-org">Independiente — Caracas</div>
+          <ul class="entry-body">
+            <li>Documentales Pura Belleza, Una Sola Jugadera, Caminos Verdes y la serie Caracas Múltiple — cámara y edición (2008)</li>
+            <li>La Escalera de Patty — prix du public, FECOVEN 2008 · 9 Arepas — selección ESPN 2008</li>
+            <li>14 micros sobre VIH — dirección de fotografía y colorización, Positrón/Artgnosis (2009)</li>
+          </ul>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2009 – 2010</div>
+          <div class="entry-title">Docente de Edición y Montaje · Coordinador de Post-producción</div>
+          <div class="entry-org">Escuela de Cine y TV — Caracas</div>
+          <ul class="entry-body">
+            <li>Docente de edición y montaje (2009–2010)</li>
+            <li>Coordinador de post-producción, serie Creadores Visuales de Venezuela (2010)</li>
+          </ul>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2009</div>
+          <div class="entry-title">Taller de Formulación de Proyectos Audiovisuales</div>
+          <div class="entry-org">MEDIAX — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-left" data-delay="5">
+          <div class="entry-period">2008</div>
+          <div class="entry-title">Pasantía en Transferencia de Video a Cine</div>
+          <div class="entry-org">Produrama — Caracas</div>
+        </div>
       </div>
 
-      <!-- Columna B -->
       <div>
         <div class="entry" data-scroll="from-right">
-          <div class="entry-period">2011 – 2014</div>
-          <div class="entry-title">Logística BTL y Relación con Clientes</div>
-          <div class="entry-org">Magic Dreams Productions · Panamá</div>
+          <div class="entry-period">2007 – 2008</div>
+          <div class="entry-title">Técnico del Estudio de TV — Asistente Docente</div>
+          <div class="entry-org">Universidad Santa María — Caracas</div>
           <ul class="entry-body">
-            <li>Logística y montaje de activaciones BTL en eventos masivos según proyecto</li>
-            <li>Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic</li>
-            <li>Coordinación de 1.000 pax · Desfile de Navidad Panamá 2013</li>
-            <li>Producción evento Extravaganza Herbalife 2012</li>
-            <li>Participación en: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, Copa Mundial de Béisbol 2011</li>
+            <li>Mantenimiento de equipos · supervisión de estudiantes · inventario · iluminación técnica</li>
           </ul>
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="1">
-          <div class="entry-period">2006 – 2010</div>
-          <div class="entry-title">Fotografía · Edición · Docencia Audiovisual</div>
-          <div class="entry-org">Escuela de Cine y TV / Venezuela</div>
-          <ul class="entry-body">
-            <li><em>La Escalera de Patty</em> — prix du public, FECOVEN 2008</li>
-            <li><em>9 Arepas</em> — selección ESPN 2008</li>
-            <li>Docente de edición y montaje · Coord. post-producción Creadores Visuales (2010)</li>
-          </ul>
+          <div class="entry-period">2007</div>
+          <div class="entry-title">Taller de Dirección de Fotografía Electrónica — Daniel Mendoza</div>
+          <div class="entry-org">VIART — Caracas</div>
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="2">
+          <div class="entry-period">2006</div>
+          <div class="entry-title">Taller Pasaporte a Cinematografía Electrónica Cinealta — Jesús «Chuchi» Rivero</div>
+          <div class="entry-org">ANAC — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="3">
+          <div class="entry-period">2006</div>
+          <div class="entry-title">Curso de Fotografía Documental</div>
+          <div class="entry-org">Universidad Central de Venezuela — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="4">
+          <div class="entry-period">2003 – 2006</div>
+          <div class="entry-title">Profesional en Entrenamiento — Centro de Física y Reactor Nuclear</div>
+          <div class="entry-org">Instituto Venezolano de Investigaciones Científicas (IVIC) — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="5">
           <div class="entry-period">2003 – 2006</div>
           <div class="entry-title">Profesor de Física</div>
-          <div class="entry-org">Universidad Simón Bolívar · Caracas</div>
+          <div class="entry-org">Universidad Simón Bolívar — Caracas</div>
           <ul class="entry-body">
             <li>Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)</li>
-            <li>Primeras publicaciones en sistemas complejos</li>
+            <li>Preparador de Física I (abr–jul 2003)</li>
+            <li>Investigación doctoral en sistemas complejos · primeras publicaciones</li>
           </ul>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="5">
+          <div class="entry-period">2004</div>
+          <div class="entry-title">I Taller Andino de Caos y Complejidad</div>
+          <div class="entry-org">UNET — San Cristóbal, Venezuela</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="5">
+          <div class="entry-period">2003</div>
+          <div class="entry-title">II Latin American School of High Energy Physics</div>
+          <div class="entry-org">CERN — San Miguel Regla, México (beca)</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="5">
+          <div class="entry-period">2000 – 2002</div>
+          <div class="entry-title">V, VI y VII Escuela de Relatividad, Campos y Astrofísica</div>
+          <div class="entry-org">Universidad de Los Andes (ULA) — Mérida, Venezuela</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="5">
+          <div class="entry-period">1999</div>
+          <div class="entry-title">I Escuela Latinoamericana de Astrobiología</div>
+          <div class="entry-org">UNESCO-ICTP — Caracas</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="5">
+          <div class="entry-period">1998</div>
+          <div class="entry-title">Postgrado de Instrumentación</div>
+          <div class="entry-org">Universidad Central de Venezuela — Caracas</div>
         </div>
       </div>
     </div><!-- /two-col -->

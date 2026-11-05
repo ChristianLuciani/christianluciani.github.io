@@ -614,4 +614,36 @@ describe("projectProfile — LoadedProfile → CvProfile (fixture)", () => {
     expect(JSON.stringify(a)).toBe(JSON.stringify(b));
     expect(a.identity.givenName).toBe("Christian");
   });
+
+  it("published: artifactRefs → artifact público con locator.url (#109)", () => {
+    const p = projectProfile(
+      {
+        identity: { name: "Christian Luciani" },
+        artifacts: [
+          { id: "pub", kind: "code", title: "Público", locator: { url: "https://x.test/pub" } },
+          { id: "priv", kind: "code", title: "Privado", locator: { url: "https://x.test/priv" }, visibility: "private" },
+          { id: "sin-url", kind: "code", title: "Sin URL", locator: { path: "x/y" } }
+        ],
+        projects: [
+          { name: "A", links: [], keywords: [], evidence: [], artifactRefs: ["pub"] },
+          { name: "B", links: [], keywords: [], evidence: [], artifactRefs: ["priv"] },
+          { name: "C", links: [], keywords: [], evidence: [], artifactRefs: ["sin-url", "priv"] },
+          { name: "D", links: [], keywords: [], evidence: [] }
+        ]
+      },
+      sourceOf()
+    );
+    expect(p.projects.map((x) => x.published)).toEqual([true, false, false, false]);
+    // Los IDs crudos siguen fuera del snapshot público (privacidad).
+    expect(p.projects[0]).not.toHaveProperty("artifactRefs");
+  });
+
+  it("snapshot: el split de #109 coincide con artifactRefs de profile-data", () => {
+    const published = PROFILE.projects.filter((p) => p.published).map((p) => p.name.split(" — ")[0]);
+    expect(published).toEqual(["Kontablo", "Drahma", "profile-as-code"]);
+    // Un project sin artifactRefs público NUNCA entra a El Marco.
+    for (const project of PROFILE.projects) {
+      if (!project.published) expect(project.name).not.toMatch(/Kontablo|Drahma|profile-as-code/);
+    }
+  });
 });
