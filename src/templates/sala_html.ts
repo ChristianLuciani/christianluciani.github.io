@@ -15,6 +15,7 @@ import {
   showcaseProject,
   type Proyecto
 } from "../data/proyectos.ts";
+import { profileProse } from "../content/cv/profile-prose.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import type { CvProfile, ExperienceItem } from "../data/profile.types.ts";
 
@@ -335,83 +336,6 @@ ${hit}${p.html ?? ""}${falta}
 }
 
 export const ROOM_BODY: Record<string, string> = {
-  perfil: `
-    <div class="profile-grid">
-
-      <!-- Columna izquierda: tarjeta de perfil + ilusión -->
-      <div class="profile-aside">
-        <div class="profile-card" data-scroll="from-left">
-          <!--
-            FOTO: descomenta <img> y comenta .photo-ph-inner para activar
-            O usa URL directa: src="https://url-de-tu-foto.jpg"
-          -->
-          <div class="photo-placeholder" id="photo-slot">
-            <img src="https://lh3.googleusercontent.com/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c"
-                 alt="Christian Luciani"
-                 onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex'">
-            <div class="photo-ph-inner photo-ph-inner--hidden" id="photo-fallback">
-              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,201,192,0.4)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              <span>Añadir foto local</span>
-            </div>
-          </div>
-          <p class="profile-text">Físico con más de 20 años en la intersección entre investigación científica, docencia universitaria e innovación educativa.</p>
-          <br>
-          <p class="profile-text profile-text--meta">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
-          <br>
-          <p class="profile-text profile-text--meta">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
-        </div>
-
-        <!-- Ilusión: Cubo de Necker animado -->
-        <!-- PROMPT PARA GENERAR SVG EN OTRA SESIÓN:
-             "Crea un SVG del Cubo de Necker (1832) en perspectiva isométrica.
-              Líneas en #00c9c0 sobre fondo transparente. 300×300px.
-              El cubo debe mostrar ambigüedad perceptual perfecta entre
-              dos orientaciones posibles. Sin relleno, solo bordes." -->
-        <div class="illusion-frame illusion-frame--250 illusion-frame--spaced" data-scroll="zoom-in" data-delay="2">
-          <canvas id="c-necker-ill" class="illusion-canvas"></canvas>
-          <div class="illusion-label">CUBO DE NECKER · 1832</div>
-          <a class="illusion-link" href="https://michaelbach.de/ot/sze-necker/" target="_blank" rel="noopener">↗ michaelbach.de</a>
-        </div>
-      </div>
-
-      <!-- Columna derecha: formación y eventos -->
-      <div>
-        <div class="entry" data-scroll="from-right">
-          <div class="entry-period">2006 – 2008</div>
-          <div class="entry-title">Especialización en Audiovisuales</div>
-          <div class="entry-org">Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008</div>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="1">
-          <div class="entry-period">2003 – 2006</div>
-          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos (ABD)</div>
-          <div class="entry-org">Universidad Simón Bolívar, Venezuela</div>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="2">
-          <div class="entry-period">1997 – 2003</div>
-          <div class="entry-title">Licenciatura en Física</div>
-          <div class="entry-org">Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536</div>
-        </div>
-
-        <div class="quote-block" data-scroll="zoom-in" data-delay="3">
-          La física me enseñó a ver patrones donde otros ven ruido.<br>
-          El cine me enseñó a hacer ese patrón visible para otros.
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="3">
-          <div class="entry-period">2003 · CERN · BECA</div>
-          <div class="entry-title">II Latin American School of High Energy Physics</div>
-          <div class="entry-org">San Miguel Regla, México</div>
-        </div>
-      </div>
-    </div><!-- /profile-grid -->
-  </div><!-- /room-content -->
-</section>
-<div class="room-divider"></div>
-
-
-`,
   galeria: `
     <!-- Sub-galería: Drahma y campo amazónico -->
     <div data-scroll="up" data-delay="1">
@@ -724,6 +648,105 @@ export const ROOM_BODY: Record<string, string> = {
 `,
 };
 
+/**
+ * Body de la sala Perfil.
+ *
+ * La PROSA de perfil ya no es copy de esta sala: se deriva del SSOT
+ * (`PROFILE.positioning.statement`, #122) y es la misma pieza que imprime el
+ * print-CV. El resto del body sigue siendo el copy histórico de la sala (la
+ * migración de esta sala al SSOT es otro issue: #99).
+ */
+function perfilBody(profile: CvProfile): string {
+  return `
+    <div class="profile-grid">
+
+      <!-- Columna izquierda: tarjeta de perfil + ilusión -->
+      <div class="profile-aside">
+        <div class="profile-card" data-scroll="from-left">
+          <!--
+            FOTO: descomenta <img> y comenta .photo-ph-inner para activar
+            O usa URL directa: src="https://url-de-tu-foto.jpg"
+          -->
+          <div class="photo-placeholder" id="photo-slot">
+            <img src="https://lh3.googleusercontent.com/pw/AP1GczO0shri3gqnp7PXfST6iji5bEzrFTzJfnQwKJaGDiLIpGDDWUBgi0eSqW3v79qv63XXBukEWeyWLobOPjLO2NlsJJlyi_A_-KdJtjzJGswIfIank4YA=w500-h500-c"
+                 alt="Christian Luciani"
+                 onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex'">
+            <div class="photo-ph-inner photo-ph-inner--hidden" id="photo-fallback">
+              <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,201,192,0.4)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+              <span>Añadir foto local</span>
+            </div>
+          </div>
+          ${perfilProseHtml(profile)}
+          <br>
+          <p class="profile-text profile-text--meta">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
+          <br>
+          <p class="profile-text profile-text--meta">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
+        </div>
+
+        <!-- Ilusión: Cubo de Necker animado -->
+        <!-- PROMPT PARA GENERAR SVG EN OTRA SESIÓN:
+             "Crea un SVG del Cubo de Necker (1832) en perspectiva isométrica.
+              Líneas en #00c9c0 sobre fondo transparente. 300×300px.
+              El cubo debe mostrar ambigüedad perceptual perfecta entre
+              dos orientaciones posibles. Sin relleno, solo bordes." -->
+        <div class="illusion-frame illusion-frame--250 illusion-frame--spaced" data-scroll="zoom-in" data-delay="2">
+          <canvas id="c-necker-ill" class="illusion-canvas"></canvas>
+          <div class="illusion-label">CUBO DE NECKER · 1832</div>
+          <a class="illusion-link" href="https://michaelbach.de/ot/sze-necker/" target="_blank" rel="noopener">↗ michaelbach.de</a>
+        </div>
+      </div>
+
+      <!-- Columna derecha: formación y eventos -->
+      <div>
+        <div class="entry" data-scroll="from-right">
+          <div class="entry-period">2006 – 2008</div>
+          <div class="entry-title">Especialización en Audiovisuales</div>
+          <div class="entry-org">Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="1">
+          <div class="entry-period">2003 – 2006</div>
+          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos (ABD)</div>
+          <div class="entry-org">Universidad Simón Bolívar, Venezuela</div>
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="2">
+          <div class="entry-period">1997 – 2003</div>
+          <div class="entry-title">Licenciatura en Física</div>
+          <div class="entry-org">Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536</div>
+        </div>
+
+        <div class="quote-block" data-scroll="zoom-in" data-delay="3">
+          La física me enseñó a ver patrones donde otros ven ruido.<br>
+          El cine me enseñó a hacer ese patrón visible para otros.
+        </div>
+
+        <div class="entry" data-scroll="from-right" data-delay="3">
+          <div class="entry-period">2003 · CERN · BECA</div>
+          <div class="entry-title">II Latin American School of High Energy Physics</div>
+          <div class="entry-org">San Miguel Regla, México</div>
+        </div>
+      </div>
+    </div><!-- /profile-grid -->
+  </div><!-- /room-content -->
+</section>
+<div class="room-divider"></div>
+
+
+`;
+}
+
+/**
+ * Párrafo de prosa de perfil (sala de Perfil del sitio).
+ *
+ * Exportado para que el gate de #122 compare la MISMA pieza en las dos
+ * superficies sin copiar el render: print y sala comparten `profileProse()`.
+ */
+export function perfilProseHtml(profile: CvProfile = P): string {
+  const prose = profileProse(profile);
+  return `<p class="profile-text">${esc(prose.es ?? prose.en)}</p>`;
+}
+
 /** El Marco: obra publicada (derivada de `published`) + showcase de Drahma. */
 export function marcoHtml(profile: CvProfile = P): string {
   const cards = tarjetas(publicadosDe(profile).filter((p) => !p.sinTarjeta));
@@ -738,6 +761,8 @@ export function bastidorHtml(profile: CvProfile = P): string {
 /** Body de una sala: estáticas por id; las tres de #109 se derivan del SSOT. */
 export function roomBody(s: SalaDef, profile: CvProfile = P): string {
   switch (s.id) {
+    case "perfil":
+      return perfilBody(profile);
     case "experiencia":
       return frisoHtml(profile);
     case "proyectos":

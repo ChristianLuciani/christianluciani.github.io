@@ -2,19 +2,25 @@ import { copyFileSync, cpSync, mkdirSync, rmSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
+import { PRINT_LOGO_PATH } from "./src/templates/print-tokens.ts";
 
-/* Los 4 favicons del sitio son la copia vendored del brand kit canónico
- * (cluciani-brand-kit@tag, pinneada en brand-kit.lock.json). El icono es el
- * tile teal —único que se lee a 16 px— en SVG + 32 + 16; el transparente
- * (`favicon-aurea.svg`/`-32.png`) queda para superficies controladas y no se
- * publica como icono del sitio. Vite no publica assets absolutos de la raíz
- * (sólo public/), así que este plugin los copia a dist/assets/brand/ en cada
- * build; el espejo se verifica con brand:verify. */
-const FAVICON_FILES = [
+/* Copia vendored de los assets de marca que el sitio SIRVE, pineada en
+ * brand-kit.lock.json (cluciani-brand-kit@tag).
+ *   · 4 favicons: el tile teal —único que se lee a 16 px— en SVG + 32 + 16; el
+ *     transparente (`favicon-aurea.svg`/`-32.png`) queda para superficies
+ *     controladas y no se publica como icono del sitio.
+ *   · logo de impresión (#122): el print-CV lo referencia con `assetAttrsFor`,
+ *     así que el espejo local tiene que existir en `dist/assets/brand/` para el
+ *     fallback sin CDN.
+ * Vite no publica assets absolutos de la raíz (sólo public/), así que este
+ * plugin los copia en cada build; el espejo se verifica con brand:verify. */
+const BRAND_SERVED_FILES = [
   "favicon-aurea-teal.svg",
   "favicon-aurea-teal-32.png",
   "favicon-aurea-teal-16.png",
   "apple-touch-icon-aurea.png",
+  // ruta servida declarada en `print-tokens.ts`: acá se deriva el basename
+  PRINT_LOGO_PATH.split("/").pop()!,
 ];
 
 /* El laboratorio temporal vive en proposals/ (fuente única, fuera del build)
@@ -31,11 +37,11 @@ const copyTimingLab = (): Plugin => ({
   },
 });
 
-const copyBrandFavicon = (): Plugin => ({
-  name: "copy-brand-favicon",
+const copyBrandAssets = (): Plugin => ({
+  name: "copy-brand-assets",
   closeBundle() {
     const root = fileURLToPath(new URL(".", import.meta.url));
-    for (const file of FAVICON_FILES) {
+    for (const file of BRAND_SERVED_FILES) {
       const dest = resolve(root, "dist/assets/brand", file);
       mkdirSync(dirname(dest), { recursive: true });
       copyFileSync(resolve(root, "assets/brand/logo", file), dest);
@@ -45,7 +51,7 @@ const copyBrandFavicon = (): Plugin => ({
 
 export default defineConfig({
   base: "/",
-  plugins: [copyBrandFavicon(), copyTimingLab()],
+  plugins: [copyBrandAssets(), copyTimingLab()],
   build: {
     sourcemap: true
   },

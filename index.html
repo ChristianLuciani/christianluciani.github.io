@@ -1194,7 +1194,9 @@ a { color:inherit; }
   canvas,#loader,#nav,#progress,#btn-download,#btn-sound,#btn-lang,.hud { display:none !important; }
   #print-cv { display:block !important; font-family:Georgia,serif; font-size:11pt; color:#111; line-height:1.6; padding:2cm; background:white; }
   #print-cv h1 { font-size:22pt; margin-bottom:2pt; }
-  #print-cv h2 { font-size:13pt; border-bottom:1pt solid #ccc; padding-bottom:3pt; margin:18pt 0 6pt; }
+  /* Reglas de sección del CV: el color sale de print-tokens.ts (#122),
+     la MISMA constante que el footer — no un gris fijo por bloque. */
+  #print-cv h2 { font-size:13pt; border-bottom:1pt solid #00c9c0; padding-bottom:3pt; margin:18pt 0 6pt; }
   #print-cv h3 { font-size:11pt; margin-bottom:2pt; }
   #print-cv .p-meta { font-size:9pt; color:#555; }
   #print-cv ul { padding-left:1.2em; }
@@ -1284,6 +1286,9 @@ a { color:inherit; }
     /* QR del CV impreso: arriba a la derecha */
     #print-cv .p-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem; }
     #print-cv .p-head > div:first-child { flex:1; min-width:200px; }
+    /* Logo de marca (#122): variante print-A4 del brand kit, acotada para no
+       competir con el QR (30 mm) ni empujar el A4. */
+    #print-cv .p-logo { width:16mm; height:auto; display:block; margin-bottom:4pt; }
     #print-cv .qr-wrap { text-align:center; }
     #print-cv .qr-wrap img { width:30mm; height:30mm; }
     #print-cv .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
@@ -1291,12 +1296,14 @@ a { color:inherit; }
     #print-cv .p-subsection { margin-top:10pt; }
     #print-cv .p-subsection > .p-subhead { font-size:10.5pt; text-transform:uppercase; letter-spacing:.04em; color:#555; margin:10pt 0 4pt; }
     /* Footer de procedencia: solo print (dentro del bloque oculto en pantalla) */
-    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
+    /* Reglas del CV: UNA fuente declarada, el teal del brand (#122). */
+    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #00c9c0; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
     /* F2: el footer no queda huérfano — tampoco se separa del bloque que lo precede */
     #print-cv .p-section.p-keep { break-inside:avoid; break-before:avoid; }
   </style>
   <div class="p-head">
     <div>
+      <img class="p-logo" src="/assets/brand/logo-aurea-settled-print-a4.png" alt="Logotipo de Christian Luciani">
       <h1>Christian Luciani</h1>
       <div class="p-meta">
         Cuenca, Ecuador<br>
@@ -1311,7 +1318,7 @@ a { color:inherit; }
 
   <div class="p-section">
     <h2>Perfil</h2>
-    <p>Físico (Universidad Central de Venezuela) con más de 20 años en la intersección entre investigación científica, tecnología educativa e inteligencia sintética. Creador de Kontablo —ontología contable universal basada en grafos para la economía agéntica— y de Drahma, sistema de tutores virtuales con inteligencia sintética y pedagogía socrática.</p>
+    <p>Físico independiente. En una economía agéntica construyo infraestructura para personas y organizaciones: sistemas complejos, innovación educativa y open source soberano.</p>
   </div>
 
   <div class="p-section">
@@ -2378,7 +2385,7 @@ a { color:inherit; }
               <span>Añadir foto local</span>
             </div>
           </div>
-          <p class="profile-text">Físico con más de 20 años en la intersección entre investigación científica, docencia universitaria e innovación educativa.</p>
+          <p class="profile-text">Físico independiente. En una economía agéntica construyo infraestructura para personas y organizaciones: sistemas complejos, innovación educativa y open source soberano.</p>
           <br>
           <p class="profile-text profile-text--meta">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
           <br>

@@ -86,6 +86,27 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
     expect(PAIRS[MARCO.closingEmpty.es]).toBe(MARCO.closingEmpty.en);
   });
 
+  it("#122: la prosa de perfil del SSOT entra al MAP como par derivado", () => {
+    // Una sola pieza: el toggle EN traduce el statement por el mismo camino que
+    // los demás hechos del SSOT, sin clave escrita a mano.
+    expect(PAIRS[profile.positioning.statement.es!]).toBe(
+      profile.positioning.statement.en
+    );
+    expect(PAIRS[profile.positioning.audiences.recruiters.es!]).toBe(
+      profile.positioning.audiences.recruiters.en
+    );
+  });
+
+  it("#122: el claim de años no sobrevive en el diccionario", () => {
+    const mapSource = readFileSync(resolve(process.cwd(), "src", "cv", "i18n.ts"), "utf8");
+    for (const claim of ["más de 20 años", "over 20 years", "more than 20 years"]) {
+      expect(mapSource, claim).not.toContain(claim);
+      for (const [es, en] of Object.entries(PAIRS)) {
+        expect(`${es}\n${en}`, claim).not.toContain(claim);
+      }
+    }
+  });
+
   it("el MAP no transporta el claim prohibido de claims.json (F7)", () => {
     // El claim vive en `claims.json → forbidden[]` del SSOT. El diccionario
     // runtime lo tenía hardcodeado y viajaba en el bundle: este guard falla si

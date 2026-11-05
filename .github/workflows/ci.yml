@@ -63,12 +63,15 @@ jobs:
             grep -q "$BASE/$path" dist/index.html || { echo "falta la ruta $path"; exit 1; }
           done
           # marca: brand kit, no el repo del sitio
-          for path in favicon-aurea-teal.svg favicon-aurea-teal-32.png favicon-aurea-teal-16.png apple-touch-icon-aurea.png ; do
+          # la marca incluye el logo del print-CV (#122): mismo resolvedor,
+          # mismo pin del brand kit
+          for path in favicon-aurea-teal.svg favicon-aurea-teal-32.png favicon-aurea-teal-16.png apple-touch-icon-aurea.png logo-aurea-settled-print-a4.png ; do
             grep -q "$BRAND_BASE/assets/logo/$path" dist/index.html || { echo "falta la marca $path"; exit 1; }
           done
           grep -q "content=\"$BASE/public/assets/og-image.png\"" dist/index.html
-          # 8 data-local (4 thumbs + 4 favicons); el OG es meta y no tiene fallback
-          test "$(grep -o 'data-local=' dist/index.html | wc -l)" -eq 8
+          # 9 data-local (4 thumbs + 4 favicons + el logo del print, #122);
+          # el OG es meta y no tiene fallback
+          test "$(grep -o 'data-local=' dist/index.html | wc -l)" -eq 9
       - name: build en modo Pages (sin data-local, index.html sin drift)
         run: |
           npm run build

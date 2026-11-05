@@ -152,7 +152,8 @@ línea de registro (§8 FASE 5).
 | showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
 | curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
-| curación del print-CV (prosa, títulos, labels) | `src/content/cv/print.ts` | curación (hoy) |
+| curación del print-CV (títulos, labels y clasificación de Trayectoria) | `src/content/cv/print.ts` | curación (hoy) |
+| prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
 | galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
 | CSS: tokens, tipografía, densidad | `src/templates/head_html.ts` | presentación (hoy; destino §8 FASE 5) |
@@ -349,6 +350,8 @@ lista copiada a mano). **Condición de salida:** si el SSOT/proyección empieza 
 | D10 | **Narrativa = datos** (`narrative.ts` + `copy.ts` del tema), no markup | Es la diferencia entre "otra piel" y "otra audiencia". Tocar templates para cambiar de voz reintroduce la duplicación que esta SPEC cierra. |
 | D11 | **Piel = tokens** (`skin.css` del tema), sin literales de color | Un segundo tema hoy exige tocar 74 literales de color y 30 tintes teal con alpha propio: sin tokens, cada piel es un fork del CSS. |
 | D12 | **Topología: subpath con selector `SITE_THEME`**; un sitio Pages, un artefacto de deploy | El "switch" es la URL en cualquier topología; el subdominio exige un segundo sitio Pages (otro repo) y duplica pipeline, secretos y rollback. `SITE_BASE`/`SITE_ORIGIN` por tema dejan la migración a subdominio como configuración, no refactor. |
+| D13 | **Prosa de perfil = una pieza derivada del SSOT** (`PROFILE.positioning.statement`, resuelta por `profile-prose.ts`); print-CV y sala de Perfil la comparten | El claim «más de 20 años» vivía escrito a mano en dos archivos, con dos redacciones y sin respaldo en el SSOT: un mismo claim duplicado es un defecto de arquitectura (SPEC §3), no curación. Un fallback declarado dentro del SSOT (`audiences.recruiters`) evita redactar copy nuevo cuando el primario falta. |
+| D14 | **Reglas del print = una constante** (`print-tokens.ts`) con el teal del brand, no grises fijos por bloque | Las reglas de sección (`#ccc`) y del footer (`#ddd`) eran dos literales independientes: el print no compartía el color de la marca y cada bloque podía derivar sin que nadie lo viera. El test compara la constante contra el token `--teal` de pantalla. |
 
 ---
 

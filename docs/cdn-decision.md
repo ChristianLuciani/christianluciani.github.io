@@ -68,7 +68,9 @@ La capa de assets era agnóstica pero **incompleta** antes de #84: `assetUrl()` 
 `VITE_ASSET_BASE_URL` sin consumidores de producción, sin fallback, y el HTML generado no
 pasaba por él. Hoy `head_html.ts` y `sala_html.ts` resuelven las 8 rutas migradas con
 `assetAttrs()`/`absoluteAssetUrl()`, el fallback vive en `src/ts/assets/fallback.ts`, y las
-restantes (iconos, QR) siguen escritas en `print_cv_html.ts` y en el propio template.
+restantes (iconos, QR) siguen escritas en `print_cv_html.ts` y en el propio template. El logo
+del print-CV (#122) se suma a las rutas migradas: variante print-A4 del brand kit resuelta con
+`assetAttrsFor` (mismo pin, mismo fallback local).
 `docs/CDN_MIGRATION.md` describe la migración agnóstica por fases.
 
 ## Criterios
@@ -249,4 +251,5 @@ No implementa la migración (ni `build.ts`, ni `assetUrl()`, ni templates); no d
 dominio propio; no mide latencia con usuarios reales (RUM) — el dato GYE vs Bogotá es un
 sample de una sesión; no evalúa Cloudinary/imgix en profundidad; no resuelve el hotlink de
 DRAHMAN; no cubre los PNG print de `assets/brand/logo/` que el sitio no sirve (su lugar es
-el release de GitHub, no una CDN).
+el release de GitHub, no una CDN), con la excepción declarada del logo del print-CV (#122),
+que sí entra por esta capa.
