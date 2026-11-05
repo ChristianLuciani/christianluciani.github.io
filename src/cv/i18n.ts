@@ -70,6 +70,17 @@ Object.assign(MAP, {
   "Candidata a publicación académica.": "Candidate for academic publication.",
 });
 
+/**
+ * #117 — feed «Ahora» (chrome estático). El label y el estado vacío se
+ * traducen por nodo como el resto; las fechas son ISO (absolutas, sin idioma)
+ * y los títulos vienen de la fuente tal cual.
+ */
+Object.assign(MAP, {
+  "Ahora": "Now",
+  "Actualizado": "Updated",
+  "Nada en vuelo.": "Nothing in flight."
+});
+
 function norm(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
