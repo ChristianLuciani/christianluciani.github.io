@@ -8,7 +8,7 @@ import { provenanceHtml } from "../data/profile.provenance.ts";
 
 export function heroHtml(): string {
   return `<!-- ════════════════════════════════════════════════════
-  HERO — Entrada al museo
+  HERO — Entrada al museo (dogfood del golden)
 ════════════════════════════════════════════════════ -->
 <section id="hero">
   <canvas id="hero-canvas" role="img" aria-label="Cubos isométricos pulsantes"></canvas>
