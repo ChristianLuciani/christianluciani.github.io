@@ -44,6 +44,33 @@ export function readPolicy(dir = POLICY_DIR): Record<PolicyFile, string | null> 
 }
 
 /**
+ * Directivas de `robots.txt` según RFC 9309 §2.2.1: `EOL = *WS [comment] NL` y
+ * el `user-agent` matchea case-insensitive.
+ *
+ * POR QUÉ UN PARSER Y NO UNA REGEX: la clase «el gate no lee la gramática que el
+ * crawler sí lee» reapareció DOS veces (caja/indentación y después comentario de
+ * fin de línea). La escalera de `review-damping` pide el INSTRUMENTO que cierra
+ * la clase, no otra regex anclada: acá se tokeniza cada línea (comentario fuera,
+ * `trim`, clave en minúscula) y después se compara por igualdad — cualquier
+ * variante léxica válida cae en el mismo token.
+ */
+export function robotsDirectives(text: string): { key: string; value: string }[] {
+  const out: { key: string; value: string }[] = [];
+  for (const raw of text.split(/\r\n|\r|\n/)) {
+    // `#` abre comentario en cualquier posición de la línea (RFC 9309 §2.2.1).
+    const line = raw.replace(/#.*$/, "").trim();
+    if (line.length === 0) continue;
+    const colon = line.indexOf(":");
+    if (colon < 0) continue; // línea sin directiva: el RFC la ignora
+    out.push({
+      key: line.slice(0, colon).trim().toLowerCase(),
+      value: line.slice(colon + 1).trim()
+    });
+  }
+  return out;
+}
+
+/**
  * Invariantes de la postura, verificables SIN workspace (modo CI). El engine ya
  * los declara en su SPEC §12; acá se comprueba que el artefacto commiteado no se
  * degradó a mano (p. ej. un `User-agent: *` que bloquearía también a los motores
@@ -58,18 +85,14 @@ export function policyProblems(files: Record<PolicyFile, string | null>): string
   }
   const robots = files["robots.txt"];
   if (robots) {
-    // F2 del pase fresco: RFC 9309 §2.2.1 hace el matching de `User-agent`
-    // case-insensitive, y la indentación no cambia el grupo. Un chequeo sensible
-    // a caja dejaba pasar `user-agent: *` + `Allow: /` + `Disallow: /` en verde.
-    if (/^[ \t]*user-agent[ \t]*:[ \t]*\*[ \t]*$/im.test(robots)) {
+    const directives = robotsDirectives(robots);
+    const has = (key: string, value: string) =>
+      directives.some((directive) => directive.key === key && directive.value === value);
+    if (has("user-agent", "*")) {
       problems.push("robots.txt: grupo `User-agent: *` — la política es explícita, sin wildcard");
     }
-    if (!/^[ \t]*allow[ \t]*:[ \t]*\/[ \t]*$/im.test(robots)) {
-      problems.push("robots.txt: sin grupo de retrieval (`Allow: /`)");
-    }
-    if (!/^[ \t]*disallow[ \t]*:[ \t]*\/[ \t]*$/im.test(robots)) {
-      problems.push("robots.txt: sin grupo de training (`Disallow: /`)");
-    }
+    if (!has("allow", "/")) problems.push("robots.txt: sin grupo de retrieval (`Allow: /`)");
+    if (!has("disallow", "/")) problems.push("robots.txt: sin grupo de training (`Disallow: /`)");
   }
   const llms = files["llms.txt"];
   if (llms && !/^#\s/m.test(llms)) problems.push("llms.txt: sin título de índice (se esperaba un heading `# `)");

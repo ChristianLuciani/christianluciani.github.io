@@ -23,7 +23,7 @@ import {
   type CheckLayer
 } from "../../tools/sync-check";
 import { COMMITTED_ENTITY_PATH as ENTITY_COMMITTED_PATH } from "../../tools/sync-entity";
-import { POLICY_FILES, policyProblems, type PolicyFile } from "../../tools/sync-ai-policy";
+import { POLICY_FILES, policyProblems, robotsDirectives, type PolicyFile } from "../../tools/sync-ai-policy";
 import { resolvePaths } from "../../tools/sync-profile";
 
 const COMMITTED = readFileSync(COMMITTED_PATH, "utf8");
@@ -336,6 +336,34 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
   it("un grupo de training ausente es un problema (aunque haya wildcard-cero)", () => {
     const problems = policyProblems(files({ "robots.txt": "User-agent: Googlebot\nAllow: /\n" }));
     expect(problems.join("\n")).toMatch(/sin grupo de training/);
+  });
+
+  /**
+   * ESCALATE(1) del pase 2 — la clase («el gate no lee la gramática que el
+   * crawler sí lee») reapareció: caja/indentación y después comentario de fin de
+   * línea. El instrumento es el tokenizador `robotsDirectives` (RFC 9309
+   * §2.2.1), no otra regex anclada; estos casos fijan sus dos caras.
+   */
+  it("`user-agent: *` con comentario de fin de línea ES el wildcard (RFC 9309 §2.2.1)", () => {
+    const problems = policyProblems(
+      files({ "robots.txt": "user-agent: * # permitir todo\nAllow: /\nDisallow: /\n" })
+    );
+    expect(problems.join("\n")).toMatch(/User-agent: \*/);
+  });
+
+  it("`Allow: / # nota` es una directiva válida (no un falso «sin grupo»)", () => {
+    const problems = policyProblems(
+      files({ "robots.txt": "# cabecera\nUser-agent: Googlebot\nAllow: /   # retrieval\nUser-agent: GPTBot\nDisallow: / # training\n" })
+    );
+    expect(problems).toEqual([]);
+  });
+
+  it("el tokenizador normaliza caja, indentación, comentario y CRLF", () => {
+    const directives = robotsDirectives("  USER-AGENT :  *  # todo\r\nAllow:/ # raíz\r\n");
+    expect(directives).toEqual([
+      { key: "user-agent", value: "*" },
+      { key: "allow", value: "/" }
+    ]);
   });
 
   it("nombra los tres artefactos cuando faltan", () => {
