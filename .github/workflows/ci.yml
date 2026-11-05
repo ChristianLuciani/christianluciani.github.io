@@ -12,16 +12,36 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Este job sólo lee el repo y el PR: el token no necesita más que eso
+# (repo-config §1; deploy.yml declara su propio scope de Pages).
+permissions:
+  contents: read
+
 jobs:
   build-test:
     runs-on: ubuntu-latest
     steps:
+      # Historial completo: la guarda del golden lee los trailers
+      # (`Golden-Cambio:`) de los commits del PR, y con el checkout shallow por
+      # defecto sólo existe el merge sintético — el trailer quedaría invisible.
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
+      # Invariante I1 (ADR-001): el golden del render no se mueve en un PR de
+      # refactor. Si cambia, algún commit tiene que traer el trailer
+      # "Golden-Cambio: render|datos"; sin él, un cambio de render + golden
+      # regenerado pasaría verde sin que nadie lo vea.
+      - name: golden — regenerarlo exige declararlo en el PR
+        if: github.event_name == 'pull_request'
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: npm run golden:policy
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test
