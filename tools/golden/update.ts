@@ -32,4 +32,4 @@ writeFileSync(OUT, html, "utf8");
 const bytes = Buffer.byteLength(html, "utf8");
 console.log(`✅ golden regenerado: ${bytes} bytes (${html.length} chars) · ${sections.length} secciones`);
 console.log(`   ${sections.map((s) => s.name).join(" · ")}`);
-console.log("   Declará el cambio de render en el body del PR.");
+console.log("   Declará el cambio: trailer `Golden-Cambio: render` (o `datos`) en un commit del PR.");
