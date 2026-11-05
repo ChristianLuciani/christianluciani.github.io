@@ -95,7 +95,7 @@ export function decide(input: PolicyInput): PolicyResult {
     ok: false,
     reason:
       `${BASELINE_PATH} cambió sin declararlo: agregá el trailer ` +
-      `'Golden-Cambio: render' (o 'datos' si lo movió sync:profile) en un commit del PR`
+      `'Golden-Cambio: render' (o 'datos' si lo movió un sync de datos: perfil o feed) en un commit del PR`
   };
 }
 
