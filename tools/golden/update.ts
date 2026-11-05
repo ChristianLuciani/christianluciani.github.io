@@ -26,6 +26,7 @@ mkdirSync(dirname(OUT), { recursive: true });
 writeFileSync(OUT, html, "utf8");
 
 const sections = sectionsOf(html);
-console.log(`✅ golden regenerado: ${html.length} bytes · ${sections.length} secciones`);
+const bytes = Buffer.byteLength(html, "utf8");
+console.log(`✅ golden regenerado: ${bytes} bytes (${html.length} chars) · ${sections.length} secciones`);
 console.log(`   ${sections.map((s) => s.name).join(" · ")}`);
 console.log("   Declará el cambio de render en el body del PR.");

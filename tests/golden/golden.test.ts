@@ -25,10 +25,13 @@ describe("golden — el render del tema default no cambia", () => {
     // Las rutas de assets se resuelven al importar los templates: un entorno con
     // CDN produce otro HTML y haría fallar el golden por configuración, no por
     // render. Se declara el motivo exacto en vez de un diff críptico.
+    // `""` y ausente son el mismo caso para el repo (vacía = Pages): exigir
+    // `undefined` rompía justo el entorno que también es válido.
+    const base = (name: string): string => (process.env[name] ?? "").trim();
     expect(
-      [process.env.VITE_ASSET_BASE_URL, process.env.VITE_BRAND_KIT_BASE_URL],
-      "desactivá VITE_ASSET_BASE_URL y VITE_BRAND_KIT_BASE_URL para correr el golden"
-    ).toEqual([undefined, undefined]);
+      [base("VITE_ASSET_BASE_URL"), base("VITE_BRAND_KIT_BASE_URL")],
+      "definí VITE_ASSET_BASE_URL y VITE_BRAND_KIT_BASE_URL vacías (o sin definir) para correr el golden"
+    ).toEqual(["", ""]);
   });
 
   it("existe el golden congelado", () => {
