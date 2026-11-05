@@ -2,6 +2,7 @@ import {
   absoluteAssetUrl,
   assetAttrsFor,
 } from "../ts/assets/url.ts";
+import { PRINT_RULE_COLOR } from "./print-tokens.ts";
 
 /** Origen canónico del sitio (OG necesita URL absoluta, no relativa). */
 const SITE_ORIGIN = "https://christianluciani.github.io";
@@ -1210,7 +1211,9 @@ a { color:inherit; }
   canvas,#loader,#nav,#progress,#btn-download,#btn-sound,#btn-lang,.hud { display:none !important; }
   #print-cv { display:block !important; font-family:Georgia,serif; font-size:11pt; color:#111; line-height:1.6; padding:2cm; background:white; }
   #print-cv h1 { font-size:22pt; margin-bottom:2pt; }
-  #print-cv h2 { font-size:13pt; border-bottom:1pt solid #ccc; padding-bottom:3pt; margin:18pt 0 6pt; }
+  /* Reglas de sección del CV: el color sale de print-tokens.ts (#122),
+     la MISMA constante que el footer — no un gris fijo por bloque. */
+  #print-cv h2 { font-size:13pt; border-bottom:1pt solid ${PRINT_RULE_COLOR}; padding-bottom:3pt; margin:18pt 0 6pt; }
   #print-cv h3 { font-size:11pt; margin-bottom:2pt; }
   #print-cv .p-meta { font-size:9pt; color:#555; }
   #print-cv ul { padding-left:1.2em; }

@@ -13,6 +13,7 @@ import { PROFILE } from "../../data/profile.generated.ts";
 import type { CvProfile } from "../../data/profile.types.ts";
 import { DRAHMA, ESTADO, FRISO, MARCO, PROCEDENCIA, formatMonthYear, formatMonthYearEn, formatPeriod, orgEs, statusLabel } from "./museo.ts";
 import { PROJECT_CURATION, projectKey } from "./proyectos.ts";
+import { PROFILE_PROSE, profileProseField } from "./profile-prose.ts";
 
 export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvProfile): Record<string, string> {
   const pairs: Record<string, string> = {};
@@ -50,6 +51,14 @@ export function profileI18nPairs(profile: CvProfile = PROFILE as unknown as CvPr
     for (const { label } of projectLinks(project)) {
       add(`↗ ${label.es}`, `↗ ${label.en}`);
     }
+  }
+
+  // Prosa de perfil (#122): una sola pieza del SSOT para las DOS superficies
+  // (print-CV y sala de Perfil). Se cubren el campo elegido y su fallback
+  // declarado, así el toggle EN traduce cualquiera de los dos por la misma vía.
+  for (const field of [PROFILE_PROSE.field, PROFILE_PROSE.fallback]) {
+    const prose = profileProseField(profile, field);
+    add(prose?.es, prose?.en);
   }
 
   // Labels compartidos.

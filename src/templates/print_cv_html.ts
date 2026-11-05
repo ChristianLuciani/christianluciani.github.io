@@ -4,7 +4,10 @@
  * Renderer determinista: recibe `PROFILE` (CvProfile) y no contiene hechos.
  * Los textos de este museo viven en `src/content/cv/print.ts` (curación D2);
  * fechas, cargos, organizaciones, publicaciones, conteos, idiomas y skills
- * salen del SSOT. El layout/CSS es el histórico: sólo cambian los hechos.
+ * salen del SSOT. La prosa de perfil NO es curación: se deriva de
+ * `PROFILE.positioning.statement` (`profile-prose.ts`, #122) y es la misma
+ * pieza que imprime la sala de Perfil del sitio. El layout/CSS es el histórico:
+ * sólo cambian los hechos.
  *
  * Solo print: el bloque entero está oculto en pantalla (`#print-cv { display:none }`)
  * y el footer de procedencia vive dentro de él — nunca en la página.
@@ -24,6 +27,9 @@ import {
 } from "../content/cv/print.ts";
 import type { ExperienceSectionId } from "../content/cv/print.ts";
 import { orgEs } from "../content/cv/org.ts";
+import { profileProse } from "../content/cv/profile-prose.ts";
+import { assetAttrsFor } from "../ts/assets/url.ts";
+import { PRINT_LOGO_PATH, PRINT_RULE_COLOR } from "./print-tokens.ts";
 
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
@@ -37,9 +43,14 @@ function esc(value: string): string {
   return value.replace(/[&<>"']/g, (char) => ESCAPES[char] ?? char);
 }
 
-/** ES es el idioma del print; EN queda como fallback si faltara la traducción. */
+/**
+ * ES es el idioma del print; EN queda como fallback si faltara la traducción.
+ * `||` y no `??`: un `es` presente pero VACÍO también cae a EN (la prosa de
+ * perfil documenta esa caída en `profile-prose.ts`, y con `??` el párrafo
+ * salía vacío — F1 del pase fresco de #122).
+ */
 function esText(text: LangText | undefined): string {
-  return text?.es ?? text?.en ?? "";
+  return text?.es || text?.en || "";
 }
 
 function year(date: string): string {
@@ -204,6 +215,8 @@ function skillsHtml(profile: CvProfile): string {
 
 export function printCvHtml(profile: CvProfile): string {
   const site = displayUrl(websiteLink(profile));
+  const prose = esText(profileProse(profile));
+  const logo = assetAttrsFor("src", PRINT_LOGO_PATH);
   const contact = contactHtml(profile);
   const experience = experienceSectionsHtml(profile.experience);
   const trajectoryNote = `${esText(PRINT_CV.sections.experienceNote)} · ${trajectoryStart(profile)} – ${PRINT_CV.labels.present}`;
@@ -217,6 +230,9 @@ export function printCvHtml(profile: CvProfile): string {
     /* QR del CV impreso: arriba a la derecha */
     #print-cv .p-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem; }
     #print-cv .p-head > div:first-child { flex:1; min-width:200px; }
+    /* Logo de marca (#122): variante print-A4 del brand kit, acotada para no
+       competir con el QR (30 mm) ni empujar el A4. */
+    #print-cv .p-logo { width:16mm; height:auto; display:block; margin-bottom:4pt; }
     #print-cv .qr-wrap { text-align:center; }
     #print-cv .qr-wrap img { width:30mm; height:30mm; }
     #print-cv .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
@@ -224,12 +240,14 @@ export function printCvHtml(profile: CvProfile): string {
     #print-cv .p-subsection { margin-top:10pt; }
     #print-cv .p-subsection > .p-subhead { font-size:10.5pt; text-transform:uppercase; letter-spacing:.04em; color:#555; margin:10pt 0 4pt; }
     /* Footer de procedencia: solo print (dentro del bloque oculto en pantalla) */
-    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
+    /* Reglas del CV: UNA fuente declarada, el teal del brand (#122). */
+    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid ${PRINT_RULE_COLOR}; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
     /* F2: el footer no queda huérfano — tampoco se separa del bloque que lo precede */
     #print-cv .p-section.p-keep { break-inside:avoid; break-before:avoid; }
   </style>
   <div class="p-head">
     <div>
+      <img class="p-logo" ${logo} alt="Logotipo de ${esc(profile.identity.name)}">
       <h1>${esc(profile.identity.name)}</h1>
       <div class="p-meta">
         ${esc(profile.identity.location ?? "")}<br>
@@ -244,7 +262,7 @@ export function printCvHtml(profile: CvProfile): string {
 
   <div class="p-section">
     <h2>${PRINT_CV.sections.profile}</h2>
-    <p>${esc(esText(PRINT_CV.profile))}</p>
+    <p>${esc(prose)}</p>
   </div>
 
   <div class="p-section">
