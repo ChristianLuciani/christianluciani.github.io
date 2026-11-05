@@ -53,6 +53,11 @@ export default defineConfig({
     globals: true,
     // Tests cover pure functions only (no DOM/canvas), so the lighter
     // node environment is sufficient and avoids the jsdom ESM load failure.
-    environment: "node"
+    environment: "node",
+    // Los worktrees W3 viven dentro del repo (.worktrees/) y son copias del
+    // mismo código en otra rama: si entran al discovery, la suite local corre
+    // el test de cada worktree contra el árbol del checkout y falla por drift
+    // entre ramas (no por un defecto del código).
+    exclude: ["**/node_modules/**", "**/dist/**", ".worktrees/**"]
   }
 });
