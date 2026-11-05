@@ -22,6 +22,32 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Invariante I1 (ADR-001): el golden del render no se mueve en un PR de
+      # refactor. Si cambia, el PR tiene que declararlo; sin declaración, un
+      # "cambio de render + golden regenerado" pasaría verde sin que nadie lo vea.
+      - name: golden — regenerarlo exige declararlo en el PR
+        if: github.event_name == 'pull_request'
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --depth=1 origin "$BASE_SHA"
+          # El PR que introduce el baseline no tiene contra qué comparar: la
+          # guarda rige desde el merge hacia adelante.
+          if ! git cat-file -e "$BASE_SHA:tests/golden/museo.html" 2>/dev/null; then
+            echo "baseline nuevo en este PR: la guarda rige desde el próximo"
+            exit 0
+          fi
+          if git diff --quiet "$BASE_SHA" HEAD -- tests/golden/museo.html; then
+            echo "golden intacto: el render no cambió"
+            exit 0
+          fi
+          if printf '%s' "$PR_BODY" | grep -qiE '^[[:space:]]*render:[[:space:]]*cambia'; then
+            echo "golden regenerado y declarado en el body del PR"
+            exit 0
+          fi
+          echo "::error::tests/golden/museo.html cambió sin declarar 'Render: cambia' en el body del PR"
+          exit 1
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test

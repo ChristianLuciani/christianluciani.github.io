@@ -34,6 +34,16 @@ Requiere el entorno **sin CDN** (`VITE_ASSET_BASE_URL` y `VITE_BRAND_KIT_BASE_UR
 vacías): las rutas de assets se resuelven al importar los templates y el golden se congela
 con Pages como origen, igual que CI.
 
+## Enforcement en CI
+
+`ci.yml` verifica que el golden no se mueva sin declararlo: si `tests/golden/museo.html`
+cambia respecto de la base y el body del PR no contiene una línea `Render: cambia`, el job
+falla con `::error::`. Así, un PR que cambia el render **y** regenera el golden no puede
+pasar verde en silencio — que es la única forma de que el invariante sea real.
+
+El PR que introdujo el baseline queda exento (no hay contra qué comparar); la guarda rige
+desde el merge siguiente.
+
 ## Cómo lee el fallo
 
 El test compara el documento completo y después **por sección**; el error nombra la sección
