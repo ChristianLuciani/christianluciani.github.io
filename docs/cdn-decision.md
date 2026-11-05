@@ -66,9 +66,12 @@ Dos hechos **medidos** el 2026-10-25 (`curl -sSI`, contra los orígenes reales):
 
 La capa de assets era agnóstica pero **incompleta** antes de #84: `assetUrl()` leía
 `VITE_ASSET_BASE_URL` sin consumidores de producción, sin fallback, y el HTML generado no
-pasaba por él. Hoy `head_html.ts` y `sala_html.ts` resuelven las 8 rutas migradas con
-`assetAttrs()`/`absoluteAssetUrl()`, el fallback vive en `src/ts/assets/fallback.ts`, y las
-restantes (iconos, QR) siguen escritas en `print_cv_html.ts` y en el propio template.
+pasaba por él. Hoy `head_html.ts`, `sala_html.ts` y el print-CV resuelven las **9 rutas
+migradas** (las 8 de #84 + el logo de impresión de #122) con
+`assetAttrs()`/`assetAttrsFor()`/`absoluteAssetUrl()`, el fallback vive en
+`src/ts/assets/fallback.ts`, y las restantes (iconos, QR) siguen escritas en
+`print_cv_html.ts` y en el propio template. El logo del print-CV es la variante print-A4 del
+brand kit resuelta con el mismo pintor de atributos (mismo pin, mismo fallback local).
 `docs/CDN_MIGRATION.md` describe la migración agnóstica por fases.
 
 ## Criterios
@@ -179,8 +182,8 @@ Cada paso es reversible por separado.
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
-| ToS de jsDelivr §6 (image hosting / grandes cantidades) | Baja aquí, media si el sitio crece a galería pesada | Servir sólo 8 archivos de marca/papers; audio y media quedan en Pages; revisar si el volumen crece |
-| Sin SLA, operador único | Caída = esos 8 assets no cargan | Mientras no exista el fallback (hoy no existe), el `src` canónico sigue siendo Pages y la CDN no es la única ruta; la migración implementa el fallback antes de retirar la copia local |
+| ToS de jsDelivr §6 (image hosting / grandes cantidades) | Baja aquí, media si el sitio crece a galería pesada | Servir sólo 9 archivos de marca/papers; audio y media quedan en Pages; revisar si el volumen crece |
+| Sin SLA, operador único | Caída = esos 9 assets no cargan | Mientras no exista el fallback (hoy no existe), el `src` canónico sigue siendo Pages y la CDN no es la única ruta; la migración implementa el fallback antes de retirar la copia local |
 | Tag malo es permanente en esa URL | Badge/OG roto para siempre | Taggear después de verificar el build (flujo de #54); corregir = `vX.Y.Z+1` |
 | Un archivo publicado en un tag no se puede retirar de esa URL | Fuga de un asset (dato personal en una imagen) queda servida | Revisar el diff de assets antes de taggear; retirar el archivo del repo no alcanza: hace falta tag nuevo y dejar de referenciar el viejo |
 | `@branch` con 12 h de caché | Preview viejo | Nunca usar `@main` en producción; sólo tags |
@@ -204,7 +207,7 @@ Cada paso es reversible por separado.
 
 ## Consecuencias
 
-- **Positivas:** 8 assets con caché de un año, CORS y borde en GYE sin cuenta ni CI; el tag
+- **Positivas:** 9 assets con caché de un año, CORS y borde en GYE sin cuenta ni CI; el tag
   pasa a ser útil fuera del repo; el peso muerto (23 MB de renders y ~300 KB de duplicados)
   deja de ser el argumento para migrar el sitio entero.
 - **Negativas:** esos assets dependen de un tercero sin SLA y con política de uso
@@ -223,15 +226,16 @@ Lo que la decisión no fijaba y la implementación resolvió, sin cambiar la dec
 | Pieza | Dónde | Qué hace |
 |---|---|---|
 | Base | `src/ts/assets/url.ts` (`ASSET_BASE`) | `VITE_ASSET_BASE_URL` (Vite) o `process.env` (build). Vacía ⇒ Pages. Valida `http(s)`: una base relativa rompe el build en vez de emitir URLs rotas |
-| Ruta fuente→servida | `cdnRepoPath()` | jsDelivr sirve el **repo**, no el sitio. Mapa exhaustivo por familia: `/assets/brand/**` ⇒ `assets/brand/logo/**`; **todo** `/assets/**` ⇒ `public/assets/**` (OG, thumbs, QR, imágenes); `/audio/**` ⇒ `public/audio/**`; el resto, tal cual. Sin este mapa, 5 de las 8 rutas daban 404 |
+| Ruta fuente→servida | `cdnRepoPath()` | jsDelivr sirve el **repo**, no el sitio. Mapa exhaustivo por familia: `/assets/brand/**` ⇒ `assets/brand/logo/**`; **todo** `/assets/**` ⇒ `public/assets/**` (OG, thumbs, QR, imágenes); `/audio/**` ⇒ `public/audio/**`; el resto, tal cual. Sin este mapa, 5 de las 8 rutas de entonces daban 404 |
 | Fallback | `src/ts/assets/fallback.ts` | `error` en captura sobre `img`/`link[data-local]`, y sonda `Image()` para favicons; un solo intento, sin loop |
-| Gate | `.github/workflows/ci.yml` | Construye en **los dos modos** y verifica las 8 rutas, el mapa y la ausencia de `data-local` en modo Pages |
+| Gate | `.github/workflows/ci.yml` | Construye en **los dos modos** y verifica las 9 rutas de assets + el OG, el mapa y la ausencia de `data-local` en modo Pages (9 `data-local` en modo CDN) |
 | Hotlink DRAHMAN | `public/assets/images/drahman-logo.png` + `docs/brand/drahman-logo.md` | Derivado a 88×88 (10.8 KB) con procedencia y comando; el original pesaba 2.37 MB con `max-age=300` |
-| Activación | `deploy.yml` + variable `CDN_BASE_URL` | Sin variable, el deploy es el de siempre. Con variable, las 8 rutas salen por la CDN |
+| Activación | `deploy.yml` + variable `CDN_BASE_URL` | Sin variable, el deploy es el de siempre. Con variable, las 9 rutas salen por la CDN |
 
 **Favicons y OG no tienen fallback de runtime**: `og:image` lo consume un crawler (no
-ejecuta JS) y `link[rel=icon]` es best-effort (la sonda lo intenta). Los 4 thumbs y las
-3 favicons sí degradan a la copia de Pages.
+ejecuta JS) y `link[rel=icon]` es best-effort (la sonda lo intenta). Los 4 thumbs, los
+favicons y el logo del print-CV sí degradan a la copia de Pages (el logo con el mismo
+`data-local` que la marca).
 
 **Activación real (2026-10-26):** tag anotado **`v1.1.1`** sobre el merge de #85 y
 `CDN_BASE_URL` apuntando a `…@v1.1.1`; deploy verificado con los 8 assets en `200` y bytes
@@ -249,4 +253,5 @@ No implementa la migración (ni `build.ts`, ni `assetUrl()`, ni templates); no d
 dominio propio; no mide latencia con usuarios reales (RUM) — el dato GYE vs Bogotá es un
 sample de una sesión; no evalúa Cloudinary/imgix en profundidad; no resuelve el hotlink de
 DRAHMAN; no cubre los PNG print de `assets/brand/logo/` que el sitio no sirve (su lugar es
-el release de GitHub, no una CDN).
+el release de GitHub, no una CDN), con la excepción declarada del logo del print-CV (#122),
+que sí entra por esta capa.
