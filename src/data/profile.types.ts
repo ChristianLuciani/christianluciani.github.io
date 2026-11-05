@@ -85,6 +85,17 @@ export interface ProjectItem {
   name: string;
   status?: string;
   description?: LangText;
+  /**
+   * `true` ⇔ el proyecto tiene al menos un `artifactRefs[]` que resuelve a un
+   * artifact PÚBLICO con `locator.url` (algo que un tercero puede abrir sin
+   * pedir permiso). Es el predicado de "publicado" (#109): El Marco vs El
+   * Bastidor se deriva de acá, nunca de un campo editorial `etapa`.
+   *
+   * Los IDs crudos de `artifactRefs` NO viajan al snapshot: los ids de
+   * artifacts privados no se publican, así que la proyección expone sólo el
+   * booleano derivado (el split coincide con artifactRefs por construcción).
+   */
+  published: boolean;
   links: string[];
   keywords: string[];
   evidence: { claim: LangText; source: string; verified?: string }[];

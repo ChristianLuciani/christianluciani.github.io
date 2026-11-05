@@ -18,13 +18,26 @@
  *   claves con `norm()` (colapso de espacios), así que el subtítulo en SALAS define
  *   la clave del MAP. El test de paridad (src/cv/parity.test.ts) lo garantiza.
  * - `subtitulo` NO lleva conteos escritos a mano: se derivan de `src/data/proyectos.ts`
- *   (la etapa de cada proyecto decide la sala). Un "6 PROYECTOS" hardcodeado miente en
- *   cuanto entra o sale una ficha.
+ *   (la sala se decide por `published`, derivado de `artifactRefs`; no existe un campo
+ *   editorial `etapa`). Un "6 PROYECTOS" hardcodeado miente en cuanto entra o sale una ficha.
  * - `ilusion` es el id del canvas de ilusión de la sala — metadato de preparación
  *   para el museo 3D (reutilizaría SALAS sin re-definir la estructura).
  */
 
 import { enDesarrollo, publicados } from "../data/proyectos.ts";
+import { PROFILE } from "../data/profile.generated.ts";
+
+/**
+ * Primer año del SSOT (eventos formativos incluidos). El SSOT NO distingue
+ * empleo de formación con un campo: `experience.yaml` sólo tiene `id` libres
+ * (`exp-*-workshop`, …) y la proyección pública descarta los ids. Por eso la
+ * sala se rotula «TRAYECTORIA» y no «EXPERIENCIA PROFESIONAL»: usar el mínimo
+ * de TODO `experience[]` como inicio del empleo publicaría 5 años de más.
+ */
+const TRAYECTORIA_DESDE = PROFILE.experience
+  .map((e) => e.start.slice(0, 4))
+  .filter((y) => /^\d{4}$/.test(y))
+  .sort()[0] ?? "";
 
 export interface SalaDef {
   /** id del <section> sin prefijo: 'perfil' → <section id="room-perfil"> */
@@ -112,12 +125,12 @@ export const SALAS: SalaDef[] = [
     id: "experiencia",
     titulo: "El <em>Friso</em>",
     tituloEn: "The <em>Frieze</em>",
-    subtitulo: "EXPERIENCIA PROFESIONAL · 2003 – PRESENTE",
-    subtituloEn: "PROFESSIONAL EXPERIENCE · 2003 – PRESENT",
+    subtitulo: `TRAYECTORIA · ${TRAYECTORIA_DESDE} – PRESENTE`,
+    subtituloEn: `TRAJECTORY · ${TRAYECTORIA_DESDE} – PRESENT`,
     funcion:
-      "Trayectoria profesional: roles, organizaciones y resultados, de 2003 al presente.",
+      `Trayectoria: empleo, formación y talleres, de ${TRAYECTORIA_DESDE} al presente.`,
     funcionEn:
-      "Professional trajectory: roles, organizations and results, from 2003 to the present.",
+      `Trajectory: employment, education and workshops, from ${TRAYECTORIA_DESDE} to the present.`,
     navLabel: "Friso",
     navLabelEn: "Frieze",
     ilusion: "c-exp"

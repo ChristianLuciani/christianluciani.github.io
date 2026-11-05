@@ -41,8 +41,10 @@ Mientras tanto, el ecosistema `profile-*` ya definió el **SSOT** de esos mismos
   ("20+ years navigating" vs "over 20 years navigating between").
 - "36 guías de laboratorio" vive como publicación en la sala del CV y como **proyecto**
   (`Physics Lab Book`) en `projects.yaml`.
-- `experience.yaml` tiene `role`/`org` solo en EN; el CV renderiza ES — el SSOT no puede
-  servir al CV sin completar el idioma.
+- `experience.yaml` tiene `role` solo en EN; el CV renderiza ES — el SSOT no puede
+  servir al CV sin completar el idioma. `org` es un **nombre propio invariante**
+  (`string`, nunca langMap): no se traduce; la presentación ES sólo ajusta el rol
+  del empleador, el país y la glosa `(scholarship)` (SPEC §11/§15.6).
 - `publications.yaml` no puede representar outputs sin DOI (abstract AIChE, preprint RG,
   guías) — limitación ya documentada como propuesta v1.1 (SPEC §15.6).
 
@@ -120,19 +122,22 @@ arquitectura (duplicación), no una tarea.
 | keywords SEO/GEO | `profile-data/keywords.yaml` | hecho |
 | títulos museísticos ("El Autorretrato") | `src/content/cv/museo.ts` | curación |
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | curación + hecho |
-| estructura de salas (ids, ilusiones, nav/plano labels) | `src/content/cv/salas.ts` (ex `src/cv/salas.ts`) | presentación |
+| estructura de salas (ids, ilusiones, nav/plano labels) | `src/cv/salas.ts` | presentación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | curación |
-| showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/drahma.ts` | curación (hechos referencian `projects.yaml` por id) |
+| showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | curación (hechos referencian `projects.yaml` por id) |
+| curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | curación |
-| grafo constelación (nodos/aristas) | `src/content/cv/constelacion.ts` | curación (ref. `projects` SSOT) |
-| galería placeholders | `src/content/cv/galeria.ts` | curación |
-| CSS, ilusiones, animaciones, canvas | `src/presentation/` + `src/ts/` | presentación |
+| curación del print-CV (prosa, títulos, labels) | `src/content/cv/print.ts` | curación |
+| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
+| galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
+| CSS, ilusiones, animaciones, canvas | `src/templates/` + `src/ts/` | presentación |
 
 **Reglas de reconciliación (deriva conocida, resuelta en el normalizador):**
 - "36 guías de laboratorio" = **proyecto** `Physics Lab Book` en el SSOT → la sala Biblioteca
   renderiza una entrada institucional con link al repo, **no** una publication.
 - Publications sin DOI (abstract AIChE, preprint RG) → el contrato v1.1 les da `url` (Fase 1.5).
-- `experience[].role/org` → langMap `{en, es}` (v1.1): el CV renderiza ES desde el SSOT.
+- `experience[].role` → langMap `{en, es}` (v1.1): el CV renderiza ES desde el SSOT.
+  `experience[].org` es `string` invariante (nombre propio): no entra en el langMap.
 
 ---
 
@@ -170,11 +175,13 @@ export const PROFILE = {
   identity: { name, givenName, familyName, location, photo, links: Link[] },
   positioning: { statement: LangText, audiences: Record<string, LangText>, geo },
   headlines: Headline[],
-  experience: Experience[],   // role/org: LangText; highlights: { en: string[]; es: string[] }
+  experience: Experience[],   // role: LangText; org: string (invariante, SPEC §11/§15.6);
+                              // highlights: { en: string[]; es: string[] }
                               // (bullets; normaliza string v1 "·"-separado → array v1.1)
   education: Education[],     // entrada deducida: experience[] con role=título (v1 legacy)
                               // o education[] explícito (v1.1) — el normalizador unifica
-  projects: Project[],        // con evidence[]; id estable para referencias desde curación
+  projects: Project[],        // con evidence[]; `published` DERIVADO de artifactRefs →
+                              // artifact público con locator.url (El Marco vs El Bastidor, #109)
   publications: Publication[],// con url (v1.1); DOI/ORCID resolubles (ancla GEO)
   skills: Skill[],            // + languages: [{ code, level }] (v1.1)
   keywords: { seo, geo },
@@ -185,13 +192,20 @@ export const PROFILE = {
 Tipos en `src/data/profile.types.ts` (`CvProfile`). El archivo es una **proyección, no el
 `LoadedProfile`**: quedan afuera `bios`, `faq`, `flavor`, `deployments`, `checks`,
 `socialHandles`, `press`, `releases`, `active`, `email`, `handle`, `timezone`,
-`nationality`, `authors`, `kind`, `artifactRefs` y los ids de fila que el CV no usa.
+`nationality`, `authors`, `kind`, `artifactRefs` (crudo) y los ids de fila que el CV no usa.
+Los derivados que sí viajan son `projects[].published` (artifact público abrible, calculado en
+el pipeline a partir de `artifactRefs`), `identity.givenName`/`familyName` (partidos del nombre),
+`publications[].url` (la `url` explícita del SSOT o el fallback `https://doi.org/<doi>`) y
+`experience[].end` default `"present"`. Los IDs de `artifactRefs` no se emiten porque pueden
+apuntar a un artifact privado.
 
 ### 5.3 Capa de curación (`src/content/cv/`) — el único otro lugar editable por humano
 
 Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
-`drahma.ts` referencia `projects` con name "Drahma — Educational Synthetic Intelligence").
+`museo.ts` exporta `DRAHMA` y referencia `projects` con name "Drahma — Educational Synthetic Intelligence").
 `museo.ts` exporta títulos/subtítulos/quotes/frases con `{en, es}` para alimentar el MAP.
+`proyectos.ts` cura El Marco / El Bastidor (subtítulo, `falta`, orden y labels de link);
+`print.ts` cura el print-CV (ES-only por diseño).
 
 ---
 
@@ -203,7 +217,7 @@ Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
 | D2 | **Curación museográfica en christianluciani.github.io** (`src/content/cv/*.ts`), no en profile-data | Son textos de ESTE museo con UN consumidor; no son hechos ni plataforma-cross. Meterlos en el schema contaminaría el contrato concreta de una superficie. |
 | D3 | **MAP generado** en build desde langMaps YAML + curación; queda diccionario UI pequeño manual | Elimina la clase de bug "edité ES y olvidé EN" (causa histórica de deriva). El walker runtime no cambia. |
 | D4 | **print-CV = renderer determinista** dentro de christianluciani.github.io, consumiendo `profile.generated.ts` | Deploy surface sin API; promovible a renderer `print` de profile-as-code después (M5+, queda anotado). |
-| D5 | **Extensión del contrato como profile-as-code** (schema v1.1, spec-first en profile-as-code, NO ad-hoc en el CV) | El contrato de datos es del motor: `highlights → array`, `role/org → langMap`, `publications.url`, `languages`, `education`. El CV normaliza ambos shapes (v1 legacy + v1.1) para no bloquear el refactor. |
+| D5 | **Extensión del contrato como profile-as-code** (schema v1.1, spec-first en profile-as-code, NO ad-hoc en el CV) | El contrato de datos es del motor: `highlights → array`, `role → langMap`, `org → string` invariante, `publications.url`, `languages`, `education`. El CV normaliza ambos shapes (v1 legacy + v1.1) para no bloquear el refactor. |
 | D6 | Integración por **path configurado** (`PROFILE_DATA_PATH` en `.env`/`.pacrc`, `.env` gitignored) | D14 de profile-as-code: sin symlink en el flujo normal; parametrización komuno XI. |
 | D7 | El sync **valida contra el schema del motor** (fail on schema, warn on drift — D12 profile-as-code) | Integridad del contrato sin romper flexibilidad de intención por plataforma. |
 
@@ -212,9 +226,10 @@ Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable** (p.ej.
 ## 7. Dependencias cross-repo (cadena de integración)
 
 1. **profile-as-code — schema v1.1 (spec-first):** amendar `docs/SPEC.md §15.6` + `schema/profile.schema.json`
-   (`highlights: array`, `role/org: langMap`, `publications.url`, `languages`, `education`) +
+   (`highlights: array`, `role: langMap`, `org: string`, `publications.url`, `languages`, `education`) +
    `gen-zod` + tests core. PR contra main de profile-as-code (merge: humano).
-2. **profile-data — contenido ES:** completar `role`/`org` ES de `experience.yaml` y
+2. **profile-data — contenido ES:** completar `role` ES de `experience.yaml` (`org` es
+   string invariante, no admite traducción) y
    verificar hechos contra el CV actual (CHECKLIST pendiente). PR en profile-data (merge: humano).
 3. **christianluciani.github.io — Fase 2 en adelante:** consume lo publicado por 1–2.
 
@@ -235,7 +250,7 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 - `tools/sync-profile.ts` (5.1) + `.env.example` (`PROFILE_DATA_PATH`) + `.gitignore` (.env).
 - `src/data/profile.generated.ts` generado y commiteado + `profile.generated.test.ts`
   (paridad byte a byte: commiteado == output del sync — el drift gate).
-- Test del normalizador: highlights string v1 → array, role/org langMap, publications sin
+- Test del normalizador: highlights string v1 → array, role langMap y org string, publications sin
   DOI, reconciliación "guías = proyecto".
 - **DoD:** pipeline corre, paridad enforced, ningún template consume todavía la data,
   salida visual idéntica (cero riesgo de regresión de contenido).
@@ -248,7 +263,7 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 - `src/content/cv/*.ts` creada (mueve curación fuera de templates).
 - Sala Perfil: photo/statement/educación desde el perfil.
 - Sala Proyectos: cards desde `projects.yaml` (name/status/description/links/evidence);
-  showcase Drahma desde `content/cv/drahma.ts` (ref. id estable).
+  showcase Drahma desde `content/cv/museo.ts` (export `DRAHMA`, ref. id estable).
 - Sala Trayectoria: entries desde `experience.yaml` (periodo = start/end, bullets =
   highlights).
 - Sala Biblioteca: `publications.yaml` (+ entrada institucional "guías" → project).
