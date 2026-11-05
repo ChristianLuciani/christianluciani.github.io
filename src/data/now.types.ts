@@ -1,15 +1,11 @@
 /**
- * Contrato de `now/v1` — lo que el sitio consume del productor
- * `ChristianLuciani/now` (issue #117).
- *
+ * Contrato de `now/v1` — lo que el sitio consume de `ChristianLuciani/now` (#117).
  * El shape NO se inventa acá: es el `schema/now.schema.json` del productor,
- * pineado por tag en `now.lock.json`. El snapshot commiteado
- * (`now.snapshot.json`) es el artefacto que el productor publicó; el módulo
- * `now.generated.ts` es su proyección tipada, generada por `tools/sync-now.ts`.
+ * pineado en `now.lock.json`. `now.snapshot.json` son sus bytes publicados;
+ * `now.generated.ts` es la proyección tipada que escribe `tools/sync-now.ts`.
  *
- * Chrome, no hecho citable: este feed NO entra a JSON-LD, `llms.txt` ni
- * `FAQPage` (issue #117 §Caution). Si algo debe ser citable, se promueve a
- * `content/` en profile-data — curado, fechado, con fuente.
+ * Chrome, no hecho citable: NO entra a JSON-LD, `llms.txt` ni `FAQPage`. Si algo
+ * debe ser citable, se promueve a `content/` en profile-data — curado, con fuente.
  */
 
 /** Kinds cerrados de v1 (el schema dice: un kind nuevo es un minor nuevo). */

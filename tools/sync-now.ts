@@ -56,9 +56,6 @@ function assertString(value: unknown, where: string): string {
   return value;
 }
 
-/* ──────────────────────────────────────────────
-   Lock
-────────────────────────────────────────────── */
 
 /** URL inmutable del snapshot, derivada del lock (tag y URL no viven duplicados). */
 export function lockUrl(lock: NowLock): string {
@@ -90,9 +87,6 @@ export function renderLock(lock: NowLock): string {
   return `${JSON.stringify({ repo: lock.repo, tag: lock.tag, sha256: lock.sha256 }, null, 2)}\n`;
 }
 
-/* ──────────────────────────────────────────────
-   Snapshot: validación del contrato del productor
-────────────────────────────────────────────── */
 
 function validDate(date: string): boolean {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return false;
@@ -179,9 +173,6 @@ export const NOW = ${json} as const satisfies NowSnapshot;
 `;
 }
 
-/* ──────────────────────────────────────────────
-   Auditoría offline (--check) — el predicado que muerde
-────────────────────────────────────────────── */
 
 /**
  * Revisa lock ↔ snapshot ↔ generado SIN red. Devuelve hallazgos con razón
@@ -256,24 +247,33 @@ function readLockFile(): NowLock {
   return parseLock(readFileSync(LOCK_PATH, "utf8"));
 }
 
-/** Genera lock+snapshot+generado a partir de bytes ya obtenidos (red o archivo). */
+/**
+ * Lock que gobierna la corrida. Un tag NUEVO es un re-pin explícito (TOFU: se
+ * registra el digest de esos bytes); el MISMO tag SIEMPRE se verifica contra el
+ * digest ya pineado — un tag movido no se acepta en silencio.
+ */
+export function targetLock(currentLock: NowLock, bytes: Buffer, tag?: string): NowLock {
+  if (!tag || tag === currentLock.tag) return currentLock;
+  return { repo: PRODUCER_REPO, tag, sha256: sha256Hex(bytes) };
+}
+
+/** Genera snapshot+generado (y el lock si hay re-pin) a partir de bytes obtenidos. */
 export function syncFromBytes(bytes: Buffer, currentLock: NowLock, tag?: string): { lock: NowLock; snapshot: NowSnapshot } {
-  const lock: NowLock = tag ? { repo: PRODUCER_REPO, tag, sha256: sha256Hex(bytes) } : currentLock;
+  const lock = targetLock(currentLock, bytes, tag);
   verifyDigest(bytes, lock);
   const snapshot = validateSnapshot(JSON.parse(bytes.toString("utf8")));
   writeFileSync(SNAPSHOT_PATH, bytes);
   writeFileSync(GENERATED_PATH, renderModule(snapshot, lock));
-  if (tag) writeFileSync(LOCK_PATH, renderLock(lock));
+  if (lock !== currentLock) writeFileSync(LOCK_PATH, renderLock(lock));
   return { lock, snapshot };
 }
 
 async function main(): Promise<number> {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
     console.log(
-      "sync-now [--tag vX.Y.Z] [--from <file>] [--check]\n" +
+      "sync-now [--tag vX.Y.Z] [--check]\n" +
         "  (sin flags)  fetch del tag pineado → verifica digest → snapshot + generado\n" +
-        "  --tag        re-pinea a un tag nuevo → reescribe lock + snapshot + generado\n" +
-        "  --from       usa bytes locales en vez de la red\n" +
+        "  --tag NUEVO  re-pin TOFU (registra el digest del tag nuevo); el MISMO tag verifica el pin\n" +
         "  --check      offline: lock ↔ snapshot ↔ generado"
     );
     return 0;
@@ -296,10 +296,7 @@ async function main(): Promise<number> {
     console.error(`❌ --tag "${tag}" no es un tag inmutable vX.Y.Z`);
     return 2;
   }
-  const from = argValue("--from");
-  const bytes = from
-    ? readFileSync(resolve(process.cwd(), from))
-    : await fetchBytes(lockUrl(tag ? { ...currentLock, tag } : currentLock));
+  const bytes = await fetchBytes(lockUrl(tag ? { ...currentLock, tag } : currentLock));
 
   const { lock, snapshot } = syncFromBytes(bytes, currentLock, tag);
   console.log(`✓ ${lock.repo}@${lock.tag} · sha256 ${lock.sha256}`);

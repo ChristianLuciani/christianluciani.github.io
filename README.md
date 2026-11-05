@@ -60,10 +60,13 @@ El bloque «Ahora» de la portada se renderiza **en el build** desde el feed que
 publica `ChristianLuciani/now` (#117): `now.lock.json` pinea un tag inmutable
 (`vX.Y.Z`) y el sha256 de sus bytes; `npm run sync:now` verifica el digest antes
 de escribir `src/data/now.snapshot.json` y `src/data/now.generated.ts`, y
-`now.generated.test.ts` exige paridad offline en CI. `npm run build` no hace red:
-importa el módulo commiteado. El refresh corre en
-`.github/workflows/refresh-now.yml`, resuelve el tag más nuevo del productor y
-commitea el snapshot + el `index.html` reconstruido.
+`now.generated.test.ts` exige paridad offline en CI. Un tag **nuevo** es un
+re-pin TOFU declarado (se registra el digest de esos bytes); el **mismo** tag
+siempre se verifica contra el pin, así un tag movido no se acepta en silencio.
+`npm run build` no hace red: importa el módulo commiteado. El refresh corre en
+`.github/workflows/refresh-now.yml`, resuelve el tag estable más nuevo del
+productor, commitea el snapshot + el `index.html` reconstruido y despacha CI y
+deploy (el push con `GITHUB_TOKEN` no los dispara).
 
 Este bloque es **chrome**: no entra a JSON-LD, `llms.txt` ni `FAQPage`. Lo que
 deba ser citable por un motor de respuestas se promueve a `content/` en

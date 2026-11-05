@@ -677,12 +677,9 @@ a { color:inherit; }
   opacity:.5; animation:fadeUp 1s 1s both;
 }
 
-/* ══════════════════════════════════════════════
-   AHORA — feed estático (#117)
-   Chrome, no hecho citable. Cinco filas, fecha + link, sin animación: el
-   contenido llega en el HTML inicial (JS off lo ve) y no hay inserción
-   posterior, así que el bloque no produce layout shift.
-══════════════════════════════════════════════ */
+/* AHORA — feed estático (#117): chrome, 5 filas, sin animación. El contenido
+   llega en el HTML inicial (JS off lo ve): no hay inserción posterior ni
+   layout shift. */
 .now-strip {
   position:relative;
   padding:clamp(20px,3.2vw,32px) clamp(18px,4vw,52px);
@@ -714,7 +711,7 @@ a { color:inherit; }
 .now-asof, .now-empty {
   margin:12px 0 0;
   font-family:var(--font-mono); font-size:9.5px;
-  color:var(--ink-faint); letter-spacing:.06em; text-transform:uppercase;
+  color:var(--ink-meta); letter-spacing:.06em; text-transform:uppercase;
 }
 
 /* ══════════════════════════════════════════════

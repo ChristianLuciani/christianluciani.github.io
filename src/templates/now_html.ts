@@ -1,13 +1,9 @@
 /**
- * Strip «Ahora» / «Now» (#117) — render ESTÁTICO del feed `now/v1`.
+ * Strip «Ahora» / «Now» (#117) — render ESTÁTICO del feed `now/v1`: el contenido
+ * está en el HTML inicial (JS off lo ve, sin layout shift) y no hay fetch en
+ * cliente ni inserción posterior. Sin contadores, badges ni animación.
  *
- * El contenido está en el HTML inicial: no hay fetch en cliente ni inserción
- * posterior, así que se lee con JS deshabilitado y no produce layout shift.
- * Sin contadores, sin badges, sin animación: 5 filas como máximo, fecha + link.
- *
- * Chrome, NO hecho citable (issue #117 §Caution): este bloque no alimenta
- * JSON-LD, `llms.txt` ni `FAQPage`. Lo citable se promueve a `content/` en
- * profile-data — curado, fechado, con fuente.
+ * Chrome, NO hecho citable: no alimenta JSON-LD, `llms.txt` ni `FAQPage`.
  */
 import { NOW } from "../data/now.generated.ts";
 import type { NowItem, NowSnapshot } from "../data/now.types.ts";

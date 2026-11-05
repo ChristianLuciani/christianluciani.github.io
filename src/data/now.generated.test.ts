@@ -18,6 +18,7 @@ import {
   parseLock,
   renderModule,
   sha256Hex,
+  targetLock,
   validateSnapshot,
   verifyDigest
 } from "../../tools/sync-now.ts";
@@ -134,20 +135,28 @@ describe("snapshot now/v1 — contrato del productor", () => {
   it("un digest distinto es un fallo duro antes de escribir", () => {
     expect(() => verifyDigest(Buffer.from("{}"), LOCK)).toThrow(/digest/);
   });
+
+  it("re-pin: el MISMO tag verifica el pin; un tag nuevo registra sus bytes (TOFU)", () => {
+    const moved = Buffer.from("{}\n");
+    // mismo tag → no se recalcula el digest: un tag movido se rechaza
+    expect(targetLock(LOCK, moved, LOCK.tag)).toBe(LOCK);
+    expect(() => verifyDigest(moved, targetLock(LOCK, moved, LOCK.tag))).toThrow(/digest/);
+    // tag nuevo → re-pin declarado (el digest se registra de esos bytes)
+    expect(targetLock(LOCK, moved, "v1.0.2")).toEqual({
+      repo: PRODUCER_REPO,
+      tag: "v1.0.2",
+      sha256: sha256Hex(moved)
+    });
+  });
 });
 
-/* ──────────────────────────────────────────────
-   Determinismo — mismo tag + mismo lock ⇒ bytes idénticos
-────────────────────────────────────────────── */
-
-describe("determinismo del pipeline", () => {
-  it("dos pasadas → bytes idénticos, y el único asOf es el DATO del snapshot", () => {
-    const snapshot = validateSnapshot(JSON.parse(SNAPSHOT_BYTES.toString("utf8")));
-    const first = renderModule(snapshot, LOCK);
-    expect(renderModule(snapshot, LOCK)).toBe(first);
-    expect(first).toBe(GENERATED);
-    expect(first).toContain(`"asOf": "${SNAPSHOT_BYTES.toString("utf8").match(/"asOf": "([^"]+)"/)?.[1]}"`);
-  });
+/* Determinismo: mismo tag + mismo lock ⇒ bytes idénticos (el reloj no entra). */
+it("dos pasadas → bytes idénticos, y el único asOf es el DATO del snapshot", () => {
+  const snapshot = validateSnapshot(JSON.parse(SNAPSHOT_BYTES.toString("utf8")));
+  const first = renderModule(snapshot, LOCK);
+  expect(renderModule(snapshot, LOCK)).toBe(first);
+  expect(first).toBe(GENERATED);
+  expect(first).toContain(`"asOf": "${SNAPSHOT_BYTES.toString("utf8").match(/"asOf": "([^"]+)"/)?.[1]}"`);
 });
 
 /* ──────────────────────────────────────────────
@@ -262,9 +271,11 @@ describe("npm run build — cero red", () => {
   it("ningún módulo del build importa node:http(s)/net ni usa fetch/XHR", () => {
     for (const file of graph) {
       const source = readFileSync(file, "utf8");
-      expect(source, relative(ROOT, file)).not.toMatch(/from\s+["']node:(https?|net|dgram|tls)["']/);
+      expect(source, relative(ROOT, file)).not.toMatch(/from\s+["'](node:)?(https?|net|dgram|tls)["']/);
       // Heurística declarada: una llamada real, no la palabra en prosa.
-      expect(source, relative(ROOT, file)).not.toMatch(/(?<![.\w])fetch\s*\(|XMLHttpRequest|sendBeacon/);
+      expect(source, relative(ROOT, file)).not.toMatch(
+        /(?<![.\w])fetch\s*\(|XMLHttpRequest|sendBeacon|import\s*\(|createRequire|require\s*\(/
+      );
     }
   });
 });
