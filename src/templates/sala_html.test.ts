@@ -304,6 +304,19 @@ describe("sala Perfil — una sola prosa, derivada del SSOT (#122)", () => {
     expect(body).not.toContain(profileProse(profile).es!);
   });
 
+  it("F1: un `es` vacío imprime el EN del MISMO campo (no un párrafo vacío)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "", en: "Statement only in English." } as never
+      }
+    };
+    const body = roomBody(SALA_PERFIL, fixture);
+    expect(body).toContain("Statement only in English.");
+    expect(body).not.toContain('<p class="profile-text"></p>');
+  });
+
   it("sin `statement` la sala usa el fallback declarado (no una copia a mano)", () => {
     const fixture: CvProfile = {
       ...profile,

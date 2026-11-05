@@ -43,9 +43,14 @@ function esc(value: string): string {
   return value.replace(/[&<>"']/g, (char) => ESCAPES[char] ?? char);
 }
 
-/** ES es el idioma del print; EN queda como fallback si faltara la traducción. */
+/**
+ * ES es el idioma del print; EN queda como fallback si faltara la traducción.
+ * `||` y no `??`: un `es` presente pero VACÍO también cae a EN (la prosa de
+ * perfil documenta esa caída en `profile-prose.ts`, y con `??` el párrafo
+ * salía vacío — F1 del pase fresco de #122).
+ */
 function esText(text: LangText | undefined): string {
-  return text?.es ?? text?.en ?? "";
+  return text?.es || text?.en || "";
 }
 
 function year(date: string): string {

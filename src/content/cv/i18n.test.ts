@@ -89,12 +89,16 @@ describe("i18n del SSOT — pares ES→EN derivados", () => {
   it("#122: la prosa de perfil del SSOT entra al MAP como par derivado", () => {
     // Una sola pieza: el toggle EN traduce el statement por el mismo camino que
     // los demás hechos del SSOT, sin clave escrita a mano.
-    expect(PAIRS[profile.positioning.statement.es!]).toBe(
-      profile.positioning.statement.en
-    );
-    expect(PAIRS[profile.positioning.audiences.recruiters.es!]).toBe(
-      profile.positioning.audiences.recruiters.en
-    );
+    // F4 del pase fresco: sin la mitad EN, `add()` skipea y ambos lados son
+    // `undefined` — el gate pasaría en vacío. El dato se exige primero.
+    for (const half of [
+      profile.positioning.statement,
+      profile.positioning.audiences.recruiters
+    ]) {
+      expect(half.es, "mitad ES del SSOT").toBeTruthy();
+      expect(half.en, "mitad EN del SSOT").toBeTruthy();
+      expect(PAIRS[half.es!]).toBe(half.en);
+    }
   });
 
   it("#122: el claim de años no sobrevive en el diccionario", () => {

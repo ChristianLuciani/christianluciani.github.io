@@ -46,7 +46,7 @@ jobs:
       - run: npm run logo:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
-      # Migración a CDN (#84): el gate verifica las 9 rutas (no una muestra),
+      # Migración a CDN (#84): el gate verifica las 9 rutas de assets + el OG (no una muestra),
       # el mapa fuente→servida y que el modo Pages no emita data-local. Las
       # rutas son las del repo, que es lo que jsDelivr sirve tal cual.
       - name: build en modo CDN (sitio + brand kit + data-local)

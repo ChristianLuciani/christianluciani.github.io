@@ -744,7 +744,9 @@ function perfilBody(profile: CvProfile): string {
  */
 export function perfilProseHtml(profile: CvProfile = P): string {
   const prose = profileProse(profile);
-  return `<p class="profile-text">${esc(prose.es ?? prose.en)}</p>`;
+  // `||`: un `es` vacío cae a EN, la misma caída que documenta el resolver
+  // (F1 del pase fresco de #122: con `??` el párrafo salía vacío).
+  return `<p class="profile-text">${esc(prose.es || prose.en)}</p>`;
 }
 
 /** El Marco: obra publicada (derivada de `published`) + showcase de Drahma. */
@@ -758,7 +760,10 @@ export function bastidorHtml(profile: CvProfile = P): string {
   return `${tarjetas(enDesarrolloDe(profile))}${cierreBastidor(profile)}`;
 }
 
-/** Body de una sala: estáticas por id; las tres de #109 se derivan del SSOT. */
+/**
+ * Body de una sala: estáticas por id; Perfil (#122) y las tres de #109 se
+ * derivan del SSOT.
+ */
 export function roomBody(s: SalaDef, profile: CvProfile = P): string {
   switch (s.id) {
     case "perfil":

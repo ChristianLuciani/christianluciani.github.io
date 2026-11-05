@@ -380,6 +380,19 @@ describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuen
     expect(moved).not.toContain(profileProse(profile).es!);
   });
 
+  it("F1: un `es` vacío imprime el EN del MISMO campo (no un párrafo vacío)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "", en: "Statement only in English." } as never
+      }
+    };
+    const html = printCvHtml(fixture);
+    expect(html).toContain("Statement only in English.");
+    expect(html).not.toContain("<p></p>");
+  });
+
   it("sin `statement` cae al fallback declarado del SSOT, no a una segunda copia", () => {
     const fixture: CvProfile = {
       ...profile,
