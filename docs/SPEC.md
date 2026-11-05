@@ -178,25 +178,63 @@ registro de temas— se especifica en §8, que el gate excluye por nombrar archi
 ```
 sync-profile [--now <iso8601>] [--report]
   1. workspace: $PROFILE_DATA_PATH del entorno (o .env)
-  2. engine (>= 0.3.7): `pasco export profile --json --workspace <ws>` — la ÚNICA
+  2. engine (>= 0.4.0): `pasco export profile --json --workspace <ws>` — la ÚNICA
      fuente de datos. El script no parsea YAML ni valida con Ajv: consume el
      `LoadedProfile` compilado por el motor (profile-as-code SPEC §7.5, #348).
      Si pasco falta o es viejo, el error imprime el comando de instalación exacto.
   3. `pasco doctor --json` aporta la etiqueta completa del contrato (`schema.version`);
-     el export 0.3.7 sólo trae el major.
+     el export 0.4.0 sólo trae el major.
   4. proyección explícita LoadedProfile → CvProfile (sección 5.2; NO es un dump):
      sólo los roots/fields que el CV usa. `credentials[]`/`artifacts[]` se filtran a
-     `visibility: public` (ausente = público, §18.5) y se descartan las referencias
-     (projects[].links / evidence[].source) a locators o verifyUrls no públicos.
+     `visibility: public` (ausente = público; `private` y `unlisted` quedan fuera,
+     §18.5) y se descartan las referencias (`identity.links`, `projects[].links` /
+     `evidence[].source`) a locators o verifyUrls no públicos.
   5. emit  src/data/profile.generated.ts con header AUTO-GENERATED + metadata:
      `profile-data @ <sha>` (pinPattern del gate), `engine @ <version> · schema v<label>`
-     (label = `schema.version` de `pasco doctor`; vigente al 2026-11-03: v1.15) y
+     (label = `schema.version` de `pasco doctor`; vigente al 2026-11-05: v1.16) y
      `generatedAt` (null salvo --now) — GEO/auditabilidad.
   6. --report: lista hechos sin traducción ES, urls fuera de identity.links, etc.
 ```
 
 Puro, determinista, sin red: mismo input → mismo output byte a byte (komuno VI/X).
 El reloj no entra: `source.generatedAt` es `null` salvo `--now` explícito.
+
+**Frescura ≠ render — `npm run sync:check` (#110).** El gate de frescura (pin
+ancestro de HEAD y `content/` sin cambios) puede estar verde con **cero
+consumidores** (#99). `sync:check` agrega el gate de render:
+
+```
+sync-check [--workspace <path>] [--generated <path>]
+  1. self:      header coherente con `PROFILE.source` y el archivo es
+                byte-idéntico a `renderSource(PROFILE, engine, schema)`.
+                Re-renderiza el `PROFILE` importado del propio archivo: prueba
+                consistencia interna (cuerpo ↔ header ↔ renderer), NO autoría —
+                un edit manual coherente es su propio render y pasa.
+  2. fixture:   proyecta `src/data/fixtures/export-profile.json` —payload
+                anonimizado con la forma del engine— y exige determinismo y
+                filtro de `private`/`unlisted` (entradas Y referencias desde
+                `identity.links`, `projects[].links` / `evidence[].source`).
+  3. workspace: si hay `PROFILE_DATA_PATH` (o `--workspace`), recién ahí corre
+                el pipeline real (`pasco export`) y compara byte a byte; exit 1
+                con archivo:línea exacto.
+```
+
+Sin `--workspace` el pipeline **no se invoca**: la capa 1 compara el archivo
+consigo mismo y la capa 2 corre un fixture, así que ninguna prueba paridad de
+contenido contra el SSOT. **Sólo la capa 3 compara contenido**: sin ella el
+cierre cuenta las capas verificadas, nombra las que quedaron fuera con su razón
+y dice `PARCIAL` (nunca `✅ OK`) cuando `verified < total` — en CI es
+`PARCIAL — 2/3 (self, fixture)` con `workspace` declarada no verificada; con
+`--workspace` y todo verde es `✅ OK — 3/3`. El exit code sigue 0 sin workspace:
+CI no tiene el repo privado. CI corre las capas 1–2 más el guard de consumidores
+(`src/data/consumers.test.ts`): falla si ningún módulo de **render**
+(`templates/index.ts` o `templates/sala_html.ts`) importa `PROFILE` (sin
+comentarios ni `import type`; un importador de metadata no cuenta), si
+`templates/index.ts` deja de llamar `printCvHtml(PROFILE…)`, o si una superficie
+ya migrada al SSOT (El Friso/El Marco: `frisoHtml`, `marcoHtml`,
+`publicadosDe`, `proyectosDe`) deja de existir o de consumirlo — sin rama
+PENDIENTE desde que #109 está en `main`. La capa 3 es local/agente: nunca finge
+paridad de contenido.
 
 ### 5.2 Shape de `profile.generated.ts` (normalizado, NO espejo del schema)
 

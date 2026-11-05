@@ -111,7 +111,7 @@ describe("profile.generated.ts — shape", () => {
   });
 
   it("renderSource: generatedAt se emite igual en header y JSON (null y con fecha)", () => {
-    const nullSrc = renderSource({ ...(PROFILE as unknown as CvProfile), source: sourceOf() }, "0.3.7", "1.15");
+    const nullSrc = renderSource({ ...(PROFILE as unknown as CvProfile), source: sourceOf() }, "0.4.0", "1.16");
     expect(nullSrc).toMatch(/· generatedAt null/);
     expect(nullSrc).toMatch(/"generatedAt": null/);
 
@@ -120,8 +120,8 @@ describe("profile.generated.ts — shape", () => {
         ...(PROFILE as unknown as CvProfile),
         source: { ...sourceOf(), generatedAt: "2026-11-03T12:00:00.000Z" }
       },
-      "0.3.7",
-      "1.15"
+      "0.4.0",
+      "1.16"
     );
     expect(dated).toMatch(/· generatedAt "2026-11-03T12:00:00\.000Z"/);
     expect(dated).toMatch(/"generatedAt": "2026-11-03T12:00:00\.000Z"/);

@@ -35,6 +35,25 @@ christianluciani.github.io/
 HTML · CSS · Canvas API · Vanilla JS · TypeScript (Vite) · Google Fonts
 Sin frameworks ni dependencias de UI. La web publicada es un único `index.html`.
 
+## Datos del CV (SSOT)
+
+Los hechos del CV (trayectoria, proyectos, publicaciones, skills) viven en el repo
+privado `profile-data`; acá se commitea `src/data/profile.generated.ts`, una
+proyección pública que se regenera con `npm run sync:profile` (`PROFILE_DATA_PATH`).
+La frescura del pin no alcanza: `npm run sync:check` corre dos capas en CI —
+re-renderiza el `PROFILE` importado del propio archivo commiteado y exige
+byte-identidad (detecta cuerpo/header inconsistentes y drift del renderer, **no**
+autoría: un edit manual coherente es su propio render), y proyecta un fixture
+anonimizado (determinismo + filtro de `private`/`unlisted`, también en
+referencias). Esas capas **no invocan el pipeline** ni prueban paridad contra
+`profile-data`: **sólo `--workspace` (o `PROFILE_DATA_PATH`) compara contenido
+contra el SSOT**. Con `--workspace` se agrega esa capa real (`pasco export` +
+comparación byte a byte). Cuando `verified < total` el cierre dice `PARCIAL`
+(p. ej. `PARCIAL — 2/3` en CI) y nunca `✅ OK`; `OK — 3/3` sólo aparece con
+workspace y las tres capas verdes. Además corre el guard de consumidores — un
+snapshot al día sin ningún consumidor de **render** ya no pasa verde en
+silencio (#99, #110).
+
 ## Despliegue
 
 Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.io/`
