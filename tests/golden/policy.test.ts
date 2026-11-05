@@ -48,4 +48,12 @@ describe("golden — política de declaración", () => {
     const body = "```\nRender: cambia\n```\n\nEste PR sólo refactoriza.";
     expect(decide({ ...base, body }).ok).toBe(false);
   });
+
+  it("ignora también los fences con tilde", () => {
+    expect(decide({ ...base, body: "~~~\nRender: cambia\n~~~" }).ok).toBe(false);
+  });
+
+  it("acepta la declaración como encabezado markdown", () => {
+    expect(decide({ ...base, body: "### Render: cambia" }).ok).toBe(true);
+  });
 });

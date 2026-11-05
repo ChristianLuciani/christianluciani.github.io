@@ -7,7 +7,7 @@
  * `ci.yml` sólo aporta los tres datos (¿existe en la base?, ¿cambió?, ¿qué dice
  * el body?).
  */
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 
 export interface PolicyInput {
   /** El archivo existía en la base del PR: si no, este PR introduce el baseline. */
@@ -27,7 +27,7 @@ export interface PolicyResult {
  * `Render: cambia` (case-insensitive, al inicio de una línea) es la declaración.
  * Tolera las formas markdown habituales (`**Render:** cambia`, `> Render: cambia`).
  */
-export const DECLARATION = /^[ \t>*_-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
+export const DECLARATION = /^[ \t>*_#-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
 
 /**
  * El body sin bloques de código: un ejemplo documentado en un fence no es una
@@ -35,7 +35,9 @@ export const DECLARATION = /^[ \t>*_-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
  * que la guarda se auto-satisfaga.
  */
 export function withoutCodeBlocks(body: string): string {
-  return body.replace(/```[\s\S]*?```/g, "");
+  // ``` y ~~~ son fences válidos en markdown: si sólo se quita uno, el ejemplo
+  // del otro se lee como declaración.
+  return body.replace(/(```|~~~)[\s\S]*?\1/g, "");
 }
 
 export function decide(input: PolicyInput): PolicyResult {
@@ -64,14 +66,18 @@ function existsIn(base: string, path: string): boolean {
   }
 }
 
-/** ¿El archivo cambió entre `base` y HEAD? */
+/**
+ * ¿El archivo cambió entre `base` y HEAD?
+ *
+ * `git diff --quiet` usa el exit 1 para "hay diferencias" y >1 para error real
+ * (ref ausente, repo roto): tratarlos igual convertía un fallo de git en "el
+ * render cambió" — y un error de infraestructura se leía como decisión.
+ */
 function changedSince(base: string, path: string): boolean {
-  try {
-    execFileSync("git", ["diff", "--quiet", base, "HEAD", "--", path], { stdio: "ignore" });
-    return false;
-  } catch {
-    return true;
-  }
+  const r = spawnSync("git", ["diff", "--quiet", base, "HEAD", "--", path], { stdio: "ignore" });
+  if (r.status === 0) return false;
+  if (r.status === 1) return true;
+  throw new Error(`git diff falló (exit ${r.status ?? "sin código"}): no se puede decidir`);
 }
 
 function main(): void {
@@ -81,13 +87,24 @@ function main(): void {
     process.exit(2);
   }
   const path = "tests/golden/museo.html";
-  execFileSync("git", ["fetch", "--depth=1", "origin", base], { stdio: "inherit" });
+  try {
+    execFileSync("git", ["fetch", "--depth=1", "origin", base], { stdio: "inherit" });
+  } catch {
+    console.error(`::error::no se pudo traer la base ${base}; la guarda no puede decidir`);
+    process.exit(2);
+  }
 
-  const result = decide({
-    baselineInBase: existsIn(base, path),
-    changed: changedSince(base, path),
-    body: process.env.PR_BODY ?? ""
-  });
+  let result: PolicyResult;
+  try {
+    result = decide({
+      baselineInBase: existsIn(base, path),
+      changed: changedSince(base, path),
+      body: process.env.PR_BODY ?? ""
+    });
+  } catch (error) {
+    console.error(`::error::${(error as Error).message}`);
+    process.exit(2);
+  }
 
   console.log(result.reason);
   if (!result.ok) {
