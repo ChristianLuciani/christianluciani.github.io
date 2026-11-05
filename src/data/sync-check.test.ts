@@ -14,6 +14,8 @@ import { join, resolve } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import {
   COMMITTED_PATH,
+  ENTITY_FIXTURE_PATH,
+  checkEntityFixture,
   diffSources,
   parseHeader,
   runCheck,
@@ -21,6 +23,7 @@ import {
   type CheckLayer
 } from "../../tools/sync-check";
 import { COMMITTED_ENTITY_PATH as ENTITY_COMMITTED_PATH } from "../../tools/sync-entity";
+import { POLICY_FILES, policyProblems, type PolicyFile } from "../../tools/sync-ai-policy";
 import { resolvePaths } from "../../tools/sync-profile";
 
 const COMMITTED = readFileSync(COMMITTED_PATH, "utf8");
@@ -247,18 +250,96 @@ describe("resolvePaths — `.env` no pisa una variable definida (aunque sea vac�
 /**
  * Integración real con el SSOT: sólo corre cuando hay workspace disponible
  * (local/agente). En CI se saltea porque el repo privado no se clona; la
- * contabilidad 3/3 ya está cubierta arriba como contrato puro.
+ * contabilidad 8/8 ya está cubierta arriba como contrato puro.
  */
 const LOCAL_WORKSPACE = process.env.PROFILE_DATA_PATH;
 describe.skipIf(!LOCAL_WORKSPACE)("sync:check — con --workspace (integración local)", () => {
-  it("cuando el pipeline real corre limpio, cuenta 3/3", () => {
+  it("cuando el pipeline real corre limpio, cuenta 8/8", () => {
     const result = runCheck({ workspace: LOCAL_WORKSPACE });
     expect(result.failures).toEqual([]);
     expect(result.layers.filter((layer) => layer.verified).map((layer) => layer.name)).toEqual([
       "self",
       "fixture",
-      "workspace"
+      "workspace",
+      "entity-self",
+      "entity-fixture",
+      "entity-workspace",
+      "policy-self",
+      "policy-workspace"
     ]);
-    expect(summaryLine(result.layers)).toContain("3/3");
+    expect(summaryLine(result.layers)).toContain("8/8");
+  });
+});
+
+/**
+ * Reconciliación del pase fresco de #140 (F1 y F2, MAJOR, ALCANCE=diff). Cada
+ * test reproduce el defecto: si el gate vuelve a ser documentación y no
+ * enforcement, este suite se pone rojo.
+ */
+describe("entity-fixture — el FAQ se exige CITABLE, no sólo no vacío (F1)", () => {
+  const FIXTURE = JSON.parse(readFileSync(ENTITY_FIXTURE_PATH, "utf8")) as {
+    schemaVersion: string;
+    nodes: Record<string, unknown>[];
+  };
+
+  function withAnswer(answer: Record<string, unknown>): unknown {
+    const faq = FIXTURE.nodes.find((node) => node["@type"] === "FAQPage")!;
+    const [first, ...rest] = faq["mainEntity"] as Record<string, unknown>[];
+    return {
+      ...FIXTURE,
+      nodes: FIXTURE.nodes.map((node) =>
+        node === faq ? { ...faq, mainEntity: [{ ...first, acceptedAnswer: answer }, ...rest] } : node
+      )
+    };
+  }
+
+  it("el fixture commiteado pasa (cada respuesta trae citation)", () => {
+    expect(checkEntityFixture(FIXTURE).problems).toEqual([]);
+  });
+
+  it("una respuesta SIN citation es un problema (el SPEC decía que se medía)", () => {
+    const problems = checkEntityFixture(withAnswer({ "@type": "Answer", text: "sin cita" })).problems;
+    expect(problems.join("\n")).toMatch(/acceptedAnswer\.citation/);
+  });
+
+  it("una citation que no es URL no cuenta como cita", () => {
+    const problems = checkEntityFixture(
+      withAnswer({ "@type": "Answer", text: "texto", citation: "un-paper.pdf" })
+    ).problems;
+    expect(problems.join("\n")).toMatch(/acceptedAnswer\.citation/);
+  });
+});
+
+describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)", () => {
+  const ROBOTS_OK = "# ai-policy\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n";
+
+  function files(overrides: Partial<Record<PolicyFile, string | null>> = {}): Record<PolicyFile, string | null> {
+    const base = {
+      "robots.txt": ROBOTS_OK,
+      "llms.txt": "# Título del índice\n\n- [AI-POLICY.md](AI-POLICY.md)\n",
+      "AI-POLICY.md": "# Política\n"
+    } as Record<PolicyFile, string | null>;
+    return { ...base, ...overrides };
+  }
+
+  it("la postura del engine pasa", () => {
+    expect(policyProblems(files())).toEqual([]);
+  });
+
+  it("`user-agent: *` en minúscula y con indentación NO pasa (RFC 9309 §2.2.1)", () => {
+    const problems = policyProblems(
+      files({ "robots.txt": "  user-agent: *\n  allow: /\n  disallow: /\n" })
+    );
+    expect(problems.join("\n")).toMatch(/User-agent: \*/);
+  });
+
+  it("un grupo de training ausente es un problema (aunque haya wildcard-cero)", () => {
+    const problems = policyProblems(files({ "robots.txt": "User-agent: Googlebot\nAllow: /\n" }));
+    expect(problems.join("\n")).toMatch(/sin grupo de training/);
+  });
+
+  it("nombra los tres artefactos cuando faltan", () => {
+    const problems = policyProblems(files({ "robots.txt": null, "llms.txt": null, "AI-POLICY.md": null }));
+    for (const file of POLICY_FILES) expect(problems.join("\n")).toContain(file);
   });
 });

@@ -347,9 +347,17 @@ export function checkEntityFixture(raw: unknown): {
     const questions = Array.isArray(faq["mainEntity"]) ? (faq["mainEntity"] as Record<string, unknown>[]) : [];
     if (questions.length === 0) problems.push("FAQPage: mainEntity vacío (el engine nunca emite un FAQPage vacío)");
     for (const question of questions) {
+      const name = String(question["name"] ?? "?");
       const answer = question["acceptedAnswer"] as Record<string, unknown> | undefined;
       if (!answer || typeof answer["text"] !== "string" || String(answer["text"]).length === 0) {
-        problems.push(`FAQPage: pregunta sin acceptedAnswer.text (${String(question["name"] ?? "?")})`);
+        problems.push(`FAQPage: pregunta sin acceptedAnswer.text (${name})`);
+      }
+      // El engine viaja el `source` de `faq[]` como `acceptedAnswer.citation`:
+      // una respuesta sin cita es la mitad del criterio GEO (el objetivo 4 de la
+      // SPEC exige hechos citables). F1 del pase fresco: el gate lo DECÍA y no
+      // lo medía — acá se mide.
+      if (!answer || typeof answer["citation"] !== "string" || !/^https?:\/\//.test(String(answer["citation"]))) {
+        problems.push(`FAQPage: pregunta sin acceptedAnswer.citation (${name})`);
       }
     }
   }

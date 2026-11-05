@@ -58,11 +58,18 @@ export function policyProblems(files: Record<PolicyFile, string | null>): string
   }
   const robots = files["robots.txt"];
   if (robots) {
-    if (/^User-agent:\s*\*\s*$/m.test(robots)) {
+    // F2 del pase fresco: RFC 9309 §2.2.1 hace el matching de `User-agent`
+    // case-insensitive, y la indentación no cambia el grupo. Un chequeo sensible
+    // a caja dejaba pasar `user-agent: *` + `Allow: /` + `Disallow: /` en verde.
+    if (/^[ \t]*user-agent[ \t]*:[ \t]*\*[ \t]*$/im.test(robots)) {
       problems.push("robots.txt: grupo `User-agent: *` — la política es explícita, sin wildcard");
     }
-    if (!/^Allow:\s*\/\s*$/m.test(robots)) problems.push("robots.txt: sin grupo de retrieval (`Allow: /`)");
-    if (!/^Disallow:\s*\/\s*$/m.test(robots)) problems.push("robots.txt: sin grupo de training (`Disallow: /`)");
+    if (!/^[ \t]*allow[ \t]*:[ \t]*\/[ \t]*$/im.test(robots)) {
+      problems.push("robots.txt: sin grupo de retrieval (`Allow: /`)");
+    }
+    if (!/^[ \t]*disallow[ \t]*:[ \t]*\/[ \t]*$/im.test(robots)) {
+      problems.push("robots.txt: sin grupo de training (`Disallow: /`)");
+    }
   }
   const llms = files["llms.txt"];
   if (llms && !/^#\s/m.test(llms)) problems.push("llms.txt: sin título de índice (se esperaba un heading `# `)");
