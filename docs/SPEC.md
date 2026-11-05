@@ -279,6 +279,20 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 `!important` para pisar otro tema, fuentes web. Gate I5: 0 literales + contraste AA en los
 pares texto/fondo declarados.
 
+**Excepción declarada — clasificación de `experience[]` en el print-CV (D2, F1 de #119).**
+`EXPERIENCE_SECTIONS` (`src/content/cv/print.ts`) reparte cada fila de `experience[]` en
+`professional`/`training` mediante una clave **derivada de hechos**
+(`org|role.es|start` —el rol sale en ES y cae a `role.en` si la fila no tiene
+ES, fallback que aplica `experienceKey`—, o `id` cuando existe), no por `id` estable:
+la proyección **no expone `id` de fila** (§5.2 descarta los ids que el CV no usa),
+así que hoy no hay id al que referenciar. La tabla no duplica hechos renderizables —sólo repite la clave para
+clasificar y no imprime `org`, `role` ni `start`— y falla ruidoso: una fila nueva,
+renombrada o eliminada rompe el render y el test de cobertura total
+(`print_cv.test.ts`), que compara la tabla contra `PROFILE.experience` (no contra una
+lista copiada a mano). **Condición de salida:** si el SSOT/proyección empieza a exponer
+`id` estable en `experience[]`, la tabla migra a id; el hook `if (item.id)` de
+`experienceKey` ya lo prefiere sin cambiar el resto del renderer.
+
 ---
 
 ## 6. Decisiones (ADR-lite)

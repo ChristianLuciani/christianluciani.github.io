@@ -16,7 +16,13 @@ import type {
   LangText,
   PublicationItem
 } from "../data/profile.types.ts";
-import { PRINT_CV } from "../content/cv/print.ts";
+import {
+  EXPERIENCE_SECTION_ORDER,
+  PRINT_CV,
+  experienceKey,
+  experienceSectionOf
+} from "../content/cv/print.ts";
+import type { ExperienceSectionId } from "../content/cv/print.ts";
 import { orgEs } from "../content/cv/org.ts";
 
 const ESCAPES: Record<string, string> = {
@@ -78,6 +84,16 @@ function websiteLink(profile: CvProfile): string {
   return profile.identity.links.find((link) => link.platform === "website")?.url ?? "";
 }
 
+/**
+ * Contacto del print: SÓLO las plataformas de `identity.links` que cura
+ * `PRINT_CV.contactPlatforms`.
+ *
+ * El email queda afuera porque NO ESTÁ EN `PROFILE` (la proyección pública lo
+ * excluye desde #107), no por una decisión editorial de esta superficie: no se
+ * reintroduce hardcodeado. La fuga preexistente de `index.html`
+ * (`mailto:cluciani@gmail.com` emitido por `sala_html.ts`) es de otra superficie
+ * y se REPORTA en #116 (F3); no se arregla en este diff.
+ */
 function contactHtml(profile: CvProfile): string {
   return PRINT_CV.contactPlatforms
     .map((platform) => profile.identity.links.find((link) => link.platform === platform))
@@ -109,6 +125,43 @@ function experienceHtml(item: ExperienceItem): string {
       <h3>${esc(esText(item.role))} — ${esc(orgEs(item.org))}</h3>
       <div class="p-meta">${period(item.start, item.end)}</div>${list}
     </div>`;
+}
+
+/** Subsección curada de `experience[]`; el título es curación D2, no un hecho. */
+function experienceSectionTitle(id: ExperienceSectionId): string {
+  return id === "professional"
+    ? PRINT_CV.sections.professional
+    : PRINT_CV.sections.training;
+}
+
+/**
+ * Las 23 filas de `experience[]` se reparten en dos subsecciones (F1 de #116)
+ * según `EXPERIENCE_SECTIONS` (curación en `src/content/cv/print.ts`).
+ *
+ * Una fila sin clasificar NO se adivina ni se esconde: el render falla. Así una
+ * entrada nueva del SSOT rompe el test en vez de aterrizar en la sección
+ * equivocada — la tabla es una lista explícita, no un default.
+ */
+function experienceSectionsHtml(items: readonly ExperienceItem[]): string {
+  const groups: Record<ExperienceSectionId, string[]> = {
+    professional: [],
+    training: []
+  };
+  for (const item of sortByRecency(items)) {
+    const section = experienceSectionOf(item);
+    if (!section) {
+      throw new Error(
+        `print-CV: entrada de experience sin clasificar en EXPERIENCE_SECTIONS: ${experienceKey(item)}`
+      );
+    }
+    groups[section].push(experienceHtml(item));
+  }
+  return EXPERIENCE_SECTION_ORDER.map(
+    (id) => `    <div class="p-subsection">
+      <h3 class="p-subhead">${esc(experienceSectionTitle(id))}</h3>
+${groups[id].join("\n")}
+    </div>`
+  ).join("\n");
 }
 
 function educationHtml(item: EducationItem): string {
@@ -152,7 +205,7 @@ function skillsHtml(profile: CvProfile): string {
 export function printCvHtml(profile: CvProfile): string {
   const site = displayUrl(websiteLink(profile));
   const contact = contactHtml(profile);
-  const experience = sortByRecency(profile.experience).map(experienceHtml).join("\n");
+  const experience = experienceSectionsHtml(profile.experience);
   const trajectoryNote = `${esText(PRINT_CV.sections.experienceNote)} · ${trajectoryStart(profile)} – ${PRINT_CV.labels.present}`;
   const education = sortByRecency(profile.education).map(educationHtml).join("\n");
   const publications = profile.publications.map(publicationHtml).join("\n");
@@ -167,8 +220,13 @@ export function printCvHtml(profile: CvProfile): string {
     #print-cv .qr-wrap { text-align:center; }
     #print-cv .qr-wrap img { width:30mm; height:30mm; }
     #print-cv .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
+    /* Subsecciones de Trayectoria: empleo vs formación (curación D2) */
+    #print-cv .p-subsection { margin-top:10pt; }
+    #print-cv .p-subsection > .p-subhead { font-size:10.5pt; text-transform:uppercase; letter-spacing:.04em; color:#555; margin:10pt 0 4pt; }
     /* Footer de procedencia: solo print (dentro del bloque oculto en pantalla) */
-    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; }
+    #print-cv .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #ddd; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
+    /* F2: el footer no queda huérfano — tampoco se separa del bloque que lo precede */
+    #print-cv .p-section.p-keep { break-inside:avoid; break-before:avoid; }
   </style>
   <div class="p-head">
     <div>
@@ -207,7 +265,7 @@ ${publications}
     </ul>
   </div>
 
-  <div class="p-section">
+  <div class="p-section p-keep">
     <h2>${PRINT_CV.sections.skills}</h2>
     <ul>
 ${skillsHtml(profile)}
