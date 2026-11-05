@@ -42,10 +42,12 @@ const UNLISTED_MARKERS = [
 ];
 
 function sourceOf(fixture: FixtureEnvelope): CvSource {
+  // `repo`/`commitDate` los deriva el consumidor desde git (`gitInfo`); el export
+  // de 0.4.0 sólo emite `source.commit`/`source.generatedAt`.
   return {
-    repo: fixture.source.repo ?? "",
+    repo: "",
     commit: fixture.source.commit,
-    commitDate: fixture.source.commitDate ?? null,
+    commitDate: null,
     generatedAt: null
   };
 }
@@ -61,8 +63,29 @@ describe("fixture export — contrato y forma", () => {
     expect(RAW.engine.name).toBe("@profile-as-code/cli");
     expect(RAW.engine.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(RAW.source.commit).toMatch(/^[0-9a-f]{40}$/);
-    expect(RAW.source.commitDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    // Forma real del engine 0.4.0: `source` sólo emite commit/generatedAt;
+    // repo/commitDate los agrega el consumidor y `profile.source` no existe.
+    expect(RAW.source).not.toHaveProperty("repo");
+    expect(RAW.source).not.toHaveProperty("commitDate");
+    expect(RAW.profile).not.toHaveProperty("source");
     expect(RAW.profile).toBeTypeOf("object");
+  });
+
+  it("modela la forma 0.4: bios[] por plataforma y active{} por plataforma", () => {
+    const bios = RAW.profile.bios as Record<string, unknown>[];
+    expect(Array.isArray(bios)).toBe(true);
+    expect(bios.length).toBeGreaterThan(0);
+    for (const bio of bios) {
+      expect(bio).toMatchObject({
+        platform: expect.any(String),
+        lang: expect.any(String),
+        length: expect.any(String),
+        text: expect.any(String)
+      });
+    }
+    const active = RAW.profile.active;
+    expect(active).toBeTypeOf("object");
+    expect(Array.isArray(active)).toBe(false);
   });
 
   it("el engine del fixture satisface el contrato (nombre aceptado + versión >= mínimo)", () => {
@@ -78,7 +101,9 @@ describe("fixture export — contrato y forma", () => {
     const wrongName = { name: "profile-as-code", version: RAW.engine.version };
     expect(engineProblems(wrongName).some((p) => p.includes("engine.name"))).toBe(true);
 
-    const old = { name: RAW.engine.name, version: "0.3.6" };
+    // 0.3.7 es el último engine con la forma vieja (`bios` mapa, `active`
+    // booleano): el mínimo 0.4.0 lo rechaza. Si el mínimo retrocede, este test cae.
+    const old = { name: RAW.engine.name, version: "0.3.7" };
     expect(engineProblems(old).some((p) => p.includes("mínimo"))).toBe(true);
 
     const clone = JSON.parse(JSON.stringify(RAW)) as FixtureEnvelope;
@@ -162,15 +187,23 @@ describe("fixture export — chequeo de sync:check", () => {
 
   it("un fixture que deja pasar un privado es un problema reportado", () => {
     const leaky = JSON.parse(JSON.stringify(RAW)) as FixtureEnvelope;
-    (leaky.profile.artifacts as Record<string, unknown>[]).push({
+    const artifacts = leaky.profile.artifacts as Record<string, unknown>[];
+    const leaked: Record<string, unknown> = {
       id: "private-artifact",
       kind: "repository",
       title: "Leak",
-      locator: { url: "https://example.test/private/artifact" }
-    });
-    // El filtro lo descarta: el fixture sigue pasando. El chequeo detecta la
-    // fuga sólo si el filtro se rompe; forzamos el caso quitando la marca.
-    (leaky.profile.artifacts as Record<string, unknown>[])[2].visibility = "public";
+      locator: { url: "https://example.test/private/artifact" },
+      visibility: "private"
+    };
+    artifacts.push(leaked);
+    // Con el filtro privado intacto la entrada NO viaja al snapshot: el payload
+    // sigue siendo válido y el gate no reporta nada. Esta aserción se pone roja
+    // si el filtro se rompe (el artefacto privado aparecería y el chequeo lo caza).
+    expect(checkFixture(leaky).problems).toEqual([]);
+
+    // El defecto que el gate debe cazar: la marca de visibilidad se pierde
+    // (ausente = público por contrato), así que el artefacto privado se publica.
+    delete leaked.visibility;
     const { problems } = checkFixture(leaky);
     expect(problems.some((p) => p.includes("private-artifact"))).toBe(true);
   });

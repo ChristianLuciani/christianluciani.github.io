@@ -2,9 +2,7 @@
   "schemaVersion": "1",
   "engine": { "name": "@profile-as-code/cli", "version": "0.4.0" },
   "source": {
-    "repo": "https://example.test/anon/profile-data.git",
     "commit": "0123456789abcdef0123456789abcdef01234567",
-    "commitDate": "2026-10-01",
     "generatedAt": null
   },
   "profile": {
@@ -158,8 +156,13 @@
       "seo": { "fixture": ["anonymized"] },
       "geo": { "associations": ["fixture"], "claims": ["fixture claim"] }
     },
-    "bios": { "en": "should not be projected", "es": "no debe proyectarse" },
+    "bios": [
+      { "platform": "github-readme", "lang": "en", "length": "short", "text": "should not be projected" },
+      { "platform": "github-readme", "lang": "es", "length": "short", "text": "no debe proyectarse" }
+    ],
     "faq": [],
-    "active": true
+    "active": {
+      "github-readme": { "lang": "en", "variantId": "gh-readme-en-1", "chosenAt": "2026-10-01T00:00:00.000Z" }
+    }
   }
 }

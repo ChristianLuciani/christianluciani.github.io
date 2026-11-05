@@ -178,12 +178,12 @@ registro de temas— se especifica en §8, que el gate excluye por nombrar archi
 ```
 sync-profile [--now <iso8601>] [--report]
   1. workspace: $PROFILE_DATA_PATH del entorno (o .env)
-  2. engine (>= 0.3.7): `pasco export profile --json --workspace <ws>` — la ÚNICA
+  2. engine (>= 0.4.0): `pasco export profile --json --workspace <ws>` — la ÚNICA
      fuente de datos. El script no parsea YAML ni valida con Ajv: consume el
      `LoadedProfile` compilado por el motor (profile-as-code SPEC §7.5, #348).
      Si pasco falta o es viejo, el error imprime el comando de instalación exacto.
   3. `pasco doctor --json` aporta la etiqueta completa del contrato (`schema.version`);
-     el export 0.3.7 sólo trae el major.
+     el export 0.4.0 sólo trae el major.
   4. proyección explícita LoadedProfile → CvProfile (sección 5.2; NO es un dump):
      sólo los roots/fields que el CV usa. `credentials[]`/`artifacts[]` se filtran a
      `visibility: public` (ausente = público; `private` y `unlisted` quedan fuera,
@@ -191,7 +191,7 @@ sync-profile [--now <iso8601>] [--report]
      `evidence[].source`) a locators o verifyUrls no públicos.
   5. emit  src/data/profile.generated.ts con header AUTO-GENERATED + metadata:
      `profile-data @ <sha>` (pinPattern del gate), `engine @ <version> · schema v<label>`
-     (label = `schema.version` de `pasco doctor`; vigente al 2026-11-03: v1.15) y
+     (label = `schema.version` de `pasco doctor`; vigente al 2026-11-05: v1.16) y
      `generatedAt` (null salvo --now) — GEO/auditabilidad.
   6. --report: lista hechos sin traducción ES, urls fuera de identity.links, etc.
 ```

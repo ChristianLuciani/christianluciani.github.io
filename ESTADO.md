@@ -1,7 +1,7 @@
 # ESTADO — christianluciani.github.io (CV de Christian Luciani)
 
 > Archivo de re-entrada rápida. Actualizar al final de cada sesión.
-> Última actualización: 2026-11-03 (sync de perfil: `pasco export profile`, `CvProfile` y reconciliación del pase freso)
+> Última actualización: 2026-11-05 (reconciliación post-#123: engine 0.4.0 · schema v1.16)
 
 ## Desplegado en
 https://christianluciani.github.io/  (raíz · base "/")
@@ -11,11 +11,11 @@ https://christianluciani.github.io/  (raíz · base "/")
 ## ✅ Sync de perfil — `pasco export profile` (rama `dsh/sprint/107`, #107)
 
 - `tools/sync-profile.ts` dejó de reimplementar el motor: consume `pasco export profile --json`
-  (engine >= 0.3.7) y proyecta `LoadedProfile → CvProfile` (`src/data/profile.types.ts`).
+  (engine >= 0.4.0) y proyecta `LoadedProfile → CvProfile` (`src/data/profile.types.ts`).
   Sin parseo de YAML ni validación Ajv local; error explícito con el comando de instalación
   si el engine falta o es viejo.
 - Header del snapshot: `profile-data @ <sha>` (el pinPattern del gate de `profile-data`),
-  `engine @ 0.3.7 · schema v1.15` (label vigente al 2026-11-03, derivada de `pasco doctor`)
+  `engine @ 0.4.0 · schema v1.16` (label vigente al 2026-11-05, derivada de `pasco doctor`)
   y `generatedAt` (`null` salvo `--now`). Contrato documentado
   en `docs/SPEC.md` §5.1/§5.2.
 - Proyección pública: `credentials`/`artifacts` filtrados a `visibility: public` (ausente =

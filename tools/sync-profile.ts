@@ -43,10 +43,10 @@ import type {
 ────────────────────────────────────────────── */
 
 /** Mínimo del contrato de export: `pasco export profile` + `doctor --json` (SPEC §7.6). */
-export const MIN_ENGINE_VERSION = "0.3.7";
+export const MIN_ENGINE_VERSION = "0.4.0";
 /** Identidad que el engine real emite en `export profile` (`engine.name`, v0.4.0). */
 export const ENGINE_NAME = "@profile-as-code/cli";
-const ENGINE_INSTALL = "npm install -g @profile-as-code/cli@0.3.7";
+const ENGINE_INSTALL = "npm install -g @profile-as-code/cli@0.4.0";
 const ENGINE_HINT = `Instalá/actualizá el engine:\n  ${ENGINE_INSTALL}`;
 
 function loadDotEnv(file: string): void {
@@ -204,8 +204,8 @@ export function exportProfile(
 }
 
 /** `pasco doctor --json` reporta el CONTRATO que el engine valida (`schema.version`).
- *  El export de 0.3.7 sólo trae el major (`schemaVersion: "1"`); el header del CV
- *  necesita la etiqueta completa (v1.15). Metadata del engine, no datos del perfil. */
+ *  El export de 0.4.0 sólo trae el major (`schemaVersion: "1"`); el header del CV
+ *  necesita la etiqueta completa (v1.16). Metadata del engine, no datos del perfil. */
 export function schemaLabel(workspace: string): string {
   const envelope = JSON.parse(pasco(["doctor", "--json", "--workspace", workspace])) as {
     ok?: boolean;

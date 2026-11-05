@@ -133,7 +133,9 @@ export function headerProblems(source: string, profile: CvProfile): string[] {
 export interface FixtureEnvelope {
   schemaVersion: string;
   engine: { name: string; version: string };
-  source: { repo?: string; commit: string; commitDate?: string | null; generatedAt?: string | null };
+  /** `data.source` del export (0.4.0): sólo `commit` y `generatedAt`. `repo` y
+   *  `commitDate` los agrega el consumidor desde git; NO viajan en el payload. */
+  source: { commit: string; generatedAt?: string | null };
   profile: Record<string, unknown>;
 }
 
@@ -159,11 +161,13 @@ const FIXTURE_HIDDEN_MARKERS = [...FIXTURE_PRIVATE_MARKERS, ...FIXTURE_UNLISTED_
 export function renderFixture(raw: unknown): { source: string; profile: CvProfile } {
   const fixture = raw as FixtureEnvelope;
   assertSchemaVersion(String(fixture.schemaVersion ?? ""));
+  // `repo`/`commitDate` los deriva el consumidor del workspace (`gitInfo`); el
+  // export no los emite y el fixture no los inventa. Sin workspace no hay git.
   const source: CvSource = {
-    repo: fixture.source?.repo ?? "",
+    repo: "",
     commit: fixture.source?.commit ?? "",
-    commitDate: fixture.source?.commitDate ?? null,
-    generatedAt: null
+    commitDate: null,
+    generatedAt: fixture.source?.generatedAt ?? null
   };
   const profile = projectProfile(fixture.profile, source, emptyReport());
   return { source: renderSource(profile, fixture.engine.version, fixture.schemaVersion), profile };
