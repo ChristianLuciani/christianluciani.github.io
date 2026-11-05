@@ -4,7 +4,11 @@ name: CI
 # build or failing test is caught before it reaches the deployed site.
 
 on:
+  # `edited` no es cosmético: la guarda del golden lee el body del PR, así que
+  # quitar o agregar la declaración "Render: cambia" tiene que re-ejecutar el
+  # job — si no, un verde viejo sobrevive al body que lo justificaba.
   pull_request:
+    types: [opened, synchronize, reopened, edited]
   # `main` también: un push directo (o un merge) no puede quedar sin tests. El
   # index.html commiteado y el módulo del logo se verifican acá; el deploy los
   # construye pero no corre la suite.
@@ -22,6 +26,7 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      - run: npm run typecheck
       # Invariante I1 (ADR-001): el golden del render no se mueve en un PR de
       # refactor. Si cambia, el PR tiene que declararlo; sin declaración, un
       # "cambio de render + golden regenerado" pasaría verde sin que nadie lo vea.

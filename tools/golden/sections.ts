@@ -128,11 +128,31 @@ export function sectionDrifts(golden: string, live: string): Drift[] {
   return drifts;
 }
 
+/**
+ * Recorta dos líneas alrededor del punto donde divergen.
+ *
+ * Cortar desde el inicio (las primeras N columnas) hacía que, en líneas largas,
+ * esperado y actual se vieran idénticos: el mensaje perdía justo el carácter
+ * que cambió. Se quita el prefijo común y se conserva contexto a cada lado.
+ */
+function clip(expected: string, actual: string, width = 160): [string, string] {
+  const max = Math.min(expected.length, actual.length);
+  let start = 0;
+  while (start < max && expected[start] === actual[start]) start += 1;
+  const lead = Math.max(0, start - 40);
+  const from = lead;
+  const to = start + width;
+  const cut = (text: string): string =>
+    `${lead > 0 ? "…" : ""}${text.slice(from, to)}${to < text.length ? "…" : ""}`;
+  return [cut(expected), cut(actual)];
+}
+
 /** Mensaje accionable a partir de una deriva. */
 export function describeDrift(d: Drift): string {
+  const [expected, actual] = clip(d.expected, d.actual);
   return (
     `sección "${d.section}" cambió en la línea ${d.line}\n` +
-    `  esperado: ${d.expected.slice(0, 200)}\n` +
-    `  actual:   ${d.actual.slice(0, 200)}`
+    `  esperado: ${expected}\n` +
+    `  actual:   ${actual}`
   );
 }
