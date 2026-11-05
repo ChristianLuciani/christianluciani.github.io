@@ -208,13 +208,21 @@ describe("sección Ahora — HTML estático", () => {
     expect(html).toContain("https://x.test/a?b=1&amp;c=2");
   });
 
-  it("NO entra a JSON-LD ni declara FAQPage (es chrome, no hecho citable)", () => {
+  it("NO entra a JSON-LD (es chrome, no hecho citable)", () => {
     const ld = [...INDEX_HTML.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)]
       .map((match) => match[1])
       .join("\n");
     expect(ld.length).toBeGreaterThan(0);
-    expect(ld).not.toMatch(/FAQPage/);
-    for (const item of NOW.items) expect(ld).not.toContain(item.url);
+    // #140: el sitio ahora PUBLICA un `FAQPage` derivado del SSOT (`faq[]` del
+    // perfil). La premisa vieja de este test («no existe ningún FAQPage») medía
+    // la ausencia de la superficie, no el invariante: lo que no puede entrar al
+    // JSON-LD es el FEED. Se mide el hecho (ningún item del feed, ni su URL ni
+    // su título, en ningún nodo) en lugar del proxy.
+    expect(ld).toMatch(/"@type": "FAQPage"/);
+    for (const item of NOW.items) {
+      expect(ld).not.toContain(item.url);
+      expect(ld).not.toContain(item.title);
+    }
     expect(INDEX_HTML).not.toMatch(/llms\.txt/);
     expect(nowHtml().match(/class="now-item"/g) ?? []).toHaveLength(NOW.items.length);
   });

@@ -97,6 +97,29 @@ jobs:
           npm run build
           ! grep -q 'data-local=' dist/index.html
           grep -q 'href="/assets/brand/favicon-aurea-teal.svg"' dist/index.html
+          # Política IA + entidad en la RAÍZ del dominio (#140): `public/` se
+          # copia tal cual a `dist/` y el deploy sirve esos bytes. Se verifica el
+          # artefacto de build, no el fuente: un plugin que deje de copiarlos se ve acá.
+          for file in robots.txt llms.txt AI-POLICY.md ; do
+            test -f "dist/$file" || { echo "falta dist/$file"; exit 1; }
+            cmp "dist/$file" "public/$file" || { echo "dist/$file ≠ public/$file"; exit 1; }
+          done
+          # el JSON-LD de la entidad se DERIVA (#140): se parsea el HTML servido
+          # y se exige UN Person de primer nivel con @id y UN FAQPage con preguntas
+          # (contar strings sería ciego: el @graph de ScholarlyArticle también
+          # menciona `Person` como autor).
+          node -e '
+            const fs = require("fs");
+            const html = fs.readFileSync("dist/index.html", "utf8");
+            const blocks = [...html.matchAll(/<script type="application\/ld\+json">\n([\s\S]*?)\n<\/script>/g)].map((m) => JSON.parse(m[1]));
+            const nodes = blocks.flatMap((n) => (n["@graph"] ? n["@graph"] : [n]));
+            const people = nodes.filter((n) => n["@type"] === "Person");
+            const faq = nodes.filter((n) => n["@type"] === "FAQPage");
+            if (people.length !== 1) throw new Error(`Person: esperado 1, hay ${people.length}`);
+            if (people[0]["@id"] !== "https://christianluciani.github.io") throw new Error("Person sin @id canónico");
+            if (faq.length !== 1) throw new Error(`FAQPage: esperado 1, hay ${faq.length}`);
+            if (!Array.isArray(faq[0].mainEntity) || faq[0].mainEntity.length !== 4) throw new Error("FAQPage: se esperaban 4 preguntas");
+          '
           # un index.html commiteado en modo CDN rompe build.test.ts; este gate
           # lo dice con el diff, no con un test de 10 líneas de distancia
           git diff --exit-code -- index.html

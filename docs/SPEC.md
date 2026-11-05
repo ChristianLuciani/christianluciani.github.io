@@ -19,7 +19,7 @@ Ese refactor parametrizó la **estructura** (salas, nav, numeración, i18n estru
 | `src/templates/sala_html.ts` (`ROOM_BODY`) | perfil, proyectos, experiencia, publicaciones, competencias — mezclado con `data-scroll`, estilos inline, canvases |
 | `src/cv/i18n.ts` | diccionario ES→EN de **182 claves** escrito a mano |
 | `src/templates/print_cv_html.ts` | CV imprimible: **duplica** perfil, experiencia, formación, publicaciones, competencias |
-| `src/templates/head_html.ts` | **duplica** persona/links (JSON-LD Person) + publicaciones (JSON-LD ScholarlyArticle) |
+| `src/templates/head_html.ts` | persona/links (JSON-LD Person) — **derivado del SSOT desde #140**; publicaciones (JSON-LD ScholarlyArticle) siguen **a mano** |
 | `src/templates/hero_html.ts` | nombre + tagline hardcodeados |
 | `src/cv/intro.ts` | frases del intro hardcodeadas |
 | `src/ts/graph/grafo.ts` | nodos de la constelación hardcodeados |
@@ -110,6 +110,11 @@ profile-data (PRIVADO · SSOT factual — se edita SOLO ahí)
         ▼
 christianluciani.github.io (PÚBLICO · deploy surface)
   src/data/profile.generated.ts    ← AUTO-GENERATED (commiteado; D1). Jamás a mano.
+  src/data/entity.generated.ts     ← AUTO-GENERATED (#140): JSON-LD Person + FAQPage,
+                                     tal cual los emite el assembler del engine.
+  public/robots.txt                ← AUTO-GENERATED (#140): política IA del SSOT
+  public/llms.txt                    (retrieval permitido / training bloqueado).
+  public/AI-POLICY.md                Vite copia public/ a la raíz de dist/.
   src/content/curation/<id>.ts     ← CAPA DE CURACIÓN (D8): qué se presenta, orden y
                                      exclusiones con razón. Referencia el SSOT por id.
   src/themes/<id>/narrative.ts     ← NARRATIVA (D10): salas, orden, metáforas, labels,
@@ -201,12 +206,46 @@ sync-profile [--now <iso8601>] [--report]
 Puro, determinista, sin red: mismo input → mismo output byte a byte (komuno VI/X).
 El reloj no entra: `source.generatedAt` es `null` salvo `--now` explícito.
 
+**La capa legible por máquina también deriva del SSOT (#140).** El objetivo 4
+(exactamente los mismos hechos byte-consistentes en JSON-LD, print-CV y salas) no
+se cumple si el `Person` se escribe a mano: hasta #140 el bloque publicado decía
+`jobTitle: "Independent Researcher"` contra `Strategic Systems Consultant` del
+SSOT, omitía `@id`/`description`/`email`/7 de los 12 `sameAs`, y no existía
+`FAQPage`. Dos pipelines más, mismo contrato de determinismo y procedencia:
+
+```
+sync-entity [--workspace <ws>] [--out <file>] [--now <iso8601>]
+  1. `pasco entity --json`      → la vista congelada: schemaVersion, entity, gaps, faqJsonLd.
+     Refusa si schemaVersion ≠ 1 o si la entidad no declara `@id` (el engine nunca
+     lo inventa; sin ancla no hay consistencia cross-surface).
+  2. `pasco entity --jsonld --bare` → los nodos EXACTOS del assembler que embeden los
+     renderers del engine: el script no re-arma el JSON-LD (un segundo emisor es el
+     bug que #140 cierra). Verifica que `--json` y `--jsonld` declaren el mismo
+     número de nodos.
+  3. `pasco doctor --json` → versión del engine del header.
+  4. emit src/data/entity.generated.ts (`ENTITY = { source, nodes } as const`) con el
+     MISMO formato de header que el perfil: `profile-data @ <sha> · generatedAt null`,
+     `engine @ <v> · schema v<label>`.
+
+sync-ai-policy [--workspace <ws>] [--out <dir>]     (default: public/)
+  `pasco export ai-policy --out <dir>` → robots.txt + llms.txt + AI-POLICY.md.
+  Postura: los crawlers de `ai-retrieval` con `Allow: /`, los de `ai-training` con
+  `Disallow: /`, lista EXPLÍCITA sin `User-agent: *` (un wildcard bloquearía también
+  a los buscadores que la política no nombra). El engine refusa pisar un archivo que
+  no generó él: un `robots.txt` escrito a mano hace fallar el sync, no se borra.
+```
+
+Los tres artefactos de `public/` y `entity.generated.ts` **se commitean** como
+snapshot de deploy: el workflow de CI no tiene acceso al repo privado, así que el
+gate es `sync:check` (capas abajo) y no una generación en CI. Vite copia `public/`
+a la raíz de `dist/`, así que `/robots.txt` y `/llms.txt` se sirven sin plugin.
+
 **Frescura ≠ render — `npm run sync:check` (#110).** El gate de frescura (pin
 ancestro de HEAD y `content/` sin cambios) puede estar verde con **cero
 consumidores** (#99). `sync:check` agrega el gate de render:
 
 ```
-sync-check [--workspace <path>] [--generated <path>]
+sync-check [--workspace <path>] [--generated <path>] [--entity <path>]
   1. self:      header coherente con `PROFILE.source` y el archivo es
                 byte-idéntico a `renderSource(PROFILE, engine, schema)`.
                 Re-renderiza el `PROFILE` importado del propio archivo: prueba
@@ -219,24 +258,71 @@ sync-check [--workspace <path>] [--generated <path>]
   3. workspace: si hay `PROFILE_DATA_PATH` (o `--workspace`), recién ahí corre
                 el pipeline real (`pasco export`) y compara byte a byte; exit 1
                 con archivo:línea exacto.
+  4. entity-self:      idem 1 sobre `src/data/entity.generated.ts` (`ENTITY`).
+  5. entity-fixture:   `src/data/fixtures/entity-jsonld.json` —forma del assembler
+                con hechos de ejemplo—: determinismo, 1 `Person` con `@id`,
+                `@context` schema.org y ningún `FAQPage` vacío ni pregunta sin
+                `citation`.
+  6. entity-workspace: `pasco entity --jsonld` + `--json`, compara byte a byte.
+  7. policy-self:      los 3 artefactos de `public/` existen y la postura no se
+                degradó ESTRUCTURALMENTE. `robots.txt` se parsea con la semántica
+                del crawler (RFC 9309): §2.1 —el grupo termina con un `user-agent`
+                o EOF, NO con una línea en blanco— y §2.2.1 —los grupos que
+                matchean el mismo product token se COMBINAN en un conjunto efectivo
+                (case-insensitive)—. Sobre ese conjunto se exige: ningún
+                `User-agent: *`, todo `User-agent` con product token válido, al
+                menos un agente de retrieval (`Allow: /` exclusivo) y uno de training
+                (`Disallow: /` exclusivo), y ningún agente con ambas (a igual match
+                gana `Allow`, §2.2.2). `llms.txt` con heading de índice.
+                LÍMITES declarados (no fail-open del artefacto, sí del modelo):
+                (a) NO verifica el mapa agente↔postura — qué crawler va en cada
+                conjunto vive en el registro del engine y duplicarlo acá sería
+                una segunda fuente; lo prueba `policy-workspace` o el `--check`
+                del engine (`profile-as-code#477`);
+                (b) NO modela el matching por path de §2.2.2 (`Disallow: /` +
+                `Allow: /legal`, o `Disallow: /private` bajo un `Allow: /`) ni
+                los patrones no-raíz (`/**`, `*`): un `robots.txt` con
+                excepciones por path tiene una postura que esta capa no deriva.
+                El engine no emite excepciones y `policy-workspace` compara byte
+                a byte, así que el artefacto commiteado no queda expuesto; un
+                archivo editado a mano con excepciones sí. Cerrar el modelo es
+                del engine (`profile-as-code#477`), no de otro gate local.
+  8. policy-workspace: `pasco export ai-policy` a un tmpdir y compara los 3 bytes.
 ```
 
-Sin `--workspace` el pipeline **no se invoca**: la capa 1 compara el archivo
-consigo mismo y la capa 2 corre un fixture, así que ninguna prueba paridad de
-contenido contra el SSOT. **Sólo la capa 3 compara contenido**: sin ella el
-cierre cuenta las capas verificadas, nombra las que quedaron fuera con su razón
-y dice `PARCIAL` (nunca `✅ OK`) cuando `verified < total` — en CI es
-`PARCIAL — 2/3 (self, fixture)` con `workspace` declarada no verificada; con
-`--workspace` y todo verde es `✅ OK — 3/3`. El exit code sigue 0 sin workspace:
-CI no tiene el repo privado. CI corre las capas 1–2 más el guard de consumidores
+Sin `--workspace` los pipelines **no se invocan**: las capas `self` comparan cada
+archivo consigo mismo y los `fixture` corren payloads anonimizados, así que ninguna
+prueba paridad de contenido contra el SSOT. **Sólo las capas `workspace` comparan
+contenido**: sin ellas el cierre cuenta las capas verificadas, nombra las que
+quedaron fuera con su razón y dice `PARCIAL` (nunca `✅ OK`) cuando
+`verified < total` — en CI es `PARCIAL — 5/8` (perfil self+fixture, entidad
+self+fixture, policy self) con las tres de paridad declaradas no verificadas; con
+`--workspace` y todo verde es `✅ OK — 8/8`. El exit code sigue 0 sin workspace:
+CI no tiene el repo privado. CI corre las capas sin workspace más el guard de consumidores
 (`src/data/consumers.test.ts`): falla si ningún módulo de **render**
 (`templates/index.ts` o `templates/sala_html.ts`) importa `PROFILE` (sin
 comentarios ni `import type`; un importador de metadata no cuenta), si
 `templates/index.ts` deja de llamar `printCvHtml(PROFILE…)`, o si una superficie
 ya migrada al SSOT (El Friso/El Marco: `frisoHtml`, `marcoHtml`,
 `publicadosDe`, `proyectosDe`) deja de existir o de consumirlo — sin rama
-PENDIENTE desde que #109 está en `main`. La capa 3 es local/agente: nunca finge
-paridad de contenido.
+PENDIENTE desde que #109 está en `main`. Las capas `workspace` son local/agente:
+nunca fingen paridad de contenido.
+
+### 5.1b Shape de `entity.generated.ts` (#140)
+
+```ts
+export const ENTITY = {
+  source: { commit, generatedAt },       // pin del SSOT; generatedAt null por defecto
+  nodes: [Person, FAQPage?]              // tal cual los emite `pasco entity --jsonld --bare`
+} as const;
+```
+
+El orden de `nodes` es el del assembler del engine (entidad y después FAQ) y **no se
+reordena**: `head_html.ts` los serializa en ese orden. `Person` lleva `@id`
+(`https://christianluciani.github.io`), `description`, `jobTitle`, `email` y los 12
+`sameAs` del SSOT; `FAQPage` lleva las preguntas con su `citation`. El `@graph` de
+`ScholarlyArticle` sigue escrito a mano en `head_html.ts` (el engine no lo emite):
+fuera de alcance de #140.
 
 ### 5.2 Shape de `profile.generated.ts` (normalizado, NO espejo del schema)
 
@@ -402,7 +488,9 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 - Sala Biblioteca: `publications.yaml` (+ entrada institucional "guías" → project).
 - Sala Competencias: skills + languages.
 - Hero: nombre + tagline desde identity/headlines.
-- print-CV: renderer determinista (D4). JSON-LD: generado (Person + ScholarlyArticle).
+- print-CV: renderer determinista (D4). JSON-LD: `Person` + `FAQPage` **ya** derivados
+  del SSOT (#140); el `@graph` de `ScholarlyArticle` sigue escrito a mano — es lo que
+  falta para que el head no contenga ningún hecho editable.
 - MAP generado (D3). Templates dejan de contener hechos.
 - Tests: paridad por sala (generado == index.html commiteado), cobertura i18n (todo texto
   tiene EN+ES), JSON-LD válido, print-CV == SSOT (drift), tests de SALAS/render intactos.

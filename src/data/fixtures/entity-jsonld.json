@@ -1,0 +1,42 @@
+{
+  "_comment": "Fixture ANONIMIZADO de `pasco entity --jsonld --bare` (#140): mismo vocabulario que el engine, hechos de ejemplo. CI lo proyecta para probar el render determinista, el @id y la forma del FAQ SIN acceso al repo privado `profile-data`. No es el snapshot real: ese vive en `src/data/entity.generated.ts`.",
+  "schemaVersion": "1",
+  "nodes": [
+    {
+      "@context": "https://schema.org",
+      "@type": "Person",
+      "@id": "https://example.test",
+      "name": "Ada Lovelace",
+      "description": "Anonymized fixture entity.",
+      "email": "ada@example.test",
+      "jobTitle": "Fixture Engineer",
+      "sameAs": ["https://example.test/one", "https://example.test/two"],
+      "address": "Example City",
+      "worksFor": "Example Org"
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is this fixture?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A deterministic, anonymized entity projection.",
+            "citation": "https://example.test/ref"
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why does it exist?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "So CI can verify the render without the private workspace.",
+            "citation": "https://example.test/ref"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -20,7 +20,8 @@ christianluciani.github.io/
 ├── build.sh              ← Ensamblador opcional de src/
 ├── ESTADO.md             ← Estado actual y próximos pasos
 ├── vite.config.ts        ← Build con Vite (base "/")
-├── public/               ← Recursos servidos tal cual (audio, thumbs de papers, OG, QR)
+├── public/               ← Recursos servidos tal cual (audio, thumbs de papers, OG, QR,
+│                            robots.txt/llms.txt/AI-POLICY.md generados por sync:ai-policy)
 ├── src/ts/               ← Fractales/ilusiones en TypeScript (Koch, canvas)
 ├── assets/               ← Iconos inline + espejo vendored de marca (brand kit v1.2.0)
 ├── docs/
@@ -38,21 +39,26 @@ Sin frameworks ni dependencias de UI. La web publicada es un único `index.html`
 ## Datos del CV (SSOT)
 
 Los hechos del CV (trayectoria, proyectos, publicaciones, skills) viven en el repo
-privado `profile-data`; acá se commitea `src/data/profile.generated.ts`, una
-proyección pública que se regenera con `npm run sync:profile` (`PROFILE_DATA_PATH`).
-La frescura del pin no alcanza: `npm run sync:check` corre dos capas en CI —
-re-renderiza el `PROFILE` importado del propio archivo commiteado y exige
-byte-identidad (detecta cuerpo/header inconsistentes y drift del renderer, **no**
-autoría: un edit manual coherente es su propio render), y proyecta un fixture
-anonimizado (determinismo + filtro de `private`/`unlisted`, también en
-referencias). Esas capas **no invocan el pipeline** ni prueban paridad contra
+privado `profile-data`; acá se commitean tres snapshots de deploy que se regeneran
+desde el engine `pasco` (`PROFILE_DATA_PATH`):
+
+| Artefacto | Comando | Qué es |
+|---|---|---|
+| `src/data/profile.generated.ts` | `npm run sync:profile` | proyección pública del perfil |
+| `src/data/entity.generated.ts` | `npm run sync:entity` | JSON-LD `Person` + `FAQPage` (#140) |
+| `public/robots.txt` · `llms.txt` · `AI-POLICY.md` | `npm run sync:ai-policy` | política IA del SSOT (Vite la copia a la raíz de `dist/`) |
+
+La frescura del pin no alcanza: `npm run sync:check` corre ocho capas — sin
+workspace, en CI, verifica cada archivo contra su propio render y contra un fixture
+anonimizado (`self`/`fixture` del perfil, `entity-self`/`entity-fixture` de la
+entidad, `policy-self` de la política: determinismo, `@id`, postura sin
+`User-agent: *`). Esas capas **no invocan el pipeline** ni prueban paridad contra
 `profile-data`: **sólo `--workspace` (o `PROFILE_DATA_PATH`) compara contenido
-contra el SSOT**. Con `--workspace` se agrega esa capa real (`pasco export` +
-comparación byte a byte). Cuando `verified < total` el cierre dice `PARCIAL`
-(p. ej. `PARCIAL — 2/3` en CI) y nunca `✅ OK`; `OK — 3/3` sólo aparece con
-workspace y las tres capas verdes. Además corre el guard de consumidores — un
-snapshot al día sin ningún consumidor de **render** ya no pasa verde en
-silencio (#99, #110).
+contra el SSOT** (`workspace`, `entity-workspace`, `policy-workspace`, byte a
+byte). Cuando `verified < total` el cierre dice `PARCIAL` (en CI:
+`PARCIAL — 5/8`) y nunca `✅ OK`; `OK — 8/8` sólo aparece con workspace y las ocho
+capas verdes. Además corre el guard de consumidores — un snapshot al día sin
+ningún consumidor de **render** ya no pasa verde en silencio (#99, #110).
 
 ## Feed «Ahora» (chrome, no hecho citable)
 
