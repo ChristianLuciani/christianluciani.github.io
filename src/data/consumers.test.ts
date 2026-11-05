@@ -5,15 +5,17 @@
  * (#99): el snapshot se actualiza pero la página renderiza datos viejos o
  * hardcodeados. Este guard falla cuando:
  *
- * 1. ningún módulo no-test de `src/` importa `profile.generated` (demo ciega);
+ * 1. ningún módulo de RENDER de `src/` importa `profile.generated` (demo
+ *    ciega). Un importador de metadata (p. ej. `profile.provenance.ts`, que
+ *    sólo lee `PROFILE.source.commit`) no satisface el guard: se exige al menos
+ *    `templates/index.ts` o `templates/sala_html.ts`;
  * 2. el ensamblador del sitio (`templates/index.ts`) deja de alimentar el
  *    print-CV con `PROFILE` — se verifica la LLAMADA, no la mera presencia del
  *    símbolo ni el import;
- * 3. una superficie YA migrada al SSOT deja de consumirlo. El Friso/El Marco
- *    (#109) se activan cuando la migración está presente: detectamos su API
- *    (`frisoHtml`/`marcoHtml`, `publicadosDe`/`proyectosDe`) y a partir de ahí
- *    exigimos el import. Mientras la migración no esté en main, el guard lo
- *    declara como PENDIENTE en la salida en vez de fingir que la cubre.
+ * 3. una superficie YA migrada al SSOT deja de existir o deja de consumirlo.
+ *    El Friso/El Marco (#109) ya están en `main`: exigimos sus cuatro funciones
+ *    (`frisoHtml`/`marcoHtml`, `publicadosDe`/`proyectosDe`) y el import de
+ *    `PROFILE`. Renombrar/mover una superficie FALLA; no hay rama PENDIENTE.
  *
  * El predicado corre sobre el código SIN comentarios y NO acepta `import type`
  * (un tipo no es consumo runtime). Es análisis textual, no un grafo de módulos:
@@ -161,6 +163,33 @@ const contentOf = (rel: string): string => {
   return path ? read(path) : "";
 };
 
+/** Módulos que RENDERIZAN el sitio (no importadores de metadata). */
+const RENDER_CONSUMERS = ["src/templates/index.ts", "src/templates/sala_html.ts"];
+
+/**
+ * Superficies migradas al SSOT por #109 (ya en `main`). Cada predicado exige
+ * TODAS las funciones de la superficie: renombrar una sola la pone en rojo.
+ */
+const MIGRATED_SURFACES: Array<{
+  file: string;
+  label: string;
+  migrated: (src: string) => boolean;
+}> = [
+  {
+    file: "src/templates/sala_html.ts",
+    label: "El Friso/Marco (sala_html.ts)",
+    migrated: (src) =>
+      /export function frisoHtml\s*\(/.test(src) && /export function marcoHtml\s*\(/.test(src)
+  },
+  {
+    file: "src/data/proyectos.ts",
+    label: "El Marco (proyectos.ts)",
+    migrated: (src) =>
+      /export function publicadosDe\s*\(/.test(src) &&
+      /export function proyectosDe\s*\(/.test(src)
+  }
+];
+
 describe("predicado de import — comentarios y type-only no son consumo", () => {
   it("un import comentado no cuenta", () => {
     expect(
@@ -187,8 +216,12 @@ describe("predicado de import — comentarios y type-only no son consumo", () =>
 });
 
 describe("consumidores de PROFILE — la demo no puede estar ciega", () => {
-  it("al menos un módulo no-test consume el snapshot commiteado", () => {
-    expect(consumers.length).toBeGreaterThan(0);
+  it("al menos un módulo de RENDER consume el snapshot commiteado", () => {
+    const renderConsumers = consumers
+      .map((file) => relative(process.cwd(), file))
+      .filter((rel) => RENDER_CONSUMERS.includes(rel));
+    // `profile.provenance.ts` sólo lee metadata: no cuenta como render.
+    expect(renderConsumers.length).toBeGreaterThan(0);
   });
 
   it("el ensamblador del sitio (templates/index.ts) es consumidor", () => {
@@ -217,29 +250,33 @@ describe("consumidores de PROFILE — la demo no puede estar ciega", () => {
     expect(problems).toHaveLength(2);
   });
 
-  it("El Friso / El Marco (#109) consumen PROFILE cuando la migración está presente", () => {
-    const pending: string[] = [];
-    const surfaces: Array<{ file: string; migrated: (src: string) => boolean; label: string }> = [
-      {
-        file: "src/templates/sala_html.ts",
-        migrated: (src) => /export function (frisoHtml|marcoHtml|drahmaShowcase)\s*\(/.test(src),
-        label: "El Friso/Marco (sala_html.ts)"
-      },
-      {
-        file: "src/data/proyectos.ts",
-        migrated: (src) => /export function (publicadosDe|proyectosDe)\s*\(/.test(src),
-        label: "El Marco (proyectos.ts)"
-      }
-    ];
-    for (const surface of surfaces) {
+  it("El Friso / El Marco (#109) existen y consumen PROFILE (sin rama PENDIENTE)", () => {
+    for (const surface of MIGRATED_SURFACES) {
       const src = contentOf(surface.file);
       expect(src, `${surface.label} desapareció`).not.toBe("");
-      if (!surface.migrated(src)) {
-        pending.push(`${surface.label}: migración #109 aún no presente en este árbol (PR #118)`);
-        continue;
-      }
+      // #109 ya está en main: una superficie migrada no puede "faltar" y pasar.
+      expect(surface.migrated(src), `${surface.label} dejó de existir o fue renombrada`).toBe(true);
       expect(importsProfileText(src), `${surface.label} dejó de importar PROFILE`).toBe(true);
     }
-    for (const note of pending) console.warn(`[consumers] PENDIENTE: ${note}`);
+  });
+
+  it("el guard muerde: renombrar una función migrada rompe el predicado", () => {
+    for (const surface of MIGRATED_SURFACES) {
+      const src = contentOf(surface.file);
+      expect(surface.migrated(src), `${surface.label}: el árbol actual debería pasar`).toBe(true);
+      // Renombra el primer símbolo que el predicado exige.
+      const renamed = {
+        "src/templates/sala_html.ts": src.replace(
+          /export function frisoHtml\s*\(/,
+          "export function frisoRenombrado("
+        ),
+        "src/data/proyectos.ts": src.replace(
+          /export function publicadosDe\s*\(/,
+          "export function publicadosRenombrados("
+        )
+      }[surface.file]!;
+      expect(renamed, `${surface.label}: no se encontró la función a mutar`).not.toBe(src);
+      expect(surface.migrated(renamed), `${surface.label}: el rename no fue detectado`).toBe(false);
+    }
   });
 });

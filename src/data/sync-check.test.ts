@@ -4,7 +4,8 @@
  * Cubre las tres capas: diff byte a byte (archivo:línea), header que no miente
  * y detección end-to-end por CLI (`npm run sync:check`), incluida una copia con
  * un solo carácter cambiado. La paridad contra `profile-data` (capa workspace)
- * se corre localmente con `--workspace`; CI no tiene el repo privado.
+ * se corre localmente con `--workspace`; CI no tiene el repo privado, así que
+ * el cierre dice `PARCIAL` (nunca `✅ OK`) cuando `verified < total`.
  */
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -19,6 +20,7 @@ import {
   summaryLine,
   type CheckLayer
 } from "../../tools/sync-check";
+import { resolvePaths } from "../../tools/sync-profile";
 
 const COMMITTED = readFileSync(COMMITTED_PATH, "utf8");
 const TSX = resolve(process.cwd(), "node_modules", ".bin", "tsx");
@@ -96,7 +98,7 @@ describe("sync:check — capas sin workspace (modo CI)", () => {
     expect(result.notes.join("\n")).toMatch(/workspace: sin PROFILE_DATA_PATH/);
   });
 
-  it("contabilidad: 2/3 y workspace nombrada como NO verificada con su razón", () => {
+  it("contabilidad: PARCIAL 2/3 y workspace nombrada como NO verificada con su razón", () => {
     const result = runCheck();
     expect(result.layers.map((layer) => layer.name)).toEqual(["self", "fixture", "workspace"]);
     expect(result.layers.filter((layer) => layer.verified).map((layer) => layer.name)).toEqual([
@@ -107,9 +109,12 @@ describe("sync:check — capas sin workspace (modo CI)", () => {
     expect(summary).toContain("2/3 capa(s) verificada(s): self, fixture");
     expect(summary).toMatch(/no verificada\(s\): workspace/);
     expect(summary).toMatch(/sin PROFILE_DATA_PATH/);
+    // Con verified < total NO hay tilde de OK: el rótulo dice PARCIAL.
+    expect(summary).toContain("PARCIAL");
+    expect(summary).not.toContain("✅");
   });
 
-  it("contabilidad: con los tres layers verdes cuenta 3/3 (modo --workspace)", () => {
+  it("contabilidad: con los tres layers verdes cuenta OK 3/3 (modo --workspace)", () => {
     const green: CheckLayer[] = [
       { name: "self", verified: true, note: "self: render byte-idéntico" },
       { name: "fixture", verified: true, note: "fixture: proyección determinista" },
@@ -117,14 +122,17 @@ describe("sync:check — capas sin workspace (modo CI)", () => {
     ];
     const summary = summaryLine(green);
     expect(summary).toContain("3/3 capa(s) verificada(s): self, fixture, workspace");
+    expect(summary).toContain("sync:check OK");
+    expect(summary).not.toContain("PARCIAL");
     expect(summary).not.toContain("no verificada");
   });
 
-  it("CLI: archivo al día → exit 0 y cierre 2/3", () => {
+  it("CLI: archivo al día → exit 0 y cierre PARCIAL 2/3", () => {
     const copy = tempFile(COMMITTED);
     const { status, stdout } = runCli(["--generated", copy]);
     expect(status).toBe(0);
-    expect(stdout).toContain("sync:check OK");
+    expect(stdout).toContain("sync:check PARCIAL");
+    expect(stdout).not.toContain("✅ sync:check OK");
     expect(stdout).toContain("2/3 capa(s) verificada(s): self, fixture");
     expect(stdout).not.toContain("3/3");
   });
@@ -157,6 +165,46 @@ describe("sync:check — capas sin workspace (modo CI)", () => {
     const { status, stdout } = runCli(["--help"]);
     expect(status).toBe(0);
     expect(stdout).toContain("--workspace");
+  });
+});
+
+/**
+ * F2 — regresión de `loadDotEnv`: el `.env` documentado (`cp .env.example .env`)
+ * repoblaba `PROFILE_DATA_PATH=""` porque `""` es falsy, y los tests del modo CI
+ * corrían la capa workspace. Un valor DEFINIDO (aunque vacío) no se pisa.
+ */
+describe("resolvePaths — `.env` no pisa una variable definida (aunque sea vacía)", () => {
+  const KEY = "PROFILE_DATA_PATH";
+  let previous: string | undefined;
+
+  beforeEach(() => {
+    previous = process.env[KEY];
+  });
+
+  afterEach(() => {
+    if (previous === undefined) delete process.env[KEY];
+    else process.env[KEY] = previous;
+  });
+
+  function dotEnvDir(value: string): string {
+    const dir = mkdtempSync(join(tmpdir(), "sync-env-"));
+    tempDirs.push(dir);
+    writeFileSync(join(dir, ".env"), `${KEY}=${value}\n`, "utf8");
+    return dir;
+  }
+
+  it('`""` definido no se pisa desde .env (aislamiento del modo CI)', () => {
+    const dir = dotEnvDir("/tmp/workspace-desde-dotenv");
+    process.env[KEY] = "";
+    expect(resolvePaths(dir).workspace).toBe("");
+    expect(process.env[KEY]).toBe("");
+  });
+
+  it("una variable ausente sí se carga desde .env", () => {
+    const dir = dotEnvDir("/tmp/workspace-desde-dotenv");
+    delete process.env[KEY];
+    expect(resolvePaths(dir).workspace).toBe("/tmp/workspace-desde-dotenv");
+    expect(process.env[KEY]).toBe("/tmp/workspace-desde-dotenv");
   });
 });
 

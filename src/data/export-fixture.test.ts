@@ -11,7 +11,13 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { checkFixture, renderFixture, type FixtureEnvelope } from "../../tools/sync-check";
-import { assertSchemaVersion, emptyReport, projectProfile } from "../../tools/sync-profile";
+import {
+  assertSchemaVersion,
+  emptyReport,
+  engineProblems,
+  MIN_ENGINE_VERSION,
+  projectProfile
+} from "../../tools/sync-profile";
 import type { CvProfile, CvSource } from "./profile.types";
 
 const RAW = JSON.parse(
@@ -51,11 +57,33 @@ function project(): CvProfile {
 describe("fixture export — contrato y forma", () => {
   it("trae el envelope del engine: schemaVersion, engine, source, profile", () => {
     expect(RAW.schemaVersion).toBe("1");
-    expect(RAW.engine.name).toBe("profile-as-code");
+    // Identidad REAL del engine (v0.4.0): no un literal inventado por el fixture.
+    expect(RAW.engine.name).toBe("@profile-as-code/cli");
     expect(RAW.engine.version).toMatch(/^\d+\.\d+\.\d+$/);
     expect(RAW.source.commit).toMatch(/^[0-9a-f]{40}$/);
     expect(RAW.source.commitDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(RAW.profile).toBeTypeOf("object");
+  });
+
+  it("el engine del fixture satisface el contrato (nombre aceptado + versión >= mínimo)", () => {
+    expect(engineProblems(RAW.engine)).toEqual([]);
+    const [major, minor, patch] = RAW.engine.version.split(".").map(Number);
+    const [minMajor, minMinor, minPatch] = MIN_ENGINE_VERSION.split(".").map(Number);
+    expect(major * 1e6 + minor * 1e3 + patch).toBeGreaterThanOrEqual(
+      minMajor * 1e6 + minMinor * 1e3 + minPatch
+    );
+  });
+
+  it("un engine con nombre inventado o versión vieja es un problema reportado", () => {
+    const wrongName = { name: "profile-as-code", version: RAW.engine.version };
+    expect(engineProblems(wrongName).some((p) => p.includes("engine.name"))).toBe(true);
+
+    const old = { name: RAW.engine.name, version: "0.3.6" };
+    expect(engineProblems(old).some((p) => p.includes("mínimo"))).toBe(true);
+
+    const clone = JSON.parse(JSON.stringify(RAW)) as FixtureEnvelope;
+    clone.engine.name = "profile-as-code";
+    expect(checkFixture(clone).problems.some((p) => p.includes("engine.name"))).toBe(true);
   });
 
   it("schemaVersion desconocida FAIL (nunca se adivina otra generación)", () => {

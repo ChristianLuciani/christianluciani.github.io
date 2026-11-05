@@ -43,7 +43,9 @@ import type {
 ────────────────────────────────────────────── */
 
 /** Mínimo del contrato de export: `pasco export profile` + `doctor --json` (SPEC §7.6). */
-const MIN_ENGINE_VERSION = "0.3.7";
+export const MIN_ENGINE_VERSION = "0.3.7";
+/** Identidad que el engine real emite en `export profile` (`engine.name`, v0.4.0). */
+export const ENGINE_NAME = "@profile-as-code/cli";
 const ENGINE_INSTALL = "npm install -g @profile-as-code/cli@0.3.7";
 const ENGINE_HINT = `Instalá/actualizá el engine:\n  ${ENGINE_INSTALL}`;
 
@@ -51,7 +53,10 @@ function loadDotEnv(file: string): void {
   if (!existsSync(file)) return;
   for (const line of readFileSync(file, "utf8").split(/\r?\n/)) {
     const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)\s*$/i);
-    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+    // Una variable DEFINIDA gana al `.env`, aunque valga "" (ausente ≠ vacío):
+    // los tests aíslan el modo CI con `PROFILE_DATA_PATH=""` y no deben ser
+    // repoblados por el `.env` local.
+    if (m && process.env[m[1]] === undefined) process.env[m[1]] = m[2];
   }
 }
 
@@ -119,11 +124,31 @@ function semverLt(a: string, b: string): boolean {
   return false;
 }
 
-function assertEngineVersion(version: string): void {
-  if (semverLt(version, MIN_ENGINE_VERSION)) {
-    throw new Error(
-      `pasco ${version} es anterior al mínimo ${MIN_ENGINE_VERSION}. ${ENGINE_HINT}`
-    );
+/**
+ * Problemas de identidad/versión del engine declarado en un payload de export.
+ * No lanza: el caller decide (el pipeline asserta; `checkFixture` acumula).
+ * El nombre es el que el engine REAL emite (`@profile-as-code/cli`), no un
+ * literal inventado por el fixture.
+ */
+export function engineProblems(engine: { name?: unknown; version?: unknown } | undefined): string[] {
+  const problems: string[] = [];
+  const name = typeof engine?.name === "string" ? engine.name : "";
+  const version = typeof engine?.version === "string" ? engine.version : "";
+  if (name !== ENGINE_NAME) {
+    problems.push(`engine.name ${JSON.stringify(name)} ≠ ${JSON.stringify(ENGINE_NAME)} (identidad real del engine)`);
+  }
+  if (!version) {
+    problems.push("engine.version ausente");
+  } else if (semverLt(version, MIN_ENGINE_VERSION)) {
+    problems.push(`engine.version ${version} < mínimo ${MIN_ENGINE_VERSION}`);
+  }
+  return problems;
+}
+
+export function assertEngineIdentity(engine: { name?: unknown; version?: unknown } | undefined): void {
+  const problems = engineProblems(engine);
+  if (problems.length) {
+    throw new Error(`pasco export profile: ${problems.join("; ")}. ${ENGINE_HINT}`);
   }
 }
 
@@ -167,7 +192,7 @@ export function exportProfile(
     throw new Error(`pasco export profile no devolvió ok (exit ${envelope.exitCode})`);
   }
   const { engine, source, profile, schemaVersion } = envelope.data;
-  assertEngineVersion(String(engine?.version ?? ""));
+  assertEngineIdentity(engine);
   assertSchemaVersion(String(schemaVersion ?? ""));
   return {
     engine,

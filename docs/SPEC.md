@@ -221,15 +221,20 @@ sync-check [--workspace <path>] [--generated <path>]
 
 Sin `--workspace` el pipeline **no se invoca**: la capa 1 compara el archivo
 consigo mismo y la capa 2 corre un fixture, así que ninguna prueba paridad de
-contenido contra el SSOT. El cierre cuenta sólo capas efectivamente verificadas
-y nombra las que quedaron fuera con su razón: en CI es `2/3 (self, fixture)` con
-`workspace` declarada no verificada; con `--workspace` es `3/3`. CI corre las
-capas 1–2 (sin el repo privado) más el guard de consumidores
-(`src/data/consumers.test.ts`): falla si ningún módulo no-test importa `PROFILE`
-(sin comentarios ni `import type`), si `templates/index.ts` deja de llamar
-`printCvHtml(PROFILE…)`, o si una superficie ya migrada al SSOT (El Friso/El
-Marco) deja de consumirlo. La capa 3 es local/agente: nunca finge paridad de
-contenido.
+contenido contra el SSOT. **Sólo la capa 3 compara contenido**: sin ella el
+cierre cuenta las capas verificadas, nombra las que quedaron fuera con su razón
+y dice `PARCIAL` (nunca `✅ OK`) cuando `verified < total` — en CI es
+`PARCIAL — 2/3 (self, fixture)` con `workspace` declarada no verificada; con
+`--workspace` y todo verde es `✅ OK — 3/3`. El exit code sigue 0 sin workspace:
+CI no tiene el repo privado. CI corre las capas 1–2 más el guard de consumidores
+(`src/data/consumers.test.ts`): falla si ningún módulo de **render**
+(`templates/index.ts` o `templates/sala_html.ts`) importa `PROFILE` (sin
+comentarios ni `import type`; un importador de metadata no cuenta), si
+`templates/index.ts` deja de llamar `printCvHtml(PROFILE…)`, o si una superficie
+ya migrada al SSOT (El Friso/El Marco: `frisoHtml`, `marcoHtml`,
+`publicadosDe`, `proyectosDe`) deja de existir o de consumirlo — sin rama
+PENDIENTE desde que #109 está en `main`. La capa 3 es local/agente: nunca finge
+paridad de contenido.
 
 ### 5.2 Shape de `profile.generated.ts` (normalizado, NO espejo del schema)
 

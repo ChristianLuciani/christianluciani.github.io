@@ -23,9 +23,12 @@
  *      paridad de contenido contra el SSOT; sin ella el pipeline no se invoca.
  *
  * La línea de cierre cuenta sólo capas verificadas y declara las que quedaron
- * fuera (en CI: self + fixture = 2/3, workspace fuera con su razón). Exit 0 sólo
- * si todas las capas aplicables pasan; cualquier drift sale 1 con el
- * archivo:línea exacto (expected/actual) — nunca un "algo cambió".
+ * fuera (en CI: self + fixture = 2/3, workspace fuera con su razón). Cuando
+ * `verified < total` dice `PARCIAL`, NUNCA `✅ OK`: sin `--workspace` sólo
+ * `self`/`fixture` corrieron y ninguna compara contenido contra el SSOT. Exit 0
+ * se mantiene si todas las capas que sí corrieron pasan (CI no tiene el repo
+ * privado); cualquier drift sale 1 con el archivo:línea exacto
+ * (expected/actual) — nunca un "algo cambió".
  *
  * Uso:
  *   npm run sync:check
@@ -35,7 +38,15 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
-import { assertSchemaVersion, emptyReport, generateAll, projectProfile, renderSource, resolvePaths } from "./sync-profile";
+import {
+  assertSchemaVersion,
+  emptyReport,
+  engineProblems,
+  generateAll,
+  projectProfile,
+  renderSource,
+  resolvePaths
+} from "./sync-profile";
 import { PROFILE } from "../src/data/profile.generated";
 import type { CvProfile, CvSource } from "../src/data/profile.types";
 
@@ -160,20 +171,22 @@ export function renderFixture(raw: unknown): { source: string; profile: CvProfil
 
 /**
  * Invariantes que CI SÍ puede probar sin el repo privado:
- * schema aceptado, determinismo byte a byte y filtro de `private`/`unlisted`
- * en credenciales/artifacts (entradas Y referencias, incluida `identity.links`
- * y locators opacos que no llevan los marcadores canónicos). Nunca publica los
- * marcadores que vigila.
+ * identidad/versión del engine, schema aceptado, determinismo byte a byte y
+ * filtro de `private`/`unlisted` en credenciales/artifacts (entradas Y
+ * referencias, incluida `identity.links` y locators opacos que no llevan los
+ * marcadores canónicos). Nunca publica los marcadores que vigila.
  */
 export function checkFixture(raw: unknown): { problems: string[]; profile: CvProfile } {
   const problems: string[] = [];
+  const fixture = raw as FixtureEnvelope;
+  for (const problem of engineProblems(fixture?.engine)) problems.push(`engine: ${problem}`);
   let rendered: { source: string; profile: CvProfile };
   try {
     rendered = renderFixture(raw);
     const again = renderFixture(raw);
     if (rendered.source !== again.source) problems.push("proyección no determinista (dos corridas difieren)");
   } catch (err) {
-    return { problems: [(err as Error).message], profile: PROFILE as unknown as CvProfile };
+    return { problems: [...problems, (err as Error).message], profile: PROFILE as unknown as CvProfile };
   }
 
   const { source, profile } = rendered;
@@ -236,13 +249,17 @@ export interface CheckResult {
 
 /**
  * Línea de cierre del gate: cuenta SÓLO capas verificadas y nombra las que
- * quedaron fuera con su razón. 2/3 en modo CI (self + fixture) y 3/3 con
- * `--workspace`; nunca "3 capa(s)" cuando la paridad de contenido no corrió.
+ * quedaron fuera con su razón. Con `verified < total` dice `PARCIAL` (nunca
+ * `✅ OK`): en CI es `PARCIAL — 2/3` (self + fixture, sin paridad de contenido)
+ * y con `--workspace` es `✅ OK — 3/3`. El exit code no cambia por el rótulo:
+ * CI sigue verde sin workspace.
  */
 export function summaryLine(layers: readonly CheckLayer[]): string {
   const verified = layers.filter((layer) => layer.verified);
   const skipped = layers.filter((layer) => !layer.verified);
-  let line = `✅ sync:check OK — ${verified.length}/${layers.length} capa(s) verificada(s): ${
+  const complete = layers.length > 0 && skipped.length === 0;
+  const label = complete ? "✅ sync:check OK" : "⚠️ sync:check PARCIAL";
+  let line = `${label} — ${verified.length}/${layers.length} capa(s) verificada(s): ${
     verified.length ? verified.map((layer) => layer.name).join(", ") : "ninguna"
   }`;
   if (skipped.length) {
