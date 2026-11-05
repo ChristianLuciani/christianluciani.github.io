@@ -468,7 +468,9 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 - Sala Biblioteca: `publications.yaml` (+ entrada institucional "guías" → project).
 - Sala Competencias: skills + languages.
 - Hero: nombre + tagline desde identity/headlines.
-- print-CV: renderer determinista (D4). JSON-LD: generado (Person + ScholarlyArticle).
+- print-CV: renderer determinista (D4). JSON-LD: `Person` + `FAQPage` **ya** derivados
+  del SSOT (#140); el `@graph` de `ScholarlyArticle` sigue escrito a mano — es lo que
+  falta para que el head no contenga ningún hecho editable.
 - MAP generado (D3). Templates dejan de contener hechos.
 - Tests: paridad por sala (generado == index.html commiteado), cobertura i18n (todo texto
   tiene EN+ES), JSON-LD válido, print-CV == SSOT (drift), tests de SALAS/render intactos.
