@@ -4,14 +4,16 @@
  * Decisión pura y testeable: el baseline del render sólo puede moverse en un PR
  * que lo declara en el body. Vive acá —y no en YAML— para que la rama de fallo
  * tenga evidencia ejecutable: `tests/golden/policy.test.ts` cubre cada caso, y
- * `ci.yml` sólo aporta los tres datos (¿existe en la base?, ¿cambió?, ¿qué dice
- * el body?).
+ * `ci.yml` sólo aporta los datos (qué hay en la base, si cambió, qué dice el body).
  */
 import { spawnSync } from "node:child_process";
+import { BASELINE_PATH } from "./paths.ts";
 
 export interface PolicyInput {
-  /** El archivo existía en la base del PR: si no, este PR introduce el baseline. */
+  /** El archivo exacto existía en la base del PR. */
   baselineInBase: boolean;
+  /** Existía *algún* archivo en `tests/golden/`: el repo ya tenía baseline. */
+  goldenFamilyInBase: boolean;
   /** `tests/golden/museo.html` difiere entre base y head. */
   changed: boolean;
   /** Body del PR, tal cual. */
@@ -26,29 +28,43 @@ export interface PolicyResult {
 /**
  * La declaración, al inicio de una línea: `Render: cambia` (cambió la
  * presentación) o `Datos: cambia` (cambió el snapshot del perfil y el render lo
- * refleja). Sin una de las dos, mover el golden es un bypass.
- * Tolera las formas markdown habituales (`**Render:** cambia`, `### Datos: cambia`).
+ * refleja). Tolera las formas markdown habituales (`**Render:** cambia`,
+ * `### Datos: cambia`).
  */
 export const DECLARATION = /^[ \t>*_#-]*(render|datos)[ \t*_]*:[ \t*_]*cambia\b/im;
 
 /**
- * El body sin bloques de código: un ejemplo documentado en un fence no es una
- * declaración del PR — el README de este módulo lo contiene, y aceptarlo haría
- * que la guarda se auto-satisfaga.
+ * El body sin código: un ejemplo documentado no es una declaración del PR.
+ *
+ * Máquina de estados por línea, no regex: un fence SIN cerrar deja el resto del
+ * body como código (semántica markdown), y un fence de 4 backticks no lo cierra
+ * uno de 3. Con regex el caso sin cerrar quedaba vivo y la guarda se
+ * auto-satisfacía.
  */
 export function withoutCodeBlocks(body: string): string {
-  // Fences de 3+ backticks o tildes (``` y ~~~ son equivalentes; un fence de 4
-  // no lo cierra uno de 3) y bloques indentados de 4 espacios / tab, que también
-  // son código en markdown. Quitar de más sólo hace la guarda más estricta.
-  const withoutFences = body.replace(/(`{3,}|~{3,})[\s\S]*?\1/g, "");
-  return withoutFences
-    .split("\n")
-    .filter((line) => !/^( {4}|\t)/.test(line))
-    .join("\n");
+  const out: string[] = [];
+  let fence: string | null = null;
+
+  for (const line of body.split("\n")) {
+    const match = /^\s*(`{3,}|~{3,})/.exec(line);
+    if (fence) {
+      const closes = match && match[1][0] === fence[0] && match[1].length >= fence.length;
+      if (closes) fence = null;
+      continue;
+    }
+    if (match) {
+      fence = match[1];
+      continue;
+    }
+    // Bloque indentado (4 espacios o tab) también es código en markdown.
+    if (/^( {4}|\t)/.test(line)) continue;
+    out.push(line);
+  }
+  return out.join("\n");
 }
 
 export function decide(input: PolicyInput): PolicyResult {
-  if (!input.baselineInBase) {
+  if (!input.baselineInBase && !input.goldenFamilyInBase) {
     return { ok: true, reason: "baseline nuevo en este PR: la guarda rige desde el próximo" };
   }
   if (!input.changed) {
@@ -59,24 +75,28 @@ export function decide(input: PolicyInput): PolicyResult {
   }
   return {
     ok: false,
-    reason:
-      "tests/golden/museo.html cambió sin declarar 'Render: cambia' (o 'Datos: cambia') en el body del PR"
+    reason: `${BASELINE_PATH} cambió sin declarar 'Render: cambia' (o 'Datos: cambia') en el body del PR`
   };
 }
 
 /**
- * ¿El archivo existe en el commit `base`?
+ * Archivos del árbol de `base`.
  *
- * Lista el árbol y busca el path: `cat-file -e` devolvía el mismo fallo para
- * "el archivo no está" y "la ref no existe", y leerlo como "baseline nuevo"
+ * Una sola lectura de git: `cat-file -e` devolvía el mismo fallo para "el
+ * archivo no está" y "la ref no existe", y leerlo como "baseline nuevo"
  * apagaba la guarda justo cuando no podía responder.
  */
-export function existsIn(base: string, path: string, cwd = process.cwd()): boolean {
+export function treeOf(base: string, cwd = process.cwd()): string[] {
   const r = spawnSync("git", ["ls-tree", "-r", "--name-only", base], { cwd, encoding: "utf8" });
   if (r.status !== 0) {
     throw new Error(`no se pudo leer la base ${base}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
   }
-  return r.stdout.split("\n").includes(path);
+  return r.stdout.split("\n").filter(Boolean);
+}
+
+/** ¿El archivo existe en el commit `base`? */
+export function existsIn(base: string, path: string, cwd = process.cwd()): boolean {
+  return treeOf(base, cwd).includes(path);
 }
 
 /**
@@ -84,7 +104,7 @@ export function existsIn(base: string, path: string, cwd = process.cwd()): boole
  *
  * `git diff --quiet` usa el exit 1 para "hay diferencias" y >1 para error real
  * (ref ausente, repo roto): tratarlos igual convertía un fallo de git en "el
- * render cambió" — y un error de infraestructura se leía como decisión.
+ * render cambió".
  */
 export function changedSince(base: string, path: string): boolean {
   const r = spawnSync("git", ["diff", "--quiet", base, "HEAD", "--", path], { stdio: "ignore" });

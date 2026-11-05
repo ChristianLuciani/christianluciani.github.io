@@ -10,16 +10,21 @@ import { decide, existsIn } from "../../tools/golden/policy.ts";
  * acá, no en un `run:` de YAML que nunca se ejecuta en el PR que la introduce.
  */
 describe("golden — política de declaración", () => {
-  const base = { baselineInBase: true, changed: true, body: "" };
+  const base = { baselineInBase: true, goldenFamilyInBase: true, changed: true, body: "" };
 
   it("pasa sin declaración cuando el render no cambió", () => {
     expect(decide({ ...base, changed: false }).ok).toBe(true);
   });
 
   it("pasa sin declaración cuando el PR introduce el baseline", () => {
-    const r = decide({ ...base, baselineInBase: false });
+    const r = decide({ ...base, baselineInBase: false, goldenFamilyInBase: false });
     expect(r.ok).toBe(true);
     expect(r.reason).toContain("baseline nuevo");
+  });
+
+  it("no exime un rename del baseline (la familia ya existía)", () => {
+    const r = decide({ ...base, baselineInBase: false, goldenFamilyInBase: true, body: "" });
+    expect(r.ok).toBe(false);
   });
 
   it("falla si el golden cambió y el body no declara nada", () => {
@@ -71,6 +76,10 @@ describe("golden — política de declaración", () => {
 
   it("ignora un bloque de código indentado", () => {
     expect(decide({ ...base, body: "Ejemplo:\n\n    Render: cambia\n" }).ok).toBe(false);
+  });
+
+  it("un fence sin cerrar deja el resto del body como código", () => {
+    expect(decide({ ...base, body: "```\nRender: cambia\n" }).ok).toBe(false);
   });
 
   it("ignora un fence de cuatro backticks", () => {

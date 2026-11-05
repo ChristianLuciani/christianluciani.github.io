@@ -7,10 +7,8 @@
  * el que invoca `package.json`.
  */
 import { execFileSync } from "node:child_process";
-import { changedSince, decide, existsIn, type PolicyResult } from "./policy.ts";
 import { BASELINE_PATH } from "./paths.ts";
-
-const PATH = BASELINE_PATH;
+import { changedSince, decide, treeOf, type PolicyResult } from "./policy.ts";
 
 function main(): void {
   const base = process.env.BASE_SHA;
@@ -28,9 +26,13 @@ function main(): void {
 
   let result: PolicyResult;
   try {
+    const tree = treeOf(base);
     result = decide({
-      baselineInBase: existsIn(base, PATH),
-      changed: changedSince(base, PATH),
+      baselineInBase: tree.includes(BASELINE_PATH),
+      // Si ya había baseline en la base, una ruta "nueva" es un rename, no la
+      // introducción: no puede volver a ganar la exención.
+      goldenFamilyInBase: tree.some((path) => path.startsWith("tests/golden/")),
+      changed: changedSince(base, BASELINE_PATH),
       body: process.env.PR_BODY ?? ""
     });
   } catch (error) {

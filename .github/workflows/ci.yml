@@ -16,6 +16,11 @@ on:
     branches: [main]
   workflow_dispatch:
 
+# Este job sólo lee el repo y el PR: el token no necesita más que eso
+# (repo-config §1; deploy.yml declara su propio scope de Pages).
+permissions:
+  contents: read
+
 jobs:
   build-test:
     runs-on: ubuntu-latest

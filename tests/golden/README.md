@@ -51,7 +51,8 @@ cambia respecto de la base y el body del PR no contiene una línea `Render: camb
 pasar verde en silencio — que es la única forma de que el invariante sea real.
 
 El PR que introdujo el baseline queda exento (no hay contra qué comparar); la guarda rige
-desde el merge siguiente.
+desde el merge siguiente. La exención exige que la base **no tenga ningún** archivo en
+`tests/golden/`: renombrar o mover el baseline no la vuelve a ganar.
 
 ## Cómo lee el fallo
 
