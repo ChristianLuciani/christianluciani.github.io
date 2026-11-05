@@ -65,7 +65,7 @@ jobs:
           # marca: brand kit, no el repo del sitio
           # la marca incluye el logo del print-CV (#122): mismo resolvedor,
           # mismo pin del brand kit
-          for path in favicon-aurea-teal.svg favicon-aurea-teal-32.png favicon-aurea-teal-16.png apple-touch-icon-aurea.png logo-aurea-settled-print-a4.png ; do
+          for path in favicon-aurea-teal.svg favicon-aurea-teal-32.png favicon-aurea-teal-16.png apple-touch-icon-aurea.png logo-aurea-settled-512.png ; do
             grep -q "$BRAND_BASE/assets/logo/$path" dist/index.html || { echo "falta la marca $path"; exit 1; }
           done
           grep -q "content=\"$BASE/public/assets/og-image.png\"" dist/index.html

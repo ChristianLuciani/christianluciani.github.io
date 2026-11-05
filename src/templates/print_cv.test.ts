@@ -338,6 +338,15 @@ describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuen
     expect(existsSync(file)).toBe(true);
   });
 
+  it("F2 del pase fresco: la marca impresa no es una hoja A4 (peso y encuadre)", () => {
+    // El print-only se descarga en cada visita: una composición de página A4
+    // (325 KB) metida en 16 mm no aporta resolución y encuadra mal. El gate
+    // fija el techo de peso del asset elegido.
+    const file = resolve(process.cwd(), "assets", "brand", "logo", PRINT_LOGO_PATH.split("/").pop()!);
+    const bytes = readFileSync(file).byteLength;
+    expect(bytes).toBeLessThan(200_000);
+  });
+
   it("las reglas del CV salen de UNA constante declarada: el teal del brand", () => {
     expect(PRINT_RULE_COLOR).toBe("#00c9c0");
     // grep del print: no quedan grises fijos en las reglas del CV.

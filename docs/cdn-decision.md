@@ -182,8 +182,8 @@ Cada paso es reversible por separado.
 
 | Riesgo | Impacto | Mitigación |
 |---|---|---|
-| ToS de jsDelivr §6 (image hosting / grandes cantidades) | Baja aquí, media si el sitio crece a galería pesada | Servir sólo 8 archivos de marca/papers; audio y media quedan en Pages; revisar si el volumen crece |
-| Sin SLA, operador único | Caída = esos 8 assets no cargan | Mientras no exista el fallback (hoy no existe), el `src` canónico sigue siendo Pages y la CDN no es la única ruta; la migración implementa el fallback antes de retirar la copia local |
+| ToS de jsDelivr §6 (image hosting / grandes cantidades) | Baja aquí, media si el sitio crece a galería pesada | Servir sólo 9 archivos de marca/papers; audio y media quedan en Pages; revisar si el volumen crece |
+| Sin SLA, operador único | Caída = esos 9 assets no cargan | Mientras no exista el fallback (hoy no existe), el `src` canónico sigue siendo Pages y la CDN no es la única ruta; la migración implementa el fallback antes de retirar la copia local |
 | Tag malo es permanente en esa URL | Badge/OG roto para siempre | Taggear después de verificar el build (flujo de #54); corregir = `vX.Y.Z+1` |
 | Un archivo publicado en un tag no se puede retirar de esa URL | Fuga de un asset (dato personal en una imagen) queda servida | Revisar el diff de assets antes de taggear; retirar el archivo del repo no alcanza: hace falta tag nuevo y dejar de referenciar el viejo |
 | `@branch` con 12 h de caché | Preview viejo | Nunca usar `@main` en producción; sólo tags |
@@ -207,7 +207,7 @@ Cada paso es reversible por separado.
 
 ## Consecuencias
 
-- **Positivas:** 8 assets con caché de un año, CORS y borde en GYE sin cuenta ni CI; el tag
+- **Positivas:** 9 assets con caché de un año, CORS y borde en GYE sin cuenta ni CI; el tag
   pasa a ser útil fuera del repo; el peso muerto (23 MB de renders y ~300 KB de duplicados)
   deja de ser el argumento para migrar el sitio entero.
 - **Negativas:** esos assets dependen de un tercero sin SLA y con política de uso

@@ -18,8 +18,16 @@
 export const PRINT_RULE_COLOR = "#00c9c0";
 
 /**
- * Logo de impresión: la variante «settled» A4 del brand kit (marca asentada,
- * pensada para papel). Se sirve con `assetAttrsFor`, igual que los favicons:
- * el espejo local es fallback del pin del CDN, nunca un segundo pin.
+ * Logo de impresión: el MARK «settled» del brand kit (marca asentada, estática).
+ *
+ * POR QUÉ 512 y no `logo-aurea-settled-print-a4.png`: el `-print-a4` no es una
+ * marca sino una HOJA A4 compuesta (2480×3508) donde el mark ocupa 67%×48% de
+ * la página; metido en una caja de 16 mm se descarga entero (325 KB) para
+ * mostrar ~11 mm de marca con márgenes vacíos. El mark cuadrado de 512 px
+ * pesa 48 KB y a 16 mm rinde ~813 dpi (muy por encima de los 300 dpi de
+ * impresión). F2 del pase fresco de #122.
+ *
+ * Se sirve con `assetAttrsFor`, igual que los favicons: el espejo local es
+ * fallback del pin del CDN, nunca un segundo pin.
  */
-export const PRINT_LOGO_PATH = "/assets/brand/logo-aurea-settled-print-a4.png";
+export const PRINT_LOGO_PATH = "/assets/brand/logo-aurea-settled-512.png";
