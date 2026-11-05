@@ -274,10 +274,19 @@ sync-check [--workspace <path>] [--generated <path>] [--entity <path>]
                 menos un agente de retrieval (`Allow: /` exclusivo) y uno de training
                 (`Disallow: /` exclusivo), y ningún agente con ambas (a igual match
                 gana `Allow`, §2.2.2). `llms.txt` con heading de índice.
-                LÍMITE: NO verifica el mapa agente↔postura (qué crawler va en cada
-                conjunto): ese registro es del engine y duplicarlo acá sería una
-                segunda fuente. Ese mapa sólo lo prueba `policy-workspace` (o el
-                `--check` del engine: profile-as-code#477).
+                LÍMITES declarados (no fail-open del artefacto, sí del modelo):
+                (a) NO verifica el mapa agente↔postura — qué crawler va en cada
+                conjunto vive en el registro del engine y duplicarlo acá sería
+                una segunda fuente; lo prueba `policy-workspace` o el `--check`
+                del engine (`profile-as-code#477`);
+                (b) NO modela el matching por path de §2.2.2 (`Disallow: /` +
+                `Allow: /legal`, o `Disallow: /private` bajo un `Allow: /`) ni
+                los patrones no-raíz (`/**`, `*`): un `robots.txt` con
+                excepciones por path tiene una postura que esta capa no deriva.
+                El engine no emite excepciones y `policy-workspace` compara byte
+                a byte, así que el artefacto commiteado no queda expuesto; un
+                archivo editado a mano con excepciones sí. Cerrar el modelo es
+                del engine (`profile-as-code#477`), no de otro gate local.
   8. policy-workspace: `pasco export ai-policy` a un tmpdir y compara los 3 bytes.
 ```
 

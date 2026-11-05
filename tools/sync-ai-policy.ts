@@ -157,16 +157,21 @@ export function robotsAgents(text: string): Map<string, { key: string; value: st
  * los declara en su SPEC §12; acá se comprueba que el artefacto commiteado no se
  * degradó a mano.
  *
- * Se evalúa el conjunto EFECTIVO por agente (grupos combinados), no el grupo
- * sintáctico: un agente con `Allow: /` y `Disallow: /` en su unión queda
- * permitido por §2.2.2, aunque en el archivo los dos vivan en grupos distintos.
+ * MODELO DECLARADO — lo que este gate SÍ y NO mide (cerrado por `review-damping`,
+ * no por otro parche; la clase lleva 7 apariciones en el PR #140 porque el
+ * consumidor reimplementa RFC 9309 — instrumento: `profile-as-code#477`, que
+ * hace que el engine parsee el archivo):
  *
- * LÍMITE DECLARADO: se verifica la ESTRUCTURA (postura explícita, un agente de
- * retrieval y otro de training sin contradicción, sin wildcard), NO el mapa
- * agente↔postura — qué crawler pertenece a cada grupo vive en el registro del
- * engine, y duplicarlo acá sería una segunda fuente. Ese mapa lo prueba
- * `policy-workspace` (paridad byte a byte) o el `--check` del engine (su dueño;
- * escalado en `ChristianLuciani/profile-as-code#477`).
+ * - SÍ: qué agentes existen (`product-token`), sus grupos combinados (§2.2.1),
+ *   si un agente tiene reglas raíz contradictorias y si hay wildcard. Un patrón
+ *   raíz es `/`, `/*` o `/*$` (§2.2.3).
+ * - NO: el matching por path de §2.2.2 (`Disallow: /` + `Allow: /legal` deja
+ *   `/legal` permitido; `Disallow: /private` en un agente con `Allow: /` deja
+ *   `/private` bloqueado) ni patrones no-raíz (`/**`, `*`). Un archivo con
+ *   excepciones por path puede entonces tener una postura que este gate no
+ *   deriva: NO es fail-open del artefacto commiteado (el engine no emite
+ *   excepciones; `policy-workspace` compara byte a byte), pero un archivo
+ *   editado a mano con excepciones no está cubierto por esta capa.
  */
 export function policyProblems(files: Record<PolicyFile, string | null>): string[] {
   const problems: string[] = [];

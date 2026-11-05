@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { mkdtempSync, mkdirSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
@@ -9,6 +9,7 @@ import {
   parseDeclaration,
   treeOf
 } from "../../tools/golden/policy.ts";
+import { DATA_PATHS } from "../../tools/golden/paths.ts";
 
 /**
  * Evidencia de la guarda de CI: la declaración vive en un trailer de commit, así
@@ -129,6 +130,22 @@ describe("golden — git real", () => {
       expect(() => treeOf("no-existe-esta-ref", dir)).toThrow();
     } finally {
       rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+/**
+ * Pase 7 (F2, class 3): `DATA_PATHS` es la otra superficie de «qué es un dato».
+ * Si un `*.generated.ts` nuevo no entra, un PR que sólo lo regenere queda
+ * obligado a declarar `render` (el trailer mentiría) — se cierra con la guarda,
+ * no con memoria.
+ */
+describe("golden — DATA_PATHS cubre los artefactos generados", () => {
+  it("todo `src/data/*.generated.ts` está declarado como dato", () => {
+    const generated = readdirSync("src/data").filter((file) => file.endsWith(".generated.ts"));
+    expect(generated.length).toBeGreaterThan(0);
+    for (const file of generated) {
+      expect(DATA_PATHS as readonly string[]).toContain(`src/data/${file}`);
     }
   });
 });
