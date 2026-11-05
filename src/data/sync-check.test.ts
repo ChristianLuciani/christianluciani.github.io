@@ -26,6 +26,7 @@ import { COMMITTED_ENTITY_PATH as ENTITY_COMMITTED_PATH } from "../../tools/sync
 import {
   POLICY_FILES,
   policyProblems,
+  robotsAgents,
   robotsDirectives,
   robotsGroups,
   type PolicyFile
@@ -303,6 +304,20 @@ describe("entity-fixture — el FAQ se exige CITABLE, no sólo no vacío (F1)", 
     expect(checkEntityFixture(FIXTURE).problems).toEqual([]);
   });
 
+  // F2 del pase 4: sin el nodo FAQ la capa quedaba verde y la nota seguía
+  // declarando cobertura del FAQ citable.
+  it("un fixture SIN FAQPage es un problema (la capa dice que mide el FAQ)", () => {
+    const withoutFaq = { ...FIXTURE, nodes: FIXTURE.nodes.filter((node) => node["@type"] !== "FAQPage") };
+    const problems = checkEntityFixture(withoutFaq).problems;
+    expect(problems.join("\n")).toMatch(/esperado 1 nodo FAQPage, hay 0/);
+  });
+
+  it("dos FAQPage es un problema (el engine emite a lo sumo uno)", () => {
+    const faq = FIXTURE.nodes.find((node) => node["@type"] === "FAQPage")!;
+    const problems = checkEntityFixture({ ...FIXTURE, nodes: [...FIXTURE.nodes, faq] }).problems;
+    expect(problems.join("\n")).toMatch(/esperado 1 nodo FAQPage, hay 2/);
+  });
+
   it("una respuesta SIN citation es un problema (el SPEC decía que se medía)", () => {
     const problems = checkEntityFixture(withAnswer({ "@type": "Answer", text: "sin cita" })).problems;
     expect(problems.join("\n")).toMatch(/acceptedAnswer\.citation/);
@@ -341,7 +356,7 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
 
   it("un grupo de training ausente es un problema (aunque haya wildcard-cero)", () => {
     const problems = policyProblems(files({ "robots.txt": "User-agent: Googlebot\nAllow: /\n" }));
-    expect(problems.join("\n")).toMatch(/sin grupo de training/);
+    expect(problems.join("\n")).toMatch(/sin agente de training/);
   });
 
   /**
@@ -382,13 +397,54 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
     const problems = policyProblems(
       files({ "robots.txt": "User-agent: Googlebot\nAllow: /\nDisallow: /\n" })
     );
-    expect(problems.join("\n")).toMatch(/mezcla `Allow: \/` y `Disallow: \/`/);
+    expect(problems.join("\n")).toMatch(/conjunto combinado/);
   });
 
   it("una regla antes del primer `User-agent` no crea grupo (RFC 9309 §2.2.1)", () => {
     const problems = policyProblems(files({ "robots.txt": "Allow: /\nDisallow: /\n" }));
-    expect(problems.join("\n")).toMatch(/sin grupo de retrieval/);
-    expect(problems.join("\n")).toMatch(/sin grupo de training/);
+    expect(problems.join("\n")).toMatch(/sin agente de retrieval/);
+    expect(problems.join("\n")).toMatch(/sin agente de training/);
+  });
+
+  /**
+   * ESCALATE(1), 3.ª reaparición (pase 4): el grupo SINTÁCTICO no es el grupo
+   * EFECTIVO. RFC 9309 §2.1 (el `emptyline` no termina el grupo) y §2.2.1 (los
+   * grupos que matchean el mismo product token se combinan). Las tres sondas del
+   * pase pasan a tests: hoy el gate las rechaza.
+   */
+  const CANONICAL = "# ai-policy\nUser-agent: Googlebot\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n";
+
+  it("un `Allow: /` después de una línea en blanco final se cuelga del último grupo (emptyline no termina)", () => {
+    const problems = policyProblems(files({ "robots.txt": `${CANONICAL}\nAllow: /\n` }));
+    expect(problems.join("\n")).toMatch(/conjunto combinado/);
+    expect(problems.join("\n")).toContain("gptbot");
+  });
+
+  it("un agente repetido en dos grupos COMBINA sus reglas (§2.2.1) y queda contradictorio", () => {
+    const problems = policyProblems(
+      files({
+        "robots.txt":
+          "User-agent: Googlebot\nUser-agent: GPTBot\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n"
+      })
+    );
+    expect(problems.join("\n")).toMatch(/conjunto combinado/);
+    expect(problems.join("\n")).toContain("gptbot");
+  });
+
+  it("un `User-agent:` vacío no nombra product token (ABNF product-token)", () => {
+    const problems = policyProblems(files({ "robots.txt": "User-agent:\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n" }));
+    expect(problems.join("\n")).toMatch(/sin product token válido/);
+  });
+
+  it("`robotsAgents` combina por agente y normaliza caja (merge §2.2.1)", () => {
+    const agents = robotsAgents(
+      "User-agent: Googlebot\nAllow: /\n\nUser-agent: googlebot\nDisallow: /privado\n\nUser-agent: GPTBot\nDisallow: /\n"
+    );
+    expect([...agents.keys()]).toEqual(["googlebot", "gptbot"]);
+    expect(agents.get("googlebot")).toEqual([
+      { key: "allow", value: "/" },
+      { key: "disallow", value: "/privado" }
+    ]);
   });
 
   it("`robotsGroups` arma los grupos como los lee el crawler", () => {

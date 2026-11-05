@@ -334,6 +334,10 @@ export function checkEntityFixture(raw: unknown): {
   const persons = nodes.filter((node) => node["@type"] === "Person");
   const faqs = nodes.filter((node) => node["@type"] === "FAQPage");
   if (persons.length !== 1) problems.push(`entidad: esperado 1 nodo Person, hay ${persons.length}`);
+  // F2 del pase 4: la capa se llama «FAQ no vacío con citation» y sólo exigía
+  // `mainEntity` no vacío SI el nodo existía: un fixture sin FAQPage pasaba
+  // verde y la nota seguía publicando cobertura del FAQ.
+  if (faqs.length !== 1) problems.push(`entidad: esperado 1 nodo FAQPage, hay ${faqs.length}`);
   if (persons.length === 1) {
     const person = persons[0];
     if (typeof person["@id"] !== "string" || String(person["@id"]).length === 0) {
@@ -673,7 +677,7 @@ export function runCheck(opts: CheckOptions = {}): CheckResult {
     verified: policyProblemsList.length === 0,
     note:
       policyProblemsList.length === 0
-        ? `policy-self: ${POLICY_FILES.length} artefacto(s) presentes · sin wildcard · grupos de retrieval y training`
+        ? `policy-self: ${POLICY_FILES.length} artefacto(s) presentes · sin wildcard · conjunto efectivo por agente (retrieval y training sin contradicción)`
         : "policy-self: artefactos ausentes o postura degradada",
     reason: policyProblemsList.length === 0 ? undefined : policyProblemsList.join("; ")
   });

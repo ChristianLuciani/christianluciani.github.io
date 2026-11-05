@@ -76,33 +76,30 @@ export interface RobotsGroup {
 }
 
 /**
- * Agrupa las directivas como las lee un crawler (RFC 9309 §2.2.1):
+ * Agrupa las directivas como las lee un crawler (RFC 9309 §2.1/§2.2.1):
  *
  * - un grupo empieza con una o más líneas `user-agent` y las reglas que siguen
  *   le pertenecen;
- * - un `user-agent` DESPUÉS de reglas abre un grupo nuevo (y una línea en blanco
- *   cierra el anterior);
+ * - un `user-agent` DESPUÉS de reglas abre un grupo nuevo;
+ * - una línea en blanco o sólo-comentario es `emptyline`/`EOL` y **NO** termina
+ *   el grupo (el ABNF la admite dentro de `group`); sólo lo termina un
+ *   `user-agent` o el EOF;
  * - una regla antes del primer `user-agent` es inválida y se descarta.
  *
  * Pasar de «la directiva existe en el archivo» a «la directiva pertenece al
- * grupo correcto» es lo que cierra la clase: sin esto, borrar los `user-agent`
- * de training deja un `Disallow: /` huérfano que se aplica al grupo de retrieval
- * y el gate seguía verde (sonda del pase 3).
+ * grupo efectivo del crawler» es lo que cierra la clase. Sondas que el gate NO
+ * veía antes (pase 4): (1) un `Allow: /` después de una línea en blanco final
+ * se cuelga del último grupo y, por §2.2.2, permite a los crawlers de training;
+ * (2) un agente repetido en dos grupos combina sus reglas (§2.2.1) y queda
+ * permitido; (3) un `User-agent:` vacío no nombra ningún product token.
  */
 export function robotsGroups(text: string): RobotsGroup[] {
   const groups: RobotsGroup[] = [];
   let current: RobotsGroup | null = null;
   for (const raw of text.split(/\r\n|\r|\n/)) {
     const line = raw.replace(/#.*$/, "").trim();
-    if (line.length === 0) {
-      // Línea en blanco: cierra el grupo si ya tiene reglas. Si sólo acumuló
-      // `user-agent`, se conserva (varias líneas de agente = el mismo grupo).
-      if (current && current.rules.length > 0) {
-        groups.push(current);
-        current = null;
-      }
-      continue;
-    }
+    // `emptyline` no termina el grupo (RFC 9309 §2.1: termina un `user-agent` o EOF).
+    if (line.length === 0) continue;
     const colon = line.indexOf(":");
     if (colon < 0) continue;
     const key = line.slice(0, colon).trim().toLowerCase();
@@ -122,16 +119,44 @@ export function robotsGroups(text: string): RobotsGroup[] {
   return groups;
 }
 
+/** `product-token = identifier / "*"` · `identifier = 1*(%x2D / %x41-5A / %x5F / %x61-7A)` */
+const PRODUCT_TOKEN = /^(?:\*|[A-Za-z_-]+)$/;
+
+/**
+ * Conjunto de reglas **efectivo** por product token: RFC 9309 §2.2.1 manda
+ * COMBINAR los grupos que matchean el mismo agente (case-insensitive) antes de
+ * aplicar las reglas. Un agente que aparece dos veces no tiene dos grupos
+ * separados: tiene la unión — y ahí es donde la postura se puede invertir sin
+ * que el archivo lo diga.
+ */
+export function robotsAgents(text: string): Map<string, { key: string; value: string }[]> {
+  const out = new Map<string, { key: string; value: string }[]>();
+  for (const group of robotsGroups(text)) {
+    for (const agent of group.agents) {
+      const token = agent.toLowerCase();
+      const rules = out.get(token) ?? [];
+      rules.push(...group.rules);
+      out.set(token, rules);
+    }
+  }
+  return out;
+}
+
 /**
  * Invariantes de la postura, verificables SIN workspace (modo CI). El engine ya
  * los declara en su SPEC §12; acá se comprueba que el artefacto commiteado no se
  * degradó a mano.
  *
- * LÍMITE DECLARADO: se verifica la ESTRUCTURA (grupos explícitos, retrieval
- * permitido y training bloqueado, sin wildcard), NO el mapa agente↔postura —
- * qué crawler pertenece a cada grupo vive en el registro del engine, y
- * duplicarlo acá sería una segunda fuente. Ese mapa lo prueba `policy-workspace`
- * (paridad byte a byte) o el `--check` del engine, que es su dueño.
+ * Se evalúa el conjunto EFECTIVO por agente (grupos combinados), no el grupo
+ * sintáctico: un agente con `Allow: /` y `Disallow: /` en su unión queda
+ * permitido por §2.2.2, aunque en el archivo los dos vivan en grupos distintos.
+ *
+ * LÍMITE DECLARADO: se verifica la ESTRUCTURA (postura explícita, un agente de
+ * retrieval y otro de training sin contradicción, sin wildcard), NO el mapa
+ * agente↔postura — qué crawler pertenece a cada grupo vive en el registro del
+ * engine, y duplicarlo acá sería una segunda fuente. Ese mapa lo prueba
+ * `policy-workspace` (paridad byte a byte) o el `--check` del engine (su dueño;
+ * escalado en `ChristianLuciani/profile-as-code#477`).
  */
 export function policyProblems(files: Record<PolicyFile, string | null>): string[] {
   const problems: string[] = [];
@@ -142,28 +167,36 @@ export function policyProblems(files: Record<PolicyFile, string | null>): string
   }
   const robots = files["robots.txt"];
   if (robots) {
-    const groups = robotsGroups(robots);
-    const hasRule = (group: RobotsGroup, key: string, value: string) =>
-      group.rules.some((rule) => rule.key === key && rule.value === value);
-    const allowsRoot = (group: RobotsGroup) => hasRule(group, "allow", "/");
-    const disallowsRoot = (group: RobotsGroup) => hasRule(group, "disallow", "/");
-    if (groups.some((group) => group.agents.includes("*"))) {
+    const agents = robotsAgents(robots);
+    for (const token of agents.keys()) {
+      if (!PRODUCT_TOKEN.test(token)) {
+        problems.push(
+          `robots.txt: \`User-agent:\` sin product token válido (${JSON.stringify(token)}) — el engine nunca emite uno vacío`
+        );
+      }
+    }
+    if (agents.has("*")) {
       problems.push("robots.txt: grupo `User-agent: *` — la política es explícita, sin wildcard");
     }
-    if (!groups.some(allowsRoot)) {
-      problems.push("robots.txt: sin grupo de retrieval (`Allow: /` dentro de un grupo con `User-agent`)");
+    const allowed: string[] = [];
+    const blocked: string[] = [];
+    const contradictory: string[] = [];
+    for (const [token, rules] of agents) {
+      if (token === "*") continue;
+      const allowsRoot = rules.some((rule) => rule.key === "allow" && rule.value === "/");
+      const disallowsRoot = rules.some((rule) => rule.key === "disallow" && rule.value === "/");
+      if (allowsRoot && disallowsRoot) contradictory.push(token);
+      else if (allowsRoot) allowed.push(token);
+      else if (disallowsRoot) blocked.push(token);
     }
-    if (!groups.some(disallowsRoot)) {
-      problems.push("robots.txt: sin grupo de training (`Disallow: /` dentro de un grupo con `User-agent`)");
-    }
-    // Un grupo que mezcla `Allow: /` y `Disallow: /` invierte la postura: a
-    // igual match el RFC 9309 §2.2.2 hace ganar `Allow`, así que el grupo
-    // «bloqueado» terminaría permitiendo.
-    if (groups.some((group) => allowsRoot(group) && disallowsRoot(group))) {
+    if (contradictory.length) {
       problems.push(
-        "robots.txt: un mismo grupo mezcla `Allow: /` y `Disallow: /` — la postura queda invertida (RFC 9309 §2.2.2)"
+        `robots.txt: ${contradictory.length} agente(s) con \`Allow: /\` y \`Disallow: /\` en su conjunto combinado ` +
+          `(RFC 9309 §2.2.1/§2.2.2: a igual match gana Allow) — postura invertida: ${contradictory.slice(0, 5).join(", ")}`
       );
     }
+    if (!allowed.length) problems.push("robots.txt: sin agente de retrieval (`Allow: /` exclusivo)");
+    if (!blocked.length) problems.push("robots.txt: sin agente de training (`Disallow: /` exclusivo)");
   }
   const llms = files["llms.txt"];
   if (llms && !/^#\s/m.test(llms)) problems.push("llms.txt: sin título de índice (se esperaba un heading `# `)");
