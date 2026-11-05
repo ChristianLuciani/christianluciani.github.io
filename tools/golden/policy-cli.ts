@@ -1,0 +1,47 @@
+/**
+ * GOLDEN — entrypoint de la guarda de CI.
+ *
+ * Separado de `policy.ts` a propósito: cuando la ejecución dependía de
+ * `process.argv[1].endsWith("policy.ts")`, renombrar el archivo dejaba el step
+ * de CI verde sin decidir nada. Acá el entrypoint siempre corre y su nombre es
+ * el que invoca `package.json`.
+ */
+import { execFileSync } from "node:child_process";
+import { changedSince, decide, existsIn, type PolicyResult } from "./policy.ts";
+
+const PATH = "tests/golden/museo.html";
+
+function main(): void {
+  const base = process.env.BASE_SHA;
+  if (!base) {
+    console.error("::error::falta BASE_SHA (sha de la base del PR)");
+    process.exit(2);
+  }
+
+  try {
+    execFileSync("git", ["fetch", "--depth=1", "origin", base], { stdio: "inherit" });
+  } catch {
+    console.error(`::error::no se pudo traer la base ${base}; la guarda no puede decidir`);
+    process.exit(2);
+  }
+
+  let result: PolicyResult;
+  try {
+    result = decide({
+      baselineInBase: existsIn(base, PATH),
+      changed: changedSince(base, PATH),
+      body: process.env.PR_BODY ?? ""
+    });
+  } catch (error) {
+    console.error(`::error::${(error as Error).message}`);
+    process.exit(2);
+  }
+
+  console.log(result.reason);
+  if (!result.ok) {
+    console.error(`::error::${result.reason}`);
+    process.exit(1);
+  }
+}
+
+main();

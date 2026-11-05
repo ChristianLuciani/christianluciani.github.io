@@ -12,12 +12,17 @@ exactamente eso.
 
 ## Cuándo regenerarlo
 
-**Sólo** en un PR cuyo propósito es cambiar el render (rediseño, copy, estructura, una
-sección nueva). El body del PR debe declararlo en una línea:
+**Sólo** en un PR que cambia el render **a propósito**. Hay dos causas legítimas y cada una
+tiene su declaración en el body:
 
 ```
-Render: cambia (golden regenerado) — <qué y por qué>
+Render: cambia — <qué cambió y por qué>        (rediseño, copy, estructura)
+Datos: cambia — <snapshot del perfil movido>   (sync:profile; el HTML lleva el pin y la fecha)
 ```
+
+El render depende de los hechos: `sync:profile` mueve el footer de procedencia del print-CV
+y por eso el golden cambia sin que nadie haya tocado la presentación. Ese caso se declara
+`Datos: cambia`; inventar un refactor para justificarlo sería mentirle al gate.
 
 En cualquier otro PR —refactor, extracción de copy, tokens, i18n, selector de tema— el
 golden **no se toca**: si el test falla, el refactor cambió el render y hay que corregir

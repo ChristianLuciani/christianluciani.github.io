@@ -61,6 +61,14 @@ describe("golden — política de declaración", () => {
     expect(decide({ ...base, body: "### Render: cambia" }).ok).toBe(true);
   });
 
+  it("acepta 'Datos: cambia' (snapshot del perfil movido)", () => {
+    expect(decide({ ...base, body: "Datos: cambia (sync:profile 6c6a6f1)" }).ok).toBe(true);
+  });
+
+  it("no acepta 'Datos: no cambia'", () => {
+    expect(decide({ ...base, body: "Datos: no cambia" }).ok).toBe(false);
+  });
+
   it("ignora un bloque de código indentado", () => {
     expect(decide({ ...base, body: "Ejemplo:\n\n    Render: cambia\n" }).ok).toBe(false);
   });

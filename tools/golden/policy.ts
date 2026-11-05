@@ -7,7 +7,7 @@
  * `ci.yml` sólo aporta los tres datos (¿existe en la base?, ¿cambió?, ¿qué dice
  * el body?).
  */
-import { execFileSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
 
 export interface PolicyInput {
   /** El archivo existía en la base del PR: si no, este PR introduce el baseline. */
@@ -24,10 +24,12 @@ export interface PolicyResult {
 }
 
 /**
- * `Render: cambia` (case-insensitive, al inicio de una línea) es la declaración.
- * Tolera las formas markdown habituales (`**Render:** cambia`, `> Render: cambia`).
+ * La declaración, al inicio de una línea: `Render: cambia` (cambió la
+ * presentación) o `Datos: cambia` (cambió el snapshot del perfil y el render lo
+ * refleja). Sin una de las dos, mover el golden es un bypass.
+ * Tolera las formas markdown habituales (`**Render:** cambia`, `### Datos: cambia`).
  */
-export const DECLARATION = /^[ \t>*_#-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
+export const DECLARATION = /^[ \t>*_#-]*(render|datos)[ \t*_]*:[ \t*_]*cambia\b/im;
 
 /**
  * El body sin bloques de código: un ejemplo documentado en un fence no es una
@@ -57,7 +59,8 @@ export function decide(input: PolicyInput): PolicyResult {
   }
   return {
     ok: false,
-    reason: "tests/golden/museo.html cambió sin declarar 'Render: cambia' en el body del PR"
+    reason:
+      "tests/golden/museo.html cambió sin declarar 'Render: cambia' (o 'Datos: cambia') en el body del PR"
   };
 }
 
@@ -83,44 +86,9 @@ export function existsIn(base: string, path: string, cwd = process.cwd()): boole
  * (ref ausente, repo roto): tratarlos igual convertía un fallo de git en "el
  * render cambió" — y un error de infraestructura se leía como decisión.
  */
-function changedSince(base: string, path: string): boolean {
+export function changedSince(base: string, path: string): boolean {
   const r = spawnSync("git", ["diff", "--quiet", base, "HEAD", "--", path], { stdio: "ignore" });
   if (r.status === 0) return false;
   if (r.status === 1) return true;
   throw new Error(`git diff falló (exit ${r.status ?? "sin código"}): no se puede decidir`);
 }
-
-function main(): void {
-  const base = process.env.BASE_SHA;
-  if (!base) {
-    console.error("::error::falta BASE_SHA (sha de la base del PR)");
-    process.exit(2);
-  }
-  const path = "tests/golden/museo.html";
-  try {
-    execFileSync("git", ["fetch", "--depth=1", "origin", base], { stdio: "inherit" });
-  } catch {
-    console.error(`::error::no se pudo traer la base ${base}; la guarda no puede decidir`);
-    process.exit(2);
-  }
-
-  let result: PolicyResult;
-  try {
-    result = decide({
-      baselineInBase: existsIn(base, path),
-      changed: changedSince(base, path),
-      body: process.env.PR_BODY ?? ""
-    });
-  } catch (error) {
-    console.error(`::error::${(error as Error).message}`);
-    process.exit(2);
-  }
-
-  console.log(result.reason);
-  if (!result.ok) {
-    console.error(`::error::${result.reason}`);
-    process.exit(1);
-  }
-}
-
-if (process.argv[1]?.endsWith("policy.ts")) main();
