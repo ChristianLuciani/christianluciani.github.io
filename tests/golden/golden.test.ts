@@ -18,6 +18,18 @@ import { describeDrift, firstDiff, sectionDrifts, sectionsOf } from "../../tools
 
 const GOLDEN_PATH = resolve(process.cwd(), "tests/golden/museo.html");
 const GOLDEN = existsSync(GOLDEN_PATH) ? readFileSync(GOLDEN_PATH, "utf8") : null;
+
+/**
+ * Baseline como `string` o error con la instrucción. Evita el `as string` que
+ * apagaba `strictNullChecks`: sin baseline, el test falla diciendo qué correr en
+ * vez de reventar con `TypeError: Cannot read properties of null`.
+ */
+function requireGolden(): string {
+  if (GOLDEN === null) {
+    throw new Error(`falta ${GOLDEN_PATH}; generá el baseline con \`npm run golden:update\` y commitealo`);
+  }
+  return GOLDEN;
+}
 const LIVE = assembleHtml();
 
 describe("golden — el render del tema default no cambia", () => {
@@ -42,36 +54,36 @@ describe("golden — el render del tema default no cambia", () => {
   });
 
   it("el documento completo es byte a byte el del baseline", () => {
-    const drift = firstDiff(GOLDEN as string, LIVE, "documento");
+    const drift = firstDiff(requireGolden(), LIVE, "documento");
     expect(drift, drift ? describeDrift(drift) : "").toBeNull();
   });
 
   it("ninguna sección cambió (el fallo nombra la sala)", () => {
-    const drifts = sectionDrifts(GOLDEN as string, LIVE);
+    const drifts = sectionDrifts(requireGolden(), LIVE);
     expect(drifts.map(describeDrift)).toEqual([]);
   });
 
   it("el golden cubre head, print, cover, hero, plano, 9 salas y footer", () => {
-    const names = sectionsOf(GOLDEN as string).map((s) => s.name);
+    const names = sectionsOf(requireGolden()).map((s) => s.name);
     for (const required of ["head", "print-cv", "cover", "hero", "plano", "footer"]) {
       expect(names, `sección ${required}`).toContain(required);
     }
     expect(names.filter((n) => n.startsWith("sala-"))).toHaveLength(9);
     // El CSS global vive en head: si se extrae a un archivo (FASE 5), el golden
     // sigue cubriéndolo porque el <style> emitido no puede cambiar.
-    expect(sectionsOf(GOLDEN as string)[0].html).toContain("<style>");
+    expect(sectionsOf(requireGolden())[0].html).toContain("<style>");
   });
 
   it("muerde un espacio de diferencia", () => {
     const mutated = LIVE.replace("</body>", "</body> ");
-    const drifts = sectionDrifts(GOLDEN as string, mutated);
+    const drifts = sectionDrifts(requireGolden(), mutated);
     expect(drifts).toHaveLength(1);
     expect(drifts[0].section).toBe("footer");
   });
 
   it("muerde una sección que desaparece (cambio estructural)", () => {
     const mutated = LIVE.replace('<section id="room-plano">', "<section>");
-    const drifts = sectionDrifts(GOLDEN as string, mutated);
+    const drifts = sectionDrifts(requireGolden(), mutated);
     expect(drifts.map((d) => d.section)).toContain("estructura");
     expect(drifts[0].actual).toContain("plano");
   });

@@ -35,24 +35,7 @@ jobs:
         env:
           PR_BODY: ${{ github.event.pull_request.body }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
-        run: |
-          git fetch --depth=1 origin "$BASE_SHA"
-          # El PR que introduce el baseline no tiene contra qué comparar: la
-          # guarda rige desde el merge hacia adelante.
-          if ! git cat-file -e "$BASE_SHA:tests/golden/museo.html" 2>/dev/null; then
-            echo "baseline nuevo en este PR: la guarda rige desde el próximo"
-            exit 0
-          fi
-          if git diff --quiet "$BASE_SHA" HEAD -- tests/golden/museo.html; then
-            echo "golden intacto: el render no cambió"
-            exit 0
-          fi
-          if printf '%s' "$PR_BODY" | grep -qiE '^[[:space:]]*render:[[:space:]]*cambia'; then
-            echo "golden regenerado y declarado en el body del PR"
-            exit 0
-          fi
-          echo "::error::tests/golden/museo.html cambió sin declarar 'Render: cambia' en el body del PR"
-          exit 1
+        run: npm run golden:policy
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test

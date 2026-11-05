@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test:consumers": "vitest run src/data/consumers.test.ts",
     "golden:update": "tsx tools/golden/update.ts",
+    "golden:policy": "tsx tools/golden/policy.ts",
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
     "sync:check": "tsx tools/sync-check.ts",
