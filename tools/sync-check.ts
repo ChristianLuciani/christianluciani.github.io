@@ -6,8 +6,12 @@
  * gate de frescura puede estar verde con CERO consumidores (bug #99): fresco no
  * es lo mismo que renderizado.
  *
- * Alcance real, capa por capa (no prometer de más):
+ * Alcance real, capa por capa (no prometer de más). Desde #140 el gate cubre
+ * los TRES artefactos derivados que se commitean: el snapshot del perfil, el de
+ * la entidad (`Person` + `FAQPage`) y la política IA (`robots.txt`, `llms.txt`,
+ * `AI-POLICY.md`).
  *
+ *   Perfil
  *   1. self      (siempre): header coherente con `PROFILE.source` y el archivo
  *      byte-idéntico a `renderSource(PROFILE, engine, schema)`. El `PROFILE` es
  *      el importado del propio archivo: prueba consistencia interna
@@ -22,21 +26,33 @@
  *      real (`pasco export`) y compara byte a byte. Es la ÚNICA capa que prueba
  *      paridad de contenido contra el SSOT; sin ella el pipeline no se invoca.
  *
+ *   Entidad (`entity.generated.ts`, #140)
+ *   4. entity-self:      mismo contrato que `self`, sobre `ENTITY`.
+ *   5. entity-fixture:   `src/data/fixtures/entity-jsonld.json` — forma del
+ *      assembler, hechos de ejemplo — determinismo, `@id` y FAQ no vacío.
+ *   6. entity-workspace: re-genera con `pasco entity --jsonld` y compara.
+ *
+ *   Política IA (`public/*`, #140)
+ *   7. policy-self:      los 3 archivos existen y la postura no se degradó
+ *      (sin `User-agent: *`, con grupos de retrieval y de training).
+ *   8. policy-workspace: re-genera con `pasco export ai-policy` y compara bytes.
+ *
  * La línea de cierre cuenta sólo capas verificadas y declara las que quedaron
- * fuera (en CI: self + fixture = 2/3, workspace fuera con su razón). Cuando
- * `verified < total` dice `PARCIAL`, NUNCA `✅ OK`: sin `--workspace` sólo
- * `self`/`fixture` corrieron y ninguna compara contenido contra el SSOT. Exit 0
- * se mantiene si todas las capas que sí corrieron pasan (CI no tiene el repo
- * privado); cualquier drift sale 1 con el archivo:línea exacto
- * (expected/actual) — nunca un "algo cambió".
+ * fuera (en CI: perfil self + fixture, entidad self + fixture y policy self =
+ * 5/8; las tres de paridad quedan fuera con su razón). Cuando `verified < total`
+ * dice `PARCIAL`, NUNCA `✅ OK`. Exit 0 se mantiene si todas las capas que sí
+ * corrieron pasan (CI no tiene el repo privado); cualquier drift sale 1 con el
+ * archivo:línea exacto (expected/actual) — nunca un "algo cambió".
  *
  * Uso:
  *   npm run sync:check
  *   npm run sync:check -- --workspace ../profile-data
  *   npm run sync:check -- --generated /tmp/profile.generated.ts   # gate sobre una copia
+ *   npm run sync:check -- --entity /tmp/entity.generated.ts       # idem, entidad
  */
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import {
   assertSchemaVersion,
@@ -47,6 +63,21 @@ import {
   renderSource,
   resolvePaths
 } from "./sync-profile";
+import {
+  COMMITTED_ENTITY_PATH,
+  assertEntitySchema,
+  generateEntity,
+  normalizeNodes,
+  renderEntitySource
+} from "./sync-entity";
+import {
+  POLICY_DIR,
+  POLICY_FILES,
+  generatePolicy,
+  policyProblems,
+  readPolicy
+} from "./sync-ai-policy";
+import { ENTITY } from "../src/data/entity.generated";
 import { PROFILE } from "../src/data/profile.generated";
 import type { CvProfile, CvSource } from "../src/data/profile.types";
 
@@ -222,17 +253,131 @@ export function checkFixture(raw: unknown): { problems: string[]; profile: CvPro
 }
 
 /* ──────────────────────────────────────────────
+   Capas de la entidad — snapshot commiteado (#140)
+────────────────────────────────────────────── */
+
+export const ENTITY_FIXTURE_PATH = resolve(
+  process.cwd(),
+  "src",
+  "data",
+  "fixtures",
+  "entity-jsonld.json"
+);
+
+/** Version del engine con la que se renderiza el fixture (anonimizado). */
+const FIXTURE_ENGINE = "0.4.0";
+
+/** El header no puede mentir sobre la procedencia del `ENTITY` que lo acompaña. */
+export function entityHeaderProblems(
+  source: string,
+  entity: { source: { commit: string; generatedAt: string | null } }
+): string[] {
+  const problems: string[] = [];
+  const header = parseHeader(source);
+  if (!header) return ["header AUTO-GENERATED ausente o malformado (source/engine/schema)"];
+  if (header.commit !== entity.source.commit) {
+    problems.push(
+      `header pin ${header.commit} ≠ ENTITY.source.commit ${entity.source.commit} — editado a mano o mezcla de dos syncs`
+    );
+  }
+  if (header.generatedAt !== entity.source.generatedAt) {
+    problems.push(
+      `header generatedAt ${JSON.stringify(header.generatedAt)} ≠ ENTITY.source.generatedAt ${JSON.stringify(entity.source.generatedAt)}`
+    );
+  }
+  return problems;
+}
+
+export interface EntityFixtureEnvelope {
+  schemaVersion?: string;
+  nodes?: unknown;
+}
+
+/** Render del fixture con el MISMO renderer que el snapshot real — sin engine. */
+export function renderEntityFixture(raw: unknown): {
+  source: string;
+  nodes: Record<string, unknown>[];
+} {
+  const fixture = raw as EntityFixtureEnvelope;
+  assertEntitySchema(String(fixture.schemaVersion ?? ""));
+  const nodes = normalizeNodes(fixture.nodes);
+  const source = renderEntitySource(
+    nodes,
+    { commit: "", generatedAt: null },
+    FIXTURE_ENGINE,
+    String(fixture.schemaVersion)
+  );
+  return { source, nodes };
+}
+
+/**
+ * Invariantes que CI SÍ puede probar sin el repo privado: contrato aceptado,
+ * determinismo byte a byte, `@id` presente (una entidad sin ancla no cumple el
+ * objetivo GEO) y FAQ no vacío con `citation` — el engine nunca emite un
+ * `FAQPage` vacío y este gate no acepta uno escrito a mano.
+ */
+export function checkEntityFixture(raw: unknown): {
+  problems: string[];
+  nodes: Record<string, unknown>[];
+} {
+  const problems: string[] = [];
+  let rendered: { source: string; nodes: Record<string, unknown>[] };
+  try {
+    rendered = renderEntityFixture(raw);
+    const again = renderEntityFixture(raw);
+    if (rendered.source !== again.source) problems.push("proyección no determinista (dos corridas difieren)");
+  } catch (err) {
+    return { problems: [...problems, (err as Error).message], nodes: [] };
+  }
+
+  const { nodes } = rendered;
+  const persons = nodes.filter((node) => node["@type"] === "Person");
+  const faqs = nodes.filter((node) => node["@type"] === "FAQPage");
+  if (persons.length !== 1) problems.push(`entidad: esperado 1 nodo Person, hay ${persons.length}`);
+  if (persons.length === 1) {
+    const person = persons[0];
+    if (typeof person["@id"] !== "string" || String(person["@id"]).length === 0) {
+      problems.push("entidad: Person sin @id (sin ancla canónica)");
+    }
+    if (String(person["@context"] ?? "") !== "https://schema.org") {
+      problems.push('entidad: Person sin @context "https://schema.org"');
+    }
+  }
+  for (const faq of faqs) {
+    const questions = Array.isArray(faq["mainEntity"]) ? (faq["mainEntity"] as Record<string, unknown>[]) : [];
+    if (questions.length === 0) problems.push("FAQPage: mainEntity vacío (el engine nunca emite un FAQPage vacío)");
+    for (const question of questions) {
+      const answer = question["acceptedAnswer"] as Record<string, unknown> | undefined;
+      if (!answer || typeof answer["text"] !== "string" || String(answer["text"]).length === 0) {
+        problems.push(`FAQPage: pregunta sin acceptedAnswer.text (${String(question["name"] ?? "?")})`);
+      }
+    }
+  }
+  return { problems, nodes };
+}
+
+/* ──────────────────────────────────────────────
    Capas 1 y 3 — snapshot commiteado
 ────────────────────────────────────────────── */
 
 export interface CheckOptions {
   /** Archivo a verificar (default: el commiteado). */
   generatedPath?: string;
+  /** Snapshot de la entidad a verificar (default: el commiteado). */
+  entityPath?: string;
   /** Workspace de profile-data (default: `PROFILE_DATA_PATH`). */
   workspace?: string;
 }
 
-export type LayerName = "self" | "fixture" | "workspace";
+export type LayerName =
+  | "self"
+  | "fixture"
+  | "workspace"
+  | "entity-self"
+  | "entity-fixture"
+  | "entity-workspace"
+  | "policy-self"
+  | "policy-workspace";
 
 /** Estado de UNA capa. `verified` sólo es true si esa capa realmente corrió y
  *  pasó: una capa ausente (p. ej. workspace sin `PROFILE_DATA_PATH`) se registra
@@ -254,9 +399,10 @@ export interface CheckResult {
 /**
  * Línea de cierre del gate: cuenta SÓLO capas verificadas y nombra las que
  * quedaron fuera con su razón. Con `verified < total` dice `PARCIAL` (nunca
- * `✅ OK`): en CI es `PARCIAL — 2/3` (self + fixture, sin paridad de contenido)
- * y con `--workspace` es `✅ OK — 3/3`. El exit code no cambia por el rótulo:
- * CI sigue verde sin workspace.
+ * `✅ OK`): en CI es `PARCIAL — 5/8` (perfil self+fixture, entidad
+ * self+fixture, policy self; sin paridad contra el SSOT) y con `--workspace` es
+ * `✅ OK — 8/8`. El exit code no cambia por el rótulo: CI sigue verde sin
+ * workspace.
  */
 export function summaryLine(layers: readonly CheckLayer[]): string {
   const verified = layers.filter((layer) => layer.verified);
@@ -395,6 +541,179 @@ export function runCheck(opts: CheckOptions = {}): CheckResult {
     });
   }
 
+  /* ── 4–6. entidad (#140): mismo contrato que el perfil, sobre ENTITY ────── */
+  const entityPath = opts.entityPath ?? COMMITTED_ENTITY_PATH;
+  if (!existsSync(entityPath)) {
+    failures.push(`no existe el snapshot de la entidad: ${entityPath}`);
+    layers.push({
+      name: "entity-self",
+      verified: false,
+      note: "entity-self: snapshot ausente",
+      reason: `no existe ${entityPath}`
+    });
+  } else {
+    const entityTarget = readFileSync(entityPath, "utf8");
+    const canonicalEntity = readFileSync(COMMITTED_ENTITY_PATH, "utf8");
+    const entityHeader = parseHeader(canonicalEntity);
+    if (!entityHeader) {
+      failures.push(`${COMMITTED_ENTITY_PATH}: header AUTO-GENERATED ausente o malformado`);
+      layers.push({
+        name: "entity-self",
+        verified: false,
+        note: "entity-self: header AUTO-GENERATED ausente o malformado",
+        reason: "header ausente o malformado"
+      });
+    } else {
+      const expected = renderEntitySource(
+        ENTITY.nodes,
+        ENTITY.source,
+        entityHeader.engine,
+        entityHeader.schema
+      );
+      const diff = diffSources(expected, entityTarget);
+      if (diff) failures.push(formatDiff(entityPath, diff));
+      const headerIssues = entityHeaderProblems(entityTarget, ENTITY);
+      for (const problem of headerIssues) failures.push(`${entityPath}: ${problem}`);
+      const verified = !diff && headerIssues.length === 0;
+      layers.push({
+        name: "entity-self",
+        verified,
+        note: verified
+          ? `entity-self: render byte-idéntico (${entityTarget.length} bytes, ${ENTITY.nodes.length} nodo(s))`
+          : "entity-self: render con drift o header inconsistente",
+        reason: verified ? undefined : "drift byte a byte o header que no coincide con ENTITY"
+      });
+    }
+  }
+
+  if (existsSync(ENTITY_FIXTURE_PATH)) {
+    let entityFixture: unknown;
+    try {
+      entityFixture = JSON.parse(readFileSync(ENTITY_FIXTURE_PATH, "utf8"));
+    } catch (err) {
+      failures.push(`${ENTITY_FIXTURE_PATH}: JSON inválido (${(err as Error).message})`);
+    }
+    if (entityFixture) {
+      const { problems, nodes } = checkEntityFixture(entityFixture);
+      failures.push(...problems.map((p) => `entity-fixture: ${p}`));
+      layers.push({
+        name: "entity-fixture",
+        verified: problems.length === 0,
+        note:
+          problems.length === 0
+            ? `entity-fixture: proyección determinista · ${nodes.length} nodo(s), 1 Person con @id`
+            : "entity-fixture: problemas de forma/determinismo",
+        reason: problems.length === 0 ? undefined : problems.join("; ")
+      });
+    } else {
+      layers.push({
+        name: "entity-fixture",
+        verified: false,
+        note: "entity-fixture: no se pudo proyectar",
+        reason: "JSON inválido"
+      });
+    }
+  } else {
+    failures.push(`no existe el fixture de la entidad: ${ENTITY_FIXTURE_PATH}`);
+    layers.push({
+      name: "entity-fixture",
+      verified: false,
+      note: "entity-fixture: ausente",
+      reason: `no existe ${ENTITY_FIXTURE_PATH}`
+    });
+  }
+
+  if (workspace) {
+    try {
+      const { source } = generateEntity({ workspace });
+      const target = readFileSync(entityPath, "utf8");
+      const diff = diffSources(source, target);
+      if (diff) failures.push(formatDiff(entityPath, diff));
+      layers.push({
+        name: "entity-workspace",
+        verified: !diff,
+        note: diff
+          ? "entity-workspace: drift contra el pipeline real"
+          : `entity-workspace: sin drift contra ${workspace}`,
+        reason: diff ? `drift en ${entityPath}:${diff.line}` : undefined
+      });
+    } catch (err) {
+      const message = (err as Error).message;
+      failures.push(`entity-workspace: no se pudo regenerar (${message})`);
+      layers.push({
+        name: "entity-workspace",
+        verified: false,
+        note: "entity-workspace: no se pudo regenerar",
+        reason: message
+      });
+    }
+  } else {
+    layers.push({
+      name: "entity-workspace",
+      verified: false,
+      note: "entity-workspace: sin PROFILE_DATA_PATH — paridad de la entidad NO verificada (modo CI)",
+      reason: "sin PROFILE_DATA_PATH ni --workspace; la entidad NO se comparó contra el SSOT (modo CI)"
+    });
+  }
+
+  /* ── 7–8. política IA (#140) ────────────────────────────────────────────── */
+  const committedPolicy = readPolicy(POLICY_DIR);
+  const policyProblemsList = policyProblems(committedPolicy);
+  failures.push(...policyProblemsList.map((problem) => `policy-self: ${problem}`));
+  layers.push({
+    name: "policy-self",
+    verified: policyProblemsList.length === 0,
+    note:
+      policyProblemsList.length === 0
+        ? `policy-self: ${POLICY_FILES.length} artefacto(s) presentes · sin wildcard · grupos de retrieval y training`
+        : "policy-self: artefactos ausentes o postura degradada",
+    reason: policyProblemsList.length === 0 ? undefined : policyProblemsList.join("; ")
+  });
+
+  if (workspace) {
+    const tmp = mkdtempSync(join(tmpdir(), "sync-policy-"));
+    try {
+      const regenerated = generatePolicy(workspace, tmp);
+      const drifts: string[] = [];
+      for (const file of POLICY_FILES) {
+        const committed = committedPolicy[file];
+        if (committed === null) continue; // ya lo nombró policy-self
+        const diff = diffSources(regenerated[file], committed);
+        if (diff) {
+          drifts.push(diff.line.toString());
+          failures.push(formatDiff(join(POLICY_DIR, file), diff));
+        }
+      }
+      layers.push({
+        name: "policy-workspace",
+        verified: drifts.length === 0,
+        note:
+          drifts.length === 0
+            ? `policy-workspace: sin drift contra ${workspace}`
+            : "policy-workspace: drift contra el pipeline real",
+        reason: drifts.length === 0 ? undefined : `drift en línea(s) ${drifts.join(", ")}`
+      });
+    } catch (err) {
+      const message = (err as Error).message;
+      failures.push(`policy-workspace: no se pudo regenerar (${message})`);
+      layers.push({
+        name: "policy-workspace",
+        verified: false,
+        note: "policy-workspace: no se pudo regenerar",
+        reason: message
+      });
+    } finally {
+      rmSync(tmp, { recursive: true, force: true });
+    }
+  } else {
+    layers.push({
+      name: "policy-workspace",
+      verified: false,
+      note: "policy-workspace: sin PROFILE_DATA_PATH — paridad de la política NO verificada (modo CI)",
+      reason: "sin PROFILE_DATA_PATH ni --workspace; la política NO se comparó contra el SSOT (modo CI)"
+    });
+  }
+
   return finish();
 }
 
@@ -409,12 +728,18 @@ function argValue(flag: string): string | undefined {
 
 function main(): number {
   if (process.argv.includes("--help") || process.argv.includes("-h")) {
-    console.log("sync-check [--workspace <path>] [--generated <path>]");
+    console.log(
+      "sync-check [--workspace <path>] [--generated <path>] [--entity <path>]\n" +
+        "  perfil: self · fixture · workspace\n" +
+        "  entidad: entity-self · entity-fixture · entity-workspace\n" +
+        "  política IA: policy-self · policy-workspace"
+    );
     return 0;
   }
   const result = runCheck({
     workspace: argValue("--workspace"),
-    generatedPath: argValue("--generated")
+    generatedPath: argValue("--generated"),
+    entityPath: argValue("--entity")
   });
   for (const layer of result.layers) console.log(`${layer.verified ? "✓" : "–"} ${layer.note}`);
   for (const failure of result.failures) console.error(failure);

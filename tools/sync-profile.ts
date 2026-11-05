@@ -81,7 +81,12 @@ interface ExportEnvelope {
   };
 }
 
-function pasco(args: string[]): string {
+/**
+ * Invoca el engine. `allowExit` declara los exits que NO son fallo: `pasco entity`
+ * sale 1 cuando la entidad no declara `@id` (emite igual) y ese caso lo decide el
+ * consumidor con su propio mensaje, no el wrapper genérico.
+ */
+export function pasco(args: string[], allowExit: readonly number[] = []): string {
   try {
     return execFileSync("pasco", args, {
       encoding: "utf8",
@@ -97,6 +102,9 @@ function pasco(args: string[]): string {
     };
     if (e.code === "ENOENT") {
       throw new Error(`pasco no está instalado. ${ENGINE_HINT}`);
+    }
+    if (e.status !== undefined && allowExit.includes(e.status)) {
+      return String(e.stdout ?? "");
     }
     const out = [e.stdout, e.stderr]
       .map((v) => (v == null ? "" : String(v)))
@@ -602,7 +610,7 @@ export const PROFILE = ${JSON.stringify(profile, null, 2)} as const;
 `;
 }
 
-function gitInfo(workspace: string): { repo: string; commit: string; commitDate: string | null } {
+export function gitInfo(workspace: string): { repo: string; commit: string; commitDate: string | null } {
   try {
     const commit = execFileSync("git", ["-C", workspace, "rev-parse", "HEAD"], {
       encoding: "utf8",

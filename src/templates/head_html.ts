@@ -2,10 +2,24 @@ import {
   absoluteAssetUrl,
   assetAttrsFor,
 } from "../ts/assets/url.ts";
+import { ENTITY } from "../data/entity.generated.ts";
 import { PRINT_RULE_COLOR } from "./print-tokens.ts";
 
 /** Origen canónico del sitio (OG necesita URL absoluta, no relativa). */
 const SITE_ORIGIN = "https://christianluciani.github.io";
+
+/**
+ * Bloques JSON-LD de la entidad (`Person`) + `FAQPage`, derivados del SSOT
+ * (#140): los emite el engine (`pasco entity --jsonld`) y acá sólo se
+ * serializan. El `@id`, `jobTitle`, `description`, `email` y los `sameAs` NO se
+ * escriben a mano: viven en `src/data/entity.generated.ts` y su gate es
+ * `npm run sync:check`. Editar hechos = editar `profile-data`.
+ */
+function jsonLdBlocks(): string {
+  return ENTITY.nodes
+    .map((node) => `<script type="application/ld+json">\n${JSON.stringify(node, null, 2)}\n</script>\n`)
+    .join("");
+}
 
 /**
  * GENERADO por herramientas/extract-monolith (one-shot) desde index.html (Fase-1).
@@ -39,35 +53,7 @@ export function headHtml(): string {
 <link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-32.png")}>
 <link rel="icon" type="image/png" sizes="16x16" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-16.png")}>
 <link rel="apple-touch-icon" sizes="180x180" ${assetAttrsFor("href", "/assets/brand/apple-touch-icon-aurea.png")}>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "Person",
-  "name": "Christian Luciani",
-  "givenName": "Christian",
-  "familyName": "Luciani",
-  "jobTitle": "Independent Researcher",
-  "address": {
-    "@type": "PostalAddress",
-    "addressLocality": "Cuenca",
-    "addressCountry": "Ecuador"
-  },
-  "identifier": {
-    "@type": "PropertyValue",
-    "propertyID": "ORCID",
-    "value": "0000-0002-6955-5384"
-  },
-  "url": "https://christianluciani.github.io/",
-  "sameAs": [
-    "https://orcid.org/0000-0002-6955-5384",
-    "https://scholar.google.com/citations?user=7GbpmSQAAAAJ&hl=en",
-    "https://github.com/ChristianLuciani",
-    "https://www.linkedin.com/in/christian-luciani",
-    "https://www.researchgate.net/profile/Christian-Luciani"
-  ]
-}
-</script>
-<script type="application/ld+json">
+${jsonLdBlocks()}<script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [

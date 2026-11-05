@@ -20,6 +20,7 @@ import {
   summaryLine,
   type CheckLayer
 } from "../../tools/sync-check";
+import { COMMITTED_ENTITY_PATH as ENTITY_COMMITTED_PATH } from "../../tools/sync-entity";
 import { resolvePaths } from "../../tools/sync-profile";
 
 const COMMITTED = readFileSync(COMMITTED_PATH, "utf8");
@@ -90,51 +91,86 @@ describe("sync:check — capas sin workspace (modo CI)", () => {
     process.env.PROFILE_DATA_PATH = "";
   });
 
-  it("el snapshot commiteado pasa self + fixture", () => {
+  it("el snapshot commiteado pasa self + fixture (perfil, entidad y política)", () => {
     const result = runCheck();
     expect(result.failures).toEqual([]);
     expect(result.ok).toBe(true);
     expect(result.notes.join("\n")).toMatch(/fixture: proyección determinista/);
     expect(result.notes.join("\n")).toMatch(/workspace: sin PROFILE_DATA_PATH/);
+    expect(result.notes.join("\n")).toMatch(/entity-fixture: proyección determinista/);
+    expect(result.notes.join("\n")).toMatch(/policy-self: 3 artefacto\(s\) presentes/);
   });
 
-  it("contabilidad: PARCIAL 2/3 y workspace nombrada como NO verificada con su razón", () => {
+  it("contabilidad: PARCIAL 5/8 y las tres capas de paridad declaradas fuera", () => {
     const result = runCheck();
-    expect(result.layers.map((layer) => layer.name)).toEqual(["self", "fixture", "workspace"]);
+    expect(result.layers.map((layer) => layer.name)).toEqual([
+      "self",
+      "fixture",
+      "workspace",
+      "entity-self",
+      "entity-fixture",
+      "entity-workspace",
+      "policy-self",
+      "policy-workspace"
+    ]);
     expect(result.layers.filter((layer) => layer.verified).map((layer) => layer.name)).toEqual([
       "self",
-      "fixture"
+      "fixture",
+      "entity-self",
+      "entity-fixture",
+      "policy-self"
     ]);
     const summary = summaryLine(result.layers);
-    expect(summary).toContain("2/3 capa(s) verificada(s): self, fixture");
+    expect(summary).toContain("5/8 capa(s) verificada(s): self, fixture, entity-self, entity-fixture, policy-self");
     expect(summary).toMatch(/no verificada\(s\): workspace/);
+    expect(summary).toMatch(/entity-workspace/);
+    expect(summary).toMatch(/policy-workspace/);
     expect(summary).toMatch(/sin PROFILE_DATA_PATH/);
     // Con verified < total NO hay tilde de OK: el rótulo dice PARCIAL.
     expect(summary).toContain("PARCIAL");
     expect(summary).not.toContain("✅");
   });
 
-  it("contabilidad: con los tres layers verdes cuenta OK 3/3 (modo --workspace)", () => {
-    const green: CheckLayer[] = [
-      { name: "self", verified: true, note: "self: render byte-idéntico" },
-      { name: "fixture", verified: true, note: "fixture: proyección determinista" },
-      { name: "workspace", verified: true, note: "workspace: sin drift contra ../profile-data" }
-    ];
+  it("contabilidad: con las ocho capas verdes cuenta OK 8/8 (modo --workspace)", () => {
+    const names = [
+      "self",
+      "fixture",
+      "workspace",
+      "entity-self",
+      "entity-fixture",
+      "entity-workspace",
+      "policy-self",
+      "policy-workspace"
+    ] as const;
+    const green: CheckLayer[] = names.map((name) => ({ name, verified: true, note: `${name}: ok` }));
     const summary = summaryLine(green);
-    expect(summary).toContain("3/3 capa(s) verificada(s): self, fixture, workspace");
+    expect(summary).toContain("8/8 capa(s) verificada(s):");
     expect(summary).toContain("sync:check OK");
     expect(summary).not.toContain("PARCIAL");
     expect(summary).not.toContain("no verificada");
   });
 
-  it("CLI: archivo al día → exit 0 y cierre PARCIAL 2/3", () => {
+  it("CLI: archivo al día → exit 0 y cierre PARCIAL 5/8", () => {
     const copy = tempFile(COMMITTED);
     const { status, stdout } = runCli(["--generated", copy]);
     expect(status).toBe(0);
     expect(stdout).toContain("sync:check PARCIAL");
     expect(stdout).not.toContain("✅ sync:check OK");
-    expect(stdout).toContain("2/3 capa(s) verificada(s): self, fixture");
-    expect(stdout).not.toContain("3/3");
+    expect(stdout).toContain("5/8 capa(s) verificada(s): self, fixture, entity-self, entity-fixture, policy-self");
+    expect(stdout).not.toContain("8/8");
+  });
+
+  it("CLI: una entidad alterada → exit 1 con archivo:línea (capa entity-self)", () => {
+    const source = readFileSync(ENTITY_COMMITTED_PATH, "utf8");
+    const lines = source.split("\n");
+    const idx = lines.findIndex((line) => line.includes('"@id":'));
+    expect(idx).toBeGreaterThan(0);
+    lines[idx] = lines[idx].replace('"@id": "', '"@id": "x');
+    const copy = tempFile(lines.join("\n"), "entity.generated.ts");
+
+    const { status, stderr } = runCli(["--entity", copy]);
+    expect(status).toBe(1);
+    expect(stderr).toContain(`drift en ${copy}:${idx + 1}`);
   });
 
   it("CLI: un carácter de drift → exit 1 con archivo:línea", () => {

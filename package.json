@@ -10,6 +10,8 @@
     "test:consumers": "vitest run src/data/consumers.test.ts",
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
+    "sync:entity": "tsx tools/sync-entity.ts",
+    "sync:ai-policy": "tsx tools/sync-ai-policy.ts",
     "sync:check": "tsx tools/sync-check.ts",
     "test:watch": "vitest",
     "build:html": "tsx build.ts",
