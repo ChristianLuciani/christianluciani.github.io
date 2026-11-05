@@ -220,7 +220,17 @@ export function initIntro(): void {
     skipBtn?.remove();
   }
 
+  /**
+   * Desarma el atajo de clic. La intro termina una sola vez; un listener
+   * `once` que sobrevive al loader convierte el primer clic de la página en un
+   * skip fantasma que roba el foco del `.skip-link`.
+   */
+  function disarmClickSkip(): void {
+    document.removeEventListener("click", skipToPage);
+  }
+
   function hideLoader(): void {
+    disarmClickSkip();
     hideSkip();
     loaderEl.classList.add("hidden");
     if (brand) {
@@ -335,6 +345,12 @@ export function initIntro(): void {
   /** Cancela la intro y revela la página en el acto (no hay vuelo). */
   function skipToPage() {
     if (skipped) return;
+    // La red de seguridad de main.ts puede ocultar el loader sin pasar por
+    // acá: un clic posterior no debe tocar el hero ni el foco.
+    if (loaderEl.classList.contains("hidden")) {
+      disarmClickSkip();
+      return;
+    }
     skipped = true;
     clearTimers();
     activeChoreo?.cancel();
@@ -367,6 +383,9 @@ export function initIntro(): void {
   // conserva como atajo, pero ya no es la única forma de salir.
   if (skipBtn) {
     skipBtn.addEventListener("click", skipToPage);
+    // El loader es opaco y tapa la HUD: el foco arranca en el único control
+    // visible en vez de recorrer los focusables ocultos que haya antes.
+    skipBtn.focus({ preventScroll: true });
   }
   document.addEventListener("click", skipToPage, { once: true });
 }
