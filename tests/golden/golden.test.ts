@@ -2,6 +2,7 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "../../src/templates/index.ts";
+import { SALAS } from "../../src/cv/salas.ts";
 import { describeDrift, firstDiff, sectionDrifts, sectionsOf } from "../../tools/golden/sections.ts";
 import { baselineFile } from "../../tools/golden/paths.ts";
 
@@ -75,7 +76,7 @@ describe("golden — el render del tema default no cambia", () => {
       for (const required of ["head", "print-cv", "cover", "hero", "plano", "footer"]) {
         expect(names, `sección ${required}`).toContain(required);
       }
-      expect(names.filter((n) => n.startsWith("sala-"))).toHaveLength(9);
+      expect(names.filter((n) => n.startsWith("sala-"))).toHaveLength(SALAS.length);
       // El CSS global vive en head: si se extrae a un archivo (FASE 5), el golden
       // sigue cubriéndolo porque el <style> emitido no puede cambiar.
       expect(sectionsOf(requireGolden())[0].html).toContain("<style>");

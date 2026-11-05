@@ -7,7 +7,7 @@
  * el que invoca `package.json`.
  */
 import { execFileSync } from "node:child_process";
-import { BASELINE_PATH, COMPARATOR_PATH } from "./paths.ts";
+import { BASELINE_PATH, COMPARATOR_PATH, DATA_PATH } from "./paths.ts";
 import { changedSince, decide, treeOf, type PolicyResult } from "./policy.ts";
 
 function main(): void {
@@ -35,6 +35,7 @@ function main(): void {
       // introducción: no puede volver a ganar la exención.
       goldenFamilyInBase: tree.some((path) => path.startsWith("tests/golden/")),
       changed: changedSince(base, BASELINE_PATH),
+      dataChanged: changedSince(base, DATA_PATH),
       body: process.env.PR_BODY ?? ""
     });
   } catch (error) {

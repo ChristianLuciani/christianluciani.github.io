@@ -18,6 +18,8 @@ export interface PolicyInput {
   changed: boolean;
   /** El comparador (`golden.test.ts`) existe en el head: sin él no hay gate. */
   comparatorPresent: boolean;
+  /** `src/data/profile.generated.ts` cambió en el PR (condición de "Datos"). */
+  dataChanged: boolean;
   /** Body del PR, tal cual. */
   body: string;
 }
@@ -33,7 +35,19 @@ export interface PolicyResult {
  * refleja). Tolera las formas markdown habituales (`**Render:** cambia`,
  * `### Datos: cambia`).
  */
-export const DECLARATION = /^[ \t>*_#-]*(render|datos)[ \t*_]*:[ \t*_]*cambia\b/im;
+export const RENDER_DECL = /^[ \t>*_#-]*render[ \t*_]*:[ \t*_]*cambia\b/im;
+export const DATA_DECL = /^[ \t>*_#-]*datos[ \t*_]*:[ \t*_]*cambia\b/im;
+
+/**
+ * Qué declaró el PR, mirando sólo texto visible. `render` gana si están las dos:
+ * es la declaración fuerte (alguien revisó el cambio de presentación).
+ */
+export function declarationOf(body: string): "render" | "datos" | null {
+  const text = withoutCodeBlocks(body);
+  if (RENDER_DECL.test(text)) return "render";
+  if (DATA_DECL.test(text)) return "datos";
+  return null;
+}
 
 /**
  * El body sin código: un ejemplo documentado no es una declaración del PR.
@@ -81,8 +95,20 @@ export function decide(input: PolicyInput): PolicyResult {
   if (!input.changed) {
     return { ok: true, reason: "golden intacto: el render no cambió" };
   }
-  if (DECLARATION.test(withoutCodeBlocks(input.body))) {
-    return { ok: true, reason: "golden regenerado y declarado en el body del PR" };
+  const declaration = declarationOf(input.body);
+  if (declaration === "render") {
+    return { ok: true, reason: "golden regenerado con 'Render: cambia'" };
+  }
+  if (declaration === "datos") {
+    // Sin el snapshot movido, "Datos" es la declaración más barata y serviría
+    // para mover el golden por presentación: no se acepta sin evidencia.
+    if (!input.dataChanged) {
+      return {
+        ok: false,
+        reason: "'Datos: cambia' sin cambios en src/data/profile.generated.ts: declaralo como Render"
+      };
+    }
+    return { ok: true, reason: "golden regenerado con 'Datos: cambia' y snapshot movido" };
   }
   return {
     ok: false,
@@ -103,11 +129,6 @@ export function treeOf(base: string, cwd = process.cwd()): string[] {
     throw new Error(`no se pudo leer la base ${base}: ${(r.stderr ?? "").trim() || `exit ${r.status}`}`);
   }
   return r.stdout.split("\n").filter(Boolean);
-}
-
-/** ¿El archivo existe en el commit `base`? */
-export function existsIn(base: string, path: string, cwd = process.cwd()): boolean {
-  return treeOf(base, cwd).includes(path);
 }
 
 /**

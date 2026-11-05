@@ -3,14 +3,21 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { decide, existsIn } from "../../tools/golden/policy.ts";
+import { decide, treeOf } from "../../tools/golden/policy.ts";
 
 /**
  * Evidencia de la guarda de CI: la rama de fallo y la de declaración se prueban
  * acá, no en un `run:` de YAML que nunca se ejecuta en el PR que la introduce.
  */
 describe("golden — política de declaración", () => {
-  const base = { baselineInBase: true, goldenFamilyInBase: true, changed: true, comparatorPresent: true, body: "" };
+  const base = {
+    baselineInBase: true,
+    goldenFamilyInBase: true,
+    changed: true,
+    comparatorPresent: true,
+    dataChanged: false,
+    body: ""
+  };
 
   it("pasa sin declaración cuando el render no cambió", () => {
     expect(decide({ ...base, changed: false }).ok).toBe(true);
@@ -66,8 +73,14 @@ describe("golden — política de declaración", () => {
     expect(decide({ ...base, body: "### Render: cambia" }).ok).toBe(true);
   });
 
-  it("acepta 'Datos: cambia' (snapshot del perfil movido)", () => {
-    expect(decide({ ...base, body: "Datos: cambia (sync:profile 6c6a6f1)" }).ok).toBe(true);
+  it("acepta 'Datos: cambia' cuando el snapshot se movió", () => {
+    expect(decide({ ...base, body: "Datos: cambia (sync:profile 6c6a6f1)", dataChanged: true }).ok).toBe(true);
+  });
+
+  it("rechaza 'Datos: cambia' sin cambios en profile.generated.ts", () => {
+    const r = decide({ ...base, body: "Datos: cambia" });
+    expect(r.ok).toBe(false);
+    expect(r.reason).toContain("Render");
   });
 
   it("no acepta 'Datos: no cambia'", () => {
@@ -116,10 +129,10 @@ describe("golden — existe en la base (git real)", () => {
       git(dir, ["add", "."]);
       git(dir, ["commit", "-q", "-m", "base"]);
 
-      expect(existsIn("HEAD", "tests/golden/museo.html", dir)).toBe(true);
-      expect(existsIn("HEAD", "tests/golden/otro.html", dir)).toBe(false);
+      expect(treeOf("HEAD", dir)).toContain("tests/golden/museo.html");
+      expect(treeOf("HEAD", dir)).not.toContain("tests/golden/otro.html");
       // La ref inválida NO se lee como "baseline nuevo": la guarda falla cerrada.
-      expect(() => existsIn("no-existe-esta-ref", "tests/golden/museo.html", dir)).toThrow();
+      expect(() => treeOf("no-existe-esta-ref", dir)).toThrow();
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
