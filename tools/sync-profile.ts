@@ -319,6 +319,20 @@ export function projectProfile(
     if (typeof c.verifyUrl === "string") privateTargets.add(c.verifyUrl);
   }
 
+  /** Ids de artifacts PÚBLICOS con `locator.url`: el conjunto contra el que
+   *  `projects[].artifactRefs` decide "publicado" (#109). Visibilidad ausente =
+   *  public ($defs.visibility, §18.5). */
+  const publicArtifactIds = new Set<string>();
+  for (const a of asArray(raw.artifacts)) {
+    if (!isPublic(a)) continue;
+    const locator = asRecord(a.locator);
+    if (typeof a.id === "string" && a.id && typeof locator.url === "string" && locator.url) {
+      publicArtifactIds.add(a.id);
+    }
+  }
+
+  // §18.5: un link de identidad que apunte a un target privado/unlisted no se
+  // emite — la privacidad de la entrada no equivale a la del hecho que la cita.
   const links: Link[] = asArray(identity.links)
     .map((l) => ({
       platform: str(l.platform),
@@ -361,6 +375,11 @@ export function projectProfile(
     name: str(p.name),
     ...(p.status ? { status: str(p.status) } : {}),
     ...(p.description != null ? { description: lang(p.description, "projects.description", report) } : {}),
+    // Predicado de "publicado": ref a un artifact público con locator.url.
+    // El id crudo NO se emite (podría apuntar a un artifact privado).
+    published: (Array.isArray(p.artifactRefs) ? p.artifactRefs.map(str) : []).some((id) =>
+      publicArtifactIds.has(id)
+    ),
     // Los punteros a un artifact/credential no público no se emiten (§18.5):
     // la entrada privada ya se filtró, pero el hecho que la referencia seguía
     // publicando su URL (p. ej. evidence.source → repo privado).

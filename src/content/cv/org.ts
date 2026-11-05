@@ -1,27 +1,34 @@
 /**
- * Presentación ES del `org` del SSOT (SPEC §11/§15.6) — módulo compartido por
- * TODAS las superficies que imprimen experiencia: la página (El Friso) y el
- * print-CV. Una sola implementación evita que página y PDF no localicen igual.
+ * Presentación ES del `org` del SSOT (SPEC §11/§15.6) — ÚNICA fuente para todas
+ * las superficies que imprimen experiencia: la página (El Friso, vía `museo.ts`)
+ * y el print-CV. Una sola implementación evita que página y PDF localicen
+ * distinto.
  *
- * REGLA: el `org` es un string invariante (nunca langMap). Los nombres propios
- * NO se traducen; sólo se presenta en ES el rol del empleador ("Independent"),
- * el país y la glosa que el SSOT guarda en inglés por formar parte del string.
- * El reemplazo es por TOKEN COMPLETO (no substring): "Panamá" ya en ES o
- * "Fluge-Panamá" no se tocan, y "New Mexico" no es el país México.
+ * REGLA: el `org` es un string INVARIANTE (nunca langMap). Los nombres propios
+ * NO se traducen: sólo se presenta en ES el rol del empleador ("Independent"),
+ * el país ("Panama", "Mexico") y la glosa "(scholarship)", que el SSOT guarda en
+ * inglés porque forman parte del string.
  *
- * PENDIENTE #118 (rama `dsh/sprint/109`): `museo.ts` ya tiene una copia local de
- * `orgEs`. Al mergear, esa rama debe importar ESTA función y borrar su copia
- * (además, su `\bMexico\b` actual corrompería "New Mexico State University").
+ * Se reemplaza por TOKEN COMPLETO — segmentos aislados por ` — `, `-`, `/`,
+ * coma o paréntesis — y nunca por substring: «New Mexico State University»,
+ * «Independent University» y «Panama Canal Authority» son nombres propios y
+ * quedan intactos, igual que «Fluge-Panamá» o un «Panamá» ya en ES. El EN se
+ * recupera del string original vía los pares ES→EN (`src/content/cv/i18n.ts`).
  */
-const NEW_MEXICO = /\bNew\s+$/;
+const ORG_ES: Readonly<Record<string, string>> = {
+  Independent: "Independiente",
+  Panama: "Panamá",
+  Mexico: "México",
+  scholarship: "beca"
+};
 
-/** `org` del SSOT → presentación ES; el EN se recupera del string original. */
+/** Separadores que aíslan un token: guion, slash, coma y paréntesis. */
+const ORG_SEPARATOR = /(\s+[—–-]\s+|\s*\/\s*|\s*,\s*|\s*\(|\))/;
+
+/** `org` del SSOT → presentación ES; el EN vuelve al string original vía i18n. */
 export function orgEs(org: string): string {
   return org
-    .replace(/\bIndependent\b/g, "Independiente")
-    .replace(/\bPanama\b/g, "Panamá")
-    .replace(/\bMexico\b/g, (match, offset: number, full: string) =>
-      NEW_MEXICO.test(full.slice(0, offset)) ? match : "México"
-    )
-    .replace(/\(scholarship\)/g, "(beca)");
+    .split(ORG_SEPARATOR)
+    .map((part) => (Object.prototype.hasOwnProperty.call(ORG_ES, part) ? ORG_ES[part] : part))
+    .join("");
 }

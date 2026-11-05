@@ -648,6 +648,20 @@ a { color:inherit; }
   color:var(--ink);
 }
 .hero-metrics .u { color:var(--ink-meta); font-size:.55em; letter-spacing:.02em; }
+/* Traza de procedencia (#109): línea discreta y verificable del pin del SSOT. */
+.hero-provenance {
+  margin:14px 0 0;
+  font-family:var(--font-mono); font-size:10px; line-height:1.6;
+  color:var(--ink-meta);
+  letter-spacing:.02em; word-break:break-all;
+  opacity:0; animation:fadeUp .8s .8s both;
+}
+.hero-provenance a {
+  color:var(--ink-meta); text-decoration:none;
+  border-bottom:1px dotted var(--line);
+}
+.hero-provenance a:hover, .hero-provenance a:focus-visible { color:var(--teal); border-bottom-color:currentColor; }
+.hero-provenance code { font-family:inherit; color:var(--ink-faint); }
 .hero-scroll {
   position:absolute; bottom:26px; left:50%; transform:translateX(-50%);
   font-family:var(--font-mono); font-size:9.5px; color:var(--ink-meta);

@@ -6,7 +6,20 @@ import { assetAttrs } from "../ts/assets/url.ts";
  */
 import { SALAS, type SalaDef } from "../cv/salas.ts";
 import { numFor } from "../cv/render.ts";
-import { enDesarrollo, publicados, type Proyecto } from "../data/proyectos.ts";
+import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
+import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
+import {
+  bastidorClosing,
+  enDesarrolloDe,
+  publicadosDe,
+  showcaseProject,
+  type Proyecto
+} from "../data/proyectos.ts";
+import { PROFILE } from "../data/profile.generated.ts";
+import type { CvProfile, ExperienceItem } from "../data/profile.types.ts";
+
+/** Snapshot commiteado (as const): el render recibe el perfil por parámetro. */
+const P = PROFILE as unknown as CvProfile;
 
 /**
  * Presentación por sala (no estructura): variante de data-scroll del título y
@@ -116,56 +129,70 @@ const ROOM_TAIL = `
 
 `;
 
-/** Showcase Drahma — obra publicada; se conserva tal cual tras las tarjetas. */
-const TALLER_DRAHMA = `<div class="drahma-showcase" data-scroll="up">
-      <span class="project-status status-active">Publicado · Agosto 2024 · Repositorio público</span>
+/** Escape de valores del SSOT/curación (son datos, no markup). */
+function esc(s: string | undefined): string {
+  return (s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+/** Host de un link del SSOT (label de presentación); cae a la URL cruda. */
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return url;
+  }
+}
+
+/**
+ * Showcase Drahma — la ficha completa de una obra publicada. Nombre, estado,
+ * descripción base, link y fecha verificable salen del SSOT; las celdas de
+ * interpretación (diseño, pedagogía, campo) son curación de `src/content/cv/`.
+ */
+export function drahmaShowcase(profile: CvProfile): string {
+  const project = showcaseProject(profile);
+  if (!project) return "";
+  const key = projectKey(project.name);
+  const verified = project.evidence.find((e) => e.verified)?.verified;
+  const date = formatMonthYear(verified);
+  // El status del SSOT decide sala y clase; la píldora curada (licencia/fecha/
+  // repo) sólo refina el detalle si `published` coincide (F4).
+  const derived = statusLabel(project.published, project.status);
+  const status = project.published ? (PROJECT_CURATION[key]?.statusLabel ?? derived) : derived;
+  const description = project.description?.es ?? project.description?.en ?? "";
+  const repo = project.links[0];
+  const cells = DRAHMA.cells
+    .map(
+      (cell, i) => `
+            <div class="drahma-cell" data-scroll="from-center" data-delay="${Math.min(i + 1, 4)}">
+              <div class="drahma-cell-icon">${cell.icon}</div>
+              <div class="drahma-cell-label">${esc(cell.label.es)}</div>
+              <div class="drahma-cell-text">${esc(cell.text.es)}</div>
+            </div>`
+    )
+    .join("");
+  return `<div class="drahma-showcase" data-scroll="up">
+      <span class="project-status ${statusClass(project.published, project.status)}">${esc(status.es)}</span>
       <div class="drahma-showcase-head">
         <img src="/assets/images/drahman-logo.png"
-             alt="Drahma logo" width="44" height="44" loading="lazy" decoding="async"
+             alt="${esc(key)} logo" width="44" height="44" loading="lazy" decoding="async"
              class="drahma-showcase-logo"
              onerror="this.style.display='none'">
-        <h3 class="drahma-showcase-title">Proyecto <em>Drahma</em></h3>
+        <h3 class="drahma-showcase-title">${DRAHMA.projectLabel.es} <em>${esc(key)}</em></h3>
       </div>
-      <div class="project-tagline">36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (agosto 2024).</div>
-      <div class="room-subtitle" data-scroll="up" data-delay="1">INTELIGENCIA SINTÉTICA EDUCATIVA · ECUADOR · AGOSTO 2024</div>
+      <div class="project-tagline">${esc(description)}</div>
+      <div class="room-subtitle" data-scroll="up" data-delay="1">${DRAHMA.subtitle.es}${date ? ` · ${date.toUpperCase()}` : ""}</div>
 
       <div class="drahma-columns two-col-drahma">
         <div>
           <div class="timeline-note" data-scroll="from-left">
-            <strong>LÍNEA TEMPORAL</strong>
-            Agosto 2024 — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo (Khan Academy). Desarrollado sin financiamiento externo ni lanzamiento público. Probado en campo con comunidades indígenas del Amazonas ecuatoriano.
+            <strong>${DRAHMA.timelineLabel.es}</strong>
+            ${esc(DRAHMA.timeline.es)}
           </div>
-          <div class="drahma-grid">
-            <div class="drahma-cell" data-scroll="from-center" data-delay="1">
-              <div class="drahma-cell-icon">🐉</div>
-              <div class="drahma-cell-label">Diseño</div>
-              <div class="drahma-cell-text">Dragones alados con iconografía precolombina y amazónica. Culturalmente resonantes para el estudiante ecuatoriano.</div>
-            </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="2">
-              <div class="drahma-cell-icon">🧠</div>
-              <div class="drahma-cell-label">Pedagogía</div>
-              <div class="drahma-cell-text">Método socrático: guía al estudiante hacia el razonamiento propio. No entrega respuestas — construye preguntas.</div>
-            </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="3">
-              <div class="drahma-cell-icon">📚</div>
-              <div class="drahma-cell-label">Alcance</div>
-              <div class="drahma-cell-text">36 asignaturas del currículo oficial del Ministerio de Educación del Ecuador — primaria y secundaria.</div>
-            </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="2">
-              <div class="drahma-cell-icon">⚙️</div>
-              <div class="drahma-cell-label">Arquitectura</div>
-              <div class="drahma-cell-text">Poe (Quora): agnóstico del modelo, acceso gratuito, persistencia de memoria conversacional entre sesiones.</div>
-            </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="3">
-              <div class="drahma-cell-icon">🛡️</div>
-              <div class="drahma-cell-label">Seguridad</div>
-              <div class="drahma-cell-text">Guardrails para menores — un problema de alineación que el campo aún estaba formalizando.</div>
-            </div>
-            <div class="drahma-cell" data-scroll="from-center" data-delay="4">
-              <div class="drahma-cell-icon">🌿</div>
-              <div class="drahma-cell-label">Campo</div>
-              <div class="drahma-cell-text">Pilotado con comunidades indígenas amazónicas. Validado en condiciones reales de bajo recurso tecnológico.</div>
-            </div>
+          <div class="drahma-grid">${cells}
           </div>
         </div>
 
@@ -176,35 +203,92 @@ const TALLER_DRAHMA = `<div class="drahma-showcase" data-scroll="up">
             <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-stairs/" target="_blank" rel="noopener">↗ michaelbach.de</a>
           </div>
           <div class="lab-stem-card" data-scroll="up" data-delay="2">
-            <div class="lab-stem-label">LAB STEM</div>
-            <div class="lab-stem-title">Fabricación <em>Pedagógica</em></div>
+            <div class="lab-stem-label">${DRAHMA.labStem.label.es}</div>
+            <div class="lab-stem-title">${DRAHMA.labStem.title.es}</div>
             <ul class="entry-body">
-              <li>Impresora 3D + cortadora láser · producción de juguetes pedagógicos concretos</li>
-              <li>Modelo peer-to-peer: estudiantes avanzados crean para estudiantes menores</li>
-              <li>Visión en pausa: chatbots como manuales vivos para cada objeto físico</li>
+${DRAHMA.labStem.items.map((item) => `              <li>${esc(item.es)}</li>`).join("\n")}
             </ul>
           </div>
         </div>
       </div><!-- /grid drahma -->
 
       <div class="repo-strategy" data-scroll="up">
-        <div class="repo-label">REPOSITORIO · ESTRATEGIA DE AUTORÍA</div>
-        <p class="repo-strategy-lede">Documentar la arquitectura y pedagogía antes de que el campo lo reinvente como nuevo</p>
+        <div class="repo-label">${DRAHMA.repo.label.es}</div>
+        <p class="repo-strategy-lede">${esc(DRAHMA.repo.lede.es)}</p>
         <ul class="entry-body">
-          <li>Repositorio público: arquitectura técnica, principios pedagógicos, guardrails — sin prompts internos</li>
-          <li>Repositorio privado: system prompts, documentos de contenido, notas de implementación</li>
-          <li>Objetivo: establecer autoría y fecha antes de la adopción masiva de sistemas equivalentes</li>
-        </ul>
+${DRAHMA.repo.items.map((item) => `          <li>${esc(item.es)}</li>`).join("\n")}
+        </ul>${
+          repo
+            ? `
+        <a class="pub-doi" href="${esc(repo)}" target="_blank" rel="noopener">↗ ${esc(hostOf(repo))}</a>`
+            : ""
+        }
       </div>
     </div><!-- /showcase drahma -->
 ${ROOM_TAIL}`;
+}
 
-/** Cierre de El Bastidor: la sala declara por qué existe. */
-const CIERRE_BASTIDOR = `
+/**
+ * Cierre de El Bastidor: la sala declara por qué existe. El texto se DERIVA del
+ * dato (`bastidorClosing`): cuántas fichas enlazan material público y cuántas
+ * declaran `falta`; si alguna no está curada, el cierre cuantifica el hueco en
+ * vez de afirmar que todas dicen qué les falta.
+ */
+export function cierreBastidor(profile: CvProfile = P): string {
+  const closing = bastidorClosing(profile);
+  return `
     <p class="room-closing" data-scroll="up">
-      Ninguna ficha de esta sala tiene todavía un artefacto que un tercero pueda abrir — y cada una dice qué le falta.
+      ${esc(closing.es)}
     </p>
 ${ROOM_TAIL}`;
+}
+
+/**
+ * El Friso — El Friso NO contiene cargos ni fechas: todo sale de
+ * `PROFILE.experience`, ordenado por `end` desc / `start` desc y repartido en
+ * las dos columnas históricas (mitad y mitad, orden de lectura cronológico).
+ */
+function compararExperiencia(a: ExperienceItem, b: ExperienceItem): number {
+  const end = (e: ExperienceItem): string => (e.end === "present" ? "9999-99-99" : e.end);
+  return end(b).localeCompare(end(a)) || b.start.localeCompare(a.start);
+}
+
+function entradaFriso(item: ExperienceItem, columna: number, indice: number): string {
+  const delay = indice === 0 ? "" : ` data-delay="${Math.min(indice, 5)}"`;
+  const scroll = columna === 0 ? "from-left" : "from-right";
+  const role = item.role.es ?? item.role.en;
+  const bullets = (item.highlights?.es ?? item.highlights?.en ?? [])
+    .map((h) => `            <li>${esc(h)}</li>`)
+    .join("\n");
+  return `
+        <div class="entry" data-scroll="${scroll}"${delay}>
+          <div class="entry-period">${formatPeriod(item, "es")}</div>
+          <div class="entry-title">${esc(role)}</div>
+          <div class="entry-org">${esc(orgEs(item.org))}</div>${bullets ? `
+          <ul class="entry-body">
+${bullets}
+          </ul>` : ""}
+        </div>
+`;
+}
+
+export function frisoHtml(profile: CvProfile): string {
+  const ordered = [...profile.experience].sort(compararExperiencia);
+  const half = Math.ceil(ordered.length / 2);
+  const columns = [ordered.slice(0, half), ordered.slice(half)]
+    .map((items, column) => `
+      <div>${items.map((item, i) => entradaFriso(item, column, i)).join("")}      </div>`)
+    .join("\n");
+  return `
+    <div class="two-col">${columns}
+    </div><!-- /two-col -->
+  </div>
+</section>
+<div class="room-divider"></div>
+
+
+`;
+}
 
 /**
  * Tarjetas de una sala: la envoltura (scroll/delay/última) la añade el renderer,
@@ -228,13 +312,15 @@ function tarjetas(lista: readonly Proyecto[]): string {
       const delay = i === 0 ? "" : ` data-delay="${Math.min(i, 5)}"`;
       const falta = p.falta
         ? `
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> ${p.falta}</div>`
+      <div class="project-falta"><span class="project-falta-label">${esc(MARCO.faltaLabel.es)}</span> ${esc(p.falta)}</div>`
         : "";
-      const artefacto = primerArtefacto(p.html);
+      // Sólo la obra publicada abre la ficha completa: una ficha en desarrollo
+      // conserva sus links clicables en vez de fingir un artefacto que no existe.
+      const artefacto = p.published ? primerArtefacto(p.html) : null;
       const hit = artefacto
         ? `
       <a class="project-card-hit" href="${artefacto.href}"${artefacto.blank ? ' target="_blank" rel="noopener"' : ""}
-         aria-label="Abrir ${p.nombre}" data-aria-es="Abrir ${p.nombre}" data-aria-en="Open ${p.nombre}"></a>`
+         aria-label="Abrir ${esc(p.nombre)}" data-aria-es="Abrir ${esc(p.nombre)}" data-aria-en="Open ${esc(p.nombre)}"></a>`
         : "";
       return `
     <div class="project-card${artefacto ? " project-card--linked" : ""}" data-scroll="from-left"${delay} data-recencia="${p.recencia ?? ""}">
@@ -321,90 +407,6 @@ export const ROOM_BODY: Record<string, string> = {
       </div>
     </div><!-- /profile-grid -->
   </div><!-- /room-content -->
-</section>
-<div class="room-divider"></div>
-
-
-`,
-  // Drahma no lleva tarjeta: su ficha completa es el showcase que sigue.
-  proyectos: `${tarjetas(publicados.filter((p) => !p.sinTarjeta))}${TALLER_DRAHMA}`,
-  bastidor: `${tarjetas(enDesarrollo)}${CIERRE_BASTIDOR}`,
-  experiencia: `
-    <div class="two-col">
-      <!-- Columna A -->
-      <div>
-        <div class="entry" data-scroll="from-left">
-          <div class="entry-period">2025 – PRESENTE</div>
-          <div class="entry-title">Consultor Estratégico de Sistemas</div>
-          <div class="entry-org">Independiente · Panamá / Ecuador</div>
-          <ul class="entry-body">
-            <li>Plataformas BI e infraestructura digital · Zoho ERP</li>
-            <li>Sistema de auditoría y registro de efectivo para casino tipo C (Salsa-Casino)</li>
-            <li>Arquitectura SaaS para gestión clínica (ver CLAPPS.AI)</li>
-          </ul>
-        </div>
-
-        <div class="entry" data-scroll="from-left" data-delay="1">
-          <div class="entry-period">2019 – 2024</div>
-          <div class="entry-title">Coordinador de Laboratorios de Física</div>
-          <div class="entry-org">USFQ · Quito, Ecuador</div>
-          <ul class="entry-body">
-            <li>800+ estudiantes anuales · 36 guías de laboratorio originales</li>
-            <li>Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento</li>
-            <li>Técnico-operador del difractómetro de rayos X · co-autor de 3 arbitradas, 2 preprints y 1 abstract de congreso (2022–2025)</li>
-            <li>Responsable de Seguridad Radiológica institucional</li>
-          </ul>
-        </div>
-
-        <div class="entry" data-scroll="from-left" data-delay="2">
-          <div class="entry-period">2016 – 2018</div>
-          <div class="entry-title">Diseñador de Sistemas / Luminotécnico</div>
-          <div class="entry-org">Grupo Angel / Fluge-Panamá</div>
-          <ul class="entry-body">
-            <li>Sistema de registro de cuentas y bóveda para casinos · procedimientos de auditoría</li>
-            <li>Luminotécnico freelance para eventos corporativos y de entretenimiento</li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Columna B -->
-      <div>
-        <div class="entry" data-scroll="from-right">
-          <div class="entry-period">2011 – 2014</div>
-          <div class="entry-title">Logística BTL y Relación con Clientes</div>
-          <div class="entry-org">Magic Dreams Productions · Panamá</div>
-          <ul class="entry-body">
-            <li>Logística y montaje de activaciones BTL en eventos masivos según proyecto</li>
-            <li>Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic</li>
-            <li>Coordinación de 1.000 pax · Desfile de Navidad Panamá 2013</li>
-            <li>Producción evento Extravaganza Herbalife 2012</li>
-            <li>Participación en: Cirque du Soleil, Shakira, Juan Luis Guerra, Jennifer Lopez, Yanni, Copa Mundial de Béisbol 2011</li>
-          </ul>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="1">
-          <div class="entry-period">2006 – 2010</div>
-          <div class="entry-title">Fotografía · Edición · Docencia Audiovisual</div>
-          <div class="entry-org">Escuela de Cine y TV / Venezuela</div>
-          <ul class="entry-body">
-            <li><em>La Escalera de Patty</em> — prix du public, FECOVEN 2008</li>
-            <li><em>9 Arepas</em> — selección ESPN 2008</li>
-            <li>Docente de edición y montaje · Coord. post-producción Creadores Visuales (2010)</li>
-          </ul>
-        </div>
-
-        <div class="entry" data-scroll="from-right" data-delay="2">
-          <div class="entry-period">2003 – 2006</div>
-          <div class="entry-title">Profesor de Física</div>
-          <div class="entry-org">Universidad Simón Bolívar · Caracas</div>
-          <ul class="entry-body">
-            <li>Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)</li>
-            <li>Primeras publicaciones en sistemas complejos</li>
-          </ul>
-        </div>
-      </div>
-    </div><!-- /two-col -->
-  </div>
 </section>
 <div class="room-divider"></div>
 
@@ -722,6 +724,31 @@ export const ROOM_BODY: Record<string, string> = {
 `,
 };
 
+/** El Marco: obra publicada (derivada de `published`) + showcase de Drahma. */
+export function marcoHtml(profile: CvProfile = P): string {
+  const cards = tarjetas(publicadosDe(profile).filter((p) => !p.sinTarjeta));
+  return `${cards}${drahmaShowcase(profile)}`;
+}
+
+/** El Bastidor: sin artefacto público; cada ficha declara su `falta` curada. */
+export function bastidorHtml(profile: CvProfile = P): string {
+  return `${tarjetas(enDesarrolloDe(profile))}${cierreBastidor(profile)}`;
+}
+
+/** Body de una sala: estáticas por id; las tres de #109 se derivan del SSOT. */
+export function roomBody(s: SalaDef, profile: CvProfile = P): string {
+  switch (s.id) {
+    case "experiencia":
+      return frisoHtml(profile);
+    case "proyectos":
+      return marcoHtml(profile);
+    case "bastidor":
+      return bastidorHtml(profile);
+    default:
+      return ROOM_BODY[s.id] ?? "";
+  }
+}
+
 function roomHeader(s: SalaDef): string {
   const meta = ROOM_META[s.id] ?? { titleScroll: "zoom-in" };
   const num = numFor(s.id) ?? meta.legacyNum ?? "";
@@ -739,7 +766,7 @@ function roomHeader(s: SalaDef): string {
 
 /** Sala completa: comentario + shell + header(SALAS) + body. */
 export function renderRoom(s: SalaDef): string {
-  return ROOM_SHELL[s.id] + roomHeader(s) + ROOM_BODY[s.id];
+  return ROOM_SHELL[s.id] + roomHeader(s) + roomBody(s);
 }
 
 /** Todas las salas en orden SALAS (DOM order). */

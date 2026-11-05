@@ -14,7 +14,12 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { PRINT_CV } from "../content/cv/print";
+import {
+  EXPERIENCE_SECTIONS,
+  PRINT_CV,
+  experienceKey,
+  experienceSectionOf
+} from "../content/cv/print";
 import { orgEs } from "../content/cv/org";
 import { PROFILE } from "../data/profile.generated";
 import type { CvProfile } from "../data/profile.types";
@@ -44,18 +49,20 @@ describe("print-CV — renderer sin hechos hardcodeados", () => {
     expect(HTML).not.toContain("2010 – 2013");
   });
 
-  it("un fixture con otro `role` cambia el HTML (los hechos entran por parámetro)", () => {
-    const original = profile.experience[0].role.es!;
+  // El `role` es parte de la CLAVE de curación: cambiarlo en un fixture debe
+  // romper el render (lo cubre el test F1 de entrada sin clasificar), no
+  // cambiar la salida. Acá se mueven hechos que no son clave: nombre y `end`.
+  it("un fixture con otros hechos cambia el HTML (los hechos entran por parámetro)", () => {
     const fixture: CvProfile = {
       ...profile,
-      experience: [
-        { ...profile.experience[0], role: { en: "Compliance Officer", es: "Oficial de Cumplimiento" } },
-        ...profile.experience.slice(1)
-      ]
+      identity: { ...profile.identity, name: "Nombre Fixture" },
+      experience: profile.experience.map((item, index) =>
+        index === 0 ? { ...item, end: "2027-01-01" } : item
+      )
     };
     const changed = printCvHtml(fixture);
-    expect(changed).toContain("Oficial de Cumplimiento");
-    expect(changed).not.toContain(original);
+    expect(changed).toContain("Nombre Fixture");
+    expect(changed).toContain("2025 – 2027");
     expect(changed).not.toBe(HTML);
   });
 
@@ -115,7 +122,7 @@ describe("print-CV — drifts del SSOT corregidos", () => {
     expect(HTML).toContain("Francés (intermedio)");
   });
 
-  it("contacto derivado de identity + links (sin email fuera del snapshot)", () => {
+  it("contacto derivado de identity + links (el email no está en PROFILE)", () => {
     expect(HTML).toContain("Christian Luciani");
     expect(HTML).toContain("Cuenca, Ecuador");
     expect(HTML).toContain("christianluciani.github.io");
@@ -123,6 +130,11 @@ describe("print-CV — drifts del SSOT corregidos", () => {
     expect(HTML).toContain("orcid.org/0000-0002-6955-5384");
     expect(HTML).toContain("github.com/ChristianLuciani");
     expect(HTML).not.toContain("cluciani@gmail.com");
+  });
+
+  it("F3: documenta la omisión del email como «no está en PROFILE», no como privacidad", () => {
+    expect(RENDERER).toMatch(/NO ESTÁ EN `PROFILE`/);
+    expect(RENDERER).not.toMatch(/privacidad|privacy/i);
   });
 });
 
@@ -147,15 +159,119 @@ describe("print-CV — footer de procedencia (solo print)", () => {
     expect(footer).toBeLessThan(ASSEMBLED.indexOf('<header class="hud">'));
     expect(ASSEMBLED).toContain("#print-cv { display:none; }");
   });
+
+  it("F2: es el ÚLTIMO hijo de #print-cv (no abre una página huérfana detrás)", () => {
+    const start = HTML.indexOf('<div class="p-footer">');
+    const end = HTML.indexOf("</div>", start) + "</div>".length;
+    expect(start).toBeGreaterThan(-1);
+    // Después del footer sólo queda el cierre del bloque contenedor: nada que
+    // pudiera empujarlo a una página propia.
+    expect(HTML.slice(end).trim()).toBe("</div>");
+    expect(HTML.lastIndexOf('class="p-section')).toBeLessThan(start);
+  });
+
+  it("F2: el footer y el bloque que lo precede declaran no-corte", () => {
+    expect(HTML).toMatch(/#print-cv \.p-footer\s*\{[^}]*break-inside:avoid;[^}]*break-before:avoid;/);
+    expect(HTML).toMatch(/#print-cv \.p-section\.p-keep\s*\{[^}]*break-inside:avoid;[^}]*break-before:avoid;/);
+    const sections = [...HTML.matchAll(/<div class="p-section([^"]*)">/g)];
+    expect(sections.at(-1)?.[1]).toContain("p-keep");
+  });
+});
+
+describe("print-CV — F1: dos secciones de Trayectoria (curación D2)", () => {
+  // El universo sale de la proyección, no de una lista copiada a mano: si el
+  // SSOT agrega, renombra o quita una fila, este gate lo dice. La tabla de
+  // curación sólo puede espejar las claves de PROFILE.experience.
+  const profileKeys = profile.experience.map(experienceKey);
+
+  it("la tabla cubre exactamente las claves de PROFILE.experience (ni falta ni sobra)", () => {
+    expect(new Set(profileKeys).size, "claves de fila únicas").toBe(profile.experience.length);
+    const tableKeys = Object.keys(EXPERIENCE_SECTIONS).sort();
+    // Las dos direcciones: una fila nueva sin clasificar rompe, y una fila de la
+    // tabla que ya no existe en el SSOT (hecho renombrado/eliminado) también.
+    expect(tableKeys).toEqual([...profileKeys].sort());
+    expect(tableKeys).toHaveLength(profile.experience.length);
+    for (const key of profileKeys) expect(EXPERIENCE_SECTIONS[key], key).toBeDefined();
+  });
+
+  it("una entrada nueva del SSOT sin fila rompe la cobertura (no queda obsoleta en silencio)", () => {
+    const fixtureKeys = [
+      ...profileKeys,
+      experienceKey({ org: "Fixture Org", role: { en: "Fixture", es: "Fixture" }, start: "2020-01-01" })
+    ].sort();
+    // La tabla no cubre el universo del fixture: el gate de arriba fallaría con
+    // la clave faltante, y el render falla con el mensaje exacto.
+    expect(fixtureKeys).not.toEqual(Object.keys(EXPERIENCE_SECTIONS).sort());
+    expect(fixtureKeys.filter((key) => key in EXPERIENCE_SECTIONS)).toHaveLength(
+      profile.experience.length
+    );
+  });
+
+  it("las dos secciones se imprimen, en orden, y cada fila cae en la suya", () => {
+    const trainingHeading = `<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`;
+    const professionalHeading = `<h3 class="p-subhead">${PRINT_CV.sections.professional}</h3>`;
+    const [beforeTraining, trainingPart] = HTML.split(trainingHeading);
+    const [container, professionalPart] = beforeTraining.split(professionalHeading);
+
+    expect(container).toContain("<h2>Trayectoria</h2>");
+    expect(container).toContain("Empleo, formación y talleres · 1998 – PRESENTE");
+    expect(professionalPart).toBeDefined();
+    expect(trainingPart).toBeDefined();
+
+    const expected = (id: "professional" | "training") =>
+      profile.experience.filter((item) => experienceSectionOf(item) === id).length;
+    const count = (block: string) => occurrences(block, 'class="p-entry p-exp"');
+    expect(count(professionalPart)).toBe(expected("professional"));
+    expect(count(trainingPart)).toBe(expected("training"));
+    expect(count(professionalPart) + count(trainingPart)).toBe(profile.experience.length);
+
+    for (const item of profile.experience) {
+      const block = experienceSectionOf(item) === "professional" ? professionalPart : trainingPart;
+      expect(block).toContain(item.role.es!);
+    }
+    // Las tres dudosas son empleo; el postgrado y CERN son formación.
+    for (const role of [
+      "Pasantía en Transferencia de Video a Cine",
+      "Asistente de Fotografía Fija",
+      "Profesional en Entrenamiento"
+    ]) {
+      expect(professionalPart).toContain(role);
+      expect(trainingPart).not.toContain(role);
+    }
+    expect(trainingPart).toContain("Postgrado de Instrumentación");
+    expect(trainingPart).toContain("II Latin American School of High Energy Physics");
+    expect(professionalPart).not.toContain("Postgrado de Instrumentación");
+  });
+
+  it("una entrada sin clasificar rompe el render (no se adivina ni se esconde)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      experience: [
+        ...profile.experience,
+        { role: { en: "Fixture", es: "Fixture" }, org: "Fixture Org", start: "2020-01-01", end: "2020-12-31" }
+      ]
+    };
+    expect(() => printCvHtml(fixture)).toThrow(/sin clasificar/);
+    expect(() => printCvHtml(fixture)).toThrow(/Fixture Org\|Fixture\|2020-01-01/);
+  });
+
+  it("el rango sigue derivado: sin la fila más vieja, la nota arranca en 1999", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      experience: profile.experience.filter((item) => !item.start.startsWith("1998"))
+    };
+    expect(printCvHtml(fixture)).toContain("Empleo, formación y talleres · 1999 – PRESENTE");
+  });
 });
 
 describe("print-CV — F2: Trayectoria y org localizado", () => {
-  it("titula las 23 filas «Trayectoria» (EN «Trajectory»), no «Experiencia profesional»", () => {
+  it("el bloque contenedor sigue titulándose «Trayectoria» con su nota", () => {
     expect(PRINT_CV.sections.experience.es).toBe("Trayectoria");
     expect(PRINT_CV.sections.experience.en).toBe("Trajectory");
     expect(HTML).toContain("<h2>Trayectoria</h2>");
-    expect(HTML).not.toContain("Experiencia profesional");
     expect(HTML).toContain("Empleo, formación y talleres");
+    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.professional}</h3>`);
+    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`);
   });
 
   it("localiza el org por token: país y glosa en ES, nombres propios intactos", () => {
@@ -169,6 +285,19 @@ describe("print-CV — F2: Trayectoria y org localizado", () => {
     expect(orgEs("New Mexico State University")).toBe("New Mexico State University");
     expect(orgEs("Fluge-Panamá")).toBe("Fluge-Panamá");
     expect(orgEs("Panamá")).toBe("Panamá");
+  });
+});
+
+describe("print-CV — F2 de #119: rótulos de formación desambiguados", () => {
+  it("«Formación y talleres» (experience) no compite con «Formación académica» (education)", () => {
+    // El subhead de talleres es una decisión registrada del operador (#108 §9):
+    // no se renombra; se desambigua el otro lado.
+    expect(PRINT_CV.sections.training).toBe("Formación y talleres");
+    expect(PRINT_CV.sections.education).toBe("Formación académica");
+    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`);
+    expect(HTML).toContain(`<h2>${PRINT_CV.sections.education}</h2>`);
+    expect(HTML).not.toContain("<h2>Formación</h2>");
+    expect(occurrences(HTML, "Formación académica")).toBe(1);
   });
 });
 

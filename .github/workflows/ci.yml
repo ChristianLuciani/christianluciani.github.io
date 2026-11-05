@@ -77,3 +77,10 @@ jobs:
           # un index.html commiteado en modo CDN rompe build.test.ts; este gate
           # lo dice con el diff, no con un test de 10 líneas de distancia
           git diff --exit-code -- index.html
+      # gate real de paginación del print-CV (F3 de #119): mide el PDF de Chrome
+      # sobre dist/, no el texto del CSS. Falla si una página no es A4, si el
+      # footer de procedencia queda solo en la última página o si la última
+      # página queda casi vacía (<20% de la extensión de la página más llena).
+      - run: npm run print:verify
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}

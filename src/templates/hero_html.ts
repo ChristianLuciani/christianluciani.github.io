@@ -4,6 +4,7 @@
  * o editar directamente si es un cambio intencional de contenido.
  * HERO: entrada del museo (section + divider).
  */
+import { provenanceHtml } from "../data/profile.provenance.ts";
 
 export function heroHtml(): string {
   return `<!-- ════════════════════════════════════════════════════
@@ -25,7 +26,8 @@ export function heroHtml(): string {
       <div><dt>Drahma</dt><dd>36<span class="u"> tutores</span></dd></div>
       <div><dt>Física</dt><dd>20+<span class="u"> años</span></dd></div>
     </dl>
-  </div>
+
+${provenanceHtml()}  </div>
 
   <div class="hero-scroll">SCROLL PARA RECORRER</div>
   <div class="scroll-line"></div>
