@@ -14,6 +14,7 @@
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
     "sync:check": "tsx tools/sync-check.ts",
+    "sync:now": "tsx tools/sync-now.ts",
     "test:watch": "vitest",
     "build:html": "tsx build.ts",
     "logo:verify": "node tools/logo/verify-dom-fidelity.mjs",
