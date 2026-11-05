@@ -9,6 +9,11 @@
  * Sin traza de oro: el texto se sostiene solo.
  * Al terminar, el `.hero-name` aparece donde terminó la última frase y vuela a
  * su posición natural; al aterrizar vuelve a flow y el loader se oculta.
+ *
+ * La intro es opcional: `#btn-skip-intro` (o un clic) la cancela y revela la
+ * página de inmediato. El skip limpia timers, coreografía y estilos inline, así
+ * que es seguro en cualquier momento (aun antes de que arranque la primera
+ * frase o durante el vuelo del nombre).
  */
 
 const FRASES = [
@@ -33,6 +38,11 @@ const WORD_MIN_GAP = 260; // ms — un tick sí, dos también: nunca a ráfaga
 /** Techo duro: la intro jamás se cuelga esperando un tick que no llega. */
 const CHOREO_MAX_WAIT = 12000; // ms
 
+interface Choreo {
+  done: Promise<void>;
+  cancel: () => void;
+}
+
 /**
  * Coreografía ÚNICA de las tres frases, acompasada al Espirángulo — cada paso
  * ocurre en un `espirangulo:tick` (el choque link-nodo del logo, ver
@@ -44,9 +54,13 @@ const CHOREO_MAX_WAIT = 12000; // ms
  * `WORD_MIN_GAP` impide que un tempo rápido arme la frase de golpe. Si el clock
  * no emite (logo ausente, cronograma que no llegó), cae a cadencia fija; el
  * techo duro garantiza que la intro nunca se cuelgue.
+ *
+ * `cancel()` la detiene sin resolver el flujo de frases (el skip lo usa): la
+ * promesa `done` resuelve igual, pero quien la consume comprueba el estado.
  */
-function choreograph(words: HTMLElement[]): Promise<void> {
-  return new Promise<void>((resolve) => {
+function choreograph(words: HTMLElement[]): Choreo {
+  let cancel = () => {};
+  const done = new Promise<void>((resolve) => {
     const steps: Array<() => void> = [
       ...words.map((w) => () => w.classList.add("p-word--on")),
       ...words.map((w) => () => {
@@ -60,31 +74,31 @@ function choreograph(words: HTMLElement[]): Promise<void> {
 
     let next = 0;
     let lastAt = 0;
-    let done = false;
+    let stopped = false;
     let wait: number | undefined;
     let fallback: number | undefined;
     let hard: number | undefined;
 
-    const cleanup = () => {
-      done = true;
+    const settle = () => {
+      if (stopped) return;
+      stopped = true;
       if (wait) window.clearTimeout(wait);
       if (fallback) window.clearInterval(fallback);
       if (hard) window.clearTimeout(hard);
       window.removeEventListener("espirangulo:tick", onTick);
       wait = fallback = hard = undefined;
+      resolve();
     };
+    cancel = settle;
 
     const stepOnce = () => {
-      if (done) return;
+      if (stopped) return;
       steps[next]?.();
       next++;
       if (next >= steps.length) {
         // La frase no está "terminada" hasta que el último pulso asienta: el
         // fade-out arranca recién ahí.
-        window.setTimeout(() => {
-          cleanup();
-          resolve();
-        }, PULSE_MS);
+        window.setTimeout(settle, PULSE_MS);
       }
     };
 
@@ -111,10 +125,10 @@ function choreograph(words: HTMLElement[]): Promise<void> {
         steps[next]();
         next++;
       }
-      cleanup();
-      resolve();
+      settle();
     }, CHOREO_MAX_WAIT);
   });
+  return { done, cancel };
 }
 
 /**
@@ -139,14 +153,32 @@ function renderPhraseWords(html: string): string {
   return out;
 }
 
+/** Devuelve `.hero-name` a su posición natural y lo deja visible. */
+function releaseHeroName(heroName: HTMLElement): void {
+  heroName.style.position = "";
+  heroName.style.left = "";
+  heroName.style.top = "";
+  heroName.style.width = "";
+  heroName.style.margin = "";
+  heroName.style.zIndex = "";
+  heroName.style.pointerEvents = "";
+  heroName.style.transformOrigin = "";
+  heroName.style.transform = "";
+  heroName.style.transition = "";
+  heroName.style.opacity = "1";
+}
+
 export function initIntro(): void {
   if (typeof document === "undefined") return;
+
+  const skipBtn = document.getElementById("btn-skip-intro");
 
   const reduceMotion =
     window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   if (reduceMotion) {
     const ib = document.getElementById("intro-block");
     if (ib) ib.remove();
+    skipBtn?.remove();
     return; // el loader lo oculta el logo en reduced-motion (delay corto en main.ts)
   }
 
@@ -154,13 +186,42 @@ export function initIntro(): void {
   const brand = document.getElementById("brand-logo");
   const phrase = document.getElementById("intro-phrase");
   const block = document.getElementById("intro-block");
-  if (!loader || !block || !phrase) return;
+  if (!loader || !block || !phrase) {
+    skipBtn?.remove();
+    return;
+  }
   const loaderEl = loader;
+  const blockEl = block;
   const phraseEl = phrase;
 
   let started = false;
+  /** La intro se saltó o ya terminó: ningún timer pendiente debe revivirla. */
+  let skipped = false;
+  let finishing = false;
+  const timers = new Set<number>();
+  let activeChoreo: Choreo | null = null;
 
-  function hideLoader() {
+  /** setTimeout cancelable: el skip limpia todo de una sola vez. */
+  function later(fn: () => void, ms: number): number {
+    const id = window.setTimeout(() => {
+      timers.delete(id);
+      if (!skipped) fn();
+    }, ms);
+    timers.add(id);
+    return id;
+  }
+
+  function clearTimers(): void {
+    timers.forEach((id) => window.clearTimeout(id));
+    timers.clear();
+  }
+
+  function hideSkip(): void {
+    skipBtn?.remove();
+  }
+
+  function hideLoader(): void {
+    hideSkip();
     loaderEl.classList.add("hidden");
     if (brand) {
       brand.classList.add("minimized");
@@ -174,6 +235,9 @@ export function initIntro(): void {
    * transform; al aterrizar vuelve a flow y el loader se oculta.
    */
   function finish(revealRect?: DOMRect) {
+    if (finishing || skipped) return;
+    finishing = true;
+    hideSkip();
     const heroName = document.querySelector<HTMLElement>(".hero-name");
     if (!heroName) {
       hideLoader();
@@ -206,24 +270,14 @@ export function initIntro(): void {
 
     heroName.style.transition = "opacity .4s ease";
     heroName.style.opacity = "1"; // fade in en el lugar de la frase
-    setTimeout(() => {
+    later(() => {
       let landed = false;
       const land = () => {
         if (landed) return;
         landed = true;
         // Libera el elemento: vuelve a flow en .hero-content (misma posición).
         // opacity queda en 1 inline: la base CSS es opacity:0 (fadeUp desactivado).
-        heroName.style.position = "";
-        heroName.style.left = "";
-        heroName.style.top = "";
-        heroName.style.width = "";
-        heroName.style.margin = "";
-        heroName.style.zIndex = "";
-        heroName.style.pointerEvents = "";
-        heroName.style.transformOrigin = "";
-        heroName.style.transform = "";
-        heroName.style.transition = "";
-        heroName.style.opacity = "1";
+        releaseHeroName(heroName);
         hideLoader();
       };
       heroName.style.transition = "transform 1s cubic-bezier(.16,1,.3,1)";
@@ -235,11 +289,12 @@ export function initIntro(): void {
         { once: true }
       );
       heroName.style.transform = "translate(0, 0)"; // vuela a su lugar en el hero
-      setTimeout(land, 1800); // fallback si transitionend no dispara
+      later(land, 1800); // fallback si transitionend no dispara
     }, 900);
   }
 
   function showPhrase(i: number) {
+    if (skipped) return;
     // Misma coreografía para las tres frases; cada una conserva su alineación
     // original (triángulo, tres líneas centradas, dos filas).
     phraseEl.classList.toggle("intro-phrase--triangle", i === 0);
@@ -250,12 +305,14 @@ export function initIntro(): void {
     const words = Array.from(phraseEl.querySelectorAll<HTMLElement>(".p-word"));
 
     const leave = () => {
+      if (skipped) return;
       phraseEl.classList.remove("in");
       phraseEl.classList.add("out");
-      setTimeout(() => {
+      later(() => {
+        if (skipped) return;
         phraseEl.classList.remove("out");
         if (i + 1 < FRASES.length) {
-          setTimeout(() => showPhrase(i + 1), STEP);
+          later(() => showPhrase(i + 1), STEP);
         } else {
           // Continuación: el nombre aparece en el lugar de la última frase.
           const reveal = phraseEl.getBoundingClientRect();
@@ -265,25 +322,51 @@ export function initIntro(): void {
       }, FADE_OUT);
     };
 
-    void choreograph(words).then(() => {
-      setTimeout(leave, PHRASE_HOLD);
+    activeChoreo = choreograph(words);
+    void activeChoreo.done.then(() => {
+      if (skipped) return;
+      later(() => {
+        if (skipped) return;
+        leave();
+      }, PHRASE_HOLD);
     });
   }
 
+  /** Cancela la intro y revela la página en el acto (no hay vuelo). */
+  function skipToPage() {
+    if (skipped) return;
+    skipped = true;
+    clearTimers();
+    activeChoreo?.cancel();
+    activeChoreo = null;
+    hideSkip();
+    blockEl.style.display = "none";
+    const heroName = document.querySelector<HTMLElement>(".hero-name");
+    if (heroName) {
+      heroName.style.animation = "none";
+      releaseHeroName(heroName);
+      // El botón que disparó el skip se va con el loader: el foco aterriza en
+      // la entrada, no en el body (teclado y lectores de pantalla).
+      heroName.tabIndex = -1;
+      heroName.focus({ preventScroll: true });
+    }
+    hideLoader();
+  }
+
   function start() {
-    if (started) return;
+    if (started || skipped) return;
     started = true;
     // 0.7s de negro (loader con el fractal) antes de la primera frase.
-    window.setTimeout(() => showPhrase(0), START_DELAY);
+    later(() => showPhrase(0), START_DELAY);
   }
 
   if (document.readyState === "complete") start();
   else window.addEventListener("load", start, { once: true });
 
-  // Skip: un clic durante el intro salta directo al nombre y revela el hero.
-  const skip = () => {
-    if (!started) return;
-    finish();
-  };
-  document.addEventListener("click", skip, { once: true });
+  // Skip explícito: el botón lleva foco y label; el clic en cualquier lado se
+  // conserva como atajo, pero ya no es la única forma de salir.
+  if (skipBtn) {
+    skipBtn.addEventListener("click", skipToPage);
+  }
+  document.addEventListener("click", skipToPage, { once: true });
 }

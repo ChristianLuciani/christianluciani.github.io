@@ -55,6 +55,15 @@ const COVER_TAIL = `</nav>
   <div id="intro-block">
     <p id="intro-phrase" class="intro-phrase">Arte Ciencias Filosofía</p>
   </div>
+  <!-- La intro es opcional: la página no. Un control explícito evita depender
+       de "clic en cualquier lado" para saltarla. -->
+  <button id="btn-skip-intro" type="button"
+          aria-label="Saltar la animación inicial e ir directo a la página"
+          data-aria-es="Saltar la animación inicial e ir directo a la página"
+          data-aria-en="Skip the opening animation and go straight to the page">
+    <span class="skip-intro-label">Saltar intro</span>
+    <span class="skip-intro-arrow" aria-hidden="true">↓</span>
+  </button>
 </div>
 `;
 

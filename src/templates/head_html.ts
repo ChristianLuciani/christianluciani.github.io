@@ -385,6 +385,29 @@ a { color:inherit; }
 }
 #loader.hidden { opacity:0; visibility:hidden; }
 
+/* Skip de la intro: la animación es opcional, el contenido no. Vive dentro del
+   loader para que desaparezca con él (y no quede un control huérfano). */
+#btn-skip-intro {
+  position:absolute;
+  right:clamp(1rem, 4vw, 2.5rem);
+  bottom:2rem;
+  z-index:2;
+  display:inline-flex; align-items:center; gap:.55rem;
+  padding:.6rem 1rem;
+  background:rgba(0,201,192,.06);
+  border:1px solid rgba(0,201,192,.28);
+  border-radius:9px;
+  color:var(--ink-dim);
+  font-family:var(--font-mono);
+  font-size:9.5px; letter-spacing:.14em; text-transform:uppercase;
+  cursor:pointer;
+  transition:color .2s, border-color .2s, background .2s;
+  opacity:0; animation:fadeUp .6s .2s both;
+}
+#btn-skip-intro:hover { color:var(--teal); border-color:rgba(0,201,192,.55); background:rgba(0,201,192,.12); }
+#btn-skip-intro:focus-visible { outline:2px solid var(--teal); outline-offset:3px; color:var(--teal); }
+#btn-skip-intro .skip-intro-arrow { font-size:12px; line-height:1; }
+
 #brand-logo {
   --brand-size: min(50vmin, 440px);
   position:fixed;
@@ -543,7 +566,7 @@ a { color:inherit; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  #intro-block { display:none; }
+  #intro-block, #btn-skip-intro { display:none; }
 }
 
 /* ══════════════════════════════════════════════
@@ -1301,7 +1324,7 @@ a { color:inherit; }
   .contact-link { font-size:9.5px; padding:.55rem .9rem; }
   .drahma-showcase { padding:16px; }
   .room-footnote { margin-top:28px; }
-  #btn-download { bottom:1rem; right:1rem; }
+  #btn-download, #btn-skip-intro { bottom:1rem; right:1rem; }
 }
 </style>
   <script type="module" crossorigin src="/src/main.ts"></script>
