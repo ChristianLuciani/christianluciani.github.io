@@ -20,11 +20,12 @@ Golden-Cambio: render    # rediseño, copy, estructura
 Golden-Cambio: datos     # sync:profile movió el pin/fecha del print-CV
 ```
 
-El render depende de los hechos: `sync:profile` mueve el footer de procedencia del print-CV
-y el feed «Ahora» entra al build. Ese caso se declara `Golden-Cambio: datos`, y la guarda
-exige además que haya cambiado algún artefacto de datos
-(`src/data/profile.generated.ts`, `src/data/now.generated.ts`): sin eso, "datos" sería la
-declaración más barata para mover el golden por presentación.
+El render depende de los hechos: `sync:profile` mueve el footer de procedencia del print-CV,
+el feed «Ahora» entra al build y la entidad JSON-LD (`sync:entity`) viaja en el head. Ese
+caso se declara `Golden-Cambio: datos`, y la guarda exige además que haya cambiado algún
+artefacto de datos (`src/data/*.generated.ts` — hoy `profile`, `now` y `entity`; el conjunto
+vive en `tools/golden/paths.ts` y `policy.test.ts` lo exige completo): sin eso, "datos"
+sería la declaración más barata para mover el golden por presentación.
 
 El job `refresh-now.yml` regenera el golden y lo commitea con ese trailer: un robot de
 datos no puede dejar la suite roja al día siguiente.

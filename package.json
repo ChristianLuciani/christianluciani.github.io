@@ -13,6 +13,8 @@
     "golden:policy": "tsx tools/golden/policy-cli.ts",
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
+    "sync:entity": "tsx tools/sync-entity.ts",
+    "sync:ai-policy": "tsx tools/sync-ai-policy.ts",
     "sync:check": "tsx tools/sync-check.ts",
     "sync:now": "tsx tools/sync-now.ts",
     "test:watch": "vitest",
