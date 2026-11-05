@@ -112,6 +112,11 @@ export function robotsGroups(text: string): RobotsGroup[] {
       current.agents.push(value);
       continue;
     }
+    // RFC 9309 §2.2.4: un registro que no es `user-agent`/`allow`/`disallow`
+    // (p. ej. `Sitemap:`, `Crawl-delay:`) NO termina el grupo. Contarlo como
+    // `rule` partía el grupo en dos y dejaba al segundo agente sin sus reglas
+    // — el crawler seguía leyendo un grupo y el gate otro (pase 5, F3).
+    if (key !== "allow" && key !== "disallow") continue;
     if (!current) continue; // regla sin `user-agent`: el RFC la ignora
     current.rules.push({ key, value });
   }
@@ -121,6 +126,16 @@ export function robotsGroups(text: string): RobotsGroup[] {
 
 /** `product-token = identifier / "*"` · `identifier = 1*(%x2D / %x41-5A / %x5F / %x61-7A)` */
 const PRODUCT_TOKEN = /^(?:\*|[A-Za-z_-]+)$/;
+
+/**
+ * Patrón que cubre TODO el sitio: `/`, `/*`, `/$`, `/*$` (RFC 9309 §2.2.3: `*`
+ * matchea cualquier secuencia y `$` ancla el fin). Comparar sólo contra `"/"`
+ * daba un falso positivo con `Disallow: /*` — que bloquea tanto como `/` — y un
+ * falso negativo con `Allow: /*` (pase 5, F4).
+ */
+export function isRootPattern(value: string): boolean {
+  return /^\/(?:\*|\$|\*\$)?$/.test(value);
+}
 
 /**
  * Conjunto de reglas **efectivo** por product token: RFC 9309 §2.2.1 manda
@@ -161,12 +176,21 @@ export function robotsAgents(text: string): Map<string, { key: string; value: st
 export function policyProblems(files: Record<PolicyFile, string | null>): string[] {
   const problems: string[] = [];
   for (const file of POLICY_FILES) {
-    if (files[file] === null) {
+    const content = files[file];
+    if (content === null) {
       problems.push(`falta ${file} en public/ (regenerá con npm run sync:ai-policy)`);
+      continue;
+    }
+    // F2 del pase 5: `if (content)` trataba el archivo VACÍO como ausente y
+    // apagaba su capa — el CI sólo hacía `test -f` + `cmp`, así que un
+    // `robots.txt` de 0 bytes pasaba `policy-self` y el sitio publicaba «todo
+    // permitido». Vacío no es una política.
+    if (content.trim().length === 0) {
+      problems.push(`${file}: vacío (0 bytes no es una política — regenerá con npm run sync:ai-policy)`);
     }
   }
   const robots = files["robots.txt"];
-  if (robots) {
+  if (robots !== null && robots.trim().length > 0) {
     const agents = robotsAgents(robots);
     for (const token of agents.keys()) {
       if (!PRODUCT_TOKEN.test(token)) {
@@ -183,8 +207,8 @@ export function policyProblems(files: Record<PolicyFile, string | null>): string
     const contradictory: string[] = [];
     for (const [token, rules] of agents) {
       if (token === "*") continue;
-      const allowsRoot = rules.some((rule) => rule.key === "allow" && rule.value === "/");
-      const disallowsRoot = rules.some((rule) => rule.key === "disallow" && rule.value === "/");
+      const allowsRoot = rules.some((rule) => rule.key === "allow" && isRootPattern(rule.value));
+      const disallowsRoot = rules.some((rule) => rule.key === "disallow" && isRootPattern(rule.value));
       if (allowsRoot && disallowsRoot) contradictory.push(token);
       else if (allowsRoot) allowed.push(token);
       else if (disallowsRoot) blocked.push(token);
@@ -199,9 +223,9 @@ export function policyProblems(files: Record<PolicyFile, string | null>): string
     if (!blocked.length) problems.push("robots.txt: sin agente de training (`Disallow: /` exclusivo)");
   }
   const llms = files["llms.txt"];
-  if (llms && !/^#\s/m.test(llms)) problems.push("llms.txt: sin título de índice (se esperaba un heading `# `)");
-  const policy = files["AI-POLICY.md"];
-  if (policy && policy.trim().length === 0) problems.push("AI-POLICY.md: vacío");
+  if (llms !== null && llms.trim().length > 0 && !/^#\s/m.test(llms)) {
+    problems.push("llms.txt: sin título de índice (se esperaba un heading `# `)");
+  }
   return problems;
 }
 

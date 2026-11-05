@@ -25,6 +25,7 @@ import {
 import { COMMITTED_ENTITY_PATH as ENTITY_COMMITTED_PATH } from "../../tools/sync-entity";
 import {
   POLICY_FILES,
+  isRootPattern,
   policyProblems,
   robotsAgents,
   robotsDirectives,
@@ -461,5 +462,45 @@ describe("policyProblems — el wildcard se detecta como lo lee un crawler (F2)"
   it("nombra los tres artefactos cuando faltan", () => {
     const problems = policyProblems(files({ "robots.txt": null, "llms.txt": null, "AI-POLICY.md": null }));
     for (const file of POLICY_FILES) expect(problems.join("\n")).toContain(file);
+  });
+
+  /**
+   * Pase 5 — F2 (artefacto vacío apagaba su capa), F3 (`Sitemap:` partía el
+   * grupo), F4 (`Disallow: /*` daba falso positivo). Cada uno con su sonda.
+   */
+  it("un artefacto VACÍO no apaga su capa (F2: 0 bytes ≠ política)", () => {
+    const problems = policyProblems(files({ "robots.txt": "", "llms.txt": "", "AI-POLICY.md": "" }));
+    for (const file of POLICY_FILES) {
+      expect(problems.join("\n")).toMatch(new RegExp(`${file.replace(".", "\\.")}: vacío`));
+    }
+  });
+
+  it("un `Sitemap:` entre dos `User-agent` NO parte el grupo (RFC 9309 §2.2.4)", () => {
+    // Sonda del pase 5: sin el fix, `Sitemap:` contaba como rule, cerraba la
+    // fase de agentes y dejaba a ClaudeBot con la lista de reglas VACÍA,
+    // mientras el crawler lo mete en el mismo grupo que CCBot.
+    const agents = robotsAgents(
+      "User-agent: ClaudeBot\nSitemap: https://x.test/sitemap.xml\nUser-agent: CCBot\nAllow: /\n"
+    );
+    expect([...agents.keys()]).toEqual(["claudebot", "ccbot"]);
+    expect(agents.get("claudebot")).toEqual([{ key: "allow", value: "/" }]);
+
+    const problems = policyProblems(
+      files({
+        "robots.txt":
+          "User-agent: Googlebot\nSitemap: https://x.test/sitemap.xml\nUser-agent: ClaudeBot\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /\n"
+      })
+    );
+    expect(problems).toEqual([]);
+  });
+
+  it("`Disallow: /*` bloquea tanto como `/` (path-pattern §2.2.3, F4)", () => {
+    const problems = policyProblems(
+      files({ "robots.txt": "User-agent: Googlebot\nAllow: /\n\nUser-agent: GPTBot\nDisallow: /*\n" })
+    );
+    expect(problems).toEqual([]);
+    expect(isRootPattern("/*")).toBe(true);
+    expect(isRootPattern("/$")).toBe(true);
+    expect(isRootPattern("/privado")).toBe(false);
   });
 });
