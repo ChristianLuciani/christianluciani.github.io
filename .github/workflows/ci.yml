@@ -130,3 +130,10 @@ jobs:
       - run: npm run print:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+      # gate de FOCO del skip de la intro (cierra la clase 1 del pase fresco de
+      # #143): mide en Chrome real que un clic ajeno no dispare el skip ni robe
+      # foco, y que el foco aterrice en el hero al saltar y al completar. Usa el
+      # dist/ que dejó el build de Pages.
+      - run: npm run intro:verify
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
