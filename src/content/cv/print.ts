@@ -31,7 +31,7 @@
  */
 import type { LangText } from "../../data/profile.types.ts";
 import { PROFILE_PROSE, type ProfileProseSelection } from "./profile-prose.ts";
-import { t } from "../copy.ts";
+import { t, te } from "../copy.ts";
 
 export interface PrintCvCuration {
   /**
@@ -180,10 +180,13 @@ export const PRINT_CV: PrintCvCuration = {
   // ESTRUCTURA de la superficie, no su texto.
   sections: {
     profile: t("print.sections.profile"),
-    experience: { es: t("print.sections.experience"), en: "Trajectory" },
+    experience: {
+      es: t("print.sections.experience"),
+      en: te("print.sections.experience")
+    },
     experienceNote: {
       es: t("print.sections.experienceNote"),
-      en: "Employment, education and workshops"
+      en: te("print.sections.experienceNote")
     },
     professional: t("print.sections.professional"),
     training: t("print.sections.training"),
