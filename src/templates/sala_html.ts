@@ -2,10 +2,11 @@ import { assetAttrs } from "../ts/assets/url.ts";
 import { t, ta, th } from "../content/copy.ts";
 
 /**
- * SALAS: comentario editorial + shell de <section> + header GENERADO desde SALAS
- * + body de contenido. (Extraído del monolito de Fase 1; regenerable.)
+ * SALAS: comentario editorial + shell de <section> + header GENERADO desde las
+ * salas de la narrativa activa + body de contenido. (Fase 1; regenerable.)
  */
-import { SALAS, type SalaDef } from "../cv/salas.ts";
+import type { RoomRef } from "../themes/types.ts";
+import { activeRooms } from "../themes/index.ts";
 import { numFor } from "../cv/render.ts";
 import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
@@ -764,7 +765,7 @@ export function bastidorHtml(profile: CvProfile = P): string {
  * Body de una sala: estáticas por id; Perfil (#122) y las tres de #109 se
  * derivan del SSOT.
  */
-export function roomBody(s: SalaDef, profile: CvProfile = P): string {
+export function roomBody(s: RoomRef, profile: CvProfile = P): string {
   switch (s.id) {
     case "perfil":
       return perfilBody(profile);
@@ -779,7 +780,7 @@ export function roomBody(s: SalaDef, profile: CvProfile = P): string {
   }
 }
 
-function roomHeader(s: SalaDef): string {
+function roomHeader(s: RoomRef): string {
   const meta = ROOM_META[s.id] ?? { titleScroll: "zoom-in" };
   const num = numFor(s.id) ?? meta.legacyNum ?? "";
   return (
@@ -794,12 +795,12 @@ function roomHeader(s: SalaDef): string {
   );
 }
 
-/** Sala completa: comentario + shell + header(SALAS) + body. */
-export function renderRoom(s: SalaDef): string {
+/** Sala completa: comentario + shell + header(narrativa) + body. */
+export function renderRoom(s: RoomRef): string {
   return ROOM_SHELL[s.id] + roomHeader(s) + roomBody(s);
 }
 
-/** Todas las salas en orden SALAS (DOM order). */
+/** Todas las salas de la NARRATIVA ACTIVA, en orden DOM. */
 export function roomsHtml(): string {
-  return SALAS.map((s) => renderRoom(s)).join("");
+  return activeRooms().map((s) => renderRoom(s)).join("");
 }
