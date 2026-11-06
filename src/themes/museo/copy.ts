@@ -1,16 +1,19 @@
 /**
  * PACK DE COPY — tema `museo` (narrativa default, SPEC §8 FASE 5 · ADR-001).
  *
- * QUÉ ES: el texto VISIBLE del tema, una sola vez, con ES + EN completos. Los
- * renderers (`src/templates/**`) no contienen literales: piden estas claves con
- * `t()` (`src/content/copy.ts`). Un tema nuevo copia este archivo y reescribe
- * su voz; el contenido factual no se toca.
+ * QUÉ ES: el texto VISIBLE de la CAPA DE PRESENTACIÓN del tema, con ES + EN
+ * completos. Los renderers (`src/templates/**`) no contienen literales: piden
+ * estas claves con `t()` (`src/content/copy.ts`). Un tema nuevo copia este
+ * archivo y reescribe su voz; el contenido factual no se toca.
  *
- * QUÉ NO ES: hechos. Nombres propios, fechas, orgs, publicaciones y links salen
- * del SSOT (`src/data/profile.generated.ts`) o de la curación; si un valor
- * tuviera que cambiar en dos archivos para seguir coherente, sería un bug
- * (SPEC §3). Los datos que todavía no tienen proyección del SSOT viven en
- * `src/content/cv/*.ts` (una sola vez), no acá.
+ * QUÉ NO ES el SSOT. Nombres propios, fechas, orgs, publicaciones y links son
+ * hechos: su fuente canónica es `profile-data` (`publications.yaml`,
+ * `projects.yaml`, …) y este pack sólo declara su PRESENTACIÓN. Mientras esa
+ * proyección no exista (#99/#128), los títulos y leyendas de la Biblioteca —y
+ * los `headline` del JSON-LD que salen de las mismas claves— se leen de acá
+ * como ÚNICA superficie de render: si el hecho cambia, hay que actualizar el
+ * pack Y el SSOT. Esa deuda está declarada, no escondida: cuando la proyección
+ * llegue, estas claves se derivan del SSOT y el pack queda sólo con la voz.
  *
  * El tema NO se hardcodea en los templates: `src/content/copy.ts` resuelve el
  * pack vigente. S3 (registro de narrativas) mueve esa resolución a `THEMES`.
@@ -284,9 +287,13 @@ export const MUSEO_COPY: CopyPack = {
     en: "Creator of Kontablo, a universal accounting ontology for the agentic economy. Independent researcher in Cuenca, Ecuador."
   },
 
-  /* ── SALA FÍSICA · publicaciones (hechos sin proyección del SSOT aún) ──
-     La sala Biblioteca imprime hoy su lista a mano. Mientras #99/#128 no la
-     deriven del SSOT, el texto vive UNA vez acá: el template no lo repite. */
+  /* ── SALA FÍSICA · publicaciones ──────────────────────────────────
+     DEUDA DECLARADA (#99/#128): la fuente canónica es
+     `profile-data/publications.yaml`; la proyección al render todavía no
+     existe. Hasta entonces este pack declara la PRESENTACIÓN (título, venue,
+     alt) una sola vez para las dos superficies que hoy la consumen —la fila de
+     la Biblioteca y el `headline` del JSON-LD—. No es el hecho: es su
+     superficie de display mientras falta la proyección. */
   "pub.kontablo.title": {
     es: "Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy",
     en: "Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy"

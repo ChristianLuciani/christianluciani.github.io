@@ -148,7 +148,8 @@ línea de registro (§8 FASE 5).
 | publicaciones (title, venue, year, doi, url) | `profile-data/publications.yaml` | hecho |
 | skills + idiomas | `profile-data/skills.yaml` (+ `languages` v1.1) | hecho |
 | keywords SEO/GEO | `profile-data/keywords.yaml` | hecho |
-| copy del chrome y de las salas (hero, cover, intro, plano, now, galería, publicaciones, competencias, contacto) | `src/themes/museo/copy.ts` | copy (pack del tema, #127) |
+| copy del chrome y de las salas (hero, cover, intro, plano, now, galería, competencias, contacto) | `src/themes/museo/copy.ts` | copy (pack del tema, #127) |
+| títulos y leyendas de publicaciones (fila de la Biblioteca + `headline` del JSON-LD) | `src/themes/museo/copy.ts` (`pub.<id>.*`) | copy de presentación — **deuda declarada**: proyectar `profile-data/publications.yaml` (#99/#128) |
 | diccionario i18n ES/EN | derivado en `src/cv/i18n.ts` del pack, de `src/cv/salas.ts` y del SSOT | presentación (sin claves a mano, #127) |
 | títulos museísticos ("El Autorretrato") | `src/content/cv/museo.ts` | copy (hoy; destino §8 FASE 5) |
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
