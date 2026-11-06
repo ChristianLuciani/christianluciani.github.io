@@ -4,11 +4,17 @@ status: accepted
 date: 2026-11-05
 domain: [narrativas, pieles, temas, deploy, contenido, curacion]
 decided_by: operador (sesión dsh/norma/temas-narrativas)
+ratified: 2026-11-06
+ratified_by: operador (issue #132)
 ---
 
 # ADR-001 — Cuatro dimensiones: hechos · curación · narrativa · piel
 
 **Alcance declarado:** `Cubre: el modelo de contenido y presentación del sitio, el contrato de un tema y la topología de publicación de N temas · No cubre: hechos del perfil (viven en profile-data, SPEC §5.1), diseño de las ilusiones (src/ts/illusions), 3D, i18n de terceros · as_of: 2026-11-05`
+
+**Ratificación:** operador, 2026-11-06 (issue #132) — ratifica esta decisión y `docs/SPEC.md`
+v0.2 (FASE 5) tal como están en `main` (PR #121, squash `e60d5e4`); `docs/CREAR-TEMA.md`
+queda como contrato operativo. La decisión de este ADR no cambia.
 
 ## Contexto
 

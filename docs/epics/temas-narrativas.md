@@ -42,7 +42,7 @@ sync en CI) se integra en S7.
 | S3 | Registro de narrativas + `SITE_THEME` | S1, S2 | 2–3 d |
 | S4 | Piel extraída: tokens y 0 literales | S1 | 2–3 d |
 | S5 | Selector de build + subpath + meta/SEO | S3, S4 | 2–3 d |
-| S6 | Ratificación de norma (ADR-001 + SPEC v0.2 + playbook) | — | 1 d |
+| S6 | Ratificación de norma (ADR-001 + SPEC v0.2 + playbook) — **ratificada 2026-11-06** (#132) | — | 1 d |
 | S7 | Gates de CI multi-tema | S5 | 1–2 d |
 | S8 | Piloto mínimo: `themes/ingenieria` (mismas 8 salas) | S5, S7 | 3–4 d |
 | S9 | Control total: reordenar/agrupar/curar | S8 | 2–3 d |
@@ -164,9 +164,10 @@ en ningún tema; `sitemap` lista raíz + subpaths.
 **Entregable:** `docs/adr/ADR-001-temas-y-narrativas.md` (accepted), `docs/SPEC.md` v0.2
 (§3, §4, §5.3–§5.6, §6 D2/D3/D8–D12, §8 FASE 5, §9–§11), `docs/CREAR-TEMA.md`, este epic.
 
-**DoD:** premerge-review fresca (es norma, session-discipline §3b) con veredicto en el PR;
-el operador ratifica. **Entregado por el PR de este epic**; el issue queda para la
-ratificación y el seguimiento.
+**DoD:** premerge-review fresca (es norma, session-discipline §3b) con veredicto registrado
+en #132 (pase post-hoc: la norma ya está en `main`); **ratificada por el operador el
+2026-11-06 (issue #132)**. **Entregado por el PR del epic**; #132 conserva la traza y el
+seguimiento.
 
 ---
 

@@ -1,6 +1,6 @@
 # SPEC — Separación contenido/presentación + dependencia de profile-data
 
-> Status: v0.2 — FASE 5 (temas) incorporada; pendiente de ratificación del operador · Method: spec-driven (dev-methodology)
+> Status: v0.2 — FASE 5 (temas) incorporada; **ratificada por el operador el 2026-11-06** (issue #132; ratifica el contenido de PR #121, squash `e60d5e4`) · Method: spec-driven (dev-methodology)
 > Owner: Christian Luciani · Repo: `ChristianLuciani/christianluciani.github.io`
 > Fecha: 2026-08-15 · v0.2: 2026-11-05 (ADR-001: hechos · curación · narrativa · piel)
 > Relacionado: `docs/adr/ADR-001-temas-y-narrativas.md`, `docs/CREAR-TEMA.md`, `docs/epics/temas-narrativas.md`, profile-as-code `docs/SPEC.md` (§9.1 deploy surfaces, §15.6 v1.1), komuno manifiesto (IX–XI), AGOS (proyección read-only)
