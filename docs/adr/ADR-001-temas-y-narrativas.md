@@ -10,6 +10,11 @@ decided_by: operador (sesión dsh/norma/temas-narrativas)
 
 **Alcance declarado:** `Cubre: el modelo de contenido y presentación del sitio, el contrato de un tema y la topología de publicación de N temas · No cubre: hechos del perfil (viven en profile-data, SPEC §5.1), diseño de las ilusiones (src/ts/illusions), 3D, i18n de terceros · as_of: 2026-11-05`
 
+**Ratificación:** operador, 2026-11-06 (issue #132) — ratifica el contenido de PR #121
+(merge commit `e60d5e4`) sobre `main` al 2026-11-06 (`cd4c8b8`), incluida `docs/SPEC.md`
+v0.2 (FASE 5); `docs/CREAR-TEMA.md` queda como contrato operativo. La decisión de este ADR
+no cambia (`status: accepted`).
+
 ## Contexto
 
 El sitio fue diseñado como **museo de ilusiones ópticas** (`docs/SPEC.md`, `SALAS`). El
