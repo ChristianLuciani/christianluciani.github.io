@@ -10,10 +10,11 @@
  * Al terminar, el `.hero-name` aparece donde terminó la última frase y vuela a
  * su posición natural; al aterrizar vuelve a flow y el loader se oculta.
  *
- * La intro es opcional: `#btn-skip-intro` (o un clic) la cancela y revela la
- * página de inmediato. El skip limpia timers, coreografía y estilos inline, así
- * que es seguro en cualquier momento (aun antes de que arranque la primera
- * frase o durante el vuelo del nombre).
+ * La intro es opcional: `#btn-skip-intro` la cancela y revela la página de
+ * inmediato. El botón está disponible desde el primer frame y el skip limpia
+ * timers, coreografía y estilos inline. No hay atajo de clic global: competía
+ * con los controles que viven sobre el loader (`.skip-link`, nav) y les robaba
+ * el foco.
  */
 
 const FRASES = [
@@ -198,6 +199,8 @@ export function initIntro(): void {
   /** La intro se saltó o ya terminó: ningún timer pendiente debe revivirla. */
   let skipped = false;
   let finishing = false;
+  /** El foco estaba en el botón de skip cuando se removió: hay que entregarlo. */
+  let focusAfterIntro = false;
   const timers = new Set<number>();
   let activeChoreo: Choreo | null = null;
 
@@ -217,25 +220,30 @@ export function initIntro(): void {
   }
 
   function hideSkip(): void {
+    // Si el foco estaba en el botón que se va, hay que entregarlo: el skip es
+    // el foco inicial y removerlo sin handoff lo deja en <body>.
+    if (skipBtn && document.activeElement === skipBtn) focusAfterIntro = true;
     skipBtn?.remove();
   }
 
-  /**
-   * Desarma el atajo de clic. La intro termina una sola vez; un listener
-   * `once` que sobrevive al loader convierte el primer clic de la página en un
-   * skip fantasma que roba el foco del `.skip-link`.
-   */
-  function disarmClickSkip(): void {
-    document.removeEventListener("click", skipToPage);
+  /** Entrega el foco a la entrada cuando la intro termina. */
+  function focusHero(): void {
+    const heroName = document.querySelector<HTMLElement>(".hero-name");
+    if (!heroName) return;
+    heroName.tabIndex = -1;
+    heroName.focus({ preventScroll: true });
   }
 
   function hideLoader(): void {
-    disarmClickSkip();
     hideSkip();
     loaderEl.classList.add("hidden");
     if (brand) {
       brand.classList.add("minimized");
       if (brand instanceof HTMLButtonElement) brand.disabled = false;
+    }
+    if (focusAfterIntro) {
+      focusAfterIntro = false;
+      focusHero();
     }
   }
 
@@ -343,29 +351,23 @@ export function initIntro(): void {
   }
 
   /** Cancela la intro y revela la página en el acto (no hay vuelo). */
+  /** Cancela la intro y revela la página en el acto (no hay vuelo). */
   function skipToPage() {
     if (skipped) return;
     // La red de seguridad de main.ts puede ocultar el loader sin pasar por
     // acá: un clic posterior no debe tocar el hero ni el foco.
-    if (loaderEl.classList.contains("hidden")) {
-      disarmClickSkip();
-      return;
-    }
+    if (loaderEl.classList.contains("hidden")) return;
     skipped = true;
     clearTimers();
     activeChoreo?.cancel();
     activeChoreo = null;
-    hideSkip();
     blockEl.style.display = "none";
     const heroName = document.querySelector<HTMLElement>(".hero-name");
     if (heroName) {
       heroName.style.animation = "none";
       releaseHeroName(heroName);
-      // El botón que disparó el skip se va con el loader: el foco aterriza en
-      // la entrada, no en el body (teclado y lectores de pantalla).
-      heroName.tabIndex = -1;
-      heroName.focus({ preventScroll: true });
     }
+    // hideLoader hace el handoff de foco (el botón venía enfocado).
     hideLoader();
   }
 
@@ -379,13 +381,12 @@ export function initIntro(): void {
   if (document.readyState === "complete") start();
   else window.addEventListener("load", start, { once: true });
 
-  // Skip explícito: el botón lleva foco y label; el clic en cualquier lado se
-  // conserva como atajo, pero ya no es la única forma de salir.
+  // Skip explícito y único: un listener global de click competía con los
+  // controles que viven sobre el loader (.skip-link, nav) y les robaba el foco.
   if (skipBtn) {
     skipBtn.addEventListener("click", skipToPage);
     // El loader es opaco y tapa la HUD: el foco arranca en el único control
     // visible en vez de recorrer los focusables ocultos que haya antes.
     skipBtn.focus({ preventScroll: true });
   }
-  document.addEventListener("click", skipToPage, { once: true });
 }
