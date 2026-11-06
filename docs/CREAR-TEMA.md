@@ -4,7 +4,7 @@
 > **una línea** al registro. Si necesitás tocar cualquier otro archivo, el contrato
 > falló: pará y reportá (ADR-001, `docs/SPEC.md` §5.4–§5.6).
 >
-> **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-05`
+> **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-06`
 
 ## 1. Definiciones
 
@@ -55,6 +55,31 @@ meta.title | meta.description
 - Toda clave existe **ES y EN**. Falta una → el build falla (no hay fallback silencioso).
 - El mismo `roomId` puede tener copy distinto por tema sin tocar templates.
 - Prohibido keyear por texto visible: rompe en cuanto cambia una coma.
+
+### 3.1 Dónde vive el copy hoy (#127)
+
+```
+src/themes/<id>/copy.ts     pack: clave semántica → { es, en, runtime? }
+src/content/copy.ts         t()/th()/ta()/te() → pack del tema vigente
+src/templates/**            piden claves; CERO texto visible literal
+```
+
+- `t("clave")` interpola el ES con markup (títulos con `<em>`, `<br>`).
+  `th()` escapa `& < >` para texto plano; `ta()` escapa además `"` y `'` para
+  valores de atributo (`data-caption`); `te()` devuelve el EN (atributos
+  `data-aria-en`).
+- Clave inexistente = **error de build**: no hay fallback silencioso.
+- `runtime: true` marca copy que el HTML inicial no contiene (frases del intro
+  que monta `intro.ts`, labels del canvas del grafo, estados como el feed vacío).
+  El gate de claves huérfanas lo respeta; sin esa marca, una clave sin uso
+  rompe el test.
+- El gate `src/templates/no-literal-copy.test.ts` falla si un template emite
+  **> 2 palabras** de texto literal (linter: `tools/copy/lint.ts`). Si falla,
+  mové la frase al pack y pedila con `t()`.
+- El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
+  no se edita a mano y no admite claves muertas por construcción.
+- La prosa del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
+  sólo declara la estructura de esa superficie.
 
 ## 4. Curación: mostrar sin borrar
 
