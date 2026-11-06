@@ -19,6 +19,15 @@
  *
  * El texto de un `throw`/`new Error` no es visible: se excluye del scan (un
  * mensaje accionable para el operador no es copy del sitio).
+ *
+ * LÍMITE DECLARADO DEL INSTRUMENTO. Esto es un lint AST HEURÍSTICO sobre los
+ * strings del fuente, no un oráculo del HTML emitido: reconstruye el markup que
+ * los literales producirían, pero no ejecuta el render (no conoce lo que
+ * devuelven `t()`/SSOT ni resuelve interpolaciones). Un nodo armado con piezas
+ * de varios literales, o copy que sólo existe tras una función, puede quedar
+ * fuera. Su cierre estructural —stub determinista de `t()`/SSOT + scan del HTML
+ * emitido + property test de formas— es un INSTRUMENTO PENDIENTE, no una
+ * promesa de este gate. Acá se declara lo que hay, no lo que faltaría.
  */
 import ts from "typescript";
 import { readFileSync, readdirSync } from "node:fs";
@@ -63,12 +72,21 @@ const NAMED_ENTITIES: Record<string, string> = {
   quot: '"',
   apos: "'",
   nbsp: " ",
+  ensp: " ",
+  emsp: " ",
+  thinsp: " ",
+  hairsp: " ",
   mdash: "—",
   ndash: "–",
   hellip: "…",
   middot: "·",
+  bull: "•",
   laquo: "«",
   raquo: "»",
+  lsquo: "‘",
+  rsquo: "’",
+  ldquo: "“",
+  rdquo: "”",
   copy: "©",
   reg: "®",
   trade: "™",
@@ -98,9 +116,21 @@ function decodeEntities(value: string): string {
     .replace(/&[a-z][a-z0-9]*;/gi, (_, name: string) => name);
 }
 
+/** Recorta puntuación/símbolos de BORDE de un token (`{opción}`, `diseño;`). */
+function trimEdge(token: string): string {
+  return token.replace(/^[\p{P}\p{S}]+/u, "").replace(/[\p{P}\p{S}]+$/u, "");
+}
+
+/**
+ * Tokens-palabra: separación por whitespace (el texto ya viene decodificado,
+ * así `&nbsp;`/`&emsp;`/`&ensp;`/`&thinsp;` son espacios reales) y recorte de
+ * puntuación de borde. `{ display: grid; }` produce 2 tokens-palabra; una
+ * frase de copy produce 3+.
+ */
 function wordsOf(value: string): string[] {
   return decodeEntities(value)
     .split(/\s+/)
+    .map(trimEdge)
     .filter((word) => WORD.test(word));
 }
 
@@ -111,22 +141,21 @@ function isCopy(value: string): boolean {
 /**
  * Descarte de strings TÉCNICAS (no son copy aunque tengan espacios).
  *
- * Filtro explícito y documentado, aplicado por línea de texto reconstruido:
+ * Clasificación POR TOKEN, no por carácter de la línea: una línea con `=`,
+ * `;` o `{}` puede ser copy (`La fórmula es E = mc cuadrado`), así que el
+ * filtro no puede mirar caracteres sueltos.
  *  · un token único (import, clave `pub.*`, id, URL sin espacios);
  *  · URL absoluta, path POSIX/relativo o ruta con unidad Windows;
- *  · código/CSS/plantilla: `=`, `;`, `{`, `}`.
+ *  · menos de `MIN_WORDS` tokens-palabra tras el recorte de borde.
  * Se evalúa sobre el texto YA decodificado: `&amp;` es `&`, no `;`.
- * Si un string técnico cae acá, no se reporta; una frase de copy real no cae
- * en ninguna de estas formas.
  */
 function isTechnical(value: string): boolean {
-  const text = value.trim();
+  const text = decodeEntities(value).trim();
   if (!text) return true;
   if (!/\s/.test(text)) return true;
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return true;
   if (/^(\.{1,2}\/|\/|[A-Za-z]:[\\/])/.test(text)) return true;
-  if (/[=;{}]/.test(text)) return true;
-  return false;
+  return wordsOf(text).length < MIN_WORDS;
 }
 
 function isInsideErrorOrThrow(node: ts.Node): boolean {
@@ -252,18 +281,26 @@ export function copyHitsOf(file: string, source: string): CopyHit[] {
   const masked = maskHtml(html);
   const hits: CopyHit[] = [];
 
-  // 1) nodos de texto. Se evalúa LÍNEA por línea: cada chunk arranca en una
-  // línea propia (se concatenan con `\n`), así un literal plano interpolado no
-  // se diluye en el texto de los chunks vecinos.
+  // 1) nodos de texto. La unidad es el NODO emitido (segmento entre tags) y
+  // los `\n` internos se colapsan: un nodo partido en dos líneas de fuente
+  // sigue siendo un nodo (`investigación y\ndesarrollo aplicado`). Los chunks
+  // NO se juntan entre sí: cada porción de chunk dentro del segmento se evalúa
+  // aparte, para que el bloque de imports no parezca una frase.
+  const chunkStarts = marks.map((mark) => mark.start);
   for (const segment of textSegments(masked)) {
-    let offset = 0;
-    for (const line of segment.text.split("\n")) {
-      const text = decodeEntities(line).replace(/\s+/g, " ").trim();
-      if (isCopy(text) && !isTechnical(text)) {
-        const lead = line.length - line.trimStart().length;
-        hits.push({ file, line: lineAt(segment.start + offset + lead), kind: "texto", text });
-      }
-      offset += line.length + 1;
+    const bounds = [
+      segment.start,
+      ...chunkStarts.filter((pos) => pos > segment.start && pos < segment.start + segment.text.length),
+      segment.start + segment.text.length
+    ];
+    for (let i = 0; i < bounds.length - 1; i++) {
+      const from = bounds[i]!;
+      const to = bounds[i + 1]!;
+      const raw = masked.slice(from, to);
+      const text = decodeEntities(raw).replace(/\s+/g, " ").trim();
+      if (!isCopy(text) || isTechnical(text)) continue;
+      const lead = raw.length - raw.trimStart().length;
+      hits.push({ file, line: lineAt(from + lead), kind: "texto", text });
     }
   }
 

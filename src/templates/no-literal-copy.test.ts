@@ -123,6 +123,46 @@ describe("copy — cero texto literal en templates (I5)", () => {
       kind: "atributo:aria-label"
     },
     {
+      name: "texto con = (La fórmula es E = mc cuadrado)",
+      source: asHtml(`<p>La fórmula es E = mc cuadrado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "texto con llaves (Elige una {opción} de tres)",
+      source: asHtml(`<p>Elige una {opción} de tres</p>`),
+      kind: "texto"
+    },
+    {
+      name: "texto con ; (primero el diseño; después el código)",
+      source: asHtml(`<p>primero el diseño; después el código</p>`),
+      kind: "texto"
+    },
+    {
+      name: "atributo con ; (primero; segundo; tercero)",
+      source: asHtml(`<div aria-label="primero; segundo; tercero"></div>`),
+      kind: "atributo:aria-label"
+    },
+    {
+      name: "nodo partido en dos líneas de fuente",
+      source: "const h = `<p>investigación y\ndesarrollo aplicado</p>`;",
+      kind: "texto"
+    },
+    {
+      name: "entidad de espaciado &emsp;",
+      source: asHtml(`<p>Investigación&emsp;y&emsp;desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad de espaciado &ensp;",
+      source: asHtml(`<p>Investigación&ensp;y&ensp;desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad de espaciado &thinsp;",
+      source: asHtml(`<p>Investigación&thinsp;y&thinsp;desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
       name: "string plano emitido por interpolación",
       source: 'const x = "tres palabras libres"; const h = `<p>${x}</p>`;',
       kind: "texto"
@@ -156,6 +196,14 @@ describe("copy — cero texto literal en templates (I5)", () => {
     {
       name: "valor interpolado",
       source: 'const h = `<div class="skill-label">${t("room.competencias.agents.label")}</div>`;'
+    },
+    {
+      name: "CSS con dos palabras-palabra ({ display: grid; })",
+      source: asHtml(`<p>{ display: grid; }</p>`)
+    },
+    {
+      name: "CSS multilínea con dos palabras-palabra",
+      source: "const h = `\n<p>\n{ display: grid; }\n</p>`;"
     },
     {
       name: "meta viewport",
