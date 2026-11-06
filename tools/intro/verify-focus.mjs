@@ -24,6 +24,7 @@
  * Uso:
  *   npm run build && npm run intro:verify
  *   CHROME_PATH=/ruta/a/chrome npm run intro:verify
+ * Requiere Node ≥22 (el WebSocket global que usa la sesión CDP); CI usa 22.
  *
  * Exit: 0 OK · 1 violación de foco · 2 no se pudo medir (sin build, sin Chrome,
  * sesión CDP caída). El 2 distingue entorno roto de gate rojo.
@@ -40,6 +41,13 @@ import { tmpdir } from "node:os";
 import { dirname, extname, join, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 import { session } from "../logo/chrome.mjs";
+
+// La sesión CDP de chrome.mjs usa `WebSocket` global (Node ≥22). Fallar acá con
+// el motivo evita el críptico "WebSocket is not defined" en un Node viejo.
+if (typeof WebSocket !== "function") {
+  console.error("❌ FOCO: no se pudo medir — requiere Node ≥22 (WebSocket global para CDP); CI usa Node 22");
+  process.exit(2);
+}
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, "../..");
