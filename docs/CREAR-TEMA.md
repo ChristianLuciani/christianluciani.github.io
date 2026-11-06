@@ -81,7 +81,22 @@ src/templates/**            piden claves; CERO texto visible literal
   literal también es copy: lo lee un lector de pantalla y el toggle no lo
   traduce. Si falla, mové la frase al pack y pedila con `t()`/`th()`/`ta()`.
 - El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
-  no se edita a mano y no admite claves muertas por construcción.
+  no hay ninguna clave escrita a mano en el MAP. Ojo con dos definiciones
+  distintas, que el gate separa a propósito:
+  - **Pack → HTML** (lo que mide `no-literal-copy.test.ts`): toda clave no
+    `runtime` aparece en el render, como texto o como atributo. Es el gate que
+    atrapa una clave muerta real del pack.
+  - **MAP → nodo del walker** (lo que NO mide): el walker recorre nodos de
+    texto, así que hay pares derivados que nunca consulta y **no son deuda**:
+    los `print.*` (el walker salta `#print-cv`) y los sólo-atributo
+    (aria/alt/meta/caption, que viajan en atributos, no en nodos), más los
+    pares derivados de una rama del SSOT/curación que los datos de hoy no
+    renderizan (p. ej. un `statusLabel` sin proyecto en ese estado). Que existan
+    no significa que estén mal: no se mantienen a mano ni pueden quedar stale
+    respecto de una fuente que ya no existe.
+  `src/themes/copy-dictionary.test.ts` fija esta clasificación: un par que no
+  aparece en el render falla salvo que sea `runtime` o derivado del SSOT, y los
+  pares de `SALAS` no tienen excepción.
 - La prosa del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
   sólo declara la estructura de esa superficie.
 

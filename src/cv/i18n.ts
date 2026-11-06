@@ -22,18 +22,27 @@ import { copyPairs } from "../content/copy.ts";
  * Diccionario ES→EN del toggle.
  *
  * YA NO es una lista escrita a mano: se DERIVA de las fuentes únicas del texto
- * visible, así una clave huérfana (la que estaba en el MAP pero no en el DOM)
- * no puede existir por construcción:
+ * visible. Una clave escrita a mano en el MAP es imposible; eso NO significa
+ * que todo par derivado lo consulte el walker:
  *   · `copyPairs()`   — pack de copy del tema (chrome + salas, #127);
  *   · `mapExtra()`    — numeración, subtítulos y funciones de SALAS;
  *   · `profileI18nPairs()` — pares derivados del SSOT (roles, highlights, …).
+ * El walker recorre NODOS DE TEXTO: los pares `print.*` (salta `#print-cv`) y
+ * los sólo-atributo (aria/alt/meta/caption) no los consulta, y un par derivado
+ * de una rama del SSOT que los datos de hoy no renderizan queda sin nodo. Son
+ * categorías declaradas, no claves muertas de mantenimiento (ver
+ * `docs/CREAR-TEMA.md` §3.1 y el gate de categorías en el test).
  * Agregar copy = agregar una entrada al pack; el diccionario la ve solo.
  */
-const MAP: Record<string, string> = {
-  ...copyPairs(),
-  ...mapExtra(),
-  ...profileI18nPairs()
-};
+export function i18nDictionary(): Record<string, string> {
+  return {
+    ...copyPairs(),
+    ...mapExtra(),
+    ...profileI18nPairs()
+  };
+}
+
+const MAP: Record<string, string> = i18nDictionary();
 
 function norm(s: string): string {
   return s.replace(/\s+/g, " ").trim();
