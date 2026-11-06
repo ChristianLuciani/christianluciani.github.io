@@ -27,9 +27,11 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+      # Node 22: `intro:verify` usa el WebSocket global del CDP (Node 20 no lo
+      # tiene) además de los gates de Chrome que ya corren acá.
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run typecheck
@@ -128,5 +130,12 @@ jobs:
       # footer de procedencia queda solo en la última página o si la última
       # página queda casi vacía (<20% de la extensión de la página más llena).
       - run: npm run print:verify
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+      # gate de FOCO del skip de la intro (cierra la clase 1 del pase fresco de
+      # #143): mide en Chrome real que un clic ajeno no dispare el skip ni robe
+      # foco, y que el foco aterrice en el hero al saltar y al completar. Usa el
+      # dist/ que dejó el build de Pages.
+      - run: npm run intro:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
