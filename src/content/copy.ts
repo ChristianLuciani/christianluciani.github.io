@@ -42,9 +42,19 @@ export function ta(key: string): string {
     .replace(/'/g, "&#39;");
 }
 
-/** Copy EN con markup (atributos `data-aria-en`, que el toggle lee tal cual). */
+/** Copy EN con markup (texto, no atributo). */
 export function te(key: string): string {
   return copy(key).en;
+}
+
+/** Copy EN para un VALOR DE ATRIBUTO: escapa & < > " y '. */
+export function tae(key: string): string {
+  return copy(key).en
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 /** Copy ES como texto plano: escapa &, < y > sin tocar el resto. */

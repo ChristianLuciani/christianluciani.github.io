@@ -1,16 +1,28 @@
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "./index";
-import { allCopyHits, templateFiles } from "../../tools/copy/lint";
+import { allCopyHits, copyHitsOf, templateFiles } from "../../tools/copy/lint";
 
 /**
  * GATE DE COPY (#127, SPEC §8 FASE 5 · ADR-001 I5).
  *
- * El DoD del issue se verifica acá, no a ojo:
- *   1. ningún template contiene texto visible hardcodeado (> 2 palabras);
- *   2. el pack es bilingüe completo y sin claves ambiguas;
- *   3. ninguna clave del pack es huérfana (no aparece en el HTML generado).
+ * Verifica el DoD del issue con dos definiciones DISTINTAS y declaradas:
  *
- * Cuando este test falla, el mensaje dice el archivo:línea y el texto: mover la
+ *   A) TEMPLATES → HTML (este archivo, primer bloque). Ningún template emite
+ *      copy literal > 2 palabras, ni como nodo de texto NI como valor de un
+ *      atributo de copy (`aria-label`, `alt`, `title`, `content` de meta,
+ *      `data-caption`, `data-aria-*`). Es la cláusula que un aria-label literal
+ *      hacía escapar.
+ *   B) PACK → HTML (segundo y tercer bloque). Toda clave del pack que NO sea
+ *      `runtime` aparece en el render; el pack es bilingüe y sin conflictos.
+ *
+ * Lo que este archivo NO mide (y no debe fingir que mide): MAP → nodo del
+ * walker. El walker i18n recorre nodos de texto; los pares `print.*` (salta
+ * `#print-cv`) y los sólo-atributo (aria/alt/meta/caption) nunca se consultan
+ * y son copy vivo en otra superficie, no claves muertas. Los pares derivados
+ * del SSOT que la rama de datos de hoy no renderiza tampoco son deuda de copy:
+ * se derivan. Ver `docs/CREAR-TEMA.md` §3.1.
+ *
+ * Cuando falla, el mensaje dice archivo:línea, superficie y texto: mover la
  * frase al pack (`src/themes/museo/copy.ts`) y pedirla con `t()`/`th()`/`ta()`.
  */
 describe("copy — cero texto literal en templates (I5)", () => {
@@ -20,10 +32,37 @@ describe("copy — cero texto literal en templates (I5)", () => {
     expect(files).toContain("src/templates/sala_html.ts");
   });
 
-  it("ningún template emite > 2 palabras de texto literal", () => {
+  it("ningún template emite > 2 palabras de texto ni de atributo de copy", () => {
     const hits = allCopyHits();
-    const detail = hits.map((h) => `${h.file}:${h.line} → "${h.text}"`).join("\n");
-    expect(hits, `texto visible hardcodeado en templates:\n${detail}`).toHaveLength(0);
+    const detail = hits.map((h) => `${h.file}:${h.line} [${h.kind}] → "${h.text}"`).join("\n");
+    expect(hits, `copy literal hardcodeado en templates:\n${detail}`).toHaveLength(0);
+  });
+
+  it("el gate MUERDE: detecta un literal en aria-label y en content de meta", () => {
+    const aria = copyHitsOf(
+      "probe.ts",
+      'const html = `<canvas aria-label="tres palabras libres"></canvas>`;'
+    );
+    expect(aria).toHaveLength(1);
+    expect(aria[0]!.kind).toBe("atributo:aria-label");
+
+    const meta = copyHitsOf(
+      "probe.ts",
+      'const html = `<meta name="description" content="otras tres palabras sueltas">`;'
+    );
+    expect(meta).toHaveLength(1);
+    expect(meta[0]!.kind).toBe("atributo:content");
+  });
+
+  it("el gate no confunde atributos técnicos ni valores interpolados", () => {
+    const probes = [
+      'const html = `<img class="pub-thumb" src="data:x" alt="${ta("pub.kontablo.alt")}">`;',
+      'const html = `<div class="skill-label">${t("room.competencias.agents.label")}</div>`;',
+      'const html = `<meta name="viewport" content="width=device-width, initial-scale=1.0">`;'
+    ];
+    for (const probe of probes) {
+      expect(copyHitsOf("probe.ts", probe), probe).toHaveLength(0);
+    }
   });
 });
 

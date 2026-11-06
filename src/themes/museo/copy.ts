@@ -29,6 +29,51 @@ export const MUSEO_COPY: CopyPack = {
   "hero.metric.tutors": { es: "tutores", en: "tutors" },
   "hero.metric.years": { es: "años", en: "years" },
 
+  /* ── ARIA · labels de canvas (se leen, no se ven: copy igual) ── */
+  "hero.aria.canvas": { es: "Cubos isométricos pulsantes", en: "Pulsating isometric cubes" },
+  "room.perfil.aria.necker": { es: "Cuadrícula de cubo de Necker", en: "Necker cube grid" },
+  "room.proyectos.aria.fractal": {
+    es: "Campo fractal tipo Mandelbrot",
+    en: "Mandelbrot-like fractal field"
+  },
+  "room.experiencia.aria.interference": {
+    es: "Patrón de interferencia de doble fuente",
+    en: "Double-source interference pattern"
+  },
+  "room.fisica.aria.snakes": {
+    es: "Ilusión de serpientes rotantes",
+    en: "Rotating snakes illusion"
+  },
+  "room.competencias.aria.sierpinski": {
+    es: "Triángulo de Sierpinski",
+    en: "Sierpinski triangle"
+  },
+  "room.fisica.aria.penrose": {
+    es: "Triángulo de Penrose pulsante",
+    en: "Pulsating Penrose triangle"
+  },
+
+  /* ── ALT · miniaturas de publicaciones (accesibilidad) ─────── */
+  "pub.kontablo.alt": { es: "Kontablo preprint 2026", en: "Kontablo preprint 2026" },
+  "pub.caffeine.alt": { es: "Carbon Trends 2025", en: "Carbon Trends 2025" },
+  "pub.dielectric.alt": { es: "ChemPhysChem 2025", en: "ChemPhysChem 2025" },
+  "pub.guias.alt": { es: "USFQ 2019-2024", en: "USFQ 2019-2024" },
+  "pub.cellulose.alt": { es: "Heliyon 2023", en: "Heliyon 2023" },
+  "pub.hydrochars.alt": {
+    es: "ResearchGate preprint 2023",
+    en: "ResearchGate preprint 2023"
+  },
+  "pub.microcrystalline.alt": { es: "SSRN 2022", en: "SSRN 2022" },
+  "pub.ivory.alt": { es: "AIChE Annual Meeting 2022", en: "AIChE Annual Meeting 2022" },
+  "pub.neural.alt": {
+    es: "Condensed Matter Physics 2006",
+    en: "Condensed Matter Physics 2006"
+  },
+  "pub.balancing.alt": {
+    es: "Prog. Theor. Phys. 2006",
+    en: "Prog. Theor. Phys. 2006"
+  },
+
   /* ── COVER · HUD, descarga, loader ──────────────────────────── */
   "cover.brandAria": {
     es: "Christian Luciani — ir a la entrada",

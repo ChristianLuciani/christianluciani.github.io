@@ -5,7 +5,7 @@
  */
 import { HERO_NAV, SALAS } from "../cv/salas.ts";
 import { numFor, sectionId, visibleSalas } from "../cv/render.ts";
-import { t } from "../content/copy.ts";
+import { t, ta } from "../content/copy.ts";
 
 const PLANO_TOP = `<!-- ════════════════════════════════════════════════════
   PLANO / ÍNDICE — blueprint navegable del museo
@@ -30,7 +30,7 @@ const PLANO_TOP = `<!-- ══════════════════�
   </style>
   <div class="bp-title" data-scroll="up"><em>${t("plano.title.word")}</em> ${t("plano.title.rest")}</div>
   <div class="bp-hint" data-scroll="up" data-delay="1">${t("plano.hint")}</div>
-    <svg class="bp-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label="${t("plano.aria")}">
+    <svg class="bp-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label="${ta("plano.aria")}">
     <rect class="bp-frame" x="30" y="40" width="840" height="490"/>
     <rect class="bp-frame" x="36" y="46" width="828" height="478"/>
 <polyline class="bp-path" points="180,145 450,145 720,145 720,305 450,305 180,305 180,465 450,465 720,465"/>

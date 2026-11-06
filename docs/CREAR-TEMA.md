@@ -66,16 +66,20 @@ src/templates/**            piden claves; CERO texto visible literal
 
 - `t("clave")` interpola el ES con markup (títulos con `<em>`, `<br>`).
   `th()` escapa `& < >` para texto plano; `ta()` escapa además `"` y `'` para
-  valores de atributo (`data-caption`); `te()` devuelve el EN (atributos
-  `data-aria-en`).
+  **valores de atributo** (`aria-label`, `alt`, `title`, `data-caption`);
+  `te()` devuelve el EN como texto y `tae()` el EN escapado para atributos
+  (`data-aria-en`). Un atributo se pide SIEMPRE con `ta()`/`tae()`, nunca `t()`.
 - Clave inexistente = **error de build**: no hay fallback silencioso.
 - `runtime: true` marca copy que el HTML inicial no contiene (frases del intro
   que monta `intro.ts`, labels del canvas del grafo, estados como el feed vacío).
   El gate de claves huérfanas lo respeta; sin esa marca, una clave sin uso
   rompe el test.
 - El gate `src/templates/no-literal-copy.test.ts` falla si un template emite
-  **> 2 palabras** de texto literal (linter: `tools/copy/lint.ts`). Si falla,
-  mové la frase al pack y pedila con `t()`.
+  **> 2 palabras** de copy literal (linter: `tools/copy/lint.ts`), en dos
+  superficies: **nodos de texto** y **atributos de copy** (`aria-label`, `alt`,
+  `title`, `content` de `<meta>`, `data-caption`, `data-aria-*`). Un aria-label
+  literal también es copy: lo lee un lector de pantalla y el toggle no lo
+  traduce. Si falla, mové la frase al pack y pedila con `t()`/`th()`/`ta()`.
 - El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
   no se edita a mano y no admite claves muertas por construcción.
 - La prosa del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`

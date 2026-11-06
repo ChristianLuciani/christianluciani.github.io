@@ -5,14 +5,14 @@
  * HERO: entrada del museo (section + divider).
  */
 import { provenanceHtml } from "../data/profile.provenance.ts";
-import { t } from "../content/copy.ts";
+import { t, ta } from "../content/copy.ts";
 
 export function heroHtml(): string {
   return `<!-- ════════════════════════════════════════════════════
   HERO — Entrada al museo
 ════════════════════════════════════════════════════ -->
 <section id="hero">
-  <canvas id="hero-canvas" role="img" aria-label="Cubos isométricos pulsantes"></canvas>
+  <canvas id="hero-canvas" role="img" aria-label="${ta("hero.aria.canvas")}"></canvas>
 
   <div class="hero-content">
     <div class="hero-label">${t("hero.label")}</div>
