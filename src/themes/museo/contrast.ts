@@ -127,7 +127,7 @@ export const SKIN_CONTRAST_PAIRS: readonly ContrastPair[] = [
   { fg: "--bg-0", bg: "--teal", min: 4.5, usage: "skip-link: texto oscuro sobre píldora teal" },
   { fg: "--print-ink", bg: "--print-paper", min: 4.5, usage: "texto del CV impreso sobre papel" },
   { fg: "--print-meta", bg: "--print-paper", min: 4.5, usage: "metadatos del CV impreso sobre papel" },
-  { fg: "--ink-faint", bg: "--bg-0", min: 4.5, usage: "código de la traza de procedencia (hero) sobre el fondo base" }
+  { fg: "--ink-faint", bg: "--bg-1", min: 4.5, usage: "código de la traza de procedencia (hero) sobre el fondo alto: peor caso del hero" }
 ];
 
 /**
@@ -143,11 +143,11 @@ export const SKIN_CONTRAST_PAIRS: readonly ContrastPair[] = [
 export const AA_DEBT: readonly ContrastDebt[] = [
   {
     fg: "--ink-faint",
-    bg: "--bg-0",
+    bg: "--bg-1",
     min: 4.5,
     reason:
-      "3,63:1 en .hero-provenance code: el token declarado como decoración se usa como texto; " +
-      "corregirlo mueve el render (I1), se resuelve al levantar el congelamiento"
+      "3,30:1 en .hero-provenance code (peor caso del hero, sobre --bg-1): el token " +
+      "declarado como decoración se usa como texto; corregirlo mueve el render (I1)"
   }
 ];
 
