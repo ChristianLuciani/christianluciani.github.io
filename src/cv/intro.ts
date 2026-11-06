@@ -350,7 +350,6 @@ export function initIntro(): void {
   }
 
   /** Cancela la intro y revela la página en el acto (no hay vuelo). */
-  /** Cancela la intro y revela la página en el acto (no hay vuelo). */
   function skipToPage() {
     if (skipped) return;
     // La red de seguridad de main.ts puede ocultar el loader sin pasar por
@@ -366,7 +365,10 @@ export function initIntro(): void {
       heroName.style.animation = "none";
       releaseHeroName(heroName);
     }
-    // hideLoader hace el handoff de foco (el botón venía enfocado).
+    // El skip es una acción explícita: el foco va al hero aunque el navegador
+    // no haya enfocado el botón (en Safari un click de mouse no lo enfoca y
+    // `.click()` programático tampoco). El gate de foco mide este camino.
+    focusAfterIntro = true;
     hideLoader();
   }
 
