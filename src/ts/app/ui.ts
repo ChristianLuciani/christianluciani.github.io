@@ -6,18 +6,17 @@
  * Todo se monta desde initUI() — sin efecto secundario a nivel de módulo.
  */
 
+/**
+ * Descarga el CV abriendo el diálogo de impresión (Guardar como PDF).
+ *
+ * `#print-cv` NUNCA se muestra en pantalla: `@media print` lo hace visible solo
+ * al imprimir (head_html.ts). Antes se alternaba `display` desde acá, lo que
+ * desplegaba el CV en la parte superior de la página; además el `afterprint` se
+ * registraba DESPUÉS de `window.print()` (bloqueante), así que podía no llegar
+ * nunca y el bloque quedaba visible al salir del diálogo.
+ */
 export function printCV(): void {
-  const el = document.getElementById("print-cv");
-  if (!el) return;
-  el.style.display = "block";
   window.print();
-  window.addEventListener(
-    "afterprint",
-    () => {
-      el.style.display = "none";
-    },
-    { once: true }
-  );
 }
 
 function initProgress(): void {

@@ -81,6 +81,11 @@ Object.assign(MAP, {
   "Nada en vuelo.": "Nothing in flight."
 });
 
+/** Skip de la intro: el control visible también es bilingüe. */
+Object.assign(MAP, {
+  "Saltar intro": "Skip intro"
+});
+
 function norm(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
