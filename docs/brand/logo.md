@@ -460,7 +460,7 @@ dejado abiertas:
    (el grupo), que el trazado deja fijo en 1 ⇒ medido `0.0000`: nunca respiraba.
    Ahora anima `.settle-on .c-glow path`, arrancando y terminando en el reposo real
    del trazo (`0.28`, no `0.5`), así que el settle no pega escalón. El sitio espeja
-   la regla en `src/templates/head_html.ts` (`brandBreathe`, mismo reposo). Ese
+   la regla en `src/themes/museo/skin.css` (`brandBreathe`, mismo reposo). Ese
    reposo vive en tres copias (los dos keyframes y el `CFINISH` del artefacto) y
    `geometry.test.mjs` las ata a `C_FINISH.bloom.opacity`: cambiarlo sin tocar las
    copias pone rojo el test, no un escalón en producción.

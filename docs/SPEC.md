@@ -166,7 +166,7 @@ línea de registro (§8 FASE 5).
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
 | galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
-| CSS: tokens, tipografía, densidad | `src/templates/head_html.ts` | presentación (hoy; destino §8 FASE 5) |
+| CSS: tokens, tipografía, densidad | `src/themes/museo/skin.css` (el head la emite) | presentación (FASE 5 · #130) |
 | ilusiones, animaciones, canvas | `src/ts/` | presentación (no editable por temas) |
 
 Esta tabla es la frontera de **HOY**: todo puntero resuelve contra el árbol (gate

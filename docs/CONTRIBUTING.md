@@ -66,16 +66,20 @@ fallan si algo queda desalineado o el HTML no se regeneró.
 
 ### Editar el contenido (recomendado)
 Cada `<section class="room">` vive en `src/templates/sala_html.ts` (`ROOM_SHELL` + `ROOM_BODY` por
-sala; el header número/título/subtítulo se genera desde `SALAS`). El `<style>` global y el head
-viven en `src/templates/head_html.ts`; el plano en `src/templates/plano_html.ts`. Cambiá la
-fuente y reconstruí (`npm run build:html`).
+sala; el header número/título/subtítulo se genera desde `SALAS`). El head vive en
+`src/templates/head_html.ts`, la piel (todo el `<style>` global) en
+`src/themes/museo/skin.css` y el plano en `src/templates/plano_html.ts`. Cambiá la fuente y
+reconstruí (`npm run build:html`).
 
 **Al editar texto en español, actualiza también su traducción EN** en el diccionario `MAP` de
 `src/cv/i18n.ts`. Si no, el toggle dejará ese texto sin traducir.
 
 ### Editar estilos / ilusiones
-- Variables de diseño y CSS: empieza en el bloque `:root` y el `<style>` de
-  `src/templates/head_html.ts`.
+- Variables de diseño y CSS: `src/themes/museo/skin.css` (bloque `:root` + reglas).
+  Los tokens de alpha (`--teal-04`, …) se declaran en el bloque derivado: el emisor
+  (`src/themes/museo/skin.ts`) los resuelve a su literal para no mover el CSS emitido
+  mientras dure el congelamiento de I1 (#130). Un literal de color fuera de `:root`
+  rompe `skin.test.ts`.
 - Ilusiones/fractales en TypeScript: `src/ts/illusions/` (se compilan con `npm run build`).
 
 ## Añadir fotos a la galería

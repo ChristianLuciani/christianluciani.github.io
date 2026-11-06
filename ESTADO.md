@@ -131,7 +131,7 @@ https://christianluciani.github.io/  (raíz · base "/")
   y 700×500; el nombre final queda visible sin cortarse.
 - **Frase 3 del intro** → `"Una<br><em>Instancia Humana</em>."` (dos líneas, antes una sola).
 - Ambos fixes = editar `src/` + `npm run build` (flujo parametrizado Fase 2): los cambios de CSS
-  viven en `src/templates/head_html.ts` y la frase en `src/cv/intro.ts`.
+  viven en `src/themes/museo/skin.css` y la frase en `src/cv/intro.ts`.
 
 ---
 
