@@ -33,24 +33,58 @@ describe("themes/museo — manifest", () => {
 });
 
 describe("themes/museo — ilusiones", () => {
-  it("asigna un canvas a cada sala que declara ilusión en SALAS", () => {
+  /** Bloque renderizado de la sala: `id="room-<id>"` hasta su `</section>`. */
+  function sectionOf(html: string, roomId: string): string {
+    const start = html.indexOf(`id="room-${roomId}"`);
+    expect(start, `sala ${roomId} en el render`).toBeGreaterThan(-1);
+    return html.slice(start, html.indexOf("</section>", start));
+  }
+
+  it("declara exactamente un canvas por sala, igual a la asignación de SALAS", () => {
+    // Igualdad contra la fuente que hoy declara la asignación (SALAS.ilusion).
+    // Si el mapa y la estructura divergen, este test falla por sala.
     const expected = Object.fromEntries(
       SALAS.filter((s) => s.ilusion).map((s) => [s.id, s.ilusion!])
     );
     expect(MUSEO_ILLUSIONS).toEqual(expected);
-    expect(Object.keys(museo.illusions).sort()).toEqual(Object.keys(expected).sort());
-  });
-
-  it("cada canvas asignado existe en el documento renderizado", () => {
-    const html = assembleHtml();
-    for (const [roomId, canvasId] of Object.entries(museo.illusions)) {
-      expect(html, `sala ${roomId} → canvas ${canvasId}`).toContain(`id="${canvasId}"`);
+    for (const [roomId, canvasId] of Object.entries(expected)) {
+      expect(museo.illusions[roomId], `sala ${roomId}`).toBe(canvasId);
     }
   });
 
-  it("ninguna sala oculta (sin DOM) recibe ilusión", () => {
-    for (const room of museo.rooms.filter((r) => r.hidden)) {
-      expect(museo.illusions, `sala oculta ${room.id}`).not.toHaveProperty(room.id);
+  /**
+   * BINDING REAL POR SALA — el mapa es metadata hasta S8/S9, pero el canvas que
+   * el documento monta vive en `ROOM_SHELL`/`ROOM_BODY` (`sala_html.ts`). El
+   * test no se conforma con "el id existe en algún lado": exige que el canvas
+   * declarado esté DENTRO del `<section>` de SU sala. Si `SALAS.ilusion` de
+   * `perfil` pasara a `c-proyectos` (id vivo en otra sala), esto falla.
+   */
+  it("el canvas declarado es el que monta esa sala, y sólo esa sala", () => {
+    const html = assembleHtml();
+    const sections = new Map(
+      museo.rooms.map((room) => [room.id, sectionOf(html, room.id)] as const)
+    );
+    for (const [roomId, canvasId] of Object.entries(museo.illusions)) {
+      expect(sections.get(roomId), `sala ${roomId} debe montar ${canvasId}`).toContain(
+        `id="${canvasId}"`
+      );
+      const montan = [...sections.entries()].filter(([, block]) =>
+        block.includes(`id="${canvasId}"`)
+      );
+      expect(montan.map(([id]) => id), `canvas ${canvasId} en una sola sala`).toEqual([roomId]);
+    }
+  });
+
+  it("ninguna sala oculta o sin ilusión monta un canvas de otra sala", () => {
+    const html = assembleHtml();
+    const declaradas = new Set(Object.keys(museo.illusions));
+    for (const room of museo.rooms.filter((r) => !declaradas.has(r.id))) {
+      const block = sectionOf(html, room.id);
+      for (const canvasId of Object.values(museo.illusions)) {
+        expect(block, `sala ${room.id} no debe montar ${canvasId} (es de otra sala)`).not.toContain(
+          `id="${canvasId}"`
+        );
+      }
     }
   });
 });

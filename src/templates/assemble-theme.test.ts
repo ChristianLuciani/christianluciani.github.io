@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { THEMES, activeNarrative } from "../themes/index.ts";
 import type { NarrativeManifest } from "../themes/types.ts";
 import { museo } from "../themes/museo/narrative.ts";
 import { assembleHtml } from "./index.ts";
@@ -63,10 +64,28 @@ describe("assembleHtml — selector de tema", () => {
     expect(contactoBlock).toContain("SALA 01");
   });
 
-  it("restaura la narrativa activa aunque el render falle (sin estado sucio)", () => {
+  /**
+   * RESTAURACIÓN ANTE UN THROW DENTRO DEL RENDER.
+   *
+   * Un id inválido lanza en `resolveTheme` ANTES de instalar la narrativa y no
+   * ejercita el `finally` de `withNarrative`. Acá el manifest ES VÁLIDO (las
+   * salas se resuelven) y el throw ocurre al pedir copy: `headHtml()` hace
+   * `t("meta.title")` dentro del ensamblado. Sin el `finally`, el proceso queda
+   * con la narrativa rota instalada y el render siguiente falla o publica el
+   * tema equivocado.
+   */
+  it("restaura la narrativa activa cuando el render lanza adentro", () => {
     const baseline = assembleHtml();
-    expect(() => assembleHtml({ theme: "noexiste" })).toThrow();
-    expect(assembleHtml({ theme: variant() })).not.toBe(baseline);
+    const sinCopy: NarrativeManifest = { ...museo, id: "sin-copy", copy: {} };
+
+    expect(() => assembleHtml({ theme: sinCopy }), "el render debe lanzar dentro").toThrowError(
+      /copy: no existe la clave/
+    );
+    expect(activeNarrative()).toBe(THEMES.museo);
+    expect(assembleHtml()).toBe(baseline);
+
+    expect(() => assembleHtml({ theme: variant() })).not.toThrow();
+    expect(activeNarrative()).toBe(THEMES.museo);
     expect(assembleHtml()).toBe(baseline);
   });
 });
