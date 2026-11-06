@@ -100,8 +100,9 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   `src/themes/copy-dictionary.test.ts` fija esta clasificación: un par que no
   aparece en el render falla salvo que sea `runtime` o derivado del SSOT, y los
   pares de `SALAS` no tienen excepción.
-- La prosa del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
-  sólo declara la estructura de esa superficie.
+- El copy del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
+  declara sólo la **estructura y la curación** de esa superficie (qué links
+  entran al encabezado y la clasificación de Trayectoria), sin texto.
 
 ## 4. Curación: mostrar sin borrar
 
