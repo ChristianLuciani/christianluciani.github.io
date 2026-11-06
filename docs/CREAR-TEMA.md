@@ -61,7 +61,7 @@ meta.title | meta.description
 ```
 src/themes/<id>/copy.ts     pack: clave semántica → { es, en, runtime? }
 src/content/copy.ts         t()/th()/ta()/te() → pack del tema vigente
-src/templates/**            piden claves; CERO texto visible literal
+src/templates/**            piden claves; 0 copy literal > 2 palabras
 ```
 
 - `t("clave")` interpola el ES con markup (títulos con `<em>`, `<br>`).
@@ -76,10 +76,13 @@ src/templates/**            piden claves; CERO texto visible literal
   rompe el test.
 - El gate `src/templates/no-literal-copy.test.ts` falla si un template emite
   **> 2 palabras** de copy literal (linter: `tools/copy/lint.ts`), en dos
-  superficies: **nodos de texto** y **atributos de copy** (`aria-label`, `alt`,
-  `title`, `content` de `<meta>`, `data-caption`, `data-aria-*`). Un aria-label
-  literal también es copy: lo lee un lector de pantalla y el toggle no lo
-  traduce. Si falla, mové la frase al pack y pedila con `t()`/`th()`/`ta()`.
+  superficies: **nodos de texto** y la lista cerrada de **atributos de copy**
+  (`aria-label`, `alt`, `title`, `placeholder`, `data-caption`, `data-aria-es`,
+  `data-aria-en`, y `content` cuando el tag es `<meta>`). Un aria-label literal
+  también es copy: lo lee un lector de pantalla y el toggle no lo traduce. El
+  umbral es el mismo en ambas superficies (> 2 palabras); los tokens de pura
+  puntuación no cuentan. Si falla, mové la frase al pack y pedila con
+  `t()`/`th()`/`ta()`.
 - El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
   no hay ninguna clave escrita a mano en el MAP. Ojo con dos definiciones
   distintas, que el gate separa a propósito:

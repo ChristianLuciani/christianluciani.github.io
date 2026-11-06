@@ -8,11 +8,13 @@
  * `src/cv/salas.ts`. El index.html no tiene scripts inline — este módulo se
  * bundlea con Vite.
  *
- * El walker sigue keyeando por el texto EXACTO del nodo (no por atributo): el
- * golden del tema default es byte a byte y agregar `data-i18n` cambiaría el
- * render. Lo que cambió es la FUENTE del diccionario: las claves muertas ya no
- * se pueden escribir. La migración a nodos con clave llega con el registro de
- * narrativas (S3), que también re-renderiza y actualiza golden.
+ * El walker sigue keyeando por el texto EXACTO del nodo (no por atributo). Lo
+ * que cambió en #127 es la FUENTE del diccionario: ninguna clave se escribe a
+ * mano. Migrar el walker a claves por nodo (`data-i18n`) cambiaría el render y
+ * choca con el invariante I1 del epic (el tema default publica byte-idéntico en
+ * cada PR): exigiría ENMENDAR ADR-001/SPEC §5.3 antes de agendarse. Por eso no
+ * está agendado en S3 con la norma vigente; es una decisión pendiente del
+ * operador. Acá el comportamiento no se toca.
  */
 import { mapExtra, roomEnList, syncNavLang } from "./render.ts";
 import { profileI18nPairs } from "../content/cv/i18n.ts";
