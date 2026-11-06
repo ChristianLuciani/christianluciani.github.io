@@ -50,9 +50,56 @@ export const COPY_ATTRS = new Set([
 /** Un token cuenta como palabra si tiene al menos una letra o un dígito. */
 const WORD = /[\p{L}\p{N}]/u;
 
-function wordsOf(value: string): string[] {
+/**
+ * Entidades HTML que el copy usa de verdad. Se decodifican ANTES del test
+ * técnico y del conteo de palabras: una entidad siempre trae `;`, y el filtro
+ * técnico descarta líneas con `;` (código/CSS). Sin decodificar, `&amp;`
+ * escondía una frase entera — el bypass que cerró el pase 4.
+ */
+const NAMED_ENTITIES: Record<string, string> = {
+  amp: "&",
+  lt: "<",
+  gt: ">",
+  quot: '"',
+  apos: "'",
+  nbsp: " ",
+  mdash: "—",
+  ndash: "–",
+  hellip: "…",
+  middot: "·",
+  laquo: "«",
+  raquo: "»",
+  copy: "©",
+  reg: "®",
+  trade: "™",
+  deg: "°",
+  times: "×",
+  divide: "÷",
+  eacute: "é",
+  aacute: "á",
+  iacute: "í",
+  oacute: "ó",
+  uacute: "ú",
+  ntilde: "ñ",
+  uuml: "ü",
+  ccedil: "ç"
+};
+
+/** Decodifica entidades nominales y numéricas (`&#38;`, `&#x26;`). */
+function decodeEntities(value: string): string {
   return value
-    .replace(/&[a-z]+;/gi, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex: string) =>
+      String.fromCodePoint(Number.parseInt(hex, 16))
+    )
+    .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(Number.parseInt(dec, 10)))
+    .replace(/&([a-z][a-z0-9]*);/gi, (match, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? match)
+    // Entidad desconocida: se neutraliza el `;` final para que no simule
+    // código; el token sigue contando como palabra.
+    .replace(/&[a-z][a-z0-9]*;/gi, (_, name: string) => name);
+}
+
+function wordsOf(value: string): string[] {
+  return decodeEntities(value)
     .split(/\s+/)
     .filter((word) => WORD.test(word));
 }
@@ -68,6 +115,7 @@ function isCopy(value: string): boolean {
  *  · un token único (import, clave `pub.*`, id, URL sin espacios);
  *  · URL absoluta, path POSIX/relativo o ruta con unidad Windows;
  *  · código/CSS/plantilla: `=`, `;`, `{`, `}`.
+ * Se evalúa sobre el texto YA decodificado: `&amp;` es `&`, no `;`.
  * Si un string técnico cae acá, no se reporta; una frase de copy real no cae
  * en ninguna de estas formas.
  */
@@ -210,7 +258,7 @@ export function copyHitsOf(file: string, source: string): CopyHit[] {
   for (const segment of textSegments(masked)) {
     let offset = 0;
     for (const line of segment.text.split("\n")) {
-      const text = line.replace(/\s+/g, " ").trim();
+      const text = decodeEntities(line).replace(/\s+/g, " ").trim();
       if (isCopy(text) && !isTechnical(text)) {
         const lead = line.length - line.trimStart().length;
         hits.push({ file, line: lineAt(segment.start + offset + lead), kind: "texto", text });
@@ -225,14 +273,16 @@ export function copyHitsOf(file: string, source: string): CopyHit[] {
   let tag: RegExpExecArray | null;
   while ((tag = tagRe.exec(masked))) {
     const tagName = tag[1].toLowerCase();
-    const attrRe = /([\w:-]+)="([^"]*)"/g;
+    // Atributos con comilla simple o doble y espacios opcionales alrededor de
+    // `=`: el HTML válido admite las dos formas y el gate no puede elegir una.
+    const attrRe = /([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)')/g;
     let attr: RegExpExecArray | null;
     while ((attr = attrRe.exec(tag[2]))) {
       const name = attr[1].toLowerCase();
-      const value = attr[2].trim();
+      const value = decodeEntities(attr[2] ?? attr[3] ?? "").trim();
       const isMetaContent = name === "content" && tagName === "meta";
       if (!COPY_ATTRS.has(name) && !isMetaContent) continue;
-      if (isCopy(value)) {
+      if (isCopy(value) && !isTechnical(value)) {
         hits.push({ file, line: lineAt(tag.index), kind: `atributo:${name}`, text: value });
       }
     }
@@ -240,12 +290,29 @@ export function copyHitsOf(file: string, source: string): CopyHit[] {
   return hits;
 }
 
-/** Todos los templates del repo (sin tests), en orden estable. */
+/**
+ * Todos los templates del repo (sin tests), en orden estable.
+ *
+ * El contrato dice `src/templates/**`: el descubrimiento es RECURSIVO y acepta
+ * `.tsx` además de `.ts`. Un template nuevo en un subdirectorio no puede quedar
+ * fuera del gate por no estar en el primer nivel.
+ */
 export function templateFiles(dir = "src/templates"): string[] {
-  return readdirSync(dir)
-    .filter((name) => name.endsWith(".ts") && !name.endsWith(".test.ts"))
-    .sort()
-    .map((name) => join(dir, name));
+  const files: string[] = [];
+  const walk = (current: string): void => {
+    for (const entry of readdirSync(current, { withFileTypes: true })) {
+      const path = join(current, entry.name);
+      if (entry.isDirectory()) {
+        walk(path);
+        continue;
+      }
+      if (/\.tsx?$/.test(entry.name) && !/\.test\.tsx?$/.test(entry.name)) {
+        files.push(path);
+      }
+    }
+  };
+  walk(dir);
+  return files.sort();
 }
 
 /** Hits de todos los templates. */

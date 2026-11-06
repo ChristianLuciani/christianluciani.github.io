@@ -1,4 +1,7 @@
 import { execFileSync } from "node:child_process";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "./index";
 import { allCopyHits, copyHitsOf, templateFiles } from "../../tools/copy/lint";
@@ -39,20 +42,129 @@ describe("copy — cero texto literal en templates (I5)", () => {
     expect(hits, `copy literal hardcodeado en templates:\n${detail}`).toHaveLength(0);
   });
 
-  it("el gate MUERDE: detecta un literal en aria-label y en content de meta", () => {
-    const aria = copyHitsOf(
-      "probe.ts",
-      'const html = `<canvas aria-label="tres palabras libres"></canvas>`;'
-    );
-    expect(aria).toHaveLength(1);
-    expect(aria[0]!.kind).toBe("atributo:aria-label");
+  /**
+   * CORPUS DE FORMAS DE HTML QUE EL GATE DEBE VER (tabla, no casos sueltos).
+   *
+   * El defecto recurrente de los pases fue "el gate se esquiva con una forma
+   * que no contempla": comillas simples, entidades, strings planos, multilínea.
+   * La tabla cierra la CLASE: agregar una forma = agregar una fila, y el test
+   * falla si el linter deja de morderla.
+   */
+  const asHtml = (html: string): string => `const h = ${JSON.stringify(html)};`;
+  const bypass: { name: string; source: string; kind: string }[] = [
+    {
+      name: "aria-label con comilla simple",
+      source: asHtml(`<div aria-label='tres palabras libres'></div>`),
+      kind: "atributo:aria-label"
+    },
+    {
+      name: "aria-label con comilla doble",
+      source: asHtml(`<div aria-label="tres palabras libres"></div>`),
+      kind: "atributo:aria-label"
+    },
+    {
+      name: "alt con comilla simple",
+      source: asHtml(`<img alt='texto alternativo largo'>`),
+      kind: "atributo:alt"
+    },
+    {
+      name: "alt con comilla doble",
+      source: asHtml(`<img alt="texto alternativo largo">`),
+      kind: "atributo:alt"
+    },
+    {
+      name: "meta content con comilla simple",
+      source: asHtml(`<meta name="description" content='descripcion literal larga'>`),
+      kind: "atributo:content"
+    },
+    {
+      name: "aria-label con espacios alrededor del =",
+      source: asHtml(`<div aria-label = 'tres palabras libres'></div>`),
+      kind: "atributo:aria-label"
+    },
+    {
+      name: "meta content con comilla doble",
+      source: asHtml(`<meta name="description" content="descripcion literal larga">`),
+      kind: "atributo:content"
+    },
+    {
+      name: "texto con entidad nominal &amp;",
+      source: asHtml(`<p>Investigación &amp; desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "texto con entidad nominal &nbsp;",
+      source: asHtml(`<p>Investigación&nbsp;y desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "texto con entidad nominal &mdash;",
+      source: asHtml(`<p>Investigación &mdash; desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "texto con entidad numérica &#38;",
+      source: asHtml(`<p>Investigación &#38; desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "texto con entidad numérica hex &#x26;",
+      source: asHtml(`<p>Investigación &#x26; desarrollo aplicado</p>`),
+      kind: "texto"
+    },
+    {
+      name: "atributo con entidad &amp;",
+      source: asHtml(`<div aria-label="Investigación &amp; desarrollo aplicado"></div>`),
+      kind: "atributo:aria-label"
+    },
+    {
+      name: "atributo con entidad numérica &#38;",
+      source: asHtml(`<div aria-label="Investigación &#38; desarrollo aplicado"></div>`),
+      kind: "atributo:aria-label"
+    },
+    {
+      name: "string plano emitido por interpolación",
+      source: 'const x = "tres palabras libres"; const h = `<p>${x}</p>`;',
+      kind: "texto"
+    },
+    {
+      name: "string plano dentro de una interpolación",
+      source: 'const h = `${"tres palabras libres"}`;',
+      kind: "texto"
+    },
+    {
+      name: "template multilínea",
+      source: "const h = `\n<p>\ntres palabras libres\n</p>`;",
+      kind: "texto"
+    }
+  ];
 
-    const meta = copyHitsOf(
-      "probe.ts",
-      'const html = `<meta name="description" content="otras tres palabras sueltas">`;'
-    );
-    expect(meta).toHaveLength(1);
-    expect(meta[0]!.kind).toBe("atributo:content");
+  it.each(bypass)("detecta $name", ({ source, kind }) => {
+    const hits = copyHitsOf("probe.ts", source);
+    expect(hits, source).toHaveLength(1);
+    expect(hits[0]!.kind).toBe(kind);
+  });
+
+  const controls: { name: string; source: string }[] = [
+    { name: "import", source: 'import { t } from "../content/copy.ts";' },
+    { name: "clave de objeto", source: 'const k = { "pub.kontablo.title": "x" };' },
+    { name: "URL", source: 'const u = "https://example.com/a/b";' },
+    {
+      name: "atributo técnico",
+      source: 'const h = `<img class="pub-thumb" src="data:x" alt="${ta("pub.kontablo.alt")}">`;'
+    },
+    {
+      name: "valor interpolado",
+      source: 'const h = `<div class="skill-label">${t("room.competencias.agents.label")}</div>`;'
+    },
+    {
+      name: "meta viewport",
+      source: 'const h = `<meta name="viewport" content="width=device-width, initial-scale=1.0">`;'
+    }
+  ];
+
+  it.each(controls)("no marca como copy: $name", ({ source }) => {
+    expect(copyHitsOf("probe.ts", source), source).toHaveLength(0);
   });
 
   it("reporta la línea REAL del fuente, no la del chunk (sondas 25/30)", () => {
@@ -102,6 +214,27 @@ describe("copy — cero texto literal en templates (I5)", () => {
     ];
     for (const probe of probes) {
       expect(copyHitsOf("probe.ts", probe), probe).toHaveLength(0);
+    }
+  });
+});
+
+describe("copy — descubrimiento de templates", () => {
+  it("es recursivo y acepta .ts/.tsx, sin tests", () => {
+    const root = mkdtempSync(join(tmpdir(), "copy-lint-"));
+    try {
+      mkdirSync(join(root, "sub"));
+      writeFileSync(join(root, "a.ts"), "");
+      writeFileSync(join(root, "b.tsx"), "");
+      writeFileSync(join(root, "c.test.ts"), "");
+      writeFileSync(join(root, "sub", "d.ts"), "");
+      writeFileSync(join(root, "sub", "e.test.tsx"), "");
+      expect(templateFiles(root)).toEqual([
+        join(root, "a.ts"),
+        join(root, "b.tsx"),
+        join(root, "sub", "d.ts")
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
     }
   });
 });
