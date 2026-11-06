@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "./index";
 import { allCopyHits, copyHitsOf, templateFiles } from "../../tools/copy/lint";
@@ -52,6 +53,21 @@ describe("copy — cero texto literal en templates (I5)", () => {
     );
     expect(meta).toHaveLength(1);
     expect(meta[0]!.kind).toBe("atributo:content");
+  });
+
+  it("reporta la línea REAL del fuente, no la del chunk (sondas 25/30)", () => {
+    const lines = Array.from({ length: 40 }, (_, i) => `// línea ${i + 1}`);
+    lines[24] = 'const b = `<p>otras tres palabras</p>`;'; // línea 25
+    lines[29] = 'const a = `<p>tres palabras libres</p>`;'; // línea 30
+    const hits = copyHitsOf("probe.ts", lines.join("\n"));
+    expect(hits.map((hit) => hit.line).sort((a, b) => a - b)).toEqual([25, 30]);
+  });
+
+  it("suma los saltos de línea DENTRO de un template multilínea", () => {
+    const source = ["const x = `", "<p>uno</p>", "<p>dos tres cuatro</p>", "`;"].join("\n");
+    const hits = copyHitsOf("probe.ts", source);
+    expect(hits).toHaveLength(1);
+    expect(hits[0]!.line).toBe(3);
   });
 
   it("el gate no confunde atributos técnicos ni valores interpolados", () => {
@@ -126,3 +142,43 @@ describe("copy — pack bilingüe y sin claves muertas", () => {
     expect(dead, `claves sin uso en el render: ${dead.join(", ")}`).toHaveLength(0);
   });
 });
+
+/* ── Regresión de coordenadas contra el árbol histórico ───────────────
+   El pase 2 reportó coordenadas falsas (línea del chunk, no del hit). Esta
+   prueba fija los 14 hits reales que el gate histórico debía ver en f3fb51b:
+   si el mapeo offset→línea vuelve a romperse, los números dejan de coincidir.
+   Depende del historial de git: en un checkout superficial se salta con razón
+   visible en lugar de fingir que pasó. */
+function showAt(ref: string, path: string): string | null {
+  try {
+    return execFileSync("git", ["show", `${ref}:${path}`], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"]
+    });
+  } catch {
+    return null;
+  }
+}
+
+const HISTORICO_HERO = showAt("f3fb51b", "src/templates/hero_html.ts");
+const HISTORICO_SALA = showAt("f3fb51b", "src/templates/sala_html.ts");
+
+describe.skipIf(HISTORICO_HERO === null || HISTORICO_SALA === null)(
+  "copy — coordenadas reales de los 14 hits históricos (f3fb51b)",
+  () => {
+    it("hero: el aria-label literal se reporta en la línea 15", () => {
+      const hits = copyHitsOf("hero_html.ts", HISTORICO_HERO ?? "");
+      expect(hits.map((hit) => hit.line)).toEqual([15]);
+      expect(hits[0]!.kind).toBe("atributo:aria-label");
+    });
+
+    it("sala: 13 hits en sus líneas reales (6 aria + 6 alt + Penrose)", () => {
+      const hits = copyHitsOf("sala_html.ts", HISTORICO_SALA ?? "");
+      expect(hits.map((hit) => hit.line)).toEqual([
+        48, 59, 69, 80, 99, 107, 414, 425, 460, 478, 487, 496, 513
+      ]);
+      expect(hits.filter((hit) => hit.kind === "atributo:alt")).toHaveLength(6);
+      expect(hits.filter((hit) => hit.kind === "atributo:aria-label")).toHaveLength(7);
+    });
+  }
+);

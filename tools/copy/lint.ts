@@ -98,7 +98,15 @@ function chunksOf(file: string, source: string): Chunk[] {
       if (!isInsideErrorOrThrow(node)) {
         const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
         const literal = node as unknown as { text: string };
-        chunks.push({ text: literal.text, line: line + 1 });
+        // Un string plano sin markup no emite HTML: son imports, claves de
+        // objetos, URLs. Concatenarlos fabricaba "texto" que ningún navegador
+        // renderiza (falsos positivos en la cabecera del archivo). Los
+        // templates usan template literals; un string con `<` se incluye
+        // porque puede ser un fragmento de HTML.
+        const isTemplate = k !== ts.SyntaxKind.StringLiteral;
+        if (isTemplate || /[<>]/.test(literal.text)) {
+          chunks.push({ text: literal.text, line: line + 1 });
+        }
       }
     }
     ts.forEachChild(node, walk);
@@ -107,34 +115,43 @@ function chunksOf(file: string, source: string): Chunk[] {
   return chunks;
 }
 
-/** HTML emitido sin comentarios HTML, CSS/JS ni bloques <style>/<script>. */
-function cleanHtml(html: string): string {
+/**
+ * HTML con comentarios HTML, CSS/JS y bloques <style>/<script> ENMASCARADOS.
+ *
+ * El enmascarado PRESERVA LONGITUD: cada carácter removido se reemplaza por un
+ * espacio y los `\n` se conservan. Un `clean` que acorta la cadena rompe la
+ * correspondencia entre un índice del HTML y la línea del fuente — el defecto
+ * que reportaba coordenadas falsas (pase 2, F1).
+ */
+function maskHtml(html: string): string {
+  const mask = (match: string): string => match.replace(/[^\n]/g, " ");
   return html
-    .replace(/<!--[\s\S]*?-->/g, " ")
-    .replace(/<script[\s\S]*?<\/script>/g, " ")
-    .replace(/<style[\s\S]*?<\/style>/g, " ")
-    .replace(/\/\*[\s\S]*?\*\//g, " ")
-    .replace(/^\s*\/\/[^\n]*$/gm, " ");
+    .replace(/<!--[\s\S]*?-->/g, mask)
+    .replace(/<script[\s\S]*?<\/script>/g, mask)
+    .replace(/<style[\s\S]*?<\/style>/g, mask)
+    .replace(/\/\*[\s\S]*?\*\//g, mask)
+    .replace(/^[ \t]*\/\/[^\n]*$/gm, mask);
 }
 
-/** Texto visible de un HTML emitido: fuera de tags. */
-function visibleText(html: string): string {
-  let out = "";
+/** Segmentos de TEXTO fuera de tags, con su offset en el HTML enmascarado. */
+function textSegments(masked: string): { start: number; text: string }[] {
+  const segments: { start: number; text: string }[] = [];
+  let start = 0;
   let inTag = false;
-  for (const c of html) {
+  for (let i = 0; i < masked.length; i++) {
+    const c = masked[i];
     if (c === "<") {
+      if (!inTag && i > start) segments.push({ start, text: masked.slice(start, i) });
       inTag = true;
-      out += "\n";
       continue;
     }
     if (c === ">") {
       inTag = false;
-      out += "\n";
-      continue;
+      start = i + 1;
     }
-    if (!inTag) out += c;
   }
-  return out;
+  if (!inTag && start < masked.length) segments.push({ start, text: masked.slice(start) });
+  return segments;
 }
 
 /** Hits de copy literal en un archivo. Vacío = el gate pasa. */
@@ -146,29 +163,42 @@ export function copyHitsOf(file: string, source: string): CopyHit[] {
     marks.push({ start: html.length, line: chunk.line });
     html += chunk.text + "\n";
   }
+  /**
+   * Línea real del fuente para un offset del HTML reconstruido.
+   *
+   * El offset pertenece al chunk de string que lo contiene; dentro de un
+   * template multilínea, cada `\n` del texto avanza una línea del fuente. Por
+   * eso: línea del chunk + cantidad de `\n` entre el inicio del chunk y el
+   * offset. Devolver la línea del chunk (lo que hacía antes) mentía en todos
+   * los templates de varias líneas.
+   */
   const lineAt = (pos: number): number => {
-    let line = 1;
-    for (const mark of marks) if (mark.start <= pos) line = mark.line;
-    return line;
+    let mark = marks[0];
+    for (const m of marks) if (m.start <= pos) mark = m;
+    if (!mark) return 1;
+    const slice = html.slice(mark.start, Math.max(mark.start, pos));
+    let newlines = 0;
+    for (const c of slice) if (c === "\n") newlines++;
+    return mark.line + newlines;
   };
-  const clean = cleanHtml(html);
+  // Enmascarar preserva offsets: los índices del texto/atributos son índices
+  // de `html`, que es sobre lo que se acumulan los `marks`.
+  const masked = maskHtml(html);
   const hits: CopyHit[] = [];
 
   // 1) nodos de texto
-  let pos = 0;
-  for (const segment of visibleText(clean).split("\n")) {
-    const text = segment.replace(/\s+/g, " ").trim();
-    if (isCopy(text) && !/[=;{}]/.test(text)) {
-      hits.push({ file, line: lineAt(pos), kind: "texto", text });
-    }
-    pos += segment.length + 1;
+  for (const segment of textSegments(masked)) {
+    const text = segment.text.replace(/\s+/g, " ").trim();
+    if (!isCopy(text) || /[=;{}]/.test(text)) continue;
+    const lead = segment.text.length - segment.text.trimStart().length;
+    hits.push({ file, line: lineAt(segment.start + lead), kind: "texto", text });
   }
 
   // 2) atributos de copy. Las interpolaciones no están en la reconstrucción:
   // un valor 100% `t()` queda vacío y no se reporta; un resto literal sí.
   const tagRe = /<([a-zA-Z][\w-]*)([^>]*)>/g;
   let tag: RegExpExecArray | null;
-  while ((tag = tagRe.exec(clean))) {
+  while ((tag = tagRe.exec(masked))) {
     const tagName = tag[1].toLowerCase();
     const attrRe = /([\w:-]+)="([^"]*)"/g;
     let attr: RegExpExecArray | null;
