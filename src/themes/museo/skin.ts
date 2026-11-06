@@ -143,6 +143,34 @@ export function derivedTokens(css: string = SKIN_SOURCE): TokenDeclaration[] {
 }
 
 /**
+ * Rangos `[inicio, fin)` del VALOR de cada declaración (después del `:` de la
+ * declaración, hasta `;` o `}`). El `:` de un selector (`:hover`, `:root`) no
+ * abre un valor porque está fuera de un bloque (`{ … }`).
+ */
+function declarationValueRanges(clean: string): [number, number][] {
+  const ranges: [number, number][] = [];
+  let depth = 0;
+  let start = -1;
+  for (let i = 0; i < clean.length; i += 1) {
+    const char = clean[i];
+    if (char === "{") {
+      depth += 1;
+      start = -1;
+    } else if (char === "}") {
+      depth = Math.max(0, depth - 1);
+      if (start >= 0) ranges.push([start, i]);
+      start = -1;
+    } else if (depth > 0 && char === ":") {
+      start = i + 1;
+    } else if (char === ";" && start >= 0) {
+      ranges.push([start, i]);
+      start = -1;
+    }
+  }
+  return ranges;
+}
+
+/**
  * Literales de color del CSS, con su línea y si están dentro de un bloque de
  * tokens. Cubre hex, `rgb()/rgba()`, `hsl()/hsla()` y la lista cerrada de
  * nombres. Los comentarios se ignoran.
@@ -160,19 +188,20 @@ export function scanColorLiterals(css: string): ColorLiteral[] {
     hits.push({ index: match.index ?? 0, value: match[0] });
   }
 
-  // Nombre de color: sólo en posición de VALOR (`:white;`, `solid white;`,
-  // `, white)`), nunca como clase (`.white`) ni dentro de un identificador
-  // (`white-space`, `--white-03`).
+  // Nombre de color: se busca SÓLO en el valor de una declaración (después de
+  // `:` y antes de `;`/`}`). Mirar el carácter previo no alcanzaba: en el
+  // shorthand `border:1px solid black` el previo es una letra y el literal
+  // pasaba invisible (F4 del pase fresco de #130).
   const named = new RegExp(
     `(?<![\\w.-])(?:${NAMED_COLORS.join("|")})(?![\\w-])`,
     "g"
   );
+  const values = declarationValueRanges(clean);
   for (const match of clean.matchAll(named)) {
-    const after = clean.slice((match.index ?? 0) + match[0].length).match(/^\s*([;,)}])/);
-    const before = clean.slice(0, match.index ?? 0).trimEnd();
-    const isValue = Boolean(after) && /[:,(]$/.test(before);
-    if (!isValue || KEYWORDS.has(match[0])) continue;
-    hits.push({ index: match.index ?? 0, value: match[0] });
+    const at = match.index ?? 0;
+    if (!values.some(([start, end]) => at >= start && at < end)) continue;
+    if (KEYWORDS.has(match[0])) continue;
+    hits.push({ index: at, value: match[0] });
   }
 
   return hits
@@ -182,6 +211,35 @@ export function scanColorLiterals(css: string): ColorLiteral[] {
       line: lineOf(hit.index),
       inTokenBlock: inTokenBlock(hit.index)
     }));
+}
+
+/** Regla que declara a la vez un color de texto y un fondo de tinte derivado. */
+export interface TintedTextRule {
+  readonly selector: string;
+  readonly fg: string;
+  readonly bg: string;
+}
+
+/**
+ * Combinaciones texto/tinte que la piel declara en UNA misma regla (chips,
+ * estados, botones). Es el universo que el gate de contraste no puede dejar
+ * afuera: declarar pares por token no modela el alpha del fondo (F1 del pase
+ * fresco de #130). No cubre el color heredado (hover de un contenedor): esos
+ * pares se declaran a mano, porque el CSS no dice qué hijo hereda qué.
+ */
+export function tintedTextRules(css: string): TintedTextRule[] {
+  const clean = blankComments(css);
+  const derived = new Set(derivedTokens(css).map((token) => token.name));
+  const found = new Map<string, TintedTextRule>();
+  for (const rule of clean.matchAll(/([^{}]+)\{([^{}]*)\}/g)) {
+    const selector = rule[1].trim().replace(/\s+/g, " ");
+    if (selector.startsWith("@")) continue;
+    const fg = rule[2].match(/(?<![-\w])color\s*:\s*var\((--[a-z0-9-]+)\)/i)?.[1];
+    const bg = rule[2].match(/(?<![-\w])background(?:-color)?\s*:\s*var\((--[a-z0-9-]+)\)/i)?.[1];
+    if (!fg || !bg || !derived.has(bg)) continue;
+    found.set(`${selector}|${fg}|${bg}`, { selector, fg, bg });
+  }
+  return [...found.values()];
 }
 
 /** Nombres referenciados con `var(--x)` (en cualquier parte del CSS). */

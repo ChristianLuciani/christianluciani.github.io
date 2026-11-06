@@ -8,6 +8,7 @@ import {
   SKIN_SOURCE,
   emitSkinCss,
   scanColorLiterals,
+  tintedTextRules,
   tokenDeclarations,
   unresolvedVarRefs
 } from "./skin.ts";
@@ -137,6 +138,25 @@ describe("piel — 0 literales de color fuera del bloque de tokens (I5)", () => 
     expect(values).toEqual(["rgb(1,2,3)", "hsl(1,2%,3%)", "black"]);
   });
 
+  it("el escáner ve nombres de color en shorthands (F4 del pase fresco)", () => {
+    // El bug: mirar el carácter previo sólo detectaba `color:black`; un
+    // `border:1px solid black` pasaba invisible porque el previo es una letra.
+    const values = (css: string): string[] =>
+      scanColorLiterals(css).filter((h) => !h.inTokenBlock).map((h) => h.value);
+    expect(values(".a{border:1px solid black}")).toEqual(["black"]);
+    expect(values(".a{box-shadow:0 0 8px white}")).toEqual(["white"]);
+    expect(values(".a{outline:2px solid gold}")).toEqual(["gold"]);
+    expect(values(".a{color:black}")).toEqual(["black"]);
+  });
+
+  it("el escáner no confunde el selector ni un identificador con un valor", () => {
+    const values = (css: string): string[] =>
+      scanColorLiterals(css).filter((h) => !h.inTokenBlock).map((h) => h.value);
+    expect(values(".gold{color:var(--ink)}")).toEqual([]);
+    expect(values(".a{white-space:nowrap}")).toEqual([]);
+    expect(values("@media (x){.a:hover{border:1px solid red}}")).toEqual(["red"]);
+  });
+
   it("`transparent` y `currentColor` no son literales de paleta", () => {
     expect(scanColorLiterals(".a{background:transparent;color:currentColor}")).toHaveLength(0);
   });
@@ -156,21 +176,56 @@ describe("piel — contraste declarado por par, AA verificado", () => {
     }
   });
 
+  it("el gate cubre las combinaciones reales texto/tinte, no sólo el par de tokens", () => {
+    // F1 del pase fresco: `.status-paused` pinta ink-meta-10 DETRÁS del texto;
+    // el par --ink-meta/--card medía una superficie que el texto nunca ve.
+    // Toda regla que declara color + fondo de tinte tiene que estar declarada.
+    const declared = new Set(SKIN_CONTRAST_PAIRS.map((pair) => `${pair.fg}|${pair.bg}`));
+    const rules = tintedTextRules(SKIN_SOURCE);
+    expect(rules.length).toBeGreaterThanOrEqual(18);
+    for (const rule of rules) {
+      expect(
+        declared,
+        `${rule.selector}: ${rule.fg} sobre ${rule.bg} no tiene par de contraste`
+      ).toContain(`${rule.fg}|${rule.bg}`);
+    }
+  });
+
+  it("los chips de estado declaran su pila real y están endeudados con el ratio medido", () => {
+    const cases = [
+      { selector: ".status-paused", fg: "--ink-meta", bg: "--ink-meta-10", bases: ["--bg-1", "--card"], ratio: 4.28 },
+      { selector: ".project-falta", fg: "--ink-meta", bg: "--gold-05", bases: ["--bg-1", "--card"], ratio: 4.48 }
+    ];
+    for (const item of cases) {
+      const pair = SKIN_CONTRAST_PAIRS.find((p) => p.fg === item.fg && p.bg === item.bg);
+      expect(pair, `falta el par ${item.fg}/${item.bg}`).toBeDefined();
+      expect(pair!.bases, `${item.selector}: pila de fondos`).toEqual(item.bases);
+      expect(resolvePair(pair!, tokens), item.selector).toBeCloseTo(item.ratio, 2);
+      const debt = AA_DEBT.find((d) => d.selector === item.selector);
+      expect(debt, `${item.selector} no está en AA_DEBT`).toBeDefined();
+      expect(debt!.ratio).toBeCloseTo(item.ratio, 2);
+    }
+  });
+
   it("cada par declara tokens existentes y una razón de uso", () => {
     expect(SKIN_CONTRAST_PAIRS.length).toBeGreaterThanOrEqual(10);
     for (const pair of SKIN_CONTRAST_PAIRS) {
       expect(tokens.has(pair.fg), `token desconocido ${pair.fg}`).toBe(true);
       expect(tokens.has(pair.bg), `token desconocido ${pair.bg}`).toBe(true);
-      if (pair.base) expect(tokens.has(pair.base), `token desconocido ${pair.base}`).toBe(true);
+      for (const base of pair.bases ?? []) {
+        expect(tokens.has(base), `token desconocido ${base}`).toBe(true);
+      }
       expect(pair.usage.length).toBeGreaterThan(10);
     }
   });
 
   it("todo par pasa su umbral AA (y las deudas siguen siendo deudas)", () => {
-    const debts = new Set(AA_DEBT.map((debt) => `${debt.fg}|${debt.bg}`));
+    const keyOf = (item: { fg: string; bg: string; bases?: readonly string[] }): string =>
+      `${item.fg}|${item.bg}|${(item.bases ?? []).join(">")}`;
+    const debts = new Set(AA_DEBT.map(keyOf));
     for (const pair of SKIN_CONTRAST_PAIRS) {
       const ratio = resolvePair(pair, tokens);
-      const key = `${pair.fg}|${pair.bg}`;
+      const key = keyOf(pair);
       if (debts.has(key)) {
         // Auto-eliminación: si el par ya cumple, la deuda es mentira y el test falla.
         expect(ratio, `AA_DEBT quedó obsoleta: ${key} ya cumple ${pair.min}:1`).toBeLessThan(pair.min);
@@ -183,12 +238,37 @@ describe("piel — contraste declarado por par, AA verificado", () => {
     }
   });
 
-  it("toda deuda declara razón y pertenece a un par declarado", () => {
+  it("toda deuda declara razón, selector real y pertenece a un par declarado", () => {
     for (const debt of AA_DEBT) {
       expect(debt.reason.length).toBeGreaterThan(20);
-      expect(
-        SKIN_CONTRAST_PAIRS.some((pair) => pair.fg === debt.fg && pair.bg === debt.bg)
-      ).toBe(true);
+      // El selector existe en la piel: una deuda sin superficie es una excusa.
+      expect(SKIN_SOURCE).toContain(debt.selector);
+      const pair = SKIN_CONTRAST_PAIRS.find(
+        (item) =>
+          item.fg === debt.fg &&
+          item.bg === debt.bg &&
+          (item.bases ?? []).join(">") === (debt.bases ?? []).join(">")
+      );
+      expect(pair, `la deuda ${debt.selector} no tiene par declarado`).toBeDefined();
+      expect(pair!.min).toBe(debt.min);
+    }
+  });
+
+  it("la cifra de cada deuda coincide con el par que declara (F3)", () => {
+    // F3 del pase fresco: AA_DEBT citaba 3,30:1 para el par --ink-faint/--bg-1,
+    // que en realidad mide 3,41. El test recalcula y ata la cita al par.
+    for (const debt of AA_DEBT) {
+      const pair = SKIN_CONTRAST_PAIRS.find(
+        (item) =>
+          item.fg === debt.fg &&
+          item.bg === debt.bg &&
+          (item.bases ?? []).join(">") === (debt.bases ?? []).join(">")
+      );
+      expect(pair, `falta el par de ${debt.selector}`).toBeDefined();
+      expect(resolvePair(pair!, tokens), `${debt.selector}: ratio citado ≠ medido`).toBeCloseTo(
+        debt.ratio,
+        2
+      );
     }
   });
 
@@ -216,7 +296,10 @@ describe("piel — contraste declarado por par, AA verificado", () => {
 
   it("el ratio documentado de `--ink-meta` sobre tarjeta (4,79:1) no driftea", () => {
     const pair = SKIN_CONTRAST_PAIRS.find(
-      (p) => p.fg === "--ink-meta" && p.bg === "--card" && p.base === "--bg-1"
+      (p) =>
+        p.fg === "--ink-meta" &&
+        p.bg === "--card" &&
+        (p.bases ?? []).join(">") === "--bg-1"
     );
     expect(pair, "falta el par declarado en el manual de estilo").toBeDefined();
     expect(resolvePair(pair!, tokens).toFixed(2)).toBe("4.79");
@@ -227,7 +310,7 @@ describe("piel — contraste declarado por par, AA verificado", () => {
     expect(contrastRatio(parseColor("#ffffff"), parseColor("#ffffff"))).toBeCloseTo(1, 5);
     // alpha: blanco 1.6% sobre el fondo-1 compone un gris apenas más claro.
     const card = resolvePair(
-      { fg: "--ink", bg: "--card", base: "--bg-1", min: 4.5, usage: "texto sobre tarjeta" },
+      { fg: "--ink", bg: "--card", bases: ["--bg-1"], min: 4.5, usage: "texto sobre tarjeta" },
       tokens
     );
     expect(card).toBeGreaterThan(15);
