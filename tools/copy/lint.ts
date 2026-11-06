@@ -28,6 +28,13 @@
  * fuera. Su cierre estructural —stub determinista de `t()`/SSOT + scan del HTML
  * emitido + property test de formas— es un INSTRUMENTO PENDIENTE, no una
  * promesa de este gate. Acá se declara lo que hay, no lo que faltaría.
+ *
+ * LÍMITE RESIDUAL DE TOKENIZACIÓN. El gate reconoce como separadores la
+ * puntuación de prosa `·`, `—`, `–`, `•` y `…` (y las entidades que las
+ * producen); las entidades desconocidas cuentan como espacio. Un identificador
+ * conserva `-`, `_` y `.` (`profile-as-code` es UN token). Un guion usado como
+ * separador de prosa (`uno - dos - tres`) no se cierra acá: es un límite
+ * declarado, no un caso pendiente de este gate.
  */
 import ts from "typescript";
 import { readFileSync, readdirSync } from "node:fs";
@@ -111,9 +118,9 @@ function decodeEntities(value: string): string {
     )
     .replace(/&#(\d+);/g, (_, dec: string) => String.fromCodePoint(Number.parseInt(dec, 10)))
     .replace(/&([a-z][a-z0-9]*);/gi, (match, name: string) => NAMED_ENTITIES[name.toLowerCase()] ?? match)
-    // Entidad desconocida: se neutraliza el `;` final para que no simule
-    // código; el token sigue contando como palabra.
-    .replace(/&[a-z][a-z0-9]*;/gi, (_, name: string) => name);
+    // Entidad desconocida ⇒ espacio: no se inventa su carácter, pero tampoco
+    // se arrastra el `;` (que parecía código) ni se pegan dos palabras.
+    .replace(/&[a-z][a-z0-9]*;/gi, " ");
 }
 
 /** Recorta puntuación/símbolos de BORDE de un token (`{opción}`, `diseño;`). */
@@ -127,8 +134,16 @@ function trimEdge(token: string): string {
  * puntuación de borde. `{ display: grid; }` produce 2 tokens-palabra; una
  * frase de copy produce 3+.
  */
-function wordsOf(value: string): string[] {
+/** Texto decodificado con la puntuación separadora convertida en espacio. */
+function normalize(value: string): string {
   return decodeEntities(value)
+    // Puntuación que SEPARA palabras en prosa/tipografía, no dentro de un
+    // identificador: `·`, `—`, `–`, `•`, `…` (y sus entidades).
+    .replace(/[·—–•…]/g, " ");
+}
+
+function wordsOf(value: string): string[] {
+  return normalize(value)
     .split(/\s+/)
     .map(trimEdge)
     .filter((word) => WORD.test(word));
@@ -150,7 +165,7 @@ function isCopy(value: string): boolean {
  * Se evalúa sobre el texto YA decodificado: `&amp;` es `&`, no `;`.
  */
 function isTechnical(value: string): boolean {
-  const text = decodeEntities(value).trim();
+  const text = normalize(value).trim();
   if (!text) return true;
   if (!/\s/.test(text)) return true;
   if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return true;

@@ -163,6 +163,36 @@ describe("copy — cero texto literal en templates (I5)", () => {
       kind: "texto"
     },
     {
+      name: "entidad separadora &middot;",
+      source: asHtml(`<p>Uno&middot;dos&middot;tres</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad separadora &mdash;",
+      source: asHtml(`<p>Uno&mdash;dos&mdash;tres</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad separadora &ndash;",
+      source: asHtml(`<p>Uno&ndash;dos&ndash;tres</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad separadora &bull;",
+      source: asHtml(`<p>Uno&bull;dos&bull;tres</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad separadora &hellip;",
+      source: asHtml(`<p>Uno&hellip;dos&hellip;tres</p>`),
+      kind: "texto"
+    },
+    {
+      name: "entidad desconocida cuenta como espacio",
+      source: asHtml(`<p>Uno&foo;dos&foo;tres</p>`),
+      kind: "texto"
+    },
+    {
       name: "string plano emitido por interpolación",
       source: 'const x = "tres palabras libres"; const h = `<p>${x}</p>`;',
       kind: "texto"
@@ -196,6 +226,10 @@ describe("copy — cero texto literal en templates (I5)", () => {
     {
       name: "valor interpolado",
       source: 'const h = `<div class="skill-label">${t("room.competencias.agents.label")}</div>`;'
+    },
+    {
+      name: "identificador con guiones (profile-as-code es UN token)",
+      source: asHtml(`<p>profile-as-code</p>`)
     },
     {
       name: "CSS con dos palabras-palabra ({ display: grid; })",
