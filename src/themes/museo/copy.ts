@@ -88,6 +88,11 @@ export const MUSEO_COPY: CopyPack = {
     en: "Switch language / Cambiar idioma"
   },
   "cover.soundAria": { es: "Silenciar sonido de fondo", en: "Mute background sound" },
+  "cover.soundAriaOff": {
+    es: "Activar sonido de fondo",
+    en: "Enable background sound",
+    runtime: true
+  },
   "cover.soundTitle": { es: "Sonido: canto de ballenas", en: "Sound: whale song" },
   "cover.download": { es: "↓ Descargar CV", en: "↓ Download CV" },
   "cover.downloadAria": { es: "Descargar CV en PDF", en: "Download CV as PDF" },

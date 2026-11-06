@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "./index";
 import { allCopyHits, copyHitsOf, templateFiles } from "../../tools/copy/lint";
@@ -387,3 +387,34 @@ describe.skipIf(HISTORICO_HERO === null || HISTORICO_SALA === null)(
     });
   }
 );
+
+/* ── Copy de RUNTIME: el aria del botón de sonido ─────────────────────
+   `ambient.ts` pisa `aria-label` en runtime; si lo hiciera con literales ES,
+   la clave del pack quedaría muerta y el toggle no traduciría el control.
+   El template NO puede llevar `data-aria-*` (cambiaría el golden, I1): la
+   mutación bilingüe va acá y este test la vigila. */
+describe("copy — aria del botón de sonido (runtime)", () => {
+  const src = readFileSync(resolve(process.cwd(), "src/ts/app/ambient.ts"), "utf8");
+
+  it("no pisa el aria-label con literales ES", () => {
+    expect(src).not.toContain("Silenciar sonido de fondo");
+    expect(src).not.toContain("Activar sonido de fondo");
+  });
+
+  it("declara data-aria-es/en y elige el idioma vigente en el click", () => {
+    expect(src).toMatch(/"data-aria-es"/);
+    expect(src).toMatch(/"data-aria-en"/);
+    expect(src).toMatch(/document\.documentElement\.lang === "en"/);
+    expect(src).toMatch(/te\(key\)/);
+    expect(src).toMatch(/t\(key\)/);
+  });
+
+  it("las dos claves del estado del sonido tienen ES y EN distintas", async () => {
+    const { copy } = await import("../content/copy.ts");
+    for (const key of ["cover.soundAria", "cover.soundAriaOff"]) {
+      expect(copy(key).es, `${key}.es`).not.toBe("");
+      expect(copy(key).en, `${key}.en`).not.toBe("");
+      expect(copy(key).en, `${key}: ES y EN no pueden coincidir`).not.toBe(copy(key).es);
+    }
+  });
+});
