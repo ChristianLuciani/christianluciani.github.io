@@ -18,7 +18,7 @@
  *  2. Abre una sesión CDP con `tools/logo/chrome.mjs` (misma resolución de
  *     binario y mismos flags que los gates del logo) sobre un bootstrap que
  *     redirige a la app.
- *  3. Ejecuta cuatro escenarios y afirma el `document.activeElement` y el
+ *  3. Ejecuta cinco escenarios y afirma el `document.activeElement` y el
  *     estado del loader en cada uno.
  *
  * Uso:
@@ -148,6 +148,7 @@ const STATE_PROBE = `(() => {
     heroFocused: !!hero && active === hero,
     activeId: active && active.id ? active.id : '',
     activeTag: active ? active.tagName : '',
+    activeClass: active && active.className ? String(active.className) : '',
     heroOpacity: hero ? getComputedStyle(hero).opacity : '',
     introDisplay: document.getElementById('intro-block')
       ? getComputedStyle(document.getElementById('intro-block')).display
@@ -183,17 +184,21 @@ async function run() {
     check("foco inicial en #btn-skip-intro", true);
 
     // ── Escenario 2: un control sobre el loader NO dispara el skip ─────────
+    // Se activa un `.nav-dot`: su handler mueve el foco al título de la sala.
+    // Con el viejo listener global, `skipToPage` corría después y lo robaba
+    // para el hero. Afirmar ese destino (no sólo "no es el hero") mide el robo.
     await s.eval(`(() => {
-      const link = document.querySelector('.skip-link');
-      link.focus();
-      link.click();
+      const dot = document.querySelector('.nav-dot[data-target="room-perfil"]');
+      dot.click();
       return true;
     })()`);
-    await sleep(150);
+    await sleep(200);
     const foreign = await s.eval(STATE_PROBE);
     check(
-      "clic en .skip-link durante la intro no dispara skip ni roba foco",
-      !foreign.loaderHidden && !foreign.heroFocused,
+      "activar un .nav-dot durante la intro no dispara skip ni roba foco",
+      !foreign.loaderHidden &&
+        !foreign.heroFocused &&
+        foreign.activeClass.includes("room-title"),
       JSON.stringify(foreign)
     );
     await s.eval(`history.replaceState(null, "", location.pathname); window.scrollTo(0, 0); document.activeElement?.blur(); true`);
@@ -225,7 +230,7 @@ async function run() {
     // El botón arranca enfocado; si `finish()` lo remueve sin handoff, el foco
     // queda en <body>. Es el F2 del pase fresco, no cubierto por la suite.
     try {
-      await s.eval(`location.href = ${JSON.stringify(`${origin}/?case=normal`)}; true`);
+      await s.eval(`location.reload(); true`);
     } catch (err) {
       // La navegación puede destruir el contexto antes de responder.
       if (!/context|Execution|destroyed|Cannot find|Target closed/i.test(err.message)) throw err;
@@ -255,21 +260,31 @@ async function run() {
   }
 }
 
-try {
-  await run();
-  const failed = checks.filter((c) => !c.ok);
+/**
+ * Imprime las aserciones medidas hasta ahora y devuelve cuántas fallaron. Se
+ * llama también en el `catch`: un timeout a mitad de camino no debe borrar la
+ * evidencia de los escenarios que sí se midieron (F4 del pase fresco).
+ */
+function reportChecks() {
   for (const c of checks) {
     console.log(`${c.ok ? "✅" : "❌"} ${c.name}${c.ok ? "" : ` · ${c.detail ?? ""}`}`);
   }
-  if (failed.length) {
-    console.error(`❌ FOCO: ${failed.length} de ${checks.length} aserciones fallaron — el skip no cumple el contrato de foco`);
+  return checks.filter((c) => !c.ok).length;
+}
+
+try {
+  await run();
+  const failed = reportChecks();
+  if (failed) {
+    console.error(`❌ FOCO: ${failed} de ${checks.length} aserciones fallaron — el skip no cumple el contrato de foco`);
     process.exitCode = 1;
   } else {
     console.log(`🏆 FOCO: ${checks.length}/${checks.length} — el skip no captura clicks ajenos y entrega el foco`);
   }
 } catch (err) {
+  reportChecks();
   if (err instanceof GateFailure) {
-    console.error(`❌ FOCO: ${err.message}`);
+    console.error(`❌ FOCO: ${err.message} (aserciones medidas: ${checks.length})`);
     process.exitCode = 1;
   } else {
     console.error(`❌ FOCO: no se pudo medir — ${err.message}`);
