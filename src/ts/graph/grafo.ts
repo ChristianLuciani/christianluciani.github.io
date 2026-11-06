@@ -25,8 +25,11 @@ interface GrafoEdge {
 }
 
 // status: raiz | area | pub (publicado) | desarrollo (sin artefacto público) | futuro (idea, dorado)
-// El copy visible de los nodos vive en el pack del tema (#127): acá sólo quedan
-// los hechos/propios y la estructura de aristas.
+// COPY DE NODOS (#127): sólo los labels que el pack declara (`graph.node.*`)
+// se piden con `t()`. El resto sigue literal acá porque es nombre propio
+// estable (Christian Luciani, Kontablo, Drahma, …) o etiología de área sin
+// traducción (Física, Educación, Open Source). No es una regla general: un
+// label nuevo que sea copy de narrativa entra al pack.
 // Exportados: `docs/SPEC.md` §4 los cita como fuente de los nodos/aristas y el
 // chequeo de punteros (`tools/docs/doc-pointers.test.ts`) verifica el export.
 export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
