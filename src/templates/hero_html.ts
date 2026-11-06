@@ -5,6 +5,7 @@
  * HERO: entrada del museo (section + divider).
  */
 import { provenanceHtml } from "../data/profile.provenance.ts";
+import { t } from "../content/copy.ts";
 
 export function heroHtml(): string {
   return `<!-- ════════════════════════════════════════════════════
@@ -14,22 +15,22 @@ export function heroHtml(): string {
   <canvas id="hero-canvas" role="img" aria-label="Cubos isométricos pulsantes"></canvas>
 
   <div class="hero-content">
-    <div class="hero-label">Museo de una Trayectoria · 2026</div>
+    <div class="hero-label">${t("hero.label")}</div>
     <h1 class="hero-name" id="hero-name">
       <span class="hero-first">Christian</span>
       <span class="hero-last">Luciani</span>
     </h1>
-    <p class="hero-tagline">Físico · Inteligencia Sintética · Economía Agéntica</p>
+    <p class="hero-tagline">${t("hero.tagline")}</p>
 
     <dl class="hero-metrics">
-      <div><dt>Kontablo</dt><dd>195<span class="u"> jurisdicciones</span></dd></div>
-      <div><dt>Drahma</dt><dd>36<span class="u"> tutores</span></dd></div>
-      <div><dt>Física</dt><dd>20+<span class="u"> años</span></dd></div>
+      <div><dt>Kontablo</dt><dd>195<span class="u"> ${t("hero.metric.jurisdictions")}</span></dd></div>
+      <div><dt>Drahma</dt><dd>36<span class="u"> ${t("hero.metric.tutors")}</span></dd></div>
+      <div><dt>${t("hero.metric.physics")}</dt><dd>20+<span class="u"> ${t("hero.metric.years")}</span></dd></div>
     </dl>
 
 ${provenanceHtml()}  </div>
 
-  <div class="hero-scroll">SCROLL PARA RECORRER</div>
+  <div class="hero-scroll">${t("hero.scroll")}</div>
   <div class="scroll-line"></div>
 </section>
 <div class="room-divider"></div>

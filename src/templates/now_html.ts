@@ -7,6 +7,7 @@
  */
 import { NOW } from "../data/now.generated.ts";
 import type { NowItem, NowSnapshot } from "../data/now.types.ts";
+import { t } from "../content/copy.ts";
 
 const ESCAPES: Record<string, string> = {
   "&": "&amp;",
@@ -36,15 +37,15 @@ export function nowHtml(now: NowSnapshot = NOW): string {
       ? `    <ol class="now-list">
 ${rows}
     </ol>`
-      : `    <p class="now-empty">Nada en vuelo.</p>`;
+      : `    <p class="now-empty">${t("now.empty")}</p>`;
   return `<!-- ════════════════════════════════════════════════════
   AHORA — feed now/v1 (chrome, no hecho citable) · #117
 ════════════════════════════════════════════════════ -->
 <section id="now" class="now-strip" aria-labelledby="now-title">
   <div class="now-inner">
-    <h2 class="now-title" id="now-title">Ahora</h2>
+    <h2 class="now-title" id="now-title">${t("now.title")}</h2>
 ${body}
-    <p class="now-asof">Actualizado <time datetime="${now.asOf}">${now.asOf.slice(0, 10)}</time></p>
+    <p class="now-asof">${t("now.updated")} <time datetime="${now.asOf}">${now.asOf.slice(0, 10)}</time></p>
   </div>
 </section>
 

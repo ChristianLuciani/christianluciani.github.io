@@ -4,6 +4,8 @@
  * main.ts llama mountGrafo() cuando el DOM está listo.
  */
 
+import { t } from "../../content/copy.ts";
+
 interface GrafoNode {
   id: string;
   label: string;
@@ -23,22 +25,24 @@ interface GrafoEdge {
 }
 
 // status: raiz | area | pub (publicado) | desarrollo (sin artefacto público) | futuro (idea, dorado)
+// El copy visible de los nodos vive en el pack del tema (#127): acá sólo quedan
+// los hechos/propios y la estructura de aristas.
 // Exportados: `docs/SPEC.md` §4 los cita como fuente de los nodos/aristas y el
 // chequeo de punteros (`tools/docs/doc-pointers.test.ts`) verifica el export.
 export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
   { id: "raiz", label: "Christian Luciani", status: "raiz" },
   { id: "fisica", label: "Física", status: "area" },
-  { id: "ia", label: "IA Sintética · Agentes", status: "area" },
-  { id: "sob", label: "Soberanía Tecnológica", status: "area" },
+  { id: "ia", label: t("graph.node.ia"), status: "area" },
+  { id: "sob", label: t("graph.node.soberania"), status: "area" },
   { id: "oss", label: "Open Source", status: "area" },
   { id: "edu", label: "Educación", status: "area" },
-  { id: "cog", label: "Cognición · Filosofía", status: "area" },
+  { id: "cog", label: t("graph.node.cognicion"), status: "area" },
   { id: "kontablo", label: "Kontablo", status: "pub" },
   { id: "zentropy", label: "ZENTROPY", status: "desarrollo" },
   { id: "drahma", label: "Drahma", status: "pub" },
-  { id: "clapps", label: "CLAPPS · Noesis/Noetix", status: "desarrollo" },
+  { id: "clapps", label: t("graph.node.clapps"), status: "desarrollo" },
   { id: "estel", label: "Esteléctica", status: "desarrollo" },
-  { id: "erp", label: "ERPNext · Zanah", status: "pub" },
+  { id: "erp", label: t("graph.node.erp"), status: "pub" },
   { id: "profile", label: "profile-as-code", status: "pub" },
   { id: "topia", label: "Topia", status: "desarrollo" },
   { id: "nelson", label: "Nelson Companion", status: "desarrollo" }

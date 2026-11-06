@@ -4,6 +4,7 @@ import {
 } from "../ts/assets/url.ts";
 import { ENTITY } from "../data/entity.generated.ts";
 import { PRINT_RULE_COLOR } from "./print-tokens.ts";
+import { t, ta } from "../content/copy.ts";
 
 /** Origen canónico del sitio (OG necesita URL absoluta, no relativa). */
 const SITE_ORIGIN = "https://christianluciani.github.io";
@@ -34,20 +35,20 @@ export function headHtml(): string {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Christian Luciani — Museo de una Trayectoria</title>
-<meta name="description" content="Christian Luciani — Investigador independiente en Cuenca, Ecuador. Creador de Kontablo, ontología contable universal basada en grafos para la economía agéntica. Física, inteligencia sintética y tecnología educativa.">
+<title>${t("meta.title")}</title>
+<meta name="description" content="${ta("meta.description")}">
 <meta name="author" content="Christian Luciani">
 <meta property="og:type" content="profile">
-<meta property="og:title" content="Christian Luciani — Investigador independiente">
-<meta property="og:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Investigador independiente en Cuenca, Ecuador.">
+<meta property="og:title" content="${ta("meta.ogTitle")}">
+<meta property="og:description" content="${ta("meta.ogDescription")}">
 <meta property="og:url" content="https://christianluciani.github.io/">
 <meta property="og:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Christian Luciani — Investigador independiente">
-<meta name="twitter:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Física, inteligencia sintética y tecnología educativa.">
+<meta name="twitter:title" content="${ta("meta.ogTitle")}">
+<meta name="twitter:description" content="${ta("meta.twitterDescription")}">
 <meta name="twitter:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
 <link rel="icon" type="image/svg+xml" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal.svg")}>
 <link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-32.png")}>

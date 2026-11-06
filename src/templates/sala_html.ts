@@ -1,4 +1,5 @@
 import { assetAttrs } from "../ts/assets/url.ts";
+import { t, ta, th } from "../content/copy.ts";
 
 /**
  * SALAS: comentario editorial + shell de <section> + header GENERADO desde SALAS
@@ -200,7 +201,7 @@ export function drahmaShowcase(profile: CvProfile): string {
         <div class="drahma-aside" data-scroll="from-right">
           <div class="illusion-frame illusion-frame--340">
             <canvas id="c-stairs-ill" class="illusion-canvas"></canvas>
-            <div class="illusion-label">ESCALERA DE PENROSE · 1958</div>
+            <div class="illusion-label">${t("room.proyectos.illusionStairs")}</div>
             <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-stairs/" target="_blank" rel="noopener">↗ michaelbach.de</a>
           </div>
           <div class="lab-stem-card" data-scroll="up" data-delay="2">
@@ -339,60 +340,60 @@ export const ROOM_BODY: Record<string, string> = {
   galeria: `
     <!-- Sub-galería: Drahma y campo amazónico -->
     <div data-scroll="up" data-delay="1">
-      <div class="gallery-label">DRAHMA · CAMPO AMAZÓNICO</div>
+      <div class="gallery-label">${t("gallery.amazon.label")}</div>
       <div class="gallery-grid cols-3 gallery-grid--280">
-        <div class="gallery-slot" data-caption="Drahma — interfaz del tutor en campo">
+        <div class="gallery-slot" data-caption="${ta("gallery.amazon.1.caption")}">
           <!-- <img src="galeria/drahma-campo-1.jpg"> -->
           <div class="gallery-placeholder-icon">🐉</div>
-          <div class="gallery-placeholder-text">DRAHMA EN CAMPO<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.amazon.1.title")}<br>${t("gallery.action.photo")}</div>
         </div>
-        <div class="gallery-slot" data-caption="Comunidad indígena amazónica · prueba piloto">
+        <div class="gallery-slot" data-caption="${ta("gallery.amazon.2.caption")}">
           <!-- <img src="galeria/drahma-campo-2.jpg"> -->
           <div class="gallery-placeholder-icon">🌿</div>
-          <div class="gallery-placeholder-text">COMUNIDAD AMAZÓNICA<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.amazon.2.title")}<br>${t("gallery.action.photo")}</div>
         </div>
-        <div class="gallery-slot" data-caption="Pantalla del sistema Drahma · agosto 2024">
+        <div class="gallery-slot" data-caption="${ta("gallery.amazon.3.caption")}">
           <!-- <img src="galeria/drahma-screenshot.jpg"> -->
           <div class="gallery-placeholder-icon">📱</div>
-          <div class="gallery-placeholder-text">INTERFAZ DEL SISTEMA<br>Añadir captura</div>
+          <div class="gallery-placeholder-text">${t("gallery.amazon.3.title")}<br>${t("gallery.action.screenshot")}</div>
         </div>
       </div>
     </div>
 
     <!-- Sub-galería: Lab STEM -->
     <div class="section-block--spaced" data-scroll="up" data-delay="2">
-      <div class="gallery-label">LABORATORIO STEM · FABRICACIÓN PEDAGÓGICA</div>
+      <div class="gallery-label">${t("gallery.stem.label")}</div>
       <div class="gallery-grid cols-4 gallery-grid--220">
-        <div class="gallery-slot" data-caption="Laboratorio STEM — USFQ 2024">
+        <div class="gallery-slot" data-caption="${ta("gallery.stem.1.caption")}">
           <div class="gallery-placeholder-icon">🖨️</div>
-          <div class="gallery-placeholder-text">IMPRESORA 3D<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.stem.1.title")}<br>${t("gallery.action.photo")}</div>
         </div>
-        <div class="gallery-slot" data-caption="Juguetes pedagógicos producidos">
+        <div class="gallery-slot" data-caption="${ta("gallery.stem.2.caption")}">
           <div class="gallery-placeholder-icon">🧩</div>
-          <div class="gallery-placeholder-text">MATERIALES DIDÁCTICOS<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.stem.2.title")}<br>${t("gallery.action.photo")}</div>
         </div>
-        <div class="gallery-slot" data-caption="Cortadora láser en proceso">
+        <div class="gallery-slot" data-caption="${ta("gallery.stem.3.caption")}">
           <div class="gallery-placeholder-icon">⚡</div>
-          <div class="gallery-placeholder-text">CORTADORA LÁSER<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.stem.3.title")}<br>${t("gallery.action.photo")}</div>
         </div>
-        <div class="gallery-slot" data-caption="Estudiantes con los materiales">
+        <div class="gallery-slot" data-caption="${ta("gallery.stem.4.caption")}">
           <div class="gallery-placeholder-icon">👥</div>
-          <div class="gallery-placeholder-text">SESIÓN CON ESTUDIANTES<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.stem.4.title")}<br>${t("gallery.action.photo")}</div>
         </div>
       </div>
     </div>
 
     <!-- Sub-galería: Eventos y ciencia -->
     <div class="section-block--spaced" data-scroll="up" data-delay="3">
-      <div class="gallery-label">CIENCIA EN PÚBLICO · EVENTOS</div>
+      <div class="gallery-label">${t("gallery.science.label")}</div>
       <div class="gallery-grid cols-2 gallery-grid--260">
-        <div class="gallery-slot" data-caption="Casa Abierta USFQ — experimentos para público general">
+        <div class="gallery-slot" data-caption="${ta("gallery.science.1.caption")}">
           <div class="gallery-placeholder-icon">🔬</div>
-          <div class="gallery-placeholder-text">CASA ABIERTA USFQ<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.science.1.title")}<br>${t("gallery.action.photo")}</div>
         </div>
-        <div class="gallery-slot" data-caption="Difractómetro de rayos X — USFQ">
+        <div class="gallery-slot" data-caption="${ta("gallery.science.2.caption")}">
           <div class="gallery-placeholder-icon">☢️</div>
-          <div class="gallery-placeholder-text">DIFRACTÓMETRO DE RAYOS X<br>Añadir fotografía</div>
+          <div class="gallery-placeholder-text">${t("gallery.science.2.title")}<br>${t("gallery.action.photo")}</div>
         </div>
       </div>
     </div>
@@ -412,10 +413,10 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2026</div>
           <img class="pub-thumb" ${assetAttrs("/assets/kontablo2026_thumb-7y4PiTON.jpg")} alt="Kontablo preprint 2026" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy</div>
-            <div class="pub-journal">Luciani, C. · Preprint (aún no arbitrado) · Zenodo &amp; SSRN</div>
+            <div class="pub-title">${t("pub.kontablo.title")}</div>
+            <div class="pub-journal">${th("pub.kontablo.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.5281/zenodo.20738795" target="_blank">↗ 10.5281/zenodo.20738795</a>
-            <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank">↗ SSRN 6960598</a>
+            <a class="pub-doi" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6960598" target="_blank">${t("pub.kontablo.ssrn")}</a>
             <a class="pub-doi" href="https://www.researchgate.net/publication/407549570_Kontablo_A_Graph-Based_Universal_Accounting_Ontology_for_the_M2M_Agentic_Economy" target="_blank">↗ ResearchGate</a>
           </div>
         </div>
@@ -423,8 +424,8 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2025</div>
           <img class="pub-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiB2aWV3Qm94PSIwIDAgMjAwIDE0MCI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDAiIGZpbGw9IiMwYjExMjAiLz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQiIGZpbGw9IiMwMGM5YzAiLz4KICA8IS0tIEpvdXJuYWwgbGFiZWwgLS0+CiAgPHRleHQgeD0iMTAiIHk9IjIyIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjgiIGZpbGw9IiMwMGM5YzAiIGxldHRlci1zcGFjaW5nPSIxIj5DQVJCT04gVFJFTkRTPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSIzNCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSI3IiBmaWxsPSIjNmI3YThkIj4yMDI1PC90ZXh0PgogIDwhLS0gRGVjb3JhdGl2ZSBmcmFjdGFsLWlzaCBsaW5lIC0tPgogIDxwb2x5bGluZSBwb2ludHM9IjEwLDQ1IDMwLDQwIDUwLDQ4IDcwLDM4IDkwLDQ2IDExMCwzNiAxMzAsNDQgMTUwLDM0IDE3MCw0MiAxOTAsMzgiIAogICAgICAgICAgICBzdHJva2U9IiMwMGM5YzAiIHN0cm9rZS13aWR0aD0iMC41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8IS0tIFRpdGxlIC0tPgogIDx0ZXh0IHg9IjEwIiB5PSI3MiIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZDZkZGU4IiBmb250LXN0eWxlPSJpdGFsaWMiPkNhZmZlaW5lLWJhc2VkIFBWQTwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iODciIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2Q2ZGRlOCIgZm9udC1zdHlsZT0iaXRhbGljIj5jb21wb3NpdGUgZm9yIFVWIHNoaWVsZGluZzwvdGV4dD4KICA8IS0tIEJvdHRvbSBsaW5lIC0tPgogIDx0ZXh0IHg9IjEwIiB5PSIxMTgiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNyIgZmlsbD0iIzZiN2E4ZCI+Qy4gTHVjaWFuaSBldCBhbC48L3RleHQ+CiAgPHJlY3QgeD0iMCIgeT0iMTI4IiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEiIGZpbGw9IiMwMGM5YzAiIG9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjEwIiB5PSIxMzciIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNiIgZmlsbD0iIzZiN2E4ZCIgb3BhY2l0eT0iMC42Ij5kb2kub3JnPC90ZXh0Pgo8L3N2Zz4=" alt="Carbon Trends 2025" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Highly efficient caffeine-based PVA composite film for UV shielding</div>
-            <div class="pub-journal">Trujillo Galarza et al. · Carbon Trends · Vol. 20, 100502</div>
+            <div class="pub-title">${t("pub.caffeine.title")}</div>
+            <div class="pub-journal">${th("pub.caffeine.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.1016/j.cartre.2025.100502" target="_blank">↗ 10.1016/j.cartre.2025.100502</a>
           </div>
         </div>
@@ -432,8 +433,8 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2025</div>
           <img class="pub-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiB2aWV3Qm94PSIwIDAgMjAwIDE0MCI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDAiIGZpbGw9IiMwYjExMjAiLz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQiIGZpbGw9IiNjOWE4NGMiLz4KICA8IS0tIEpvdXJuYWwgbGFiZWwgLS0+CiAgPHRleHQgeD0iMTAiIHk9IjIyIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjgiIGZpbGw9IiNjOWE4NGMiIGxldHRlci1zcGFjaW5nPSIxIj5DSEVNUEhZU0NIRU08L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9IjM0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjciIGZpbGw9IiM2YjdhOGQiPjIwMjU8L3RleHQ+CiAgPCEtLSBEZWNvcmF0aXZlIGZyYWN0YWwtaXNoIGxpbmUgLS0+CiAgPHBvbHlsaW5lIHBvaW50cz0iMTAsNDUgMzAsNDAgNTAsNDggNzAsMzggOTAsNDYgMTEwLDM2IDEzMCw0NCAxNTAsMzQgMTcwLDQyIDE5MCwzOCIgCiAgICAgICAgICAgIHN0cm9rZT0iI2M5YTg0YyIgc3Ryb2tlLXdpZHRoPSIwLjUiIGZpbGw9Im5vbmUiIG9wYWNpdHk9IjAuNCIvPgogIDwhLS0gVGl0bGUgLS0+CiAgPHRleHQgeD0iMTAiIHk9IjcyIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNkNmRkZTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+VHVuYWJsZSBEaWVsZWN0cmljPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSI4NyIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZDZkZGU4IiBmb250LXN0eWxlPSJpdGFsaWMiPkNhcmJvbiBNYXRlcmlhbHM8L3RleHQ+CiAgPCEtLSBCb3R0b20gbGluZSAtLT4KICA8dGV4dCB4PSIxMCIgeT0iMTE4IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjciIGZpbGw9IiM2YjdhOGQiPkMuIEx1Y2lhbmkgZXQgYWwuPC90ZXh0PgogIDxyZWN0IHg9IjAiIHk9IjEyOCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxIiBmaWxsPSIjYzlhODRjIiBvcGFjaXR5PSIwLjMiLz4KICA8dGV4dCB4PSIxMCIgeT0iMTM3IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjYiIGZpbGw9IiM2YjdhOGQiIG9wYWNpdHk9IjAuNiI+ZG9pLm9yZzwvdGV4dD4KPC9zdmc+" alt="ChemPhysChem 2025" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Tunable Dielectric Carbon Materials from Hydrothermally Nanostructured Organic Carbon Sources</div>
-            <div class="pub-journal">Landázuri et al. · ChemPhysChem · 26, e202400711</div>
+            <div class="pub-title">${t("pub.dielectric.title")}</div>
+            <div class="pub-journal">${th("pub.dielectric.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.1002/cphc.202400711" target="_blank">↗ 10.1002/cphc.202400711</a>
           </div>
         </div>
@@ -441,16 +442,16 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2019–24</div>
           <img class="pub-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiB2aWV3Qm94PSIwIDAgMjAwIDE0MCI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDAiIGZpbGw9IiMwYjExMjAiLz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQiIGZpbGw9IiNjOWE4NGMiLz4KICA8dGV4dCB4PSIxMCIgeT0iMjIiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iOCIgZmlsbD0iI2M5YTg0YyIgbGV0dGVyLXNwYWNpbmc9IjEiPlVTRlEgSU5TVC48L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9IjM0IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjciIGZpbGw9IiM2YjdhOGQiPjIwMTnigJMyNDwvdGV4dD4KICA8cG9seWxpbmUgcG9pbnRzPSIxMCw0NSAzMCw0MCA1MCw0OCA3MCwzOCA5MCw0NiAxMTAsMzYgMTMwLDQ0IDE1MCwzNCAxNzAsNDIgMTkwLDM4IgogICAgICAgICAgICBzdHJva2U9IiNjOWE4NGMiIHN0cm9rZS13aWR0aD0iMC41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIxMCIgeT0iNzIiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2Q2ZGRlOCIgZm9udC1zdHlsZT0iaXRhbGljIj4zNiBHdcOtYXMgZGU8L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9Ijg3IiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNkNmRkZTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+TGFib3JhdG9yaW8gZGUgRsOtc2ljYTwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iMTE4IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjciIGZpbGw9IiM2YjdhOGQiPkMuIEx1Y2lhbmkgZXQgYWwuPC90ZXh0PgogIDxyZWN0IHg9IjAiIHk9IjEyOCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxIiBmaWxsPSIjYzlhODRjIiBvcGFjaXR5PSIwLjMiLz4KPC9zdmc+" alt="USFQ 2019-2024" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">36 guías de prácticas de laboratorio de física</div>
-            <div class="pub-journal">USFQ · Ingeniería, Ciencias de la Salud, Ciencias Puras · Publicación institucional interna</div>
+            <div class="pub-title">${t("pub.guias.title")}</div>
+            <div class="pub-journal">${th("pub.guias.venue")}</div>
           </div>
         </div>
         <div class="pub-item">
           <div class="pub-year">2023</div>
           <img class="pub-thumb" ${assetAttrs("/assets/zambrano2023_thumb-DFrmN1Ce.jpg")} alt="Heliyon 2023" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Optimization of microfibrillated cellulose isolation from cocoa pod husk via mild oxalic acid hydrolysis</div>
-            <div class="pub-journal">Zambrano et al. · Heliyon · 9, e17258</div>
+            <div class="pub-title">${t("pub.cellulose.title")}</div>
+            <div class="pub-journal">${th("pub.cellulose.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.1016/j.heliyon.2023.e17258" target="_blank">↗ 10.1016/j.heliyon.2023.e17258</a>
           </div>
         </div>
@@ -458,8 +459,8 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2023</div>
           <img class="pub-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiB2aWV3Qm94PSIwIDAgMjAwIDE0MCI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDAiIGZpbGw9IiMwYjExMjAiLz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQiIGZpbGw9IiMwMGM5YzAiLz4KICA8dGV4dCB4PSIxMCIgeT0iMjIiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iOCIgZmlsbD0iIzAwYzljMCIgbGV0dGVyLXNwYWNpbmc9IjEiPlJFU0VBUkNIR0FURSBQUkVQUklOVDwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iMzQiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNyIgZmlsbD0iIzZiN2E4ZCI+MjAyMzwvdGV4dD4KICA8cG9seWxpbmUgcG9pbnRzPSIxMCw0NSAzMCw0MCA1MCw0OCA3MCwzOCA5MCw0NiAxMTAsMzYgMTMwLDQ0IDE1MCwzNCAxNzAsNDIgMTkwLDM4IgogICAgICAgICAgICBzdHJva2U9IiMwMGM5YzAiIHN0cm9rZS13aWR0aD0iMC41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8dGV4dCB4PSIxMCIgeT0iNzIiIGZvbnQtZmFtaWx5PSJzZXJpZiIgZm9udC1zaXplPSIxMSIgZmlsbD0iI2Q2ZGRlOCIgZm9udC1zdHlsZT0iaXRhbGljIj5IeWRyb2NoYXJzIGZyb208L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9Ijg3IiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNkNmRkZTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+TGlnbm9jZWxsdWxvc2ljIFJlc2lkdWVzPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSIxMTgiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNyIgZmlsbD0iIzZiN2E4ZCI+Qy4gTHVjaWFuaSBldCBhbC48L3RleHQ+CiAgPHJlY3QgeD0iMCIgeT0iMTI4IiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEiIGZpbGw9IiMwMGM5YzAiIG9wYWNpdHk9IjAuMyIvPgo8L3N2Zz4=" alt="ResearchGate preprint 2023" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Hydrochars from Lignocellulosic Residues for Green Electronics, Environmental Remediation, Energy and Agricultural Applications</div>
-            <div class="pub-journal">Landázuri et al. · ResearchGate preprint</div>
+            <div class="pub-title">${t("pub.hydrochars.title")}</div>
+            <div class="pub-journal">${th("pub.hydrochars.venue")}</div>
             <a class="pub-doi" href="https://www.researchgate.net/publication/383276828" target="_blank">↗ ResearchGate</a>
           </div>
         </div>
@@ -467,8 +468,8 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2022</div>
           <img class="pub-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiB2aWV3Qm94PSIwIDAgMjAwIDE0MCI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDAiIGZpbGw9IiMwYjExMjAiLz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQiIGZpbGw9IiM2YjdhOGQiLz4KICA8IS0tIEpvdXJuYWwgbGFiZWwgLS0+CiAgPHRleHQgeD0iMTAiIHk9IjIyIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjgiIGZpbGw9IiM2YjdhOGQiIGxldHRlci1zcGFjaW5nPSIxIj5TU1JOPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSIzNCIgZm9udC1mYW1pbHk9Im1vbm9zcGFjZSIgZm9udC1zaXplPSI3IiBmaWxsPSIjNmI3YThkIj4yMDIyPC90ZXh0PgogIDwhLS0gRGVjb3JhdGl2ZSBmcmFjdGFsLWlzaCBsaW5lIC0tPgogIDxwb2x5bGluZSBwb2ludHM9IjEwLDQ1IDMwLDQwIDUwLDQ4IDcwLDM4IDkwLDQ2IDExMCwzNiAxMzAsNDQgMTUwLDM0IDE3MCw0MiAxOTAsMzgiIAogICAgICAgICAgICBzdHJva2U9IiM2YjdhOGQiIHN0cm9rZS13aWR0aD0iMC41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8IS0tIFRpdGxlIC0tPgogIDx0ZXh0IHg9IjEwIiB5PSI3MiIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZDZkZGU4IiBmb250LXN0eWxlPSJpdGFsaWMiPk1pY3JvY3J5c3RhbGxpbmUgY2VsbHVsb3NlPC90ZXh0PgogIDx0ZXh0IHg9IjEwIiB5PSI4NyIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZDZkZGU4IiBmb250LXN0eWxlPSJpdGFsaWMiPm9wdGltaXphdGlvbjwvdGV4dD4KICA8IS0tIEJvdHRvbSBsaW5lIC0tPgogIDx0ZXh0IHg9IjEwIiB5PSIxMTgiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNyIgZmlsbD0iIzZiN2E4ZCI+Qy4gTHVjaWFuaSBldCBhbC48L3RleHQ+CiAgPHJlY3QgeD0iMCIgeT0iMTI4IiB3aWR0aD0iMjAwIiBoZWlnaHQ9IjEiIGZpbGw9IiM2YjdhOGQiIG9wYWNpdHk9IjAuMyIvPgogIDx0ZXh0IHg9IjEwIiB5PSIxMzciIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNiIgZmlsbD0iIzZiN2E4ZCIgb3BhY2l0eT0iMC42Ij5kb2kub3JnPC90ZXh0Pgo8L3N2Zz4=" alt="SSRN 2022" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Optimization of Microcrystalline Cellulose Isolation from Cocoa Pod Husk via Mild Oxalic Acid Hydrolysis</div>
-            <div class="pub-journal">Zambrano et al. · SSRN Electronic Journal</div>
+            <div class="pub-title">${t("pub.microcrystalline.title")}</div>
+            <div class="pub-journal">${th("pub.microcrystalline.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.2139/ssrn.4307097" target="_blank">↗ 10.2139/ssrn.4307097</a>
           </div>
         </div>
@@ -476,17 +477,17 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2022</div>
           <img class="pub-thumb" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMDAiIGhlaWdodD0iMTQwIiB2aWV3Qm94PSIwIDAgMjAwIDE0MCI+CiAgPHJlY3Qgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxNDAiIGZpbGw9IiMwYjExMjAiLz4KICA8cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjQiIGZpbGw9IiNjOWE4NGMiLz4KICA8IS0tIEpvdXJuYWwgbGFiZWwgLS0+CiAgPHRleHQgeD0iMTAiIHk9IjIyIiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjgiIGZpbGw9IiNjOWE4NGMiIGxldHRlci1zcGFjaW5nPSIxIj5BSUNIRSBBTk5VQUwgTUVFVElORzwvdGV4dD4KICA8dGV4dCB4PSIxMCIgeT0iMzQiIGZvbnQtZmFtaWx5PSJtb25vc3BhY2UiIGZvbnQtc2l6ZT0iNyIgZmlsbD0iIzZiN2E4ZCI+MjAyMjwvdGV4dD4KICA8IS0tIERlY29yYXRpdmUgZnJhY3RhbC1pc2ggbGluZSAtLT4KICA8cG9seWxpbmUgcG9pbnRzPSIxMCw0NSAzMCw0MCA1MCw0OCA3MCwzOCA5MCw0NiAxMTAsMzYgMTMwLDQ0IDE1MCwzNCAxNzAsNDIgMTkwLDM4IgogICAgICAgICAgICBzdHJva2U9IiNjOWE4NGMiIHN0cm9rZS13aWR0aD0iMC41IiBmaWxsPSJub25lIiBvcGFjaXR5PSIwLjQiLz4KICA8IS0tIFRpdGxlIC0tPgogIDx0ZXh0IHg9IjEwIiB5PSI3MiIgZm9udC1mYW1pbHk9InNlcmlmIiBmb250LXNpemU9IjExIiBmaWxsPSIjZDZkZGU4IiBmb250LXN0eWxlPSJpdGFsaWMiPkl2b3J5IE51dCBSZXNpZHVlczo8L3RleHQ+CiAgPHRleHQgeD0iMTAiIHk9Ijg3IiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMTEiIGZpbGw9IiNkNmRkZTgiIGZvbnQtc3R5bGU9Iml0YWxpYyI+Q2hlbWljYWwgQ29tcG9zaXRpb248L3RleHQ+CiAgPCEtLSBCb3R0b20gbGluZSAtLT4KICA8dGV4dCB4PSIxMCIgeT0iMTE4IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjciIGZpbGw9IiM2YjdhOGQiPk9yZWp1ZWxhIEVzY29iYXIgZXQgYWwuPC90ZXh0PgogIDxyZWN0IHg9IjAiIHk9IjEyOCIgd2lkdGg9IjIwMCIgaGVpZ2h0PSIxIiBmaWxsPSIjYzlhODRjIiBvcGFjaXR5PSIwLjMiLz4KICA8dGV4dCB4PSIxMCIgeT0iMTM3IiBmb250LWZhbWlseT0ibW9ub3NwYWNlIiBmb250LXNpemU9IjYiIGZpbGw9IiM2YjdhOGQiIG9wYWNpdHk9IjAuNiI+YWljaGUuY29uZmV4LmNvbTwvdGV4dD4KPC9zdmc+Cg==" alt="AIChE Annual Meeting 2022" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Ivory Nut (<em>Phytelephas equatorialis</em>) Residues: Chemical Composition for Applications in Health Care, Industry and Environmental Remediation — Towards Sustainability</div>
-            <div class="pub-journal">Orejuela Escobar, Andrade, Luciani &amp; Niebieskikwiat · 2022 AIChE Annual Meeting · Abstract</div>
-            <a class="pub-doi" href="https://aiche.confex.com/aiche/2022/meetingapp.cgi/Paper/649030" target="_blank">↗ AIChE 2022 · Paper 649030</a>
+            <div class="pub-title">${t("pub.ivory.title")}</div>
+            <div class="pub-journal">${th("pub.ivory.venue")}</div>
+            <a class="pub-doi" href="https://aiche.confex.com/aiche/2022/meetingapp.cgi/Paper/649030" target="_blank">${t("pub.ivory.link")}</a>
           </div>
         </div>
         <div class="pub-item">
           <div class="pub-year">2006</div>
           <img class="pub-thumb" ${assetAttrs("/assets/cabrera2006_thumb-ByivZRQD.jpg")} alt="Condensed Matter Physics 2006" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Neural control on multiple time scales: Insights from human stick balancing</div>
-            <div class="pub-journal">Cabrera, Luciani, Milton · Condensed Matter Physics · Vol. 9, No. 2</div>
+            <div class="pub-title">${t("pub.neural.title")}</div>
+            <div class="pub-journal">${th("pub.neural.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.5488/CMP.9.2.373" target="_blank">↗ 10.5488/CMP.9.2.373</a>
           </div>
         </div>
@@ -494,8 +495,8 @@ export const ROOM_BODY: Record<string, string> = {
           <div class="pub-year">2006</div>
           <img class="pub-thumb" ${assetAttrs("/assets/hosaka2006_thumb-KMqoFzTp.jpg")} alt="Prog. Theor. Phys. 2006" onerror="this.classList.add('error');this.alt='§'">
           <div>
-            <div class="pub-title">Balancing with Noise and Delay</div>
-            <div class="pub-journal">Hosaka, Ohira, Luciani, Cabrera, Milton · Progress of Theoretical Physics Supplement · 161</div>
+            <div class="pub-title">${t("pub.balancing.title")}</div>
+            <div class="pub-journal">${th("pub.balancing.venue")}</div>
             <a class="pub-doi" href="https://doi.org/10.1143/PTPS.161.314" target="_blank">↗ 10.1143/PTPS.161.314</a>
           </div>
         </div>
@@ -510,11 +511,11 @@ export const ROOM_BODY: Record<string, string> = {
               El triángulo debe verse sólido y tridimensional pero imposible." -->
         <div class="illusion-frame illusion-frame--280">
           <canvas id="c-penrose" class="illusion-canvas" role="img" aria-label="Triángulo de Penrose pulsante"></canvas>
-          <div class="illusion-label">TRIÁNGULO DE PENROSE · 1954</div>
+          <div class="illusion-label">${t("room.fisica.illusionLabel")}</div>
           <a class="illusion-link" href="https://michaelbach.de/ot/sze-penrose-triangle/" target="_blank" rel="noopener">↗ michaelbach.de</a>
         </div>
         <p class="pub-quote">
-          "Lo imposible solo lo es hasta que alguien lo dibuja correctamente."
+          ${t("room.fisica.quote")}
         </p>
       </div>
     </div>
@@ -527,73 +528,72 @@ export const ROOM_BODY: Record<string, string> = {
   competencias: `
     <div class="skills-grid" data-scroll="from-center">
       <div class="skill-block">
-        <div class="skill-label">Código Sintético · Agentes</div>
+        <div class="skill-label">${t("room.competencias.agents.label")}</div>
         <ul class="skill-items">
-          <li>Orquestación de agentes y cognición sintética</li>
-          <li>Protocolos agénticos · MCP · ACP · A2A</li>
-          <li>Tutores socráticos · IA educativa (Drahma)</li>
-          <li>Ingeniería de contexto (RAG)</li>
+          <li>${t("room.competencias.agents.1")}</li>
+          <li>${t("room.competencias.agents.2")}</li>
+          <li>${t("room.competencias.agents.3")}</li>
+          <li>${t("room.competencias.agents.4")}</li>
         </ul>
       </div>
       <div class="skill-block">
-        <div class="skill-label">Codificación Agéntica</div>
+        <div class="skill-label">${t("room.competencias.coding.label")}</div>
         <ul class="skill-items">
-          <li>Desarrollo de software guiado por agentes</li>
-          <li>Producto desde SPEC + TDD con agentes</li>
-          <li>Mantenimiento e integración asistidos por IA</li>
+          <li>${t("room.competencias.coding.1")}</li>
+          <li>${t("room.competencias.coding.2")}</li>
+          <li>${t("room.competencias.coding.3")}</li>
         </ul>
       </div>
       <div class="skill-block">
-        <div class="skill-label">Soberanía Tecnológica</div>
+        <div class="skill-label">${t("room.competencias.sovereignty.label")}</div>
         <ul class="skill-items">
-          <li>Self-hosting · infraestructura propia</li>
-          <li>Inferencia soberana (LiteLLM · Ollama · cascada $0-primero)</li>
-          <li>ERPNext self-hosted · ERP y contabilidad sin SaaS propietario</li>
-          <li>Privacidad y datos propios (multi-tenant)</li>
-          <li>Linux · macOS</li>
+          <li>${t("room.competencias.sovereignty.1")}</li>
+          <li>${t("room.competencias.sovereignty.2")}</li>
+          <li>${t("room.competencias.sovereignty.3")}</li>
+          <li>${t("room.competencias.sovereignty.4")}</li>
+          <li>${t("room.competencias.sovereignty.5")}</li>
         </ul>
       </div>
       <div class="skill-block">
-        <div class="skill-label">Open Source</div>
+        <div class="skill-label">${t("room.competencias.open.label")}</div>
         <ul class="skill-items">
-          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener noreferrer">AionCore · Agente Pi como built-in ACP ↗</a></li>
-          <li><a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener noreferrer">pi-acp · session/delete ACP lifecycle ↗</a></li>
-          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener noreferrer">AionUi · Theme-aware monochrome logos (merged) ↗</a></li>
-          <li>Publicación Kontablo · BSL 1.1 → Apache 2.0</li>
+          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener noreferrer">${t("room.competencias.open.1")}</a></li>
+          <li><a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener noreferrer">${t("room.competencias.open.2")}</a></li>
+          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener noreferrer">${t("room.competencias.open.3")}</a></li>
+          <li>${t("room.competencias.open.4")}</li>
         </ul>
       </div>
       <div class="skill-block">
-        <div class="skill-label">Plataformas & Ecosistema</div>
+        <div class="skill-label">${t("room.competencias.platforms.label")}</div>
         <ul class="skill-items">
-          <li>ERPNext · Zoho ERP</li>
-          <li>Supabase · Chatwoot</li>
+          <li>${t("room.competencias.platforms.1")}</li>
+          <li>${t("room.competencias.platforms.2")}</li>
           <li>Poe</li>
         </ul>
       </div>
       <div class="skill-block">
-        <div class="skill-label">Ciencias</div>
+        <div class="skill-label">${t("room.competencias.sciences.label")}</div>
         <ul class="skill-items">
-          <li>Sistemas complejos</li>
-          <li>Difractometría de rayos X</li>
-          <li>Seguridad radiológica</li>
+          <li>${t("room.competencias.sciences.1")}</li>
+          <li>${t("room.competencias.sciences.2")}</li>
+          <li>${t("room.competencias.sciences.3")}</li>
         </ul>
       </div>
       <div class="skill-block">
-        <div class="skill-label">Idiomas</div>
+        <div class="skill-label">${t("room.competencias.languages.label")}</div>
         <ul class="skill-items">
-          <li>Español — nativo</li>
-          <li>Inglés — intermedio</li>
-          <li>Francés — B1</li>
+          <li>${t("room.competencias.languages.1")}</li>
+          <li>${t("room.competencias.languages.2")}</li>
+          <li>${t("room.competencias.languages.3")}</li>
         </ul>
       </div>
     </div>
 
 <div class="room-footnote">
-      <div class="room-number">INTERESES</div>
+      <div class="room-number">${t("room.competencias.interestsLabel")}</div>
       <p class="interests" data-scroll="zoom-in">
-        Escalada en roca · Montañismo · Cine asiático · Neurociencias ·
-        Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·
-        <span class="hl">La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.</span>
+        ${t("room.competencias.interests")}
+        <span class="hl">${t("room.competencias.interestsHighlight")}</span>
       </p>
     </div>
   </div>
@@ -603,8 +603,8 @@ export const ROOM_BODY: Record<string, string> = {
 
 `,
   grafo: `    <p class="graph-lede" data-scroll="up" data-delay="2">
-      No solo amplitud: la conexión entre áreas, trabajos y proyectos.
-      <span class="hl">Teal</span>, publicado · <span class="is-grey">gris</span>, en desarrollo · <span class="hl-gold">dorado</span>, todavía una idea.
+      ${t("room.grafo.lede")}
+      <span class="hl">${t("room.grafo.teal")}</span>${t("room.grafo.published")}<span class="is-grey">${t("room.grafo.grey")}</span>${t("room.grafo.development")}<span class="hl-gold">${t("room.grafo.gold")}</span>${t("room.grafo.idea")}
     </p>
     <div id="graph-stage" class="graph-stage">
       <canvas id="c-graph" class="illusion-canvas"></canvas>
@@ -619,27 +619,27 @@ export const ROOM_BODY: Record<string, string> = {
     <div class="contact-grid">
       <div class="contact-links" data-scroll="from-center" data-delay="2">
       <a class="contact-link" href="mailto:cluciani@gmail.com"><img class="ci" src="assets/icons/gmail.svg" alt="" width="16" height="16">cluciani@gmail.com</a>
-      <a class="contact-link" href="https://wa.me/593993716335" target="_blank"><img class="ci" src="assets/icons/whatsapp.svg" alt="" width="16" height="16">WhatsApp (+593) 99 371 6335</a>
-      <a class="contact-link" href="https://orcid.org/0000-0002-6955-5384" target="_blank"><img class="ci" src="assets/icons/orcid.svg" alt="" width="16" height="16">ORCID 0000-0002-6955-5384</a>
-      <a class="contact-link" href="https://scholar.google.com/citations?user=7GbpmSQAAAAJ&hl=en" target="_blank"><img class="ci" src="assets/icons/googlescholar.svg" alt="" width="16" height="16">Google Scholar</a>
-      <a class="contact-link" href="https://github.com/ChristianLuciani" target="_blank"><img class="ci" src="assets/icons/github.svg" alt="" width="16" height="16">GitHub</a>
-      <a class="contact-link" href="https://www.linkedin.com/in/christian-luciani" target="_blank"><img class="ci" src="assets/icons/linkedin.svg" alt="" width="16" height="16">LinkedIn</a>
-      <a class="contact-link" href="https://www.researchgate.net/profile/Christian-Luciani" target="_blank"><img class="ci" src="assets/icons/researchgate.svg" alt="" width="16" height="16">ResearchGate</a>
-      <a class="contact-link" href="https://x.com/cluciani_ve" target="_blank"><img class="ci" src="assets/icons/x.svg" alt="" width="16" height="16">X @cluciani_ve</a>
-      <a class="contact-link" href="https://www.instagram.com/clucianitoledo" target="_blank"><img class="ci" src="assets/icons/instagram.svg" alt="" width="16" height="16">Instagram</a>
-      <a class="contact-link" href="https://www.patreon.com/cluciani" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/patreon.svg" alt="" width="16" height="16">Patreon</a>
+      <a class="contact-link" href="https://wa.me/593993716335" target="_blank"><img class="ci" src="assets/icons/whatsapp.svg" alt="" width="16" height="16">${t("room.contacto.whatsapp")}</a>
+      <a class="contact-link" href="https://orcid.org/0000-0002-6955-5384" target="_blank"><img class="ci" src="assets/icons/orcid.svg" alt="" width="16" height="16">${t("room.contacto.orcid")}</a>
+      <a class="contact-link" href="https://scholar.google.com/citations?user=7GbpmSQAAAAJ&hl=en" target="_blank"><img class="ci" src="assets/icons/googlescholar.svg" alt="" width="16" height="16">${t("room.contacto.scholar")}</a>
+      <a class="contact-link" href="https://github.com/ChristianLuciani" target="_blank"><img class="ci" src="assets/icons/github.svg" alt="" width="16" height="16">${t("room.contacto.github")}</a>
+      <a class="contact-link" href="https://www.linkedin.com/in/christian-luciani" target="_blank"><img class="ci" src="assets/icons/linkedin.svg" alt="" width="16" height="16">${t("room.contacto.linkedin")}</a>
+      <a class="contact-link" href="https://www.researchgate.net/profile/Christian-Luciani" target="_blank"><img class="ci" src="assets/icons/researchgate.svg" alt="" width="16" height="16">${t("room.contacto.researchgate")}</a>
+      <a class="contact-link" href="https://x.com/cluciani_ve" target="_blank"><img class="ci" src="assets/icons/x.svg" alt="" width="16" height="16">${t("room.contacto.x")}</a>
+      <a class="contact-link" href="https://www.instagram.com/clucianitoledo" target="_blank"><img class="ci" src="assets/icons/instagram.svg" alt="" width="16" height="16">${t("room.contacto.instagram")}</a>
+      <a class="contact-link" href="https://www.patreon.com/cluciani" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/patreon.svg" alt="" width="16" height="16">${t("room.contacto.patreon")}</a>
       </div>
 
       <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->
       <div class="illusion-frame koch-buzon" data-scroll="zoom-in" data-delay="3">
         <canvas id="c-koch-buzon" class="illusion-canvas"></canvas>
-        <div class="illusion-label">COPO DE KOCH · 1904</div>
+        <div class="illusion-label">${t("room.contacto.illusionLabel")}</div>
         <a class="illusion-link" href="https://es.wikipedia.org/wiki/Copo_de_nieve_de_Koch" target="_blank" rel="noopener">↗ wikipedia</a>
       </div>
     </div>
 
     <div class="contact-note" data-scroll="up" data-delay="4">
-      La naturaleza de los seres cognitivos y su interacción · emergencia de la inteligencia universal
+      ${t("room.contacto.note")}
     </div>
   </div>
 </section>
@@ -673,14 +673,14 @@ function perfilBody(profile: CvProfile): string {
                  onerror="this.style.display='none';document.getElementById('photo-fallback').style.display='flex'">
             <div class="photo-ph-inner photo-ph-inner--hidden" id="photo-fallback">
               <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="rgba(0,201,192,0.4)" stroke-width="1" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
-              <span>Añadir foto local</span>
+              <span>${t("room.perfil.photoFallback")}</span>
             </div>
           </div>
           ${perfilProseHtml(profile)}
           <br>
-          <p class="profile-text profile-text--meta">En 2024 diseñé e implementé <span class="hl">Drahma</span>: 36 tutores virtuales con inteligencia sintética y pedagogía socrática, alineados al currículo ecuatoriano, probados en campo con comunidades indígenas amazónicas.</p>
+          <p class="profile-text profile-text--meta">${t("room.perfil.drahmaLead")} <span class="hl">Drahma</span>${t("room.perfil.drahmaTail")}</p>
           <br>
-          <p class="profile-text profile-text--meta">Bilingüe funcional español-inglés (inglés intermedio). Redes activas en Panamá y Ecuador.</p>
+          <p class="profile-text profile-text--meta">${t("room.perfil.bilingual")}</p>
         </div>
 
         <!-- Ilusión: Cubo de Necker animado -->
@@ -691,7 +691,7 @@ function perfilBody(profile: CvProfile): string {
               dos orientaciones posibles. Sin relleno, solo bordes." -->
         <div class="illusion-frame illusion-frame--250 illusion-frame--spaced" data-scroll="zoom-in" data-delay="2">
           <canvas id="c-necker-ill" class="illusion-canvas"></canvas>
-          <div class="illusion-label">CUBO DE NECKER · 1832</div>
+          <div class="illusion-label">${t("room.perfil.illusionLabel")}</div>
           <a class="illusion-link" href="https://michaelbach.de/ot/sze-necker/" target="_blank" rel="noopener">↗ michaelbach.de</a>
         </div>
       </div>
@@ -699,32 +699,32 @@ function perfilBody(profile: CvProfile): string {
       <!-- Columna derecha: formación y eventos -->
       <div>
         <div class="entry" data-scroll="from-right">
-          <div class="entry-period">2006 – 2008</div>
-          <div class="entry-title">Especialización en Audiovisuales</div>
-          <div class="entry-org">Escuela de Cine y TV, Caracas · Prix du Public FECOVEN 2008</div>
+          <div class="entry-period">${t("room.perfil.edu.audiovisual.period")}</div>
+          <div class="entry-title">${t("room.perfil.edu.audiovisual.title")}</div>
+          <div class="entry-org">${t("room.perfil.edu.audiovisual.org")}</div>
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="1">
-          <div class="entry-period">2003 – 2006</div>
-          <div class="entry-title">Candidatura Doctoral — Sistemas Complejos (ABD)</div>
-          <div class="entry-org">Universidad Simón Bolívar, Venezuela</div>
+          <div class="entry-period">${t("room.perfil.edu.doctoral.period")}</div>
+          <div class="entry-title">${t("room.perfil.edu.doctoral.title")}</div>
+          <div class="entry-org">${t("room.perfil.edu.doctoral.org")}</div>
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="2">
-          <div class="entry-period">1997 – 2003</div>
-          <div class="entry-title">Licenciatura en Física</div>
-          <div class="entry-org">Universidad Central de Venezuela · Tesis: Modelos Cosmológicos N-Dimensionales · SENESCYT: 862177536</div>
+          <div class="entry-period">${t("room.perfil.edu.physics.period")}</div>
+          <div class="entry-title">${t("room.perfil.edu.physics.title")}</div>
+          <div class="entry-org">${t("room.perfil.edu.physics.org")}</div>
         </div>
 
         <div class="quote-block" data-scroll="zoom-in" data-delay="3">
-          La física me enseñó a ver patrones donde otros ven ruido.<br>
-          El cine me enseñó a hacer ese patrón visible para otros.
+          ${t("room.perfil.quote1")}<br>
+          ${t("room.perfil.quote2")}
         </div>
 
         <div class="entry" data-scroll="from-right" data-delay="3">
-          <div class="entry-period">2003 · CERN · BECA</div>
-          <div class="entry-title">II Latin American School of High Energy Physics</div>
-          <div class="entry-org">San Miguel Regla, México</div>
+          <div class="entry-period">${t("room.perfil.edu.cern.period")}</div>
+          <div class="entry-title">${t("room.perfil.edu.cern.title")}</div>
+          <div class="entry-org">${t("room.perfil.edu.cern.org")}</div>
         </div>
       </div>
     </div><!-- /profile-grid -->
