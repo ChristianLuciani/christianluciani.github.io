@@ -148,6 +148,9 @@ línea de registro (§8 FASE 5).
 | publicaciones (title, venue, year, doi, url) | `profile-data/publications.yaml` | hecho |
 | skills + idiomas | `profile-data/skills.yaml` (+ `languages` v1.1) | hecho |
 | keywords SEO/GEO | `profile-data/keywords.yaml` | hecho |
+| copy del chrome y de las salas (hero, cover, intro, plano, now, galería, competencias, contacto) | `src/themes/museo/copy.ts` | copy (pack del tema, #127) |
+| títulos y leyendas de publicaciones (fila de la Biblioteca + `headline` del JSON-LD) | `src/themes/museo/copy.ts` (`pub.<id>.*`) | copy de presentación — **deuda declarada**: proyectar `profile-data/publications.yaml` (#99/#128) |
+| diccionario i18n ES/EN | derivado en `src/cv/i18n.ts` del pack, de `src/cv/salas.ts` y del SSOT | presentación (sin claves a mano, #127) |
 | títulos museísticos ("El Autorretrato") | `src/content/cv/museo.ts` | copy (hoy; destino §8 FASE 5) |
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
 | estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/cv/salas.ts` | estructura + narrativa (hoy) |
@@ -157,7 +160,8 @@ línea de registro (§8 FASE 5).
 | showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
 | curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
-| curación del print-CV (títulos, labels y clasificación de Trayectoria) | `src/content/cv/print.ts` | curación (hoy) |
+| copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
+| curación del print-CV (qué links entran al encabezado y clasificación de Trayectoria) | `src/content/cv/print.ts` | curación + estructura (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |

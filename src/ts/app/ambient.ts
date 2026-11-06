@@ -34,6 +34,8 @@
  *    público, sin atribución requerida (versión loop seamless).
  */
 
+import { t, te } from "../../content/copy.ts";
+
 const AUDIO_DIR = "/audio/";
 /** Pista de la entrada (hero) y por defecto: canto de ballena jorobada. */
 const DEFAULT_AUDIO = AUDIO_DIR + "whale-song.mp3";
@@ -194,10 +196,15 @@ function updateButton(): void {
   if (!b) return;
   b.classList.toggle("muted", !userEnabled);
   b.setAttribute("aria-pressed", String(userEnabled));
-  b.setAttribute(
-    "aria-label",
-    userEnabled ? "Silenciar sonido de fondo" : "Activar sonido de fondo"
-  );
+  // El copy del control sale del pack y el estado se declara bilingüe: el
+  // walker (`src/cv/i18n.ts`) re-aplica `aria-label` desde `data-aria-*` al
+  // cambiar de idioma. Si el click ocurre estando en EN, el aria-label se
+  // escribe en EN en el acto (el walker no re-corre por un click).
+  const key = userEnabled ? "cover.soundAria" : "cover.soundAriaOff";
+  const en = document.documentElement.lang === "en";
+  b.setAttribute("aria-label", en ? te(key) : t(key));
+  b.setAttribute("data-aria-es", t(key));
+  b.setAttribute("data-aria-en", te(key));
 }
 
 /** Encender/apagar el sonido (desde el botón). Fade in/out suave. */

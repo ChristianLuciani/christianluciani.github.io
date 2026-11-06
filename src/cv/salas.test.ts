@@ -154,7 +154,10 @@ describe("render — derivados puros", () => {
       "Map of relationships between areas, projects and publications."
     );
     expect(extra["SALA"]).toBe("ROOM");
-    expect(Object.keys(extra).length).toBe(8 + 9 + 9 + 9 + 1); // números + subtítulos + funciones + títulos + SALA
+    // Números (8 visibles) + subtítulos (9, incl. oculta) + funciones (9) +
+    // títulos en mayúsculas (8 visibles: sólo el plano los consume) + SALA.
+    expect(extra).not.toHaveProperty("EL ARCHIVO"); // galería oculta: el plano no la rotula
+    expect(Object.keys(extra).length).toBe(8 + 9 + 9 + 8 + 1);
   });
 
   it("navDotsHtml: hero + salas visibles con data-target/data-label en orden", () => {

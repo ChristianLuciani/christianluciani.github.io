@@ -4,7 +4,7 @@
 > **una línea** al registro. Si necesitás tocar cualquier otro archivo, el contrato
 > falló: pará y reportá (ADR-001, `docs/SPEC.md` §5.4–§5.6).
 >
-> **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-05`
+> **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-06`
 
 ## 1. Definiciones
 
@@ -55,6 +55,54 @@ meta.title | meta.description
 - Toda clave existe **ES y EN**. Falta una → el build falla (no hay fallback silencioso).
 - El mismo `roomId` puede tener copy distinto por tema sin tocar templates.
 - Prohibido keyear por texto visible: rompe en cuanto cambia una coma.
+
+### 3.1 Dónde vive el copy hoy (#127)
+
+```
+src/themes/<id>/copy.ts     pack: clave semántica → { es, en, runtime? }
+src/content/copy.ts         t()/th()/ta()/te() → pack del tema vigente
+src/templates/**            piden claves; 0 copy literal > 2 palabras
+```
+
+- `t("clave")` interpola el ES con markup (títulos con `<em>`, `<br>`).
+  `th()` escapa `& < >` para texto plano; `ta()` escapa además `"` y `'` para
+  **valores de atributo** (`aria-label`, `alt`, `title`, `data-caption`);
+  `te()` devuelve el EN como texto y `tae()` el EN escapado para atributos
+  (`data-aria-en`). Un atributo se pide SIEMPRE con `ta()`/`tae()`, nunca `t()`.
+- Clave inexistente = **error de build**: no hay fallback silencioso.
+- `runtime: true` marca copy que el HTML inicial no contiene (frases del intro
+  que monta `intro.ts`, labels del canvas del grafo, estados como el feed vacío).
+  El gate de claves huérfanas lo respeta; sin esa marca, una clave sin uso
+  rompe el test.
+- El gate `src/templates/no-literal-copy.test.ts` falla si un template emite
+  **> 2 palabras** de copy literal (linter: `tools/copy/lint.ts`), en dos
+  superficies: **nodos de texto** y la lista cerrada de **atributos de copy**
+  (`aria-label`, `alt`, `title`, `placeholder`, `data-caption`, `data-aria-es`,
+  `data-aria-en`, y `content` cuando el tag es `<meta>`). Un aria-label literal
+  también es copy: lo lee un lector de pantalla y el toggle no lo traduce. El
+  umbral es el mismo en ambas superficies (> 2 palabras); los tokens de pura
+  puntuación no cuentan. Si falla, mové la frase al pack y pedila con
+  `t()`/`th()`/`ta()`.
+- El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
+  no hay ninguna clave escrita a mano en el MAP. Ojo con dos definiciones
+  distintas, que el gate separa a propósito:
+  - **Pack → HTML** (lo que mide `no-literal-copy.test.ts`): toda clave no
+    `runtime` aparece en el render, como texto o como atributo. Es el gate que
+    atrapa una clave muerta real del pack.
+  - **MAP → nodo del walker** (lo que NO mide): el walker recorre nodos de
+    texto, así que hay pares derivados que nunca consulta y **no son deuda**:
+    los `print.*` (el walker salta `#print-cv`) y los sólo-atributo
+    (aria/alt/meta/caption, que viajan en atributos, no en nodos), más los
+    pares derivados de una rama del SSOT/curación que los datos de hoy no
+    renderizan (p. ej. un `statusLabel` sin proyecto en ese estado). Que existan
+    no significa que estén mal: no se mantienen a mano ni pueden quedar stale
+    respecto de una fuente que ya no existe.
+  `src/themes/copy-dictionary.test.ts` fija esta clasificación: un par que no
+  aparece en el render falla salvo que sea `runtime` o derivado del SSOT, y los
+  pares de `SALAS` no tienen excepción.
+- El copy del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
+  declara sólo la **estructura y la curación** de esa superficie (qué links
+  entran al encabezado y la clasificación de Trayectoria), sin texto.
 
 ## 4. Curación: mostrar sin borrar
 

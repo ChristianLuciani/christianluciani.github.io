@@ -6,24 +6,25 @@
  * El cursor personalizado se retiró: la interacción usa el cursor nativo.
  */
 import { navDotsHtml } from "../cv/render.ts";
+import { t, ta, tae } from "../content/copy.ts";
 
 const COVER_TOP = `<header class="hud">
   <div class="hud-inner">
-    <a class="brand" href="#hero" aria-label="Christian Luciani — ir a la entrada"
-       data-aria-es="Christian Luciani — ir a la entrada"
-       data-aria-en="Christian Luciani — go to the entrance">
+    <a class="brand" href="#hero" aria-label="${ta("cover.brandAria")}"
+       data-aria-es="${ta("cover.brandAria")}"
+       data-aria-en="${tae("cover.brandAria")}">
       <span class="brand-mark" aria-hidden="true">◈</span>
       <span class="brand-name">Christian Luciani</span>
     </a>
     <span class="hud-current" id="hud-current">Entrada</span>
-    <nav id="nav" class="hud-nav" aria-label="Salas del museo"
-         data-aria-es="Salas del museo" data-aria-en="Museum rooms">
+    <nav id="nav" class="hud-nav" aria-label="${ta("cover.navAria")}"
+         data-aria-es="${ta("cover.navAria")}" data-aria-en="${tae("cover.navAria")}">
 `;
 
 const COVER_TAIL = `</nav>
     <div class="hud-side">
-      <button id="btn-lang" type="button" aria-label="Switch language / Cambiar idioma">EN</button>
-      <button id="btn-sound" type="button" aria-pressed="true" aria-label="Silenciar sonido de fondo" title="Sonido: canto de ballenas">
+      <button id="btn-lang" type="button" aria-label="${ta("cover.langAria")}">EN</button>
+      <button id="btn-sound" type="button" aria-pressed="true" aria-label="${ta("cover.soundAria")}" title="${ta("cover.soundTitle")}">
         <svg class="si-on" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M11 5 6 9H3v6h3l5 4V5z"/>
           <path d="M15.5 8.5a5 5 0 0 1 0 7"/>
@@ -40,7 +41,7 @@ const COVER_TAIL = `</nav>
 </header>
 
 <!-- ── BOTÓN DESCARGA CV (imprimir → guardar como PDF) ── -->
-<button id="btn-download" type="button" aria-label="Descargar CV en PDF">↓ Descargar CV</button>
+<button id="btn-download" type="button" aria-label="${ta("cover.downloadAria")}">${t("cover.download")}</button>
 
 <!-- ── BARRA DE PROGRESO ───────────────────────────── -->
 <div id="progress"></div>
@@ -49,19 +50,19 @@ const COVER_TAIL = `</nav>
 <!-- SVG animado (src/ts/brand/logoAnim.js): loader y logo permanente.
      Al minimizarse se habilita y abre el Laboratorio temporal del Espirángulo; en el loader
      está deshabilitado y no es focusable. -->
-<button id="brand-logo" type="button" aria-label="Abrir el Laboratorio temporal del Espirángulo" title="Espirángulo · Laboratorio temporal" disabled></button>
+<button id="brand-logo" type="button" aria-label="${ta("cover.logoAria")}" title="${ta("cover.logoTitle")}" disabled></button>
 
 <div id="loader">
   <div id="intro-block">
-    <p id="intro-phrase" class="intro-phrase">Arte Ciencias Filosofía</p>
+    <p id="intro-phrase" class="intro-phrase">${t("cover.introPlaceholder")}</p>
   </div>
   <!-- La intro es opcional: la página no. Un control explícito evita depender
        de "clic en cualquier lado" para saltarla. -->
   <button id="btn-skip-intro" type="button"
-          aria-label="Saltar intro e ir directo a la página"
-          data-aria-es="Saltar intro e ir directo a la página"
-          data-aria-en="Skip intro and go straight to the page">
-    <span class="skip-intro-label">Saltar intro</span>
+          aria-label="${ta("cover.skipAria")}"
+          data-aria-es="${ta("cover.skipAria")}"
+          data-aria-en="${tae("cover.skipAria")}">
+    <span class="skip-intro-label">${t("cover.skipIntro")}</span>
     <span class="skip-intro-arrow" aria-hidden="true">↓</span>
   </button>
 </div>

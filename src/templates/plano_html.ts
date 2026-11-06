@@ -5,6 +5,7 @@
  */
 import { HERO_NAV, SALAS } from "../cv/salas.ts";
 import { numFor, sectionId, visibleSalas } from "../cv/render.ts";
+import { t, ta } from "../content/copy.ts";
 
 const PLANO_TOP = `<!-- ════════════════════════════════════════════════════
   PLANO / ÍNDICE — blueprint navegable del museo
@@ -27,9 +28,9 @@ const PLANO_TOP = `<!-- ══════════════════�
     .bp-room:hover .bp-name{fill:var(--teal)}
     @media print{#room-plano{display:none}}
   </style>
-  <div class="bp-title" data-scroll="up"><em>Plano</em> del Museo</div>
-  <div class="bp-hint" data-scroll="up" data-delay="1">PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR</div>
-    <svg class="bp-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label="Plano del museo">
+  <div class="bp-title" data-scroll="up"><em>${t("plano.title.word")}</em> ${t("plano.title.rest")}</div>
+  <div class="bp-hint" data-scroll="up" data-delay="1">${t("plano.hint")}</div>
+    <svg class="bp-svg" viewBox="0 0 900 560" xmlns="http://www.w3.org/2000/svg" role="navigation" aria-label="${ta("plano.aria")}">
     <rect class="bp-frame" x="30" y="40" width="840" height="490"/>
     <rect class="bp-frame" x="36" y="46" width="828" height="478"/>
 <polyline class="bp-path" points="180,145 450,145 720,145 720,305 450,305 180,305 180,465 450,465 720,465"/>
@@ -52,12 +53,12 @@ interface PlanoCell {
 
 function planoCells(): PlanoCell[] {
   const cells: PlanoCell[] = [
-    { href: `#${HERO_NAV.id}`, sala: "SALA", num: "00", label: "ENTRADA" }
+    { href: `#${HERO_NAV.id}`, sala: t("plano.sala"), num: "00", label: t("plano.entry") }
   ];
   for (const s of visibleSalas()) {
     cells.push({
       href: `#${sectionId(s.id)}`,
-      sala: "SALA",
+      sala: t("plano.sala"),
       num: numFor(s.id) ?? "",
       label: s.titulo.replace(/<[^>]*>/g, "").toUpperCase()
     });
@@ -90,8 +91,8 @@ export function planoCellMeta(): { id: string; sala: string; num: string; label:
   const ids = [HERO_NAV.id, ...visibleSalas().map((s) => s.id)];
   return ids.map((id) => {
     const s = SALAS.find((x) => x.id === id);
-    const label = s ? s.titulo.replace(/<[^>]*>/g, "").toUpperCase() : "ENTRADA";
+    const label = s ? s.titulo.replace(/<[^>]*>/g, "").toUpperCase() : t("plano.entry");
     const num = id === HERO_NAV.id ? "00" : (numFor(id) ?? "");
-    return { id, sala: "SALA", num, label };
+    return { id, sala: t("plano.sala"), num, label };
   });
 }

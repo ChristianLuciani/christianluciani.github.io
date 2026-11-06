@@ -4,6 +4,8 @@
  * main.ts llama mountGrafo() cuando el DOM está listo.
  */
 
+import { t } from "../../content/copy.ts";
+
 interface GrafoNode {
   id: string;
   label: string;
@@ -23,22 +25,27 @@ interface GrafoEdge {
 }
 
 // status: raiz | area | pub (publicado) | desarrollo (sin artefacto público) | futuro (idea, dorado)
+// COPY DE NODOS (#127): sólo los labels que el pack declara (`graph.node.*`)
+// se piden con `t()`. El resto sigue literal acá porque es nombre propio
+// estable (Christian Luciani, Kontablo, Drahma, …) o etiología de área sin
+// traducción (Física, Educación, Open Source). No es una regla general: un
+// label nuevo que sea copy de narrativa entra al pack.
 // Exportados: `docs/SPEC.md` §4 los cita como fuente de los nodos/aristas y el
 // chequeo de punteros (`tools/docs/doc-pointers.test.ts`) verifica el export.
 export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
   { id: "raiz", label: "Christian Luciani", status: "raiz" },
   { id: "fisica", label: "Física", status: "area" },
-  { id: "ia", label: "IA Sintética · Agentes", status: "area" },
-  { id: "sob", label: "Soberanía Tecnológica", status: "area" },
+  { id: "ia", label: t("graph.node.ia"), status: "area" },
+  { id: "sob", label: t("graph.node.soberania"), status: "area" },
   { id: "oss", label: "Open Source", status: "area" },
   { id: "edu", label: "Educación", status: "area" },
-  { id: "cog", label: "Cognición · Filosofía", status: "area" },
+  { id: "cog", label: t("graph.node.cognicion"), status: "area" },
   { id: "kontablo", label: "Kontablo", status: "pub" },
   { id: "zentropy", label: "ZENTROPY", status: "desarrollo" },
   { id: "drahma", label: "Drahma", status: "pub" },
-  { id: "clapps", label: "CLAPPS · Noesis/Noetix", status: "desarrollo" },
+  { id: "clapps", label: t("graph.node.clapps"), status: "desarrollo" },
   { id: "estel", label: "Esteléctica", status: "desarrollo" },
-  { id: "erp", label: "ERPNext · Zanah", status: "pub" },
+  { id: "erp", label: t("graph.node.erp"), status: "pub" },
   { id: "profile", label: "profile-as-code", status: "pub" },
   { id: "topia", label: "Topia", status: "desarrollo" },
   { id: "nelson", label: "Nelson Companion", status: "desarrollo" }

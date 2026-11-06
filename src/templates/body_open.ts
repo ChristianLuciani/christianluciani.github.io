@@ -5,8 +5,10 @@
  * BODY_OPEN: apertura de <body> + skip-link.
  */
 
+import { t } from "../content/copy.ts";
+
 export const BODY_OPEN = `
 <body>
-<a href="#room-perfil" class="skip-link">Saltar al contenido</a>
+<a href="#room-perfil" class="skip-link">${t("cover.skipToContent")}</a>
 
 `;

@@ -4,6 +4,7 @@ import {
 } from "../ts/assets/url.ts";
 import { ENTITY } from "../data/entity.generated.ts";
 import { PRINT_RULE_COLOR } from "./print-tokens.ts";
+import { t, ta } from "../content/copy.ts";
 
 /** Origen canónico del sitio (OG necesita URL absoluta, no relativa). */
 const SITE_ORIGIN = "https://christianluciani.github.io";
@@ -28,26 +29,36 @@ function jsonLdBlocks(): string {
  * HEAD: doctype, meta, JSON-LD, fonts, manual de estilo, <style> global, tag del entry module.
  */
 
+/**
+ * Headline del JSON-LD (ScholarlyArticle): la MISMA pieza de presentación que
+ * imprime la sala Biblioteca. Sale del pack (`pub.<id>.title`), sin `<em>`: el
+ * JSON-LD no admite markup. Una segunda copia acá era el bug de dos fuentes
+ * (el comentario del pack afirmaba "una sola vez" y este bloque lo desmentía).
+ */
+function headline(key: string): string {
+  return t(key).replace(/<[^>]*>/g, "");
+}
+
 export function headHtml(): string {
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Christian Luciani — Museo de una Trayectoria</title>
-<meta name="description" content="Christian Luciani — Investigador independiente en Cuenca, Ecuador. Creador de Kontablo, ontología contable universal basada en grafos para la economía agéntica. Física, inteligencia sintética y tecnología educativa.">
+<title>${t("meta.title")}</title>
+<meta name="description" content="${ta("meta.description")}">
 <meta name="author" content="Christian Luciani">
 <meta property="og:type" content="profile">
-<meta property="og:title" content="Christian Luciani — Investigador independiente">
-<meta property="og:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Investigador independiente en Cuenca, Ecuador.">
+<meta property="og:title" content="${ta("meta.ogTitle")}">
+<meta property="og:description" content="${ta("meta.ogDescription")}">
 <meta property="og:url" content="https://christianluciani.github.io/">
 <meta property="og:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Christian Luciani — Investigador independiente">
-<meta name="twitter:description" content="Creador de Kontablo, ontología contable universal para la economía agéntica. Física, inteligencia sintética y tecnología educativa.">
+<meta name="twitter:title" content="${ta("meta.ogTitle")}">
+<meta name="twitter:description" content="${ta("meta.twitterDescription")}">
 <meta name="twitter:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
 <link rel="icon" type="image/svg+xml" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal.svg")}>
 <link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-32.png")}>
@@ -59,7 +70,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
   "@graph": [
     {
       "@type": "ScholarlyArticle",
-      "headline": "Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy",
+      "headline": "${headline("pub.kontablo.title")}",
       "author": { "@type": "Person", "name": "Christian Luciani" },
       "datePublished": "2026",
       "publisher": "Zenodo / SSRN",
@@ -68,7 +79,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Hydrochars from Lignocellulosic Residues for Green Electronics, Environmental Remediation, Energy and Agricultural Applications",
+      "headline": "${headline("pub.hydrochars.title")}",
       "author": [
         { "@type": "Person", "name": "Landázuri et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -80,7 +91,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Highly efficient caffeine-based PVA composite film for UV shielding",
+      "headline": "${headline("pub.caffeine.title")}",
       "author": [
         { "@type": "Person", "name": "Trujillo Galarza et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -92,7 +103,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Tunable Dielectric Carbon Materials from Hydrothermally Nanostructured Organic Carbon Sources",
+      "headline": "${headline("pub.dielectric.title")}",
       "author": [
         { "@type": "Person", "name": "Landázuri et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -104,7 +115,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Optimization of microfibrillated cellulose isolation from cocoa pod husk via mild oxalic acid hydrolysis",
+      "headline": "${headline("pub.cellulose.title")}",
       "author": [
         { "@type": "Person", "name": "Zambrano et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -116,7 +127,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Optimization of Microcrystalline Cellulose Isolation from Cocoa Pod Husk via Mild Oxalic Acid Hydrolysis",
+      "headline": "${headline("pub.microcrystalline.title")}",
       "author": [
         { "@type": "Person", "name": "Zambrano et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -128,7 +139,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Ivory Nut (Phytelephas equatorialis) Residues: Chemical Composition for Applications in Health Care, Industry and Environmental Remediation — Towards Sustainability",
+      "headline": "${headline("pub.ivory.title")}",
       "author": [
         { "@type": "Person", "name": "Orejuela Escobar et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -139,7 +150,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Neural control on multiple time scales: Insights from human stick balancing",
+      "headline": "${headline("pub.neural.title")}",
       "author": [
         { "@type": "Person", "name": "Cabrera et al." },
         { "@type": "Person", "name": "Christian Luciani" }
@@ -151,7 +162,7 @@ ${jsonLdBlocks()}<script type="application/ld+json">
     },
     {
       "@type": "ScholarlyArticle",
-      "headline": "Balancing with Noise and Delay",
+      "headline": "${headline("pub.balancing.title")}",
       "author": [
         { "@type": "Person", "name": "Hosaka et al." },
         { "@type": "Person", "name": "Christian Luciani" }

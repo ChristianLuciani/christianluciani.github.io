@@ -17,11 +17,10 @@
  * el foco.
  */
 
-const FRASES = [
-  "Arte Ciencias Filosofía",
-  "Perspectivas del Universo",
-  "Una Instancia Humana"
-];
+import { t } from "../content/copy.ts";
+
+/** Frases del intro: copy del pack del tema (ES; el intro no tiene toggle). */
+const FRASES = [t("intro.phrase1"), t("intro.phrase2"), t("intro.phrase3")];
 
 const FADE_OUT = 1100; // ms
 const STEP = 350; // espera entre transiciones

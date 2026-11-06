@@ -108,8 +108,11 @@ export function mapExtra(): Record<string, string> {
     extra[s.subtitulo] = s.subtituloEn;
     extra[s.funcion] = s.funcionEn;
   }
+  // Sólo las salas VISIBLES: el plano es el único consumidor de la variante en
+  // mayúsculas y no numera/rotula la galería oculta. Derivar la clave de una
+  // sala oculta fabricaba un par que el walker nunca consulta (falso huérfano).
   const plain = (html: string) => html.replace(/<[^>]*>/g, "").toUpperCase();
-  for (const s of SALAS) {
+  for (const s of visibleSalas()) {
     extra[plain(s.titulo)] = plain(s.tituloEn);
   }
   extra["SALA"] = "ROOM";

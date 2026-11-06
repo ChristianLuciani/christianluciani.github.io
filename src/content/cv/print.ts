@@ -31,6 +31,7 @@
  */
 import type { LangText } from "../../data/profile.types.ts";
 import { PROFILE_PROSE, type ProfileProseSelection } from "./profile-prose.ts";
+import { t, te } from "../copy.ts";
 
 export interface PrintCvCuration {
   /**
@@ -175,37 +176,42 @@ export function experienceSectionOf(item: {
 export const PRINT_CV: PrintCvCuration = {
   // #122: el dato vive en `PROFILE.positioning`; acá sólo se declara el campo.
   profile: PROFILE_PROSE,
+  // El copy del print vive en el pack del tema (#127): este módulo declara la
+  // ESTRUCTURA de la superficie, no su texto.
   sections: {
-    profile: "Perfil",
-    experience: { es: "Trayectoria", en: "Trajectory" },
-    experienceNote: {
-      es: "Empleo, formación y talleres",
-      en: "Employment, education and workshops"
+    profile: t("print.sections.profile"),
+    experience: {
+      es: t("print.sections.experience"),
+      en: te("print.sections.experience")
     },
-    professional: "Experiencia profesional",
-    training: "Formación y talleres",
-    education: "Formación académica",
-    publications: "Publicaciones seleccionadas",
-    skills: "Competencias"
+    experienceNote: {
+      es: t("print.sections.experienceNote"),
+      en: te("print.sections.experienceNote")
+    },
+    professional: t("print.sections.professional"),
+    training: t("print.sections.training"),
+    education: t("print.sections.education"),
+    publications: t("print.sections.publications"),
+    skills: t("print.sections.skills")
   },
   labels: {
-    present: "PRESENTE",
-    languages: "Idiomas",
-    footer: "generado desde profile-data @",
-    footerNoDate: "fecha no disponible"
+    present: t("print.labels.present"),
+    languages: t("print.labels.languages"),
+    footer: t("print.labels.footer"),
+    footerNoDate: t("print.labels.footerNoDate")
   },
   contactPlatforms: ["website", "whatsapp", "orcid", "github"],
   languageNames: {
-    es: "Español",
-    en: "Inglés",
-    fr: "Francés"
+    es: t("print.language.es"),
+    en: t("print.language.en"),
+    fr: t("print.language.fr")
   },
   levelLabels: {
-    native: "nativo",
-    fluent: "fluido",
-    expert: "experto",
-    advanced: "avanzado",
-    intermediate: "intermedio",
-    basic: "básico"
+    native: t("print.level.native"),
+    fluent: t("print.level.fluent"),
+    expert: t("print.level.expert"),
+    advanced: t("print.level.advanced"),
+    intermediate: t("print.level.intermediate"),
+    basic: t("print.level.basic")
   }
 };
