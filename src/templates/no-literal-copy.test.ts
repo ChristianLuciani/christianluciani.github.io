@@ -70,6 +70,30 @@ describe("copy — cero texto literal en templates (I5)", () => {
     expect(hits[0]!.line).toBe(3);
   });
 
+  it("no se esquiva con un string plano emitido por interpolación", () => {
+    const probes = [
+      'const x = "tres palabras libres"; `<p>${x}</p>`',
+      '`${"tres palabras libres"}`',
+      'aria-label={"tres palabras libres"}'
+    ];
+    for (const probe of probes) {
+      const hits = copyHitsOf("probe.ts", probe);
+      expect(hits, probe).toHaveLength(1);
+      expect(hits[0]!.text).toBe("tres palabras libres");
+    }
+  });
+
+  it("no marca como copy los strings técnicos (import, clave, URL)", () => {
+    const probes = [
+      'import { t } from "../content/copy.ts";',
+      'const k = { "pub.kontablo.title": "x" };',
+      'const u = "https://example.com/a/b";'
+    ];
+    for (const probe of probes) {
+      expect(copyHitsOf("probe.ts", probe), probe).toHaveLength(0);
+    }
+  });
+
   it("el gate no confunde atributos técnicos ni valores interpolados", () => {
     const probes = [
       'const html = `<img class="pub-thumb" src="data:x" alt="${ta("pub.kontablo.alt")}">`;',

@@ -61,6 +61,26 @@ function isCopy(value: string): boolean {
   return wordsOf(value).length >= MIN_WORDS;
 }
 
+/**
+ * Descarte de strings TÉCNICAS (no son copy aunque tengan espacios).
+ *
+ * Filtro explícito y documentado, aplicado por línea de texto reconstruido:
+ *  · un token único (import, clave `pub.*`, id, URL sin espacios);
+ *  · URL absoluta, path POSIX/relativo o ruta con unidad Windows;
+ *  · código/CSS/plantilla: `=`, `;`, `{`, `}`.
+ * Si un string técnico cae acá, no se reporta; una frase de copy real no cae
+ * en ninguna de estas formas.
+ */
+function isTechnical(value: string): boolean {
+  const text = value.trim();
+  if (!text) return true;
+  if (!/\s/.test(text)) return true;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(text)) return true;
+  if (/^(\.{1,2}\/|\/|[A-Za-z]:[\\/])/.test(text)) return true;
+  if (/[=;{}]/.test(text)) return true;
+  return false;
+}
+
 function isInsideErrorOrThrow(node: ts.Node): boolean {
   let cur: ts.Node | undefined = node;
   while (cur) {
@@ -98,15 +118,13 @@ function chunksOf(file: string, source: string): Chunk[] {
       if (!isInsideErrorOrThrow(node)) {
         const { line } = sf.getLineAndCharacterOfPosition(node.getStart(sf));
         const literal = node as unknown as { text: string };
-        // Un string plano sin markup no emite HTML: son imports, claves de
-        // objetos, URLs. Concatenarlos fabricaba "texto" que ningún navegador
-        // renderiza (falsos positivos en la cabecera del archivo). Los
-        // templates usan template literals; un string con `<` se incluye
-        // porque puede ser un fragmento de HTML.
-        const isTemplate = k !== ts.SyntaxKind.StringLiteral;
-        if (isTemplate || /[<>]/.test(literal.text)) {
-          chunks.push({ text: literal.text, line: line + 1 });
-        }
+        // TODO literal es candidato, incluido el string plano: un template
+        // puede emitirlo por interpolación (`<p>${x}</p>`, `${"copy"}`,
+        // `aria-label={"copy"}`) y filtrar por la forma del literal de origen
+        // era el bypass del gate. El aislamiento es por chunk (cada uno se
+        // concatena con un `\n`) y el ruido técnico se descarta al evaluar la
+        // línea, no al recolectar (ver `isTechnical`).
+        chunks.push({ text: literal.text, line: line + 1 });
       }
     }
     ts.forEachChild(node, walk);
@@ -186,12 +204,19 @@ export function copyHitsOf(file: string, source: string): CopyHit[] {
   const masked = maskHtml(html);
   const hits: CopyHit[] = [];
 
-  // 1) nodos de texto
+  // 1) nodos de texto. Se evalúa LÍNEA por línea: cada chunk arranca en una
+  // línea propia (se concatenan con `\n`), así un literal plano interpolado no
+  // se diluye en el texto de los chunks vecinos.
   for (const segment of textSegments(masked)) {
-    const text = segment.text.replace(/\s+/g, " ").trim();
-    if (!isCopy(text) || /[=;{}]/.test(text)) continue;
-    const lead = segment.text.length - segment.text.trimStart().length;
-    hits.push({ file, line: lineAt(segment.start + lead), kind: "texto", text });
+    let offset = 0;
+    for (const line of segment.text.split("\n")) {
+      const text = line.replace(/\s+/g, " ").trim();
+      if (isCopy(text) && !isTechnical(text)) {
+        const lead = line.length - line.trimStart().length;
+        hits.push({ file, line: lineAt(segment.start + offset + lead), kind: "texto", text });
+      }
+      offset += line.length + 1;
+    }
   }
 
   // 2) atributos de copy. Las interpolaciones no están en la reconstrucción:
