@@ -1,6 +1,6 @@
 # SPEC — Separación contenido/presentación + dependencia de profile-data
 
-> Status: v0.2 — FASE 5 (temas) incorporada; pendiente de ratificación del operador · Method: spec-driven (dev-methodology)
+> Status: v0.2 — FASE 5 (temas) incorporada; **ratificada por el operador el 2026-11-06** (issue #132): ratifica el contenido de PR #121 (merge commit `e60d5e4`) sobre `main` al 2026-11-06 (`cd4c8b8`) · Method: spec-driven (dev-methodology)
 > Owner: Christian Luciani · Repo: `ChristianLuciani/christianluciani.github.io`
 > Fecha: 2026-08-15 · v0.2: 2026-11-05 (ADR-001: hechos · curación · narrativa · piel)
 > Relacionado: `docs/adr/ADR-001-temas-y-narrativas.md`, `docs/CREAR-TEMA.md`, `docs/epics/temas-narrativas.md`, profile-as-code `docs/SPEC.md` (§9.1 deploy surfaces, §15.6 v1.1), komuno manifiesto (IX–XI), AGOS (proyección read-only)
@@ -463,7 +463,7 @@ queda bloqueado si 1–2 tardan: la Fase 2 renderiza con el shape disponible y l
 ### FASE 0 — Baseline + SPEC (ESTE PR)
 - [x] Worktree `aionui/pi/cv-profile-data` desde `origin/main` (22 commits adelante del main local).
 - [x] Baseline verde: 50 tests, `npm run build`.
-- [ ] `docs/SPEC.md` (este documento) + aprobación del operador.
+- [x] `docs/SPEC.md` (este documento) + aprobación del operador — ratificada el 2026-11-06 (issue #132).
 
 ### FASE 1 — Pipeline de dependencia (sin cambio de comportamiento)
 - `tools/sync-profile.ts` (5.1) + `.env.example` (`PROFILE_DATA_PATH`) + `.gitignore` (.env).
