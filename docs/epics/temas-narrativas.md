@@ -164,10 +164,10 @@ en ningún tema; `sitemap` lista raíz + subpaths.
 **Entregable:** `docs/adr/ADR-001-temas-y-narrativas.md` (accepted), `docs/SPEC.md` v0.2
 (§3, §4, §5.3–§5.6, §6 D2/D3/D8–D12, §8 FASE 5, §9–§11), `docs/CREAR-TEMA.md`, este epic.
 
-**DoD:** premerge-review fresca (es norma, session-discipline §3b) con veredicto registrado
-en #132 (pase post-hoc: la norma ya está en `main`); **ratificada por el operador el
-2026-11-06 (issue #132)**. **Entregado por el PR del epic**; #132 conserva la traza y el
-seguimiento.
+**DoD:** premerge-review fresca (es norma, session-discipline §3b) con veredicto publicado
+en el PR del cambio —o excepción declarada cuando la norma ya está en `main`—; el operador
+ratifica y la traza de la ratificación se registra en #132. **Entregado por el PR del
+epic**; el seguimiento continúa en #132.
 
 ---
 
