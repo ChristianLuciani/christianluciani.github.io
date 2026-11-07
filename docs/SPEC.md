@@ -1,7 +1,7 @@
 # SPEC — Separación contenido/presentación + dependencia de profile-data
 
 > Status: v0.2 — FASE 5 (temas) incorporada; **ratificada por el operador el 2026-11-06** (issue #132): ratifica el contenido de PR #121 (merge commit `e60d5e4`) sobre `main` al 2026-11-06 (`cd4c8b8`) · Method: spec-driven (dev-methodology)
-> **Enmienda 2026-11-07 (PR #156), ratificada por el operador el 2026-11-07** (traza: issues #128 y #131): `Curation` incorpora `experienceSections`; las N páginas de tema se publican sobre un solo bundle y una sola raíz de assets, con dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`). Toca §5.4, §5.5, §8 FASE 5.5 y §9.
+> **Enmienda 2026-11-07 (PR #156), ratificada por el operador el 2026-11-07** (traza: issues #128 y #131): `Curation` incorpora `experienceSections`; las N páginas de tema se publican sobre un solo bundle y una sola raíz de assets, con dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`). Toca §2, §3, §4, §5.4, §5.5, §5.6, §6 (D12), §8 FASE 5.5 y §9.
 > Owner: Christian Luciani · Repo: `ChristianLuciani/christianluciani.github.io`
 > Fecha: 2026-08-15 · v0.2: 2026-11-05 (ADR-001: hechos · curación · narrativa · piel)
 > Relacionado: `docs/adr/ADR-001-temas-y-narrativas.md`, `docs/CREAR-TEMA.md`, `docs/epics/temas-narrativas.md`, profile-as-code `docs/SPEC.md` (§9.1 deploy surfaces, §15.6 v1.1), komuno manifiesto (IX–XI), AGOS (proyección read-only)
@@ -162,7 +162,7 @@ línea de registro (§8 FASE 5).
 | curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
-| curación del print-CV (qué links entran al encabezado y clasificación de Trayectoria) | `src/content/cv/print.ts` | curación + estructura (sin copy) |
+| curación del print-CV (qué links entran al encabezado y clasificación de Trayectoria) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
@@ -403,6 +403,10 @@ export interface Curation {
 }
 ```
 
+`experienceSections` es **opcional en el tipo** pero **obligatorio en la práctica**: el
+print-CV falla ruidoso si una fila de `experience[]` no está clasificada, y la cobertura de
+curación (I3) lo cuenta como hecho sin decisión.
+
 Gate I3: `curation --report` lista todo hecho del perfil sin decisión (mostrado o excluido
 con razón) y no permite un `exclude` sin `reason`.
 
@@ -414,7 +418,7 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 pares texto/fondo declarados.
 
 **Excepción declarada — clasificación de `experience[]` en el print-CV (D2, F1 de #119).**
-`EXPERIENCE_SECTIONS` (`src/content/cv/print.ts`) reparte cada fila de `experience[]` en
+`Curation.experienceSections` (§5.5) reparte cada fila de `experience[]` en
 `professional`/`training` mediante una clave **derivada de hechos**
 (`org|role.es|start` —el rol sale en ES y cae a `role.en` si la fila no tiene
 ES, fallback que aplica `experienceKey`—, o `id` cuando existe), no por `id` estable:

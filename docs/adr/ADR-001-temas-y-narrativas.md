@@ -20,7 +20,7 @@ no cambia (`status: accepted`).
 la curación de SU tema, ADR-001 §1–§2); y la publicación de N temas usa **un** bundle y
 **una** raíz de assets con dirección **por tema** (`narrative.site`), en lugar de N
 invocaciones de Vite con N copias de assets. Reemplaza las cláusulas de §Consecuencias que
-decían lo contrario; el resto del ADR no cambia.
+decían lo contrario; además ajusta §Decisión 4 y §Contratos. El resto del ADR no cambia.
 
 ## Contexto
 

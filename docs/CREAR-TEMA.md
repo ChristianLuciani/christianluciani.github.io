@@ -37,9 +37,11 @@ export const THEMES = { museo, ingenieria } as const;
 export const DEFAULT_THEME = "museo";
 ```
 
-Selector: `SITE_THEME=<id>` en build. `path` del tema define el subpath
-(`""` = raíz; `"ingenieria"` → `/ingenieria/`). Prohibido hardcodear el id en templates,
-CSS o JS: todo sale de `THEMES`/`SITE_THEME`.
+Cada `narrative.ts` declara `id`, `path` y `site { origin, base }` (obligatorios en el
+manifest, SPEC §5.4): `path` define el subpath (`""` = raíz; `"ingenieria"` →
+`/ingenieria/`) y `site` la dirección de publicación (el build la puede overridear con
+`SITE_ORIGIN`/`SITE_BASE`). Selector: `SITE_THEME=<id>` en build. Prohibido hardcodear el
+id en templates, CSS o JS: todo sale de `THEMES`/`SITE_THEME`.
 
 ## 3. Claves semánticas (no strings exactos)
 
@@ -173,7 +175,8 @@ SITE_THEME=<id> npm run build     # build aislado del tema
 
 - [ ] `src/themes/<id>/` completo; **0** cambios fuera de ahí salvo la línea de registro.
 - [ ] Copy 100% ES+EN; 0 claves huérfanas; 0 strings visibles en templates.
-- [ ] `curation` declara include/exclude; toda exclusión con `reason`.
+- [ ] `curation` declara include/exclude; toda exclusión con `reason`;
+      `curation.experienceSections` cubre las filas de `experience[]` que imprime el print-CV.
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
