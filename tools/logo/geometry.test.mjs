@@ -320,7 +320,7 @@ describe("geometry — el reposo de la respiración no se escribe a mano (3 copi
   });
 
   it("el espejo del sitio (brandBreathe) arranca en el MISMO reposo", () => {
-    const head = read("src/templates/head_html.ts");
+    const head = read("src/themes/museo/skin.css");
     expect(keyframe(head, "brandBreathe")).toBe(rest);
     expect(head).toMatch(/#brand-logo \.settle-on \.c-glow path \{ animation:brandBreathe/);
   });

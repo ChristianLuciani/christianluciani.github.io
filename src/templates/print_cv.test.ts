@@ -27,6 +27,7 @@ import type { CvProfile } from "../data/profile.types";
 import { assembleHtml } from "./index";
 import { printCvHtml } from "./print_cv_html";
 import { PRINT_LOGO_PATH, PRINT_RULE_COLOR } from "./print-tokens";
+import { SKIN_SOURCE, emitSkinCss, tokenDeclarations } from "../themes/museo/skin.ts";
 
 const profile = PROFILE as unknown as CvProfile;
 const HTML = printCvHtml(profile);
@@ -319,10 +320,9 @@ describe("print-CV — layout A4 intacto", () => {
 });
 
 describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuente", () => {
-  const HEAD_RENDERER = readFileSync(
-    resolve(process.cwd(), "src", "templates", "head_html.ts"),
-    "utf8"
-  );
+  // Desde #130 el CSS global —print incluido— vive en la piel del tema; el
+  // renderer del print sigue entrando el color por la MISMA constante.
+  const SKIN_CSS = emitSkinCss(PRINT_RULE_COLOR);
 
   it("el encabezado imprime el logo print-A4 del brand kit, con alt no vacío", () => {
     const img = HTML.match(/<img class="p-logo"[^>]*>/)?.[0] ?? "";
@@ -350,19 +350,25 @@ describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuen
   it("las reglas del CV salen de UNA constante declarada: el teal del brand", () => {
     expect(PRINT_RULE_COLOR).toBe("#00c9c0");
     // grep del print: no quedan grises fijos en las reglas del CV.
-    for (const source of [RENDERER, HEAD_RENDERER]) {
-      expect(source).not.toMatch(/#(ccc|ddd)\b/i);
-      // el color entra por interpolación de la constante, no por un literal
-      expect(source).toContain("${PRINT_RULE_COLOR}");
-    }
-    // y llega a las dos reglas: secciones (head) y footer (print_cv).
+    expect(RENDERER).not.toMatch(/#(ccc|ddd)\b/i);
+    expect(SKIN_SOURCE).not.toMatch(/#(ccc|ddd)\b/i);
+    // el color entra por interpolación de la constante, no por un literal
+    expect(RENDERER).toContain("${PRINT_RULE_COLOR}");
+    // la piel pide el color por placeholder y el emisor lo resuelve
+    expect(SKIN_SOURCE).toContain("{{print-rule}}");
+    expect(SKIN_CSS).not.toContain("{{");
+    // y llega a las dos reglas: secciones (skin) y footer (print_cv).
     expect(ASSEMBLED).toContain(`border-bottom:1pt solid ${PRINT_RULE_COLOR}`);
     expect(HTML).toContain(`border-top:1pt solid ${PRINT_RULE_COLOR}`);
   });
 
   it("la constante del print no driftea del token `--teal` de pantalla", () => {
-    const token = HEAD_RENDERER.match(/--teal:\s*(#[0-9a-fA-F]{6});/)?.[1];
+    const token = tokenDeclarations(SKIN_SOURCE).find((decl) => decl.name === "--teal")?.value;
     expect(token).toBe(PRINT_RULE_COLOR);
+    // el token del print es derivado: su fuente es el placeholder, no un literal
+    const printRule = tokenDeclarations(SKIN_SOURCE).find((decl) => decl.name === "--print-rule");
+    expect(printRule?.derived).toBe(true);
+    expect(printRule?.value).toBe("{{print-rule}}");
   });
 
   it("la prosa de perfil del print es la del SSOT (no hay copia a mano)", () => {

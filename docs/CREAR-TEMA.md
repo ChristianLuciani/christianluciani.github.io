@@ -136,6 +136,9 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
 - Elegí canvas existentes de `src/ts/illusions/` por sala; **no** se editan.
 - La piel sólo declara tokens y reglas: `--bg-0/1`, `--ink*`, `--line*`, `--teal/--gold/…`,
   `--radius`, `--container`, tipografía. Cero `#hex`/`rgba()` fuera del bloque de tokens.
+  La emite `src/themes/skin.ts` (`emitSkin`): los tokens del bloque marcado
+  `@derived:begin … @derived:end` se resuelven a su literal mientras dure el
+  congelamiento de I1 (#130). Publicarlos es un cambio de render declarado.
 - Todo par texto/fondo declara contraste y **pasa AA** (4,5:1 normal, 3:1 grande).
 - Prohibido `!important` para pisar otro tema: si hace falta, falta un token.
 

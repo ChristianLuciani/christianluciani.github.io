@@ -2,8 +2,8 @@
 
 Sistema vigente desde el tema **Laboratorio** (issue #89, opción A: superficie
 densa, sistema tipográfico sin fuentes web). Fuente visual de referencia:
-`proposals/estilo-lab/estilo.css`; la implementación vive inline en
-`src/templates/head_html.ts`.
+`proposals/estilo-lab/estilo.css`; la implementación vive en la piel del tema,
+`src/themes/museo/skin.css` (el head sólo la emite: `emitSkinCss()`).
 
 ## Paleta de colores
 
@@ -199,8 +199,8 @@ Añade `data-delay="1"` a `data-delay="6"` para escalonar (×0.1s). Con
 - `.contact-grid`, `.contact-link` (chips), `.contact-note`.
 - `.graph-stage`, `.graph-lede`.
 
-No se usan atributos `style="…"` en el markup: la presentación vive en la hoja
-inline de `head_html.ts` (o en variables CSS cuando el valor es por instancia).
+No se usan atributos `style="…"` en el markup: la presentación vive en la piel
+`src/themes/museo/skin.css` (o en variables CSS cuando el valor es por instancia).
 
 ## Ilusiones ópticas por sala
 
