@@ -153,6 +153,12 @@ export interface Curation {
   `path`, y `sitemap.xml` lista todas las URLs.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
+- **Piel por tema (S4, resuelto en #134):** `emitSkin` resuelve la piel del tema activo
+  (`src/themes/skin.ts` → `skinFor(id)`) en vez de emitir siempre la de `museo`; un tema
+  sin `skin.css` hereda la del default. El gate de CI verifica que la piel declarada
+  llegue al `<style>` del render (no certifica CSS muerto). La piel queda fuera del
+  manifest porque éste se importa en el bundle del browser y su lectura exige `node:fs`;
+  el resolver por id es el único punto que conoce el archivo.
 - **Migración futura a subdominio:** es configuración (`site.origin` del tema +
   `SITE_ORIGIN`) + infraestructura, **no** un refactor del modelo.
 - **Riesgo aceptado:** el bundle y `public/` se publican **una vez** en la raíz del

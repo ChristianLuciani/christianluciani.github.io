@@ -442,6 +442,13 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 `!important` para pisar otro tema, fuentes web. Gate I5: 0 literales + contraste AA en los
 pares texto/fondo declarados.
 
+**Resolución por tema (S4 de D11, implementado en #134).** `src/themes/skin.ts` emite la
+piel del tema ACTIVO: `skinFor(id)` resuelve `themes/<id>/skin.css` y un tema sin
+`skin.css` propio hereda la del default (el reporte lo declara). El gate no certifica la
+fuente: extrae el `<style>` de piel del render de cada tema y lo compara con el CSS de su
+`skin.css`; si el documento publica otra piel, `themes:check` falla (el falso verde que
+cerró F4 de #158).
+
 **Excepción declarada — clasificación de `experience[]` en el print-CV (D2, F1 de #119).**
 `Curation.experienceSections` (la tabla del tema `museo` vive en `src/content/curation/museo.ts`) reparte cada fila de `experience[]` en
 `professional`/`training` mediante una clave **derivada de hechos**
@@ -561,7 +568,9 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
 - **5.3 — Registro de narrativas.** `themes/index.ts`, `NarrativeManifest`, `SITE_THEME`;
   `museo` reproduce el HTML actual.
 - **5.4 — Piel extraída.** Tokens a `themes/museo/skin.css`; 74 literales de color → tokens
-  (I5); contraste AA verificado.
+  (I5); contraste AA verificado. La emisión por tema (S4 de D11) se resolvió en #134:
+  `emitSkin` usa la piel del tema activo y `themes:check` verifica que llegue al render
+  (§5.6).
 - **5.5 — Selector + subpath.** `SITE_THEME=<id> npm run build`; raíz default; `/<path>/`
   por tema; dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`)
   sobre un solo bundle y una sola raíz de assets; `canonical`, `og:url`, `og:image`,
@@ -571,6 +580,13 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
 - **5.7 — Piloto mínimo (S8).** `themes/ingenieria/` con **las mismas 8 salas**: sólo voz,
   piel, ilusiones y metadata. Valida la plomería; si exige tocar código compartido, el
   contrato falló.
+  Implementado en #134: la voz cubre hero, metadata, títulos/funciones de sala y el copy
+  que los templates evalúan en render. **Brecha declarada:** `cover_html.ts`,
+  `plano_html.ts` y `sala_html.ts` capturan `t()` en constantes de módulo, que se evalúan
+  al importar (con el tema default activo); el copy de esos bloques no puede cambiar por
+  tema sin refactor de renderer. #134 NO tocó renderers (fuera de su alcance): el pack de
+  `ingenieria` conserva el texto del default en esas claves y el gate sigue exigiendo que
+  cada clave aparezca en el render. Cerrar la brecha es trabajo de contrato (FASE 5.8/S9).
 - **5.8 — Control total (S9).** Segundo PR del piloto: reordena/agrupa/oculta salas y cura
   ítems. **Prueba de aceptación del contrato**: cualquier cambio necesario fuera de
   `themes/<id>/` + registro se corrige en el contrato, no con un parche lateral.

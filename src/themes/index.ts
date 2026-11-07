@@ -9,18 +9,22 @@
  * del registro (ADR-001 §2). Un id inválido debe fallar listando los válidos
  * desde cualquier punto que resuelva un tema, no sólo desde el CLI.
  *
- * `skin`/`label` del contrato `Theme` de ADR-001 llegan con S4 (piel extraída);
- * hasta entonces la entrada del registro ES el `NarrativeManifest`.
+ * `skin` no vive en la entrada del registro: `NarrativeManifest` se importa en
+ * el bundle del browser y la piel exige `node:fs`. S4 la resuelve por id en
+ * `src/themes/skin.ts` (`skinFor`), que es el único punto que conoce el archivo
+ * de cada tema. `label` del contrato `Theme` de ADR-001 sigue sin uso de render
+ * (el nombre visible sale del copy del tema).
  */
 import { museo } from "./museo/narrative.ts";
+import { ingenieria } from "./ingenieria/narrative.ts";
 import { resolveThemeAddress } from "./site.ts";
 import type { NarrativeManifest, RoomRef } from "./types.ts";
 
 export type { NarrativeManifest, RoomRef } from "./types.ts";
 export type { SiteAddress } from "./site.ts";
 
-/** Registro: una entrada por tema. S8 añade `ingenieria` con una línea. */
-const registry = { museo } as const satisfies Record<string, NarrativeManifest>;
+/** Registro: una entrada por tema. S8 añadió `ingenieria` con una línea. */
+const registry = { museo, ingenieria } as const satisfies Record<string, NarrativeManifest>;
 export const THEMES: Readonly<typeof registry> = Object.freeze(registry);
 
 /** Id de un tema registrado. */
