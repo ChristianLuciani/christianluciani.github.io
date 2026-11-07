@@ -44,11 +44,12 @@ export const THEMES = { museo, ingenieria } as const;
 export const DEFAULT_THEME = "museo";
 ```
 
-Selector: `SITE_THEME=<id>` en build. `path` del tema define el subpath de su
-PÁGINA (`""` = raíz; `"ingenieria"` → `/ingenieria/`). Prohibido hardcodear el id en
-templates, CSS o JS: todo sale de `THEMES`/`SITE_THEME`. El render fuente
-(`index.html` commiteado) es siempre el del tema default; el selector decide qué
-páginas se publican en `dist/`.
+Cada `narrative.ts` declara `id`, `path` y `site { origin, base }` (obligatorios en el
+manifest, SPEC §5.4): `path` define el subpath de su PÁGINA (`""` = raíz; `"ingenieria"`
+→ `/ingenieria/`) y `site` la dirección de publicación (el build la puede overridear con
+`SITE_ORIGIN`/`SITE_BASE`). Prohibido hardcodear el id en templates, CSS o JS: todo sale
+de `THEMES`/`SITE_THEME`. El render fuente (`index.html` commiteado) es siempre el del
+tema default; el selector decide qué páginas se publican en `dist/`.
 
 ## 3. Claves semánticas (no strings exactos)
 
@@ -110,17 +111,23 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   aparece en el render falla salvo que sea `runtime` o derivado del SSOT, y los
   pares de `SALAS` no tienen excepción.
 - El copy del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
-  declara sólo la **estructura y la curación** de esa superficie (qué links
-  entran al encabezado y la clasificación de Trayectoria), sin texto.
+  declara sólo la **estructura** de esa superficie (qué links entran al encabezado),
+  sin texto. La **clasificación de Trayectoria** (`experience[]` →
+  `professional`/`training`) es curación del tema: vive en
+  `Curation.experienceSections` (§5.5), no en el renderer.
 
 ## 4. Curación: mostrar sin borrar
 
 ```ts
 // src/content/curation/ingenieria.ts
 export const CURATION: Curation = {
-  include: ["kontablo", "zentropy", "clapps"],
-  exclude: [{ id: "drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }],
-  order: { proyectos: ["kontablo", "zentropy", "clapps"] }
+  // ids namespaced `colección:clave` (ver §4: la clave es derivada, no un id de fila)
+  include: ["proyectos:Kontablo", "proyectos:ZENTROPY", "proyectos:CLAPPS.AI"],
+  exclude: [
+    { id: "proyectos:Drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }
+  ],
+  // `order` es por colección y usa claves SIN prefijo
+  order: { proyectos: ["Kontablo", "ZENTROPY", "CLAPPS.AI"] }
 };
 ```
 
@@ -188,7 +195,8 @@ subpaths con `Allow: /`).
 1. Reservá el id: `[a-z0-9-]`, único en `THEMES`, sin colisionar con rutas existentes.
 2. Copiá la estructura de `src/themes/museo/` como andamiaje (no como contenido).
 3. Escribí `copy.ts` completo (ES+EN) antes de tocar `narrative.ts`.
-4. Declará `curation/<id>.ts` con include/exclude/orden y razones.
+4. Declará la curación del tema (include/exclude/orden y razones) y registrala en
+   `CURATIONS`, el registro que hoy trae `museo`.
 5. Asigná ilusiones; si ninguna encaja, dejá `undefined` y reportalo (no inventes canvas).
 6. Escribí `skin.css` con tokens primero; recién después reglas.
 7. Registrá el tema en `src/themes/index.ts` (una línea).
@@ -199,6 +207,7 @@ npm run build                     # render fuente (default) + bundle + dist/<pat
 npm run build:all                 # alias de build: el artefacto publica TODOS los temas registrados
 SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema (no toca index.html)
 npm test                          # unidades + golden del default
+# npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
 npm run themes:assets             # smoke: assets del HTML + recursos del runtime + sitemap/robots
 npm run build:html                # sólo el render fuente (commit del index.html)
 ```
@@ -209,7 +218,8 @@ npm run build:html                # sólo el render fuente (commit del index.htm
 
 - [ ] `src/themes/<id>/` completo; **0** cambios fuera de ahí salvo la línea de registro.
 - [ ] Copy 100% ES+EN; 0 claves huérfanas; 0 strings visibles en templates.
-- [ ] `curation` declara include/exclude; toda exclusión con `reason`.
+- [ ] `curation` declara include/exclude; toda exclusión con `reason`;
+      `curation.experienceSections` cubre las filas de `experience[]` que imprime el print-CV.
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
