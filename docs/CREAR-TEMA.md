@@ -4,7 +4,7 @@
 > **una línea** al registro. Si necesitás tocar cualquier otro archivo, el contrato
 > falló: pará y reportá (ADR-001, `docs/SPEC.md` §5.4–§5.6).
 >
-> **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-06`
+> **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-07`
 
 ## 1. Definiciones
 
@@ -22,10 +22,17 @@ tema. Si un valor debe cambiar en dos archivos para seguir coherente, es un bug.
 
 ```
 src/themes/<id>/
-├── narrative.ts   # ThemeNarrative: rooms, copy (tipado), illusions, meta
+├── narrative.ts   # ThemeNarrative: rooms, copy (tipado), illusions, meta, site
 ├── copy.ts        # claves semánticas → { es, en } — 100% obligatorio
 ├── skin.css       # tokens + reglas del tema; cero literales de color fuera de tokens
 └── illusions.ts   # roomId → canvas id existente en src/ts/illusions
+```
+
+`narrative.ts` declara también la dirección de publicación del tema:
+
+```ts
+site: { origin: "https://christianluciani.github.io", base: "" }   // base = prefijo de deploy
+path: "ingenieria"                                                 // "" = raíz del artefacto
 ```
 
 Registro (única línea permitida fuera del directorio):
@@ -38,10 +45,11 @@ export const DEFAULT_THEME = "museo";
 ```
 
 Cada `narrative.ts` declara `id`, `path` y `site { origin, base }` (obligatorios en el
-manifest, SPEC §5.4): `path` define el subpath (`""` = raíz; `"ingenieria"` →
-`/ingenieria/`) y `site` la dirección de publicación (el build la puede overridear con
-`SITE_ORIGIN`/`SITE_BASE`). Selector: `SITE_THEME=<id>` en build. Prohibido hardcodear el
-id en templates, CSS o JS: todo sale de `THEMES`/`SITE_THEME`.
+manifest, SPEC §5.4): `path` define el subpath de su PÁGINA (`""` = raíz; `"ingenieria"`
+→ `/ingenieria/`) y `site` la dirección de publicación (el build la puede overridear con
+`SITE_ORIGIN`/`SITE_BASE`). Prohibido hardcodear el id en templates, CSS o JS: todo sale
+de `THEMES`/`SITE_THEME`. El render fuente (`index.html` commiteado) es siempre el del
+tema default; el selector decide qué páginas se publican en `dist/`.
 
 ## 3. Claves semánticas (no strings exactos)
 
@@ -174,12 +182,35 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
 
 ## 7. Metadata y SEO del tema
 
-`narrative.meta` provee `title`, `description`, `ogImage`; `narrative.site` + `path` dan
-la dirección de publicación. El render fuente emite `<title>`, `og:*` y `twitter:*` desde
-`meta`; `canonical`, `og:url` y `og:image` toman la dirección del tema al publicar el
-artefacto (`dist/<path>/`: el publicador reescribe `og:url`/`og:image` y añade
-`canonical`), así el golden del tema default queda byte-idéntico. Sin esto, dos temas
-compiten por la misma tarjeta social.
+El **documento** (`assembleHtml`) es independiente de la dirección: `narrative.meta`
+provee `title`, `description`, `ogImage` y el render los emite (byte a byte iguales a
+las claves del pack, que es la fuente única). Su golden no cambia por publicar.
+
+La **dirección** es del tema y se declara en `narrative.site`, con overrides de deploy
+validados en `src/themes/site.ts`:
+
+| Dato | Valor | Efecto |
+|---|---|---|
+| `narrative.site.origin` / `SITE_ORIGIN` | `https://christianluciani.github.io` (default) | origen de `canonical`/`og:url`/`og:image`/`sitemap`; **no admite path** |
+| `narrative.site.base` / `SITE_BASE` | `""` (default) o `/prefijo` | prefijo con el que se sirve el artefacto; entra en assets, canónica y sitemap |
+| `narrative.path` | `""` o `ingenieria` | dónde vive la PÁGINA (`dist/<path>/index.html`) |
+
+Al publicar (`src/artifact/pages.ts`) el documento recibe su `canonical`, `og:url` y
+`og:image` con esa dirección, y las rutas de assets pasan a **raíz-absolutas** con el
+prefijo: el bundle y `public/` se publican **una sola vez** en la raíz del artefacto
+(`/assets/**`, `/audio/**`), así resuelven desde cualquier subpath sin duplicar assets.
+Un tema con otro `base` no comparte artefacto: se publica solo con `SITE_THEME=<id>`
+(`artifactBase()` falla si dos temas del mismo build declaran prefijos distintos).
+
+Un tema nuevo no hardcodea rutas: si necesita un asset, lo pide con `assetAttrs` (CDN +
+fallback) o con una ruta raíz-absoluta (`/assets/…`), nunca relativa al documento
+(`assets/…` rompe en un subpath). Los recursos que pide el RUNTIME por URL (audio,
+laboratorio) se componen con `runtimeAsset()` (`src/ts/app/runtime-assets.ts`), que
+aplica `import.meta.env.BASE_URL`.
+
+`npm run build` publica `sitemap.xml` con la raíz y todos los subpaths; `robots.txt` lo
+genera el SSOT (`sync:ai-policy`) y se sirve en la raíz del dominio (permite todos los
+subpaths con `Allow: /`).
 
 ## 8. Procedimiento (orden fijo)
 
@@ -195,12 +226,16 @@ compiten por la misma tarjeta social.
 
 ```bash
 npm run curation:report           # I3: 100% de hechos con decisión
-npm run build:all                 # construye todos los temas
-npm test                          # unidades + golden por tema
+npm run build                     # render fuente (default) + bundle + dist/<path>/index.html de cada tema + sitemap
+npm run build:all                 # construye TODOS los temas registrados (el artefacto los publica todos)
+npm test                          # unidades + golden del default
 # npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
-npm run themes:assets             # smoke: toda URL de asset del tema existe en dist/
-SITE_THEME=<id> npm run build     # build aislado del tema
+npm run themes:assets             # smoke: assets del HTML + recursos del runtime + sitemap/robots (sobre el build completo)
+npm run build:html                # sólo el render fuente (commit del index.html)
+SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al final porque vacía `dist/`
 ```
+
+`themes:check` (completitud de copy, curación, literales, contraste) llega con #133.
 
 ## 9. Checklist de aceptación (el PR no se abre sin esto)
 
@@ -212,8 +247,8 @@ SITE_THEME=<id> npm run build     # build aislado del tema
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
-- [ ] `npm run themes:assets` verde; `themes:check` cuando exista (gate de #133).
-- [ ] `meta` propio: title, description, ogImage; canonical por subpath.
+- [ ] `npm run themes:assets` verde (`themes:check` llega con #133).
+- [ ] `meta` y `site` propios: title, description, ogImage; canonical por subpath.
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.
 
 ## 10. Anti-patterns (rechazo directo en review)

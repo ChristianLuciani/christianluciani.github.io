@@ -100,6 +100,11 @@ describe("themes/museo — metadata", () => {
     expect(museo.meta.ogImage).toBe("/assets/og-image.png");
   });
 
+  it("declara su dirección de publicación (el deploy la overridea)", () => {
+    expect(museo.site).toEqual({ origin: "https://christianluciani.github.io", base: "" });
+    expect(museo.path).toBe("");
+  });
+
   it("la metadata del manifest es la que hoy publica el head (paridad de fuente)", () => {
     const html = assembleHtml();
     expect(html).toContain(`<title>${museo.meta.title}</title>`);

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { DEFAULT_THEME, THEMES, resolveTheme, themeIds } from "./index.ts";
+import {
+  normalizeDeployBase,
+  normalizeOrigin,
+  normalizeThemePath,
+  resolveThemeAddress
+} from "./site.ts";
 
 /**
  * REGISTRO DE NARRATIVAS (SPEC §5.4/§8 FASE 5.3 · ADR-001).
@@ -29,6 +35,12 @@ describe("themes — registro", () => {
       expect(narrative.meta.title.trim(), `meta.title de ${key}`).not.toBe("");
       expect(narrative.meta.description.trim(), `meta.description de ${key}`).not.toBe("");
       expect(narrative.meta.ogImage.trim(), `meta.ogImage de ${key}`).not.toBe("");
+      // Dirección declarada por el tema (SPEC §8 FASE 5.5): valida y normalizada.
+      expect(resolveThemeAddress(narrative, {}), `site de ${key}`).toEqual({
+        origin: normalizeOrigin(narrative.site.origin, `site.origin de ${key}`),
+        base: normalizeDeployBase(narrative.site.base, `site.base de ${key}`),
+        path: normalizeThemePath(narrative.path)
+      });
     }
   });
 

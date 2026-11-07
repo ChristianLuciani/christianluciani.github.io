@@ -16,6 +16,7 @@ import { isExcluded } from "../../content/curation/index.ts";
 import { factId } from "../../content/curation/keys.ts";
 import { MUSEO_CURATION } from "../../content/curation/museo.ts";
 import type { NarrativeManifest } from "../types.ts";
+import { DEFAULT_ORIGIN } from "../site.ts";
 import { MUSEO_COPY } from "./copy.ts";
 import { MUSEO_ILLUSIONS } from "./illusions.ts";
 
@@ -23,17 +24,21 @@ export const museo: NarrativeManifest = {
   id: "museo",
   // Tema default: publica en la raíz del sitio.
   path: "",
+  // Dirección del tema (SPEC §8 FASE 5.5): `SITE_ORIGIN`/`SITE_BASE` la
+  // overridean al construir, para migrar de dominio o de prefijo sin tocar el
+  // tema.
+  site: { origin: DEFAULT_ORIGIN, base: "" },
   rooms: SALAS.map((room) =>
     isExcluded(MUSEO_CURATION, factId("salas", room.id)) ? { ...room, hidden: true } : room
   ),
   copy: MUSEO_COPY,
   illusions: MUSEO_ILLUSIONS,
   meta: {
-    // title/description son copy del pack (una sola fuente): el `head` los pide
-    // por clave hasta S5, que los tomará del manifest.
+    // title/description son copy del pack (una sola fuente): el head los toma
+    // del manifest y un test verifica la paridad contra el pack.
     title: MUSEO_COPY["meta.title"]!.es,
     description: MUSEO_COPY["meta.description"]!.es,
-    // Ruta lógica del asset; S5 la resuelve contra SITE_ORIGIN/SITE_BASE.
+    // Ruta lógica del asset: el publicador la resuelve contra el origen/base.
     ogImage: "/assets/og-image.png"
   }
 };

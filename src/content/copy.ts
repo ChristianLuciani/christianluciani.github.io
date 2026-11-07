@@ -38,14 +38,23 @@ export function t(key: string): string {
   return copy(key).es;
 }
 
-/** Copy ES para un VALOR DE ATRIBUTO: escapa & < > " y '. */
-export function ta(key: string): string {
-  return copy(key).es
+/**
+ * Escapa un TEXTO para un VALOR DE ATRIBUTO (`& < > " '`). Única copia del
+ * escapado: la usan los accesores del pack y `headHtml()` para los valores del
+ * `NarrativeManifest.meta`, que no pasan por una clave.
+ */
+export function attrEscape(text: string): string {
+  return text
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+/** Copy ES para un VALOR DE ATRIBUTO: escapa & < > " y '. */
+export function ta(key: string): string {
+  return attrEscape(copy(key).es);
 }
 
 /** Copy EN con markup (texto, no atributo). */
@@ -55,12 +64,7 @@ export function te(key: string): string {
 
 /** Copy EN para un VALOR DE ATRIBUTO: escapa & < > " y '. */
 export function tae(key: string): string {
-  return copy(key).en
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
+  return attrEscape(copy(key).en);
 }
 
 /** Copy ES como texto plano: escapa &, < y > sin tocar el resto. */

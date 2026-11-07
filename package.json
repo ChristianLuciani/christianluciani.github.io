@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "vite",
-    "build": "tsx build.ts && vite build",
+    "build": "tsx build.ts && vite build --manifest && tsx build.ts --dist",
+    "build:all": "npm run build",
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
@@ -12,6 +13,7 @@
     "curation:report": "tsx tools/curation.ts --report",
     "golden:update": "tsx tools/golden/update.ts",
     "golden:policy": "tsx tools/golden/policy-cli.ts",
+    "themes:assets": "tsx tools/themes/assets.ts",
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",
     "sync:entity": "tsx tools/sync-entity.ts",
