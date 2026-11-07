@@ -15,6 +15,13 @@ decided_by: operador (sesión dsh/norma/temas-narrativas)
 v0.2 (FASE 5); `docs/CREAR-TEMA.md` queda como contrato operativo. La decisión de este ADR
 no cambia (`status: accepted`).
 
+**Enmienda 2026-11-07 (PR #156), ratificada por el operador el 2026-11-07** (traza: issues
+#128 y #131): `Curation` incorpora `experienceSections` (el print-CV compartido clasifica con
+la curación de SU tema, ADR-001 §1–§2); y la publicación de N temas usa **un** bundle y
+**una** raíz de assets con dirección **por tema** (`narrative.site`), en lugar de N
+invocaciones de Vite con N copias de assets. Reemplaza las cláusulas de §Consecuencias que
+decían lo contrario; además ajusta §Decisión 4 y §Contratos. El resto del ADR no cambia.
+
 ## Contexto
 
 El sitio fue diseñado como **museo de ilusiones ópticas** (`docs/SPEC.md`, `SALAS`). El
@@ -62,11 +69,14 @@ PIEL        themes/<id>/skin.css       (tokens + reglas)
 3. **Narrativa ≠ piel.** La narrativa posee estructura, voz y curación; la piel posee
    tokens, tipografía y densidad. Un tema puede cambiar una sin la otra.
 4. **Topología: subpath** (`/ingenieria/`, `/museo/`), un solo sitio Pages y un solo
-   artefacto de deploy. Se rechaza el subdominio (ver alternativas).
+   artefacto de deploy con **una página por tema** (un bundle y una raíz de assets). Se
+   rechaza el subdominio (ver alternativas); un tema que necesite otro `base` se publica en
+   un build propio, no en el mismo artefacto.
 5. **Claves semánticas, no strings exactos.** `room.<id>.title|subtitle|function`,
    `hero.tagline`, `cover.*`. El diccionario i18n deja de keyear por texto del DOM.
-6. **Curación explícita.** `include` / `exclude` por id estable; excluir **no borra** y
-   exige `reason`. Gate: todo hecho del perfil tiene decisión declarada.
+6. **Curación explícita.** `include` / `exclude` por clave derivada (`colección:clave`,
+   nunca un id de fila del SSOT: la proyección no los expone); excluir **no borra** y exige
+   `reason`. Gate: todo hecho del perfil tiene decisión declarada.
 7. **La ilusión pertenece a la piel/narrativa.** `SALAS.ilusion` deja de ser estructura;
    el tema asigna ilusiones por sala. Modificar `src/ts/illusions/**` sigue prohibido.
 8. **Sin conmutador en runtime en producción.** El "switch" es la URL. `?theme=` sólo
@@ -86,17 +96,21 @@ export interface Theme {
 
 // narrative.ts
 export interface NarrativeManifest {
+  id: string;                    // slug estable [a-z0-9-], clave del registro
+  path: string;                  // subpath de publicación ("" = raíz)
   rooms: RoomRef[];              // orden, ids y metáfora; pueden reusar o subconjunto de SALAS
   copy: CopyPack;                // claves semánticas ES/EN (todas obligatorias)
   illusions: Record<string, string>;  // roomId → canvas id de src/ts/illusions
   meta: { title: string; description: string; ogImage: string };
+  site: { origin: string; base: string };  // dirección de publicación (SPEC §5.4/§8 5.5)
 }
 
 // content/curation/<id>.ts
 export interface Curation {
-  include: string[];             // project/publication/experience ids del SSOT
+  include: string[];             // claves `colección:clave` (derivadas, no ids de fila)
   exclude: { id: string; reason: string }[];
   order?: Record<string, string[]>;
+  experienceSections?: Record<string, "professional" | "training">;  // clave de fila → sección del print-CV (obligatorio en la práctica: el print falla si una fila no está clasificada)
 }
 
 // skin.css — sólo tokens y reglas; sin literales de color
@@ -125,18 +139,25 @@ export interface Curation {
 
 ## Consecuencias
 
-- **Build:** N invocaciones de Vite (una por tema) con `base` propio; un artefacto de
-  deploy con N directorios. El tema default no cambia de URL.
+- **Build:** un artefacto de deploy con N directorios de página sobre **un** bundle y **una**
+  raíz de assets. El `path` del tema mueve su página y su canónica, no duplica assets. La
+  dirección (`origin`/`base`) se declara **por tema** en `narrative.site` y se puede
+  overridear al construir con `SITE_ORIGIN`/`SITE_BASE`; todos los temas de un mismo
+  artefacto comparten `base` (el build falla ruidoso si dos temas del mismo artefacto
+  declaran prefijos distintos) y un tema con otro prefijo se publica en un build propio
+  (`SITE_THEME=<id>`). El tema default no cambia de URL.
 - **CI:** paridad por tema + smoke de assets + completitud i18n + contraste. El gate deja
   de comparar "el" `index.html` y pasa a comparar "el golden de cada tema".
-- **SEO:** mismo origen ⇒ autoridad compartida. Cada tema declara `title`, `description`,
-  `canonical`, `og:url`, `og:image` y JSON-LD propios; `sitemap.xml` lista todas las URLs.
+- **SEO:** mismo origen ⇒ autoridad compartida. Cada tema declara `title`, `description` y
+  JSON-LD propios; el publicador produce `canonical`, `og:url` y `og:image` desde `site` +
+  `path`, y `sitemap.xml` lista todas las URLs.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
-- **Migración futura a subdominio:** es configuración (`SITE_BASE`/`SITE_ORIGIN` por tema)
-  + infraestructura, **no** un refactor del modelo.
-- **Riesgo aceptado:** N copias de los assets hasheados en `dist/` (irrelevante en peso de
-  repo; no se comparte caché entre subpaths).
+- **Migración futura a subdominio:** es configuración (`site.origin` del tema +
+  `SITE_ORIGIN`) + infraestructura, **no** un refactor del modelo.
+- **Riesgo aceptado:** el bundle y `public/` se publican **una vez** en la raíz del
+  artefacto (no hay copia por tema): el peso no se multiplica, pero un tema no puede
+  aislar sus assets del resto del artefacto.
 
 ## Referencias
 
