@@ -228,11 +228,11 @@ subpaths con `Allow: /`).
 npm run curation:report           # I3: 100% de hechos con decisión
 npm run build                     # render fuente (default) + bundle + dist/<path>/index.html de cada tema + sitemap
 npm run build:all                 # construye TODOS los temas registrados (el artefacto los publica todos)
-SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema (no toca index.html)
-npm test                          # unidades + golden por tema
+npm test                          # unidades + golden del default
 # npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
-npm run themes:assets             # smoke: assets del HTML + recursos del runtime + sitemap/robots
+npm run themes:assets             # smoke: assets del HTML + recursos del runtime + sitemap/robots (sobre el build completo)
 npm run build:html                # sólo el render fuente (commit del index.html)
+SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al final porque vacía `dist/`
 ```
 
 `themes:check` (completitud de copy, curación, literales, contraste) llega con #133.

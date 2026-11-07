@@ -28,8 +28,6 @@ export const museo: NarrativeManifest = {
   // overridean al construir, para migrar de dominio o de prefijo sin tocar el
   // tema.
   site: { origin: DEFAULT_ORIGIN, base: "" },
-  // La estructura decide qué salas existen; la curación del tema, cuáles se
-  // presentan (SPEC §5.4).
   rooms: SALAS.map((room) =>
     isExcluded(MUSEO_CURATION, factId("salas", room.id)) ? { ...room, hidden: true } : room
   ),
