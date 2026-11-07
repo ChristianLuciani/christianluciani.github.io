@@ -143,10 +143,12 @@ falla con la lista de temas válidos.
 **Objetivo:** publicar N temas en un solo artefacto, con URLs estables.
 
 **Entregable**
-- `SITE_THEME` + `SITE_BASE`/`SITE_ORIGIN` por tema; `build.ts` acepta tema y escribe
-  `dist/<path>/index.html`.
-- Las 26 rutas `/assets/**` y las 7 referencias de origen pasan por `SITE_BASE`/`SITE_ORIGIN`.
-- `title`/`description`/`og:*`/`twitter:*`/`canonical`/`og:url` desde `narrative.meta`.
+- `SITE_THEME` + dirección por tema (`narrative.site`; overrides `SITE_BASE`/`SITE_ORIGIN`);
+  `build.ts` acepta tema y escribe `dist/<path>/index.html`.
+- Las rutas `/assets/**` y las referencias de origen pasan por la base del artefacto
+  (`SITE_BASE`); el origen (`site.origin`/`SITE_ORIGIN`) gobierna canonical/og/sitemap.
+- `title`/`description`/`og:*`/`twitter:*` desde `narrative.meta`; `canonical`/`og:url`
+  reproyectados con `narrative.site` + `path` al publicar.
 - `robots.txt` + `sitemap.xml` con todas las URLs publicadas.
 - `npm run build:all`; smoke `themes:assets` (toda URL referenciada existe en `dist/`).
 

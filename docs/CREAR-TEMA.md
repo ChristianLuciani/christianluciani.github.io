@@ -37,9 +37,11 @@ export const THEMES = { museo, ingenieria } as const;
 export const DEFAULT_THEME = "museo";
 ```
 
-Selector: `SITE_THEME=<id>` en build. `path` del tema define el subpath
-(`""` = raíz; `"ingenieria"` → `/ingenieria/`). Prohibido hardcodear el id en templates,
-CSS o JS: todo sale de `THEMES`/`SITE_THEME`.
+Cada `narrative.ts` declara `id`, `path` y `site { origin, base }` (obligatorios en el
+manifest, SPEC §5.4): `path` define el subpath (`""` = raíz; `"ingenieria"` →
+`/ingenieria/`) y `site` la dirección de publicación (el build la puede overridear con
+`SITE_ORIGIN`/`SITE_BASE`). Selector: `SITE_THEME=<id>` en build. Prohibido hardcodear el
+id en templates, CSS o JS: todo sale de `THEMES`/`SITE_THEME`.
 
 ## 3. Claves semánticas (no strings exactos)
 
@@ -101,15 +103,17 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   aparece en el render falla salvo que sea `runtime` o derivado del SSOT, y los
   pares de `SALAS` no tienen excepción.
 - El copy del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
-  declara sólo la **estructura y la curación** de esa superficie (qué links
-  entran al encabezado y la clasificación de Trayectoria), sin texto.
+  declara sólo la **estructura** de esa superficie (qué links entran al encabezado),
+  sin texto. La **clasificación de Trayectoria** (`experience[]` →
+  `professional`/`training`) es curación del tema: vive en
+  `Curation.experienceSections` (§5.5), no en el renderer.
 
 ## 4. Curación: mostrar sin borrar
 
 ```ts
 // src/content/curation/ingenieria.ts
 export const CURATION: Curation = {
-  // ids namespaced: `colección:clave` (ver content/curation/keys.ts)
+  // ids namespaced `colección:clave` (ver content/curation/keys.ts; la clave es derivada, no un id de fila)
   include: ["proyectos:Kontablo", "proyectos:ZENTROPY", "proyectos:CLAPPS.AI"],
   exclude: [
     { id: "proyectos:Drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }
@@ -170,16 +174,20 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
 
 ## 7. Metadata y SEO del tema
 
-`narrative.meta` provee `title`, `description`, `ogImage`. El build deriva de ahí
-`<title>`, `og:*`, `twitter:*`, `canonical` y `og:url` con el origen y el subpath del
-tema. Sin esto, dos temas compiten con la misma tarjeta social.
+`narrative.meta` provee `title`, `description`, `ogImage`; `narrative.site` + `path` dan
+la dirección de publicación. El render fuente emite `<title>`, `og:*` y `twitter:*` desde
+`meta`; `canonical`, `og:url` y `og:image` toman la dirección del tema al publicar el
+artefacto (`dist/<path>/`: el publicador reescribe `og:url`/`og:image` y añade
+`canonical`), así el golden del tema default queda byte-idéntico. Sin esto, dos temas
+compiten por la misma tarjeta social.
 
 ## 8. Procedimiento (orden fijo)
 
 1. Reservá el id: `[a-z0-9-]`, único en `THEMES`, sin colisionar con rutas existentes.
 2. Copiá la estructura de `src/themes/museo/` como andamiaje (no como contenido).
 3. Escribí `copy.ts` completo (ES+EN) antes de tocar `narrative.ts`.
-4. Declará `curation/<id>.ts` con include/exclude/orden y razones.
+4. Declará la curación del tema (include/exclude/orden y razones) y registrala en
+   `CURATIONS`, el registro que hoy trae `museo`.
 5. Asigná ilusiones; si ninguna encaja, dejá `undefined` y reportalo (no inventes canvas).
 6. Escribí `skin.css` con tokens primero; recién después reglas.
 7. Registrá el tema en `src/themes/index.ts` (una línea).
@@ -189,7 +197,7 @@ tema. Sin esto, dos temas compiten con la misma tarjeta social.
 npm run curation:report           # I3: 100% de hechos con decisión
 npm run build:all                 # construye todos los temas
 npm test                          # unidades + golden por tema
-npm run themes:check              # completitud de copy, curación, tokens, contraste
+# npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
 npm run themes:assets             # smoke: toda URL de asset del tema existe en dist/
 SITE_THEME=<id> npm run build     # build aislado del tema
 ```
@@ -199,11 +207,12 @@ SITE_THEME=<id> npm run build     # build aislado del tema
 - [ ] `src/themes/<id>/` completo; **0** cambios fuera de ahí salvo la línea de registro.
 - [ ] Copy 100% ES+EN; 0 claves huérfanas; 0 strings visibles en templates.
 - [ ] `curation` declara include/exclude; toda exclusión con `reason`; el
-      reporte cubre el 100% de los hechos (`npm run curation:report` verde).
+      reporte cubre el 100% de los hechos (`npm run curation:report` verde) y
+      `curation.experienceSections` cubre las filas de `experience[]` del print-CV.
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
-- [ ] `npm run themes:check` y `themes:assets` verdes.
+- [ ] `npm run themes:assets` verde; `themes:check` cuando exista (gate de #133).
 - [ ] `meta` propio: title, description, ogImage; canonical por subpath.
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.
 
