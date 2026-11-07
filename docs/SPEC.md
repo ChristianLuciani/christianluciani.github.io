@@ -156,7 +156,7 @@ línea de registro (§8 FASE 5).
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
 | estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/cv/salas.ts` | estructura + narrativa (hoy) |
 | asignación de ilusión por sala | `src/cv/salas.ts` + `src/templates/sala_html.ts` | presentación (hoy) |
-| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/content/curation/<id>.ts` (decisión) derivada por `src/data/proyectos.ts` + `src/data/publicaciones.ts` | curación |
+| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `Curation` del tema (§5.5): decisión; derivación en `src/data/proyectos.ts` | curación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | copy (hoy) |
 | showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
 | curación de presentación de El Marco / El Bastidor (subtítulo, `falta`, labels de link) | `src/content/cv/proyectos.ts` | curación (el ORDEN vive en la curación del tema) |
