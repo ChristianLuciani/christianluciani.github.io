@@ -15,6 +15,8 @@
  * Bastidor, la línea de graduación. `src/data/private-surfaces.test.ts` (#114)
  * escanea estas fichas: no pueden enlazar una superficie privada.
  */
+import { DEFAULT_CURATION, isExcluded, type Curation } from "../content/curation/index.ts";
+import { factId } from "../content/curation/keys.ts";
 import { MARCO, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
 import { PROFILE } from "./profile.generated.ts";
@@ -151,26 +153,52 @@ export function toProyecto(project: ProjectItem): Proyecto {
   };
 }
 
-/** Todas las fichas del SSOT (en orden del SSOT, sin ordenar). */
-export function proyectosDe(profile: CvProfile = PROFILE as unknown as CvProfile): Proyecto[] {
-  return profile.projects.map((p) => toProyecto(p));
+/**
+ * Fichas presentadas por el tema, en el ORDEN de la curación.
+ *
+ * La curación decide qué proyecto se presenta (`exclude`) y en qué orden
+ * (`order.proyectos`). `include` declara la decisión y la cobertura, pero NO
+ * oculta: un proyecto nuevo del SSOT sin decisión se muestra (y el reporte lo
+ * marca en rojo) en vez de desaparecer del sitio en silencio. Si una ficha
+ * incluida queda fuera del orden declarado —curación incompleta— cae por
+ * `recencia` al final.
+ *
+ * El split El Marco / El Bastidor NO se decide acá: se deriva de
+ * `ProjectItem.published` (artifactRefs → artifact público, #109/F4).
+ */
+export function proyectosDe(
+  profile: CvProfile = PROFILE as unknown as CvProfile,
+  curation: Curation = DEFAULT_CURATION
+): Proyecto[] {
+  const order = curation.order?.proyectos ?? [];
+  const position = new Map(order.map((key, index) => [key, index]));
+  const rank = (project: Proyecto): number => position.get(project.id) ?? Number.MAX_SAFE_INTEGER;
+  return profile.projects
+    .map((project) => toProyecto(project))
+    .filter((project) => !isExcluded(curation, factId("proyectos", project.id)))
+    .sort((a, b) => {
+      const byOrder = rank(a) - rank(b);
+      if (byOrder !== 0) return byOrder;
+      return (b.recencia ?? "").localeCompare(a.recencia ?? "");
+    });
 }
 
 export const PROYECTOS: readonly Proyecto[] = proyectosDe();
 
-/* Orden de tarjetas: más reciente primero. `recencia` es ISO, así que el orden
- * lexicográfico es el cronológico; una ficha sin fecha verificable va al final. */
-const porRecencia = (a: Proyecto, b: Proyecto): number =>
-  (b.recencia ?? "").localeCompare(a.recencia ?? "");
-
 /** Obra publicada y auditable: lo que El Marco puede colgar. */
-export function publicadosDe(profile: CvProfile = PROFILE as unknown as CvProfile): Proyecto[] {
-  return proyectosDe(profile).filter((p) => p.published).sort(porRecencia);
+export function publicadosDe(
+  profile: CvProfile = PROFILE as unknown as CvProfile,
+  curation: Curation = DEFAULT_CURATION
+): Proyecto[] {
+  return proyectosDe(profile, curation).filter((p) => p.published);
 }
 
 /** Sin artefacto público: cada una declara qué le falta (si está curada). */
-export function enDesarrolloDe(profile: CvProfile = PROFILE as unknown as CvProfile): Proyecto[] {
-  return proyectosDe(profile).filter((p) => !p.published).sort(porRecencia);
+export function enDesarrolloDe(
+  profile: CvProfile = PROFILE as unknown as CvProfile,
+  curation: Curation = DEFAULT_CURATION
+): Proyecto[] {
+  return proyectosDe(profile, curation).filter((p) => !p.published);
 }
 
 /**

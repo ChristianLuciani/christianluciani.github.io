@@ -11,9 +11,11 @@
  * - `num` NO se almacena: se deriva del orden de las salas VISIBLES (01..N) en
  *   `render.ts`. Esa decisión elimina la clase de bug de numeración desalineada
  *   (off-by-one / stale como "SALA 05" duplicado que había en galería).
- * - `hidden: true` (sala galería) → no se numera, no aparece en el nav, no se
- *   re-renderiza su metadato. Se mantiene en SALAS porque su título participa en el
- *   orden posicional de `ROOM_EN` (el i18n recorre TODOS los `.room-title` del DOM).
+ * - `hidden` se DERIVA de la curación (`salas:galeria` en `exclude`): la narrativa
+ *   decide qué salas EXISTEN, la curación cuáles se PRESENTAN. Una sala oculta no se
+ *   numera, no aparece en el nav y no se re-renderiza su metadato. Se mantiene en
+ *   SALAS porque su título participa en el orden posicional de `ROOM_EN` (el i18n
+ *   recorre TODOS los `.room-title` del DOM).
  * - `titulo`/`subtitulo` ES deben ser byte-idénticos al HTML actual: el i18n busca
  *   claves con `norm()` (colapso de espacios), así que el subtítulo en SALAS define
  *   la clave del MAP. El test de paridad (src/cv/parity.test.ts) lo garantiza.
@@ -24,6 +26,8 @@
  *   para el museo 3D (reutilizaría SALAS sin re-definir la estructura).
  */
 
+import { DEFAULT_CURATION, isExcluded } from "../content/curation/index.ts";
+import { factId } from "../content/curation/keys.ts";
 import { enDesarrollo, publicados } from "../data/proyectos.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 
@@ -196,6 +200,9 @@ export const SALAS: SalaDef[] = [
     funcionEn: "Visual archive: photographs, documents and moments.",
     navLabel: "Archivo",
     navLabelEn: "Archive",
-    hidden: true
+    // La VISIBILIDAD de una sala es curación, no estructura (SPEC §5.5): la
+    // galería se oculta por decisión con razón en `content/curation/museo.ts`.
+    // La sala sigue en SALAS para conservar el orden posicional del DOM/i18n.
+    hidden: isExcluded(DEFAULT_CURATION, factId("salas", "galeria"))
   }
 ];

@@ -109,21 +109,35 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
 ```ts
 // src/content/curation/ingenieria.ts
 export const CURATION: Curation = {
-  include: ["kontablo", "zentropy", "clapps"],
-  exclude: [{ id: "drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }],
-  order: { proyectos: ["kontablo", "zentropy", "clapps"] }
+  // ids namespaced: `colección:clave` (ver content/curation/keys.ts)
+  include: ["proyectos:Kontablo", "proyectos:ZENTROPY", "proyectos:CLAPPS.AI"],
+  exclude: [
+    { id: "proyectos:Drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }
+  ],
+  // `order` es por colección y usa claves SIN prefijo
+  order: { proyectos: ["Kontablo", "ZENTROPY", "CLAPPS.AI"] }
 };
 ```
 
 - `exclude` **nunca** borra: el hecho sigue en el SSOT y en los demás temas.
 - Toda exclusión exige `reason` redactada para el operador, no "n/a".
-- `curation --report` debe salir sin hechos sin decisión (gate I3).
+- El universo incluye las 8 colecciones del perfil (proyectos, publicaciones,
+  experiencia, formación, competencias, idiomas, credenciales, artefactos) y las
+  salas: un hecho que el tema no muestra también se decide, con `exclude` y su
+  razón. `include`/`exclude` deben cubrir el 100%.
+- `npm run curation:report` (o `tsx tools/curation.ts --report`) sale 1 con un
+  hecho sin decisión, un id inexistente o un `exclude` sin razón (gate I3).
 
 ## 5. Hechos: referencia, jamás copia
 
 ```ts
-// correcto
-const proyectos = PROFILE.projects.filter(p => curation.include.includes(p.id));
+// correcto — el hecho se referencia por su clave estable (content/curation/keys.ts)
+const proyectos = PROFILE.projects.filter(
+  (project) =>
+    !curation.exclude.some(
+      (exclusion) => exclusion.id === `proyectos:${projectKey(project.name)}`
+    )
+);
 // prohibido
 const proyectos = [{ name: "Kontablo", status: "Publicado", … }];
 ```
@@ -160,6 +174,7 @@ tema. Sin esto, dos temas compiten con la misma tarjeta social.
 8. Corré los gates y pegá la salida en el body del PR.
 
 ```bash
+npm run curation:report           # I3: 100% de hechos con decisión
 npm run build:all                 # construye todos los temas
 npm test                          # unidades + golden por tema
 npm run themes:check              # completitud de copy, curación, tokens, contraste
@@ -171,7 +186,8 @@ SITE_THEME=<id> npm run build     # build aislado del tema
 
 - [ ] `src/themes/<id>/` completo; **0** cambios fuera de ahí salvo la línea de registro.
 - [ ] Copy 100% ES+EN; 0 claves huérfanas; 0 strings visibles en templates.
-- [ ] `curation` declara include/exclude; toda exclusión con `reason`.
+- [ ] `curation` declara include/exclude; toda exclusión con `reason`; el
+      reporte cubre el 100% de los hechos (`npm run curation:report` verde).
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.

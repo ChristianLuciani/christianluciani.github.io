@@ -9,6 +9,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit",
     "test:consumers": "vitest run src/data/consumers.test.ts",
+    "curation:report": "tsx tools/curation.ts --report",
     "golden:update": "tsx tools/golden/update.ts",
     "golden:policy": "tsx tools/golden/policy-cli.ts",
     "sync:profile": "tsx tools/sync-profile.ts",

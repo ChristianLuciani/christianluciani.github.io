@@ -155,7 +155,7 @@ línea de registro (§8 FASE 5).
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
 | estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/cv/salas.ts` | estructura + narrativa (hoy) |
 | asignación de ilusión por sala | `src/cv/salas.ts` + `src/templates/sala_html.ts` | presentación (hoy) |
-| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/data/proyectos.ts` + `src/content/cv/proyectos.ts` | curación (hoy) |
+| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/content/curation/museo.ts` (decisión) + `src/data/proyectos.ts` + `src/data/publicaciones.ts` (derivación) · el copy museográfico de El Marco/El Bastidor sigue en `src/content/cv/proyectos.ts` | curación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | copy (hoy) |
 | showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
 | curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
@@ -372,6 +372,19 @@ Estado de migración: el material actual de `src/content/cv/` (`museo.ts`, `proy
 `print.ts`) se mueve **sin cambios de contenido** al layout de §8 FASE 5, con el golden
 byte a byte como gate (I1).
 
+Implementación (#128, FASE 5.2): `src/content/curation/museo.ts` declara
+`include`/`exclude`/`order` y `src/content/curation/index.ts` registra una curación por
+tema. Los ids son `colección:clave` (`keys.ts`): `proyectos:Kontablo`,
+`experiencia:org|role|start`, `publicaciones:<doi|url>`, etc.; `order` es por colección
+y usa claves sin prefijo. `EXPERIENCE_SECTIONS` vive en la curación (no en `print.ts`)
+porque es una decisión, no copy, y el universo de cobertura necesita la misma tabla.
+`tools/curation.ts --report` (`npm run curation:report`) enumera todo hecho del perfil y
+de las salas y sale 1 si alguno no tiene decisión o si un `exclude` no tiene razón
+(`validate.ts`). La galería oculta se deriva de `exclude` (`salas:galeria`): la
+narrativa decide qué salas existen, la curación cuáles se presentan. La Biblioteca
+todavía renderiza desde el pack (#99), así que `render-drift.test.ts` exige que el orden
+curado y el DOM coincidan hasta que consuma `publicacionesDe()`.
+
 ### 5.4 Contrato de narrativa — `narrative.ts` del tema
 
 ```ts
@@ -410,7 +423,7 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 pares texto/fondo declarados.
 
 **Excepción declarada — clasificación de `experience[]` en el print-CV (D2, F1 de #119).**
-`EXPERIENCE_SECTIONS` (`src/content/cv/print.ts`) reparte cada fila de `experience[]` en
+`EXPERIENCE_SECTIONS` (`src/content/curation/museo.ts`; `print.ts` la re-exporta) reparte cada fila de `experience[]` en
 `professional`/`training` mediante una clave **derivada de hechos**
 (`org|role.es|start` —el rol sale en ES y cae a `role.en` si la fila no tiene
 ES, fallback que aplica `experienceKey`—, o `id` cuando existe), no por `id` estable:

@@ -157,10 +157,12 @@ Añade `data-delay="1"` a `data-delay="6"` para escalonar (×0.1s). Con
 </div>
 ```
 
-- El orden de las tarjetas se deriva de `Proyecto.recencia` (inicio del
-  proyecto): más reciente primero. No se reordena el array a mano; una ficha
-  sin fecha verificable queda al final.
-- `data-recencia` expone esa fecha en el DOM para tests y depuración.
+- El orden de las tarjetas lo decide `order.proyectos` de
+  `src/content/curation/museo.ts`: más reciente primero. Reordenar una tarjeta
+  es tocar SÓLO la curación, nunca el template.
+- `data-recencia` expone la fecha de `Proyecto.recencia` (en
+  `src/content/cv/proyectos.ts`) en el DOM para tests y depuración; el gate de
+  curación exige que esa fecha y el orden declarado no diverjan.
 
 ### `.gallery-grid` — galería con placeholders
 ```html
