@@ -137,7 +137,11 @@ function printHuman(report: CurationReport, collections: readonly FactCollection
     `decisiones: ${totals.included} incluidas · ${totals.excluded} excluidas · ` +
       `${totals.undecided} sin decisión · ${totals.errors} errores`
   );
-  console.log(isGreen(report) ? "OK — 100% de los hechos tienen decisión" : "FAIL — cobertura incompleta");
+  console.log(
+    isGreen(report)
+      ? "OK — 100% de los hechos curables por ítem (8 colecciones + salas)"
+      : "FAIL — cobertura incompleta (ver hechos sin decisión / errores)"
+  );
 }
 
 function toJson(report: CurationReport, collections: readonly FactCollection[], theme: string): unknown {

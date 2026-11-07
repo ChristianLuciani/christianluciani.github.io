@@ -15,7 +15,8 @@
  * → este módulo. Importar el registro de temas acá cerraría el ciclo.
  */
 import { MUSEO_CURATION } from "./museo.ts";
-import type { Curation } from "./types.ts";
+import { factId } from "./keys.ts";
+import type { CollectionId, Curation } from "./types.ts";
 
 export const CURATIONS: Readonly<Record<string, Curation>> = Object.freeze({
   museo: MUSEO_CURATION
@@ -44,6 +45,32 @@ export function isIncluded(curation: Curation, id: string): boolean {
 /** ¿El hecho está excluido? (la razón vive en `exclude`, no hace falta acá). */
 export function isExcluded(curation: Curation, id: string): boolean {
   return curation.exclude.some((exclusion) => exclusion.id === id);
+}
+
+/**
+ * CONSUMIDOR CANÓNICO de la curación: filtra lo excluido y ordena con
+ * `order[colección]`. Es el helper que documenta `docs/CREAR-TEMA.md` §5 y el
+ * que usan `proyectosDe()`/`publicacionesDe()`: un tema que lo copie no puede
+ * publicar en el orden del SSOT por olvidarse de `order`.
+ *
+ * `keyOf` deriva la clave estable del hecho (ver `keys.ts`). Un ítem fuera del
+ * `order` declarado queda al final (orden estable del SSOT): el reporte I3 lo
+ * marca en rojo si la curación quedó incompleta, pero el render no pierde la fila.
+ */
+export function curatedOrder<T>(
+  curation: Curation,
+  collection: CollectionId,
+  items: readonly T[],
+  keyOf: (item: T) => string
+): T[] {
+  const position = new Map((curation.order?.[collection] ?? []).map((key, index) => [key, index]));
+  return items
+    .filter((item) => !isExcluded(curation, factId(collection, keyOf(item))))
+    .sort(
+      (a, b) =>
+        (position.get(keyOf(a)) ?? Number.MAX_SAFE_INTEGER) -
+        (position.get(keyOf(b)) ?? Number.MAX_SAFE_INTEGER)
+    );
 }
 
 export type { Curation, CollectionId } from "./types.ts";

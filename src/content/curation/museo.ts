@@ -18,9 +18,11 @@
  *     presenta).
  *
  * QUÉ NO ES: hechos (SSOT), copy (pack del tema) ni clasificación por fechas
- * (el Friso ordena por `end`/`start` del SSOT). `EXPERIENCE_SECTIONS` vive acá
- * porque es curación —no copy— y porque el universo de cobertura necesita la
- * MISMA tabla que usa el print-CV: una sola, no dos que puedan divergir.
+ * (el Friso ordena por `end`/`start` del SSOT). La clasificación de experiencia
+ * es parte del CONTRATO (`Curation.experienceSections`) y esta es la tabla del
+ * tema `museo`: el universo de cobertura y el print-CV usan la MISMA tabla, no
+ * dos que puedan divergir. El print compartido la pide a la curación activa,
+ * nunca a este módulo.
  *
  * PRESENTAR ES EL DEFAULT: sólo `exclude` oculta. `include` declara la decisión
  * (la cobertura I3 la verifica `validate.ts`) y alimenta el orden, pero un
@@ -32,17 +34,9 @@
  * todo `exclude` exige `reason` redactada al operador.
  */
 import { factId } from "./keys.ts";
-import type { Curation } from "./types.ts";
+import type { Curation, ExperienceSectionId } from "./types.ts";
 
 /* ── Clasificación de `experience[]` en el print-CV ─────────────────────── */
-
-export type ExperienceSectionId = "professional" | "training";
-
-/** Orden en que las subsecciones se imprimen. */
-export const EXPERIENCE_SECTION_ORDER: readonly ExperienceSectionId[] = [
-  "professional",
-  "training"
-];
 
 /**
  * CURACIÓN F1 — una fila por entrada de `experience[]`, exactamente una vez.
@@ -226,5 +220,8 @@ export const MUSEO_CURATION: Curation = {
   order: {
     proyectos: PROYECTOS,
     publicaciones: PUBLICACIONES
-  }
+  },
+  // El print-CV compartido pide esta tabla a la curación del tema activo
+  // (`activeCuration()`): ningún renderer importa este módulo.
+  experienceSections: EXPERIENCE_SECTIONS
 };

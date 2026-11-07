@@ -8,8 +8,8 @@
  * QUÉ NO ES una decisión: acá no se incluye ni se excluye nada. Si este archivo
  * listara decisiones, el reporte sería circular (se validaría contra sí mismo).
  *
- * ALCANCE: cubre los ítems de las 9 colecciones del `CvProfile` (+ dependencias
- * de artefactos) y las salas de `SALAS`. NO cubre campos singleton —identity,
+ * ALCANCE: cubre los ítems de las 8 colecciones de hechos del `CvProfile` y las
+ * salas de `SALAS` (9 `FactCollection`). NO cubre campos singleton —identity,
  * positioning, headlines, keywords, source—: no se eligen por ítem, se editan
  * en el SSOT o en el pack de copy del tema.
  *

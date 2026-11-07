@@ -13,8 +13,13 @@
  * (`Record<colección, claves>`), así que sus valores van SIN prefijo.
  *
  * `include`/`exclude`/`order` son la forma ratificada en ADR-001 §6; este
- * archivo sólo la tipa. La cobertura (todo hecho con decisión) la verifica
- * `validate.ts` y la expone `tools/curation.ts --report`.
+ * archivo la tipa y agrega `experienceSections`, la clasificación de filas de
+ * `experience[]` que imprime el print-CV. Sin ese campo, el renderer COMPARTIDO
+ * tendría que importar el módulo de un tema concreto (ADR-001 §1–§2): el print
+ * de cualquier tema debe clasificar con la curación de SU tema.
+ *
+ * La cobertura (todo hecho con decisión) la verifica `validate.ts` y la expone
+ * `tools/curation.ts --report`.
  */
 
 /** Colecciones curables del perfil público + las salas de la narrativa. */
@@ -28,6 +33,9 @@ export type CollectionId =
   | "credenciales"
   | "artefactos"
   | "salas";
+
+/** Sección del print-CV en que se imprime una fila de `experience[]`. */
+export type ExperienceSectionId = "professional" | "training";
 
 /** Exclusión explícita: el `reason` es obligatorio y va redactado al operador. */
 export interface CurationExclusion {
@@ -46,6 +54,13 @@ export interface Curation {
   readonly exclude: readonly CurationExclusion[];
   /** Orden de presentación por colección (claves sin prefijo). */
   readonly order?: Partial<Record<CollectionId, readonly string[]>>;
+  /**
+   * Clasificación del tema para `experience[]` en el print-CV: clave de fila
+   * (`keys.ts`) → sección. Es parte del contrato porque el print-CV es un
+   * renderer compartido; un tema sin tabla deja el render en fallo ruidoso
+   * (fila sin clasificar), nunca en una sección adivinada.
+   */
+  readonly experienceSections?: Readonly<Record<string, ExperienceSectionId>>;
 }
 
 /** Un hecho del universo, con la superficie que HOY lo presenta (si existe). */

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { HERO_NAV, SALAS } from "./salas";
+import { museo } from "../themes/museo/narrative.ts";
 import {
   mapExtra,
   navDotsHtml,
@@ -45,7 +46,7 @@ describe("SALAS — integridad", () => {
   });
 
   it("solo la galería está oculta; el resto son las 8 salas visibles", () => {
-    expect(SALAS.filter((s) => s.hidden).map((s) => s.id)).toEqual(["galeria"]);
+    expect(museo.rooms.filter((s) => s.hidden).map((s) => s.id)).toEqual(["galeria"]);
     expect(visibleSalas().map((s) => s.id)).toEqual(
       IDS.filter((id) => id !== "galeria")
     );
@@ -59,7 +60,7 @@ describe("SALAS — integridad", () => {
       expect(s.navLabelEn.length).toBeGreaterThan(0);
     }
     // La galería (oculta) no participa del plano.
-    expect(SALAS.find((s) => s.id === "galeria")!.hidden).toBe(true);
+    expect(museo.rooms.find((s) => s.id === "galeria")!.hidden).toBe(true);
   });
 
   it("todo título y traducción llevan <em> (estilo museístico)", () => {

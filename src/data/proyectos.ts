@@ -15,8 +15,7 @@
  * Bastidor, la línea de graduación. `src/data/private-surfaces.test.ts` (#114)
  * escanea estas fichas: no pueden enlazar una superficie privada.
  */
-import { DEFAULT_CURATION, isExcluded, type Curation } from "../content/curation/index.ts";
-import { factId } from "../content/curation/keys.ts";
+import { DEFAULT_CURATION, curatedOrder, type Curation } from "../content/curation/index.ts";
 import { MARCO, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
 import { PROFILE } from "./profile.generated.ts";
@@ -32,9 +31,10 @@ export interface Proyecto {
   /** Estado del SSOT (`active`, `experimental`, `planning`, `maintained`, …). */
   status?: string;
   /**
-   * Orden de presentación (más reciente primero). No es un hecho del SSOT:
-   * es curación museográfica. Sin fecha verificable queda al final; no se
-   * inventa una.
+   * Fecha de recencia del proyecto, expuesta en `data-recencia` (tests y
+   * depuración). No es un hecho del SSOT ni decide el orden: el ORDEN lo fija
+   * `order.proyectos` de la curación del tema. La curación exige que ambos
+   * coincidan, así que una ficha sin fecha verificable no se inventa.
    */
   recencia?: string;
   /** Qué le falta para pasar a El Marco (sólo fichas sin artefacto público). */
@@ -157,11 +157,12 @@ export function toProyecto(project: ProjectItem): Proyecto {
  * Fichas presentadas por el tema, en el ORDEN de la curación.
  *
  * La curación decide qué proyecto se presenta (`exclude`) y en qué orden
- * (`order.proyectos`). `include` declara la decisión y la cobertura, pero NO
+ * (`order.proyectos`), vía `curatedOrder()`: una sola implementación para todos
+ * los consumidores. `include` declara la decisión y la cobertura, pero NO
  * oculta: un proyecto nuevo del SSOT sin decisión se muestra (y el reporte lo
  * marca en rojo) en vez de desaparecer del sitio en silencio. Si una ficha
- * incluida queda fuera del orden declarado —curación incompleta— cae por
- * `recencia` al final.
+ * incluida queda fuera del orden declarado —curación incompleta— queda al
+ * final, en el orden estable del SSOT.
  *
  * El split El Marco / El Bastidor NO se decide acá: se deriva de
  * `ProjectItem.published` (artifactRefs → artifact público, #109/F4).
@@ -170,17 +171,12 @@ export function proyectosDe(
   profile: CvProfile = PROFILE as unknown as CvProfile,
   curation: Curation = DEFAULT_CURATION
 ): Proyecto[] {
-  const order = curation.order?.proyectos ?? [];
-  const position = new Map(order.map((key, index) => [key, index]));
-  const rank = (project: Proyecto): number => position.get(project.id) ?? Number.MAX_SAFE_INTEGER;
-  return profile.projects
-    .map((project) => toProyecto(project))
-    .filter((project) => !isExcluded(curation, factId("proyectos", project.id)))
-    .sort((a, b) => {
-      const byOrder = rank(a) - rank(b);
-      if (byOrder !== 0) return byOrder;
-      return (b.recencia ?? "").localeCompare(a.recencia ?? "");
-    });
+  return curatedOrder(
+    curation,
+    "proyectos",
+    profile.projects,
+    (project) => projectKey(project.name)
+  ).map((project) => toProyecto(project));
 }
 
 export const PROYECTOS: readonly Proyecto[] = proyectosDe();

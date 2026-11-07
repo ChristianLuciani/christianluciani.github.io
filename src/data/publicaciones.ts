@@ -16,8 +16,8 @@
  * una publicación del SSOT, es la presentación del proyecto `Physics Lab Book`
  * dentro de La Biblioteca (SPEC §4, reconciliación declarada).
  */
-import { DEFAULT_CURATION, isExcluded, type Curation } from "../content/curation/index.ts";
-import { factId, publicationKey } from "../content/curation/keys.ts";
+import { DEFAULT_CURATION, curatedOrder, type Curation } from "../content/curation/index.ts";
+import { publicationKey } from "../content/curation/keys.ts";
 import { PROFILE } from "./profile.generated.ts";
 import type { CvProfile, PublicationItem } from "./profile.types.ts";
 
@@ -25,13 +25,7 @@ export function publicacionesDe(
   profile: CvProfile = PROFILE as unknown as CvProfile,
   curation: Curation = DEFAULT_CURATION
 ): PublicationItem[] {
-  const order = curation.order?.publicaciones ?? [];
-  const position = new Map(order.map((key, index) => [key, index]));
-  const rank = (publication: PublicationItem): number =>
-    position.get(publicationKey(publication)) ?? Number.MAX_SAFE_INTEGER;
-  return profile.publications
-    .filter((publication) => !isExcluded(curation, factId("publicaciones", publicationKey(publication))))
-    .sort((a, b) => rank(a) - rank(b));
+  return curatedOrder(curation, "publicaciones", profile.publications, publicationKey);
 }
 
 /** Claves estables de las publicaciones presentadas, en orden. */

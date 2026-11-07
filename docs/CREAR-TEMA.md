@@ -125,20 +125,32 @@ export const CURATION: Curation = {
   experiencia, formación, competencias, idiomas, credenciales, artefactos) y las
   salas: un hecho que el tema no muestra también se decide, con `exclude` y su
   razón. `include`/`exclude` deben cubrir el 100%.
+- `curatedOrder(curation, colección, hechos, keyOf)` es el consumidor canónico:
+  filtra lo excluido y ordena por `order`. No lo reimplementes a mano.
+- `experienceSections` del contrato es la clasificación de `experience[]` que
+  imprime el print-CV (clave de fila → `professional`/`training`); el print
+  compartido la pide al tema activo, no al módulo de un tema.
 - `npm run curation:report` (o `tsx tools/curation.ts --report`) sale 1 con un
   hecho sin decisión, un id inexistente o un `exclude` sin razón (gate I3).
 
 ## 5. Hechos: referencia, jamás copia
 
 ```ts
-// correcto — el hecho se referencia por su clave estable (content/curation/keys.ts)
-const proyectos = PROFILE.projects.filter(
-  (project) =>
-    !curation.exclude.some(
-      (exclusion) => exclusion.id === `proyectos:${projectKey(project.name)}`
-    )
+// correcto — un solo consumidor: excluye y ORDENA con la curación del tema.
+// `keyOf` deriva la clave estable del hecho (content/curation/keys.ts).
+const proyectos = curatedOrder(
+  curation,
+  "proyectos",
+  PROFILE.projects,
+  (project) => projectKey(project.name)
 );
-// prohibido
+// o, ya resuelto para el sitio: proyectosDe() / publicacionesDe()
+
+// prohibido — filtrar a mano sin `order` publica en el orden del SSOT
+const proyectos = PROFILE.projects.filter(
+  (project) => !curation.exclude.some((e) => e.id === `proyectos:${projectKey(project.name)}`)
+);
+// prohibido — copiar hechos
 const proyectos = [{ name: "Kontablo", status: "Publicado", … }];
 ```
 

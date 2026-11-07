@@ -6,9 +6,10 @@
  * curación de `experience[]` en sus dos secciones (F1 de #116).
  * NO contiene hechos RENDERIZABLES: fechas, cargos, organizaciones,
  * publicaciones, conteos, idiomas y competencias salen de `PROFILE`
- * (`src/data/profile.generated.ts`). La tabla `EXPERIENCE_SECTIONS` —en la capa de
- * curación (`content/curation/museo.ts`)— sólo repite
- * la CLAVE de cada fila (`org|role|start`, o `id` si el SSOT lo expone) para
+ * (`src/data/profile.generated.ts`). La clasificación de `experience[]` es un
+ * campo del CONTRATO de curación (`Curation.experienceSections`) y la tabla del
+ * tema `museo` vive en `content/curation/museo.ts`; este módulo sólo repite la
+ * CLAVE de cada fila (`org|role|start`, o `id` si el SSOT lo expone) para
  * clasificarla: no imprime ninguno de esos valores.
  *
  * PROSA DE PERFIL (#122): NO es texto de este archivo. `profile` es una
@@ -31,23 +32,24 @@
  * cuando el print tenga su propia versión bilingüe.
  */
 import type { LangText } from "../../data/profile.types.ts";
+import { activeCuration } from "../curation/active.ts";
 import { experienceKey } from "../curation/keys.ts";
 import {
   EXPERIENCE_SECTION_ORDER,
-  EXPERIENCE_SECTIONS,
-  type ExperienceSectionId
-} from "../curation/museo.ts";
+  experienceSectionOf as sectionOf
+} from "../curation/experience.ts";
+import type { ExperienceSectionId } from "../curation/types.ts";
 import { PROFILE_PROSE, type ProfileProseSelection } from "./profile-prose.ts";
 import { t, te } from "../copy.ts";
 
 /*
- * `experienceKey`, `ExperienceSectionId`, `EXPERIENCE_SECTION_ORDER` y
- * `EXPERIENCE_SECTIONS` viven en la CAPA DE CURACIÓN (`content/curation/`):
- * clasificar experiencia es curación, no copy, y el universo de cobertura de
- * #128 necesita la MISMA tabla que imprime el CV. Se re-exportan acá para no
- * romper a los consumidores históricos (`print_cv_html.ts`, tests).
+ * Las piezas NEUTRAS de la clasificación (`experienceKey`, el tipo de sección y
+ * el orden de subsecciones) viven en la capa de curación, no en el tema. La
+ * TABLA es del tema (`Curation.experienceSections`) y se resuelve con
+ * `activeCuration()`: ningún renderer compartido importa `curation/museo.ts`.
+ * Se re-exportan acá para no romper a los consumidores históricos.
  */
-export { EXPERIENCE_SECTION_ORDER, EXPERIENCE_SECTIONS, experienceKey };
+export { EXPERIENCE_SECTION_ORDER, experienceKey };
 export type { ExperienceSectionId };
 
 export interface PrintCvCuration {
@@ -64,7 +66,7 @@ export interface PrintCvCuration {
      * mezcla empleo y eventos formativos (el SSOT no los distingue con un
      * campo), así que el bloque no se puede rotular «Experiencia profesional»;
      * adentro van las dos subsecciones (`professional`, `training`), decididas
-     * por la tabla `EXPERIENCE_SECTIONS`. Mismo criterio que la sala (#118).
+     * por `Curation.experienceSections` del tema. Mismo criterio que la sala (#118).
      */
     experience: LangText;
     /** Aclara qué contiene la Trayectoria (sin conteos ni fechas: hechos del SSOT). */
@@ -99,17 +101,17 @@ export interface PrintCvCuration {
   levelLabels: Record<string, string>;
 }
 
-/** Sección curada de una fila, o `undefined` si el SSOT trae una entrada nueva. */
+/**
+ * Sección curada de una fila con la curación del TEMA ACTIVO, o `undefined` si
+ * el SSOT trae una entrada nueva (el print falla ruidoso, no adivina).
+ */
 export function experienceSectionOf(item: {
   id?: string;
   org: string;
   role: LangText;
   start: string;
 }): ExperienceSectionId | undefined {
-  const key = experienceKey(item);
-  return Object.prototype.hasOwnProperty.call(EXPERIENCE_SECTIONS, key)
-    ? EXPERIENCE_SECTIONS[key]
-    : undefined;
+  return sectionOf(activeCuration(), item);
 }
 
 export const PRINT_CV: PrintCvCuration = {

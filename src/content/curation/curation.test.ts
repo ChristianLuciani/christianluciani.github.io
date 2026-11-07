@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 import { SALAS } from "../../cv/salas.ts";
+import { museo } from "../../themes/museo/narrative.ts";
+import { projectKey } from "../cv/proyectos.ts";
 import { PROFILE } from "../../data/profile.generated.ts";
 import type { CvProfile } from "../../data/profile.types.ts";
 import { proyectosDe, publicadosDe } from "../../data/proyectos.ts";
 import { THEMES, themeIds } from "../../themes/index.ts";
 import { factUniverse, allFacts } from "./facts.ts";
-import { CURATIONS, curationFor, isExcluded } from "./index.ts";
+import { CURATIONS, curationFor, curatedOrder, isExcluded } from "./index.ts";
+import { activeCuration } from "./active.ts";
+import { experienceSectionOf } from "./experience.ts";
 import { EXPERIENCE_SECTIONS, MUSEO_CURATION } from "./museo.ts";
 import { experienceKey, factId } from "./keys.ts";
 import { isGreen, reasonProblem, validateCuration } from "./validate.ts";
+import { renderRoom } from "../../templates/sala_html.ts";
 import type { Curation } from "./types.ts";
 
 /**
@@ -180,7 +185,7 @@ describe("order — el orden se declara en la curación", () => {
 describe("salas y registro de temas", () => {
   it("la galería está oculta porque la curación la excluye (no por un literal)", () => {
     expect(isExcluded(MUSEO_CURATION, factId("salas", "galeria"))).toBe(true);
-    expect(SALAS.filter((sala) => sala.hidden).map((sala) => sala.id)).toEqual(["galeria"]);
+    expect(museo.rooms.filter((sala) => sala.hidden).map((sala) => sala.id)).toEqual(["galeria"]);
   });
 
   it("todo tema registrado tiene curación (agregar un tema sin curación es rojo)", () => {
@@ -193,6 +198,61 @@ describe("salas y registro de temas", () => {
 
   it("un tema desconocido falla listando los que tienen curación", () => {
     expect(() => curationFor("noexiste")).toThrow(/Temas con curación: museo/);
+  });
+
+  it("SALAS no declara visibilidad: la aplica la narrativa con SU curación", () => {
+    // La estructura compartida no puede quedar atada a la curación de un tema.
+    expect(SALAS.every((sala) => !("hidden" in sala))).toBe(true);
+    expect(museo.rooms.filter((sala) => sala.hidden).map((sala) => sala.id)).toEqual(["galeria"]);
+  });
+
+  it("una sala presentada no hereda la clase `room--hidden` del shell", () => {
+    const galeria = museo.rooms.find((sala) => sala.id === "galeria")!;
+    expect(renderRoom(galeria)).toContain("room--hidden");
+    expect(renderRoom({ ...galeria, hidden: false })).not.toContain("room--hidden");
+  });
+
+  it("la curación activa es la del tema vigente (render)", () => {
+    expect(activeCuration()).toBe(MUSEO_CURATION);
+  });
+});
+
+describe("contrato — la clasificación de experiencia es del tema", () => {
+  it("MUSEO_CURATION lleva la tabla como campo del contrato", () => {
+    expect(MUSEO_CURATION.experienceSections).toBe(EXPERIENCE_SECTIONS);
+    expect(Object.keys(MUSEO_CURATION.experienceSections ?? {}).sort()).toEqual(
+      PERFIL.experience.map(experienceKey).sort()
+    );
+  });
+
+  it("experienceSectionOf resuelve con la curación que recibe (no con un import fijo)", () => {
+    const row = PERFIL.experience[0]!;
+    expect(experienceSectionOf(MUSEO_CURATION, row)).toBe(EXPERIENCE_SECTIONS[experienceKey(row)]);
+    // Un tema sin tabla no adivina: la fila queda sin clasificar.
+    const sinTabla: Curation = { include: [], exclude: [] };
+    expect(experienceSectionOf(sinTabla, row)).toBeUndefined();
+  });
+});
+
+describe("curatedOrder — consumidor canónico (excluye + ordena)", () => {
+  it("devuelve los hechos en el orden de la colección y sin los excluidos", () => {
+    const invertido: Curation = {
+      ...MUSEO_CURATION,
+      order: { ...MUSEO_CURATION.order, proyectos: [...MUSEO_CURATION.order!.proyectos!].reverse() }
+    };
+    const claves = (curation: Curation): string[] =>
+      curatedOrder(curation, "proyectos", PERFIL.projects, (project) => projectKey(project.name)).map(
+        (project) => projectKey(project.name)
+      );
+    expect(claves(invertido)).toEqual([...MUSEO_CURATION.order!.proyectos!].reverse());
+    const sinKontablo: Curation = {
+      ...MUSEO_CURATION,
+      exclude: [
+        ...MUSEO_CURATION.exclude,
+        { id: factId("proyectos", "Kontablo"), reason: "exclusión de prueba, no borra el hecho" }
+      ]
+    };
+    expect(claves(sinKontablo)).not.toContain("Kontablo");
   });
 });
 

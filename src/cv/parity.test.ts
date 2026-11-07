@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { SALAS } from "./salas";
+import { museo } from "../themes/museo/narrative.ts";
 import {
   mapExtra,
   navDotsHtml,
@@ -91,7 +92,7 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
   });
 
   it("numeración visible == numFor (01..07); galería oculta con número stale intacto", () => {
-    for (const s of SALAS) {
+    for (const s of museo.rooms) {
       if (s.hidden) continue;
       expect(htmlRoomNumber(s.id), `room-number de ${s.id}`).toBe(`SALA ${numFor(s.id)}`);
     }
@@ -124,7 +125,7 @@ describe("paridad SALAS ↔ index.html (generado)", () => {
     expect(dots.map((d) => d.target)).toEqual(navTargets());
     expect(dots.map((d) => d.label)).toEqual([
       "Entrada",
-      ...SALAS.filter((s) => !s.hidden).map((s) => s.navLabel)
+      ...museo.rooms.filter((s) => !s.hidden).map((s) => s.navLabel)
     ]);
     expect(navDotsHtml()).toContain('data-target="room-perfil"');
   });
