@@ -1,6 +1,6 @@
 /**
  * render — deriva navegación, numeración, i18n estructural y metadatos de sala
- * desde SALAS (SPEC: docs/REFACTOR_PLAN.md §3.1). Las funciones puras son
+ * desde las salas de la NARRATIVA ACTIVA (default `museo` = SALAS; SPEC §3.1).
  * testeables en node (vitest); `mountSalas()` es la única que toca el DOM.
  *
  * Flujo en el browser:
@@ -12,16 +12,20 @@
  *     5. Dispara 'cv:salas-ready' para que el i18n refresque títulos e idioma.
  */
 
-import { HERO_NAV, SALAS, type SalaDef } from "./salas.ts";
+import { HERO_NAV } from "./salas.ts";
+import { activeRooms, type RoomRef } from "../themes/index.ts";
 
 /** id de <section> a partir del id de sala: 'perfil' → 'room-perfil' */
 export function sectionId(id: string): string {
   return `room-${id}`;
 }
 
-/** Salas visibles (excluye hidden: galería) — las que se numeran y navegan. */
-export function visibleSalas(): SalaDef[] {
-  return SALAS.filter((s) => !s.hidden);
+/**
+ * Salas visibles (excluye hidden) de la NARRATIVA ACTIVA — las que se numeran y
+ * navegan. `assembleHtml({ theme })` instala el tema; en el browser el default.
+ */
+export function visibleSalas(): readonly RoomRef[] {
+  return activeRooms().filter((s) => !s.hidden);
 }
 
 /** Objetivos de navegación en orden: hero + salas visibles (ids de <section>). */
@@ -39,7 +43,7 @@ function navLink(target: string, label: string, labelEn: string, num: string): s
   );
 }
 
-/** HTML del HUD (hero + salas visibles), desde SALAS. */
+/** HTML del HUD (hero + salas visibles), desde la narrativa activa. */
 export function navDotsHtml(): string {
   const rows = [navLink(HERO_NAV.id, HERO_NAV.navLabel, HERO_NAV.navLabelEn, "00")];
   for (const s of visibleSalas()) {
@@ -85,14 +89,14 @@ export function numFor(id: string): string | null {
 /**
  * ROOM_EN[] — traducciones EN de los títulos, en ORDEN DEL DOM (incluye salas
  * ocultas): el script i18n recorre `document.querySelectorAll('.room-title')`
- * posicionalmente, así que el índice debe casar con SALAS en orden DOM.
+ * posicionalmente, así que el índice debe casar con las salas en orden DOM.
  */
 export function roomEnList(): string[] {
-  return SALAS.map((s) => s.tituloEn);
+  return activeRooms().map((s) => s.tituloEn);
 }
 
 /**
- * MAP_EXTRA — claves de sala del diccionario i18n generadas desde SALAS:
+ * MAP_EXTRA — claves de sala del diccionario i18n generadas desde las salas:
  * "SALA 01"→"ROOM 01" (visibles), subtitulo→subtituloEn y funcion→funcionEn
  * (todas), el título en mayúsculas (el plano lo rotula así) y "SALA"→"ROOM"
  * (etiqueta del plano). El script i18n las fusiona en el MAP en runtime
@@ -104,7 +108,7 @@ export function mapExtra(): Record<string, string> {
     const num = numFor(s.id);
     if (num) extra[`SALA ${num}`] = `ROOM ${num}`;
   }
-  for (const s of SALAS) {
+  for (const s of activeRooms()) {
     extra[s.subtitulo] = s.subtituloEn;
     extra[s.funcion] = s.funcionEn;
   }
@@ -123,7 +127,7 @@ export function mapExtra(): Record<string, string> {
    DOM (browser) — mountSalas()
 ────────────────────────────────────────────── */
 
-function applyRoomMeta(room: HTMLElement, s: SalaDef): void {
+function applyRoomMeta(room: HTMLElement, s: RoomRef): void {
   const numEl = room.querySelector<HTMLElement>(".room-content > .room-number");
   const num = numFor(s.id);
   if (numEl && num) {
@@ -195,7 +199,7 @@ export function mountSalas(): void {
   syncNavLang();
 
   // 2) Metadatos por sala (número/título/subtítulo) — auto-corrección si hay deriva.
-  for (const s of SALAS) {
+  for (const s of activeRooms()) {
     if (s.hidden) continue;
     const room = document.getElementById(sectionId(s.id));
     if (room) applyRoomMeta(room, s);

@@ -29,6 +29,60 @@ export interface CopyEntry {
 /** Claves semánticas (`hero.tagline`, `room.perfil.quote`, …) → par ES/EN. */
 export type CopyPack = Readonly<Record<string, CopyEntry>>;
 
+/**
+ * SALA DE UNA NARRATIVA (SPEC §5.4: `rooms` = ids, orden y metáfora).
+ *
+ * Es la forma mínima que los renderers necesitan de una sala; `SalaDef`
+ * (`src/cv/salas.ts`) la satisface estructuralmente. Un tema puede declarar un
+ * subconjunto o reordenar estas entradas sin tocar templates.
+ *
+ * `ilusion` sobrevive acá SÓLO mientras `SALAS` la siga declarando (ADR-001 §7:
+ * la ilusión pertenece a la narrativa). El manifest del tema la expone en
+ * `illusions`; un tema nuevo NO debe usar este campo.
+ */
+export interface RoomRef {
+  /** id del <section> sin prefijo: `perfil` → `<section id="room-perfil">` */
+  readonly id: string;
+  readonly titulo: string;
+  readonly tituloEn: string;
+  readonly subtitulo: string;
+  readonly subtituloEn: string;
+  readonly funcion: string;
+  readonly funcionEn: string;
+  readonly navLabel: string;
+  readonly navLabelEn: string;
+  /** true → sala oculta: no se numera, no entra al HUD ni al plano. */
+  readonly hidden?: boolean;
+  /** @deprecated ADR-001 §7: la asigna el tema en `illusions`, no la estructura. */
+  readonly ilusion?: string;
+}
+
+/**
+ * NARRATIVA DE UN TEMA (SPEC §5.4 · ADR-001 §2).
+ *
+ * Datos, no código: estructura (salas), voz (copy), ilusiones y metadata. El
+ * registro de temas (`src/themes/index.ts`) es la única fuente de ids y el
+ * único lugar donde se resuelve `SITE_THEME`; ningún template conoce el id.
+ */
+export interface NarrativeManifest {
+  /** slug estable `[a-z0-9-]`, único en `THEMES` (= clave del registro). */
+  readonly id: string;
+  /** subpath de publicación: `""` = raíz del sitio. */
+  readonly path: string;
+  /** Salas incluidas, en orden DOM (incluye las ocultas). */
+  readonly rooms: readonly RoomRef[];
+  /** Pack de copy 100% ES/EN (I4). */
+  readonly copy: CopyPack;
+  /** roomId → id de canvas existente (ADR-001 §7). */
+  readonly illusions: Readonly<Record<string, string>>;
+  /** Metadata del tema; S5 la proyecta a title/og/twitter/canonical. */
+  readonly meta: {
+    readonly title: string;
+    readonly description: string;
+    readonly ogImage: string;
+  };
+}
+
 /** Clave del diccionario: el walker i18n compara con `norm()` (espacios
  * colapsados) sobre el nodo de texto. Si el pack no normaliza igual, una clave
  * con sangría o salto de línea nunca matchea y la traducción muere en silencio. */

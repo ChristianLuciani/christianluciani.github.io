@@ -323,7 +323,7 @@ describe("copy — descubrimiento de templates", () => {
 
 describe("copy — pack bilingüe y sin claves muertas", () => {
   it("toda clave tiene ES y EN no vacíos", async () => {
-    const { COPY } = await import("../content/copy.ts");
+    const COPY = (await import("../content/copy.ts")).activeCopy();
     for (const [key, entry] of Object.entries(COPY)) {
       expect(entry.es.trim(), `${key}.es`).not.toBe("");
       expect(entry.en.trim(), `${key}.en`).not.toBe("");
@@ -331,14 +331,14 @@ describe("copy — pack bilingüe y sin claves muertas", () => {
   });
 
   it("las claves son semánticas (grupo.subclave, sin texto como clave)", async () => {
-    const { COPY } = await import("../content/copy.ts");
+    const COPY = (await import("../content/copy.ts")).activeCopy();
     for (const key of Object.keys(COPY)) {
       expect(key, `clave "${key}"`).toMatch(/^[a-z][a-zA-Z0-9]*(\.[a-zA-Z0-9]+)+$/);
     }
   });
 
   it("un mismo texto ES no declara dos EN distintas", async () => {
-    const { COPY } = await import("../content/copy.ts");
+    const COPY = (await import("../content/copy.ts")).activeCopy();
     const seen = new Map<string, { key: string; en: string }>();
     const conflicts: string[] = [];
     const norm = (s: string): string => s.replace(/\s+/g, " ").trim();
@@ -355,7 +355,7 @@ describe("copy — pack bilingüe y sin claves muertas", () => {
   });
 
   it("ninguna clave del pack es huérfana en el HTML generado", async () => {
-    const { COPY } = await import("../content/copy.ts");
+    const COPY = (await import("../content/copy.ts")).activeCopy();
     const decode = (s: string): string =>
       s
         .replace(/&amp;/g, "&")
