@@ -113,7 +113,7 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
 ```ts
 // src/content/curation/ingenieria.ts
 export const CURATION: Curation = {
-  // ids namespaced: `colección:clave` (ver content/curation/keys.ts)
+  // ids namespaced `colección:clave` (ver §4: la clave es derivada, no un id de fila)
   include: ["proyectos:Kontablo", "proyectos:ZENTROPY", "proyectos:CLAPPS.AI"],
   exclude: [
     { id: "proyectos:Drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }

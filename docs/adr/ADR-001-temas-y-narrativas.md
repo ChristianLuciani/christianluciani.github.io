@@ -74,8 +74,9 @@ PIEL        themes/<id>/skin.css       (tokens + reglas)
    un build propio, no en el mismo artefacto.
 5. **Claves semánticas, no strings exactos.** `room.<id>.title|subtitle|function`,
    `hero.tagline`, `cover.*`. El diccionario i18n deja de keyear por texto del DOM.
-6. **Curación explícita.** `include` / `exclude` por id estable; excluir **no borra** y
-   exige `reason`. Gate: todo hecho del perfil tiene decisión declarada.
+6. **Curación explícita.** `include` / `exclude` por clave derivada (`colección:clave`,
+   nunca un id de fila del SSOT: la proyección no los expone); excluir **no borra** y exige
+   `reason`. Gate: todo hecho del perfil tiene decisión declarada.
 7. **La ilusión pertenece a la piel/narrativa.** `SALAS.ilusion` deja de ser estructura;
    el tema asigna ilusiones por sala. Modificar `src/ts/illusions/**` sigue prohibido.
 8. **Sin conmutador en runtime en producción.** El "switch" es la URL. `?theme=` sólo
@@ -106,7 +107,7 @@ export interface NarrativeManifest {
 
 // content/curation/<id>.ts
 export interface Curation {
-  include: string[];             // project/publication/experience ids del SSOT
+  include: string[];             // claves `colección:clave` (derivadas, no ids de fila)
   exclude: { id: string; reason: string }[];
   order?: Record<string, string[]>;
   experienceSections?: Record<string, "professional" | "training">;  // clave de fila → sección del print-CV (obligatorio en la práctica: el print falla si una fila no está clasificada)
