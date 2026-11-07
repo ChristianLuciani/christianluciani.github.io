@@ -177,7 +177,13 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
   La emite `src/themes/skin.ts` (`emitSkin`): los tokens del bloque marcado
   `@derived:begin … @derived:end` se resuelven a su literal mientras dure el
   congelamiento de I1 (#130). Publicarlos es un cambio de render declarado.
-- Todo par texto/fondo declara contraste y **pasa AA** (4,5:1 normal, 3:1 grande).
+- Todo par texto/fondo declara contraste y **pasa AA** (4,5:1 normal, 3:1 grande);
+  el umbral no es autodeclarable: `contrast.ts` sólo admite 3 o 4,5.
+- **Límite vigente (ADR-001 §D11, S4 pendiente):** `src/themes/skin.ts` emite la piel de
+  `museo` y sólo de `museo`. Un tema no-default con `skin.css` propio **no publica esa
+  piel**: `themes:check` lo falla en vez de certificar CSS que no llega al render. Hasta
+  que S4/#136 haga que `emitSkin` resuelva la piel del tema activo, un tema nuevo sin
+  `skin.css` hereda la del default (y el reporte lo declara).
 - Prohibido `!important` para pisar otro tema: si hace falta, falta un token.
 
 ## 7. Metadata y SEO del tema
@@ -249,8 +255,8 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
 - **contraste**: todo `color: var(--x)` y toda combinación texto/tinte tiene par
   declarado en `contrast.ts` y pasa AA; las deudas (`AA_DEBT`) se auto-eliminan
   cuando el par empieza a cumplir.
-- **golden**: existe `tests/golden/<id>.html`; un tema sin snapshot no tiene
-  gate de render (`npm run golden:update` lo genera).
+- **golden**: existe `tests/golden/<id>.html`; sin snapshot no hay comparación
+  byte a byte y el gate falla duro (`npm run golden:update` lo genera).
 
 ## 9. Checklist de aceptación (el PR no se abre sin esto)
 

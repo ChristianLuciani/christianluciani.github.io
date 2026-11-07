@@ -123,6 +123,35 @@ describe("themes/check — copy ES/EN", () => {
     };
     expect(copyErrors(narrative({ copy: pack }), HTML)).toEqual([]);
   });
+
+  it("una clave con ES === EN también se verifica contra el render (F1)", () => {
+    // Antes `pairsOf()` la omitía: 52 claves del pack nunca se comparaban.
+    const pack = { "misma.clave": { es: "Texto idéntico", en: "Texto idéntico" } };
+    const errors = copyErrors(narrative({ copy: pack }), "<div>Otra cosa</div>");
+    expect(errors.join("\n")).toContain("misma.clave");
+    expect(errors.join("\n")).toContain("huérfana");
+  });
+
+  it("una clave contenida en el texto de otra clave no se acredita por substring (F2)", () => {
+    // "Física" ⊂ "Licenciatura en Física": sólo la segunda es una superficie.
+    const pack = {
+      "grado.corta": { es: "Física", en: "Physics" },
+      "grado.larga": { es: "Licenciatura en Física", en: "Physics degree" }
+    };
+    const errors = copyErrors(
+      narrative({ copy: pack }),
+      "<div>Licenciatura en Física</div>"
+    );
+    expect(errors.join("\n")).toContain("grado.corta");
+    expect(errors.join("\n")).not.toContain("grado.larga");
+  });
+
+  it("el copy con markup inline no es un falso rojo (F9)", () => {
+    const pack = { "pub.titulo": { es: "Diseño <em>crítico</em>", en: "Critical design" } };
+    expect(
+      copyErrors(narrative({ copy: pack }), "<div>Diseño <em>crítico</em></div>")
+    ).toEqual([]);
+  });
 });
 
 describe("themes/check — curación", () => {
@@ -178,6 +207,17 @@ describe("themes/check — piel y contraste", () => {
     const source = `:root { --ink: #555555; --bg-0: #000000; }\n.a { color: var(--ink); }\n`;
     const errors = skinErrors("museo", skin({ source }));
     expect(errors.join("\n")).toContain("4.5:1");
+  });
+
+  it("el umbral AA no es autodeclarable: un min:1 falla (F3)", () => {
+    const minUno: ContrastPair = {
+      fg: "--ink",
+      bg: "--bg-0",
+      min: 1,
+      usage: "par con un umbral inventado para pasar el gate"
+    };
+    const errors = skinErrors("museo", skin({ contrastPairs: [minUno] }));
+    expect(errors.join("\n")).toContain("umbral inválido");
   });
 
   it("una deuda AA que ya cumple es un error (se auto-elimina)", () => {
@@ -249,13 +289,41 @@ describe("themes/check — registro, metadata y golden", () => {
     expect(report.ok).toBe(true);
   });
 
-  it("un tema sin piel propia hereda la del default y lo declara", () => {
+  it("un tema no-default sin piel propia hereda la del default y lo declara", () => {
     const report = checkThemes({
-      themes: [themeInput({ skin: undefined })],
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria" }),
+          skin: undefined
+        })
+      ],
       requireGolden: false
     });
     expect(report.themes[0]!.notes.join("\n")).toContain("hereda");
     expect(report.themes[0]!.errors).toEqual([]);
+  });
+
+  it("el tema DEFAULT sin skin.css es un error: no hay piel que emitir (F4)", () => {
+    const report = checkThemes({
+      themes: [themeInput({ skin: undefined })],
+      requireGolden: false
+    });
+    expect(report.themes[0]!.errors.join("\n")).toContain("no tiene src/themes/museo/skin.css");
+  });
+
+  it("la piel propia de un tema no-default no se puede certificar: el emisor sólo conoce museo (F4)", () => {
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria" }),
+          skin: skin()
+        })
+      ],
+      requireGolden: false
+    });
+    const errors = report.themes[0]!.errors.join("\n");
+    expect(errors).toContain("sólo emite la piel");
+    expect(report.ok).toBe(false);
   });
 });
 

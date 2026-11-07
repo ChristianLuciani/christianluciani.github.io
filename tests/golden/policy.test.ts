@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   decide,
+  decideAll,
   declarationBetween,
   parseDeclaration,
   treeOf
@@ -93,6 +94,94 @@ describe("golden — decide", () => {
     const r = decide({ ...base, comparatorPresent: false });
     expect(r.ok).toBe(false);
     expect(r.reason).toContain("comparador");
+  });
+});
+
+/**
+ * Gate multi-baseline (F5 del pase fresco de #158): la guarda no puede mirar
+ * sólo `museo.html`. Un PR que cambia el render de un tema no-default y
+ * regenera SU baseline tiene que pedir el trailer igual.
+ */
+describe("golden — decide sobre TODOS los baselines", () => {
+  const ingenieria = { path: "tests/golden/ingenieria.html", inBase: true, changed: true };
+  const museo = { path: "tests/golden/museo.html", inBase: true, changed: false };
+
+  it("un baseline no-default que cambia sin trailer falla (F5)", () => {
+    const result = decideAll({
+      baselines: [museo, ingenieria],
+      comparatorPresent: true,
+      dataChanged: false,
+      declaration: null
+    });
+    expect(result.ok).toBe(false);
+    expect(result.reason).toContain("ingenieria.html");
+    expect(result.reason).toContain("Golden-Cambio: render");
+  });
+
+  it("el mismo cambio con 'render' pasa", () => {
+    expect(
+      decideAll({
+        baselines: [museo, ingenieria],
+        comparatorPresent: true,
+        dataChanged: false,
+        declaration: "render"
+      }).ok
+    ).toBe(true);
+  });
+
+  it("un baseline nuevo (tema nuevo) queda exento", () => {
+    const result = decideAll({
+      baselines: [museo, { path: "tests/golden/ingenieria.html", inBase: false, changed: true }],
+      comparatorPresent: true,
+      dataChanged: false,
+      declaration: null
+    });
+    expect(result.ok).toBe(true);
+    expect(result.reason).toContain("baseline nuevo");
+  });
+
+  it("un baseline eliminado exige 'render' (un sync de datos no lo justifica)", () => {
+    const removed = {
+      path: "tests/golden/ingenieria.html",
+      inBase: true,
+      changed: true,
+      removed: true
+    };
+    expect(
+      decideAll({
+        baselines: [museo, removed],
+        comparatorPresent: true,
+        dataChanged: true,
+        declaration: null
+      }).ok
+    ).toBe(false);
+    expect(
+      decideAll({
+        baselines: [museo, removed],
+        comparatorPresent: true,
+        dataChanged: true,
+        declaration: "datos"
+      }).ok
+    ).toBe(false);
+    expect(
+      decideAll({
+        baselines: [museo, removed],
+        comparatorPresent: true,
+        dataChanged: true,
+        declaration: "render"
+      }).ok
+    ).toBe(true);
+  });
+
+  it("sin cambios en ningún baseline pasa sin trailer", () => {
+    expect(
+      decideAll({
+        baselines: [museo, { ...ingenieria, changed: false }],
+        comparatorPresent: true,
+        dataChanged: false,
+        declaration: null
+      }).ok
+    ).toBe(true);
   });
 });
 

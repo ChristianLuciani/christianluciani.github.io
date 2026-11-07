@@ -102,9 +102,10 @@ jobs:
           test "$(grep -o 'data-local=' dist/index.html | wc -l)" -eq 9
       - name: build en modo Pages (sin data-local, index.html sin drift)
         run: |
-          # `build:all` construye TODOS los temas registrados: el artefacto
-          # publica una página por tema (hoy una). #133 cierra el gate multi-tema.
-          npm run build:all
+          # `build` ya publica TODOS los temas registrados (una página por tema);
+          # `build:all` es su alias declarado en package.json. El gate multi-tema
+          # que corre aparte es `themes:check` (#133).
+          npm run build
           ! grep -q 'data-local=' dist/index.html
           grep -q 'href="/assets/brand/favicon-aurea-teal.svg"' dist/index.html
           # Política IA + entidad en la RAÍZ del dominio (#140): `public/` se

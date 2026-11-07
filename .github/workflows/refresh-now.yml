@@ -51,6 +51,9 @@ jobs:
       # El golden también depende de esos datos (el feed entra al render): si no se
       # regenera acá, el primer cambio del feed pone la suite en rojo y congela la
       # sección. Es un cambio de datos, no de presentación: `Golden-Cambio: datos`.
+      # `golden:update` regenera el baseline de CADA tema registrado (#133): se
+      # commitea el directorio entero, no sólo museo.html, o main queda rojo con
+      # el snapshot del tema nuevo stale.
       - run: npm run golden:update
       - run: npm run build:html
       - run: npm test
@@ -60,12 +63,12 @@ jobs:
         env:
           TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          if git diff --quiet -- now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html tests/golden/museo.html; then
+          if git diff --quiet -- now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html tests/golden; then
             echo "changed=false" >> "$GITHUB_OUTPUT"; echo "now: sin cambios (pin $TAG)"; exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html tests/golden/museo.html
+          git add now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html tests/golden
           git commit -m "chore(now): refresh snapshot from ChristianLuciani/now@$TAG" -m "Golden-Cambio: datos"
           git push
           echo "changed=true" >> "$GITHUB_OUTPUT"

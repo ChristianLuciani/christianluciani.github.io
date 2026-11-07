@@ -58,9 +58,9 @@ import {
   tintedTextRules,
   tokenDeclarations
 } from "../../src/themes/museo/skin.ts";
-import { THEMES, themeIds } from "../../src/themes/index.ts";
+import { DEFAULT_THEME, THEMES, themeIds } from "../../src/themes/index.ts";
 import { resolveThemeAddress } from "../../src/themes/site.ts";
-import { pairsOf, type NarrativeManifest } from "../../src/themes/types.ts";
+import type { NarrativeManifest } from "../../src/themes/types.ts";
 import { COPY_ATTRS } from "../copy/lint.ts";
 import { baselinePathFor } from "../golden/paths.ts";
 
@@ -139,18 +139,17 @@ function decode(value: string): string {
 }
 
 /**
- * Superficie de copy del render: nodos de texto + atributos de copy. Es la
- * definición que fija `src/themes/copy-dictionary.test.ts` para el tema default;
- * acá se aplica al render de CADA tema porque el pack es del tema.
+ * Superficie de copy del render: texto visible (sin scripts, estilos, comentarios
+ * ni tags) + valores de atributos de copy. El marcado inline NO cuenta: `t()`
+ * puede emitir `<em>` dentro de una clave y el nodo de texto es el mismo copy
+ * (F9 del pase fresco de #158).
  */
 function renderedCopy(html: string): { text: string; attrs: string[] } {
-  const decoded = decode(html);
-  const text = norm(
-    decoded
-      .replace(/<script[\s\S]*?<\/script>/g, " ")
-      .replace(/<style[\s\S]*?<\/style>/g, " ")
-      .replace(/<[^>]*>/g, " ")
-  );
+  const decoded = decode(html)
+    .replace(/<!--[\s\S]*?-->/g, " ")
+    .replace(/<script[\s\S]*?<\/script>/g, " ")
+    .replace(/<style[\s\S]*?<\/style>/g, " ");
+  const text = norm(decoded.replace(/<[^>]*>/g, " "));
   const attrs: string[] = [];
   const tagRe = /<([a-zA-Z][\w-]*)([^>]*)>/g;
   let tag: RegExpExecArray | null;
@@ -161,21 +160,62 @@ function renderedCopy(html: string): { text: string; attrs: string[] } {
     while ((attr = attrRe.exec(tag[2]))) {
       const name = attr[1].toLowerCase();
       if (COPY_ATTRS.has(name) || (name === "content" && tagName === "meta")) {
-        attrs.push(norm(attr[2]));
+        attrs.push(norm(decode(attr[2]).replace(/<[^>]*>/g, " ")));
       }
     }
   }
   return { text, attrs };
 }
 
+/** Copy comparable: markup inline fuera y entidades desescapadas. */
+function copyText(value: string): string {
+  return norm(decode(value).replace(/<[^>]*>/g, " "));
+}
+
+/**
+ * ¿La clave aparece en `container`?
+ *
+ * Una coincidencia NO cuenta si está DENTRO de la ocurrencia de OTRA clave más
+ * larga (F2 del pase fresco de #158: "Física" ⊂ "Licenciatura en Física" hacía
+ * pasar una clave huérfana). El contenedor exacto (un nodo de texto que ES la
+ * clave) siempre cuenta: ahí la ocurrencia es la del dueño, no la de un
+ * contenedor ajeno. Las claves anidadas legítimas siguen pasando si además
+ * aparecen por su cuenta en otra superficie.
+ */
+function credited(
+  container: string,
+  es: string,
+  covers: readonly { es: string; offset: number }[]
+): boolean {
+  if (!es) return false;
+  for (let at = container.indexOf(es); at >= 0; at = container.indexOf(es, at + 1)) {
+    const covered = covers.some(
+      (cover) => at - cover.offset >= 0 && container.startsWith(cover.es, at - cover.offset)
+    );
+    if (!covered) return true;
+  }
+  return false;
+}
+
+/** Claves más largas que contienen a esta (con su offset), para no acreditar substrings. */
+function coveringKeys(
+  es: string,
+  all: readonly { key: string; es: string }[]
+): { es: string; offset: number }[] {
+  return all
+    .filter((other) => other.es.length > es.length && other.es.includes(es))
+    .map((other) => ({ es: other.es, offset: other.es.indexOf(es) }));
+}
+
 /**
  * Errores de copy de un tema: ES/EN completos (sin fallback silencioso) y toda
  * clave no `runtime` publicada por el render.
  *
- * Las claves con ES === EN no entran al diccionario (`pairsOf` las omite: no hay
- * traducción que verificar) y por eso tampoco se exige su superficie acá. El
- * marcador `runtime` cubre el copy que el HTML inicial no garantiza (intro,
- * canvas, estados); sin la marca, una clave muerta es deuda y falla.
+ * Se comparan TODAS las claves, incluidas las que tienen ES === EN (F1 del pase
+ * fresco de #158: `pairsOf` las omitía y 52 claves nunca se verificaban contra
+ * el render). El marcador `runtime` cubre el copy que el HTML inicial no
+ * garantiza (intro, canvas, estados); sin la marca, una clave muerta es deuda y
+ * falla.
  */
 export function copyErrors(narrative: NarrativeManifest, html?: string): string[] {
   const errors: string[] = [];
@@ -185,37 +225,34 @@ export function copyErrors(narrative: NarrativeManifest, html?: string): string[
     return errors;
   }
 
-  let complete = true;
   for (const [key, entry] of entries) {
     if (typeof entry.es !== "string" || entry.es.trim().length === 0) {
       errors.push(`copy["${key}"]: falta ES (no hay fallback silencioso)`);
-      complete = false;
     }
     if (typeof entry.en !== "string" || entry.en.trim().length === 0) {
       errors.push(`copy["${key}"]: falta EN (la clave no está traducida)`);
-      complete = false;
     }
   }
-  // Con una clave incompleta `pairsOf` explota: no hay nada más que verificar.
-  if (!complete || !html) return errors;
+  if (!html) return errors;
 
   const { text, attrs } = renderedCopy(html);
-  const runtime = new Set(
-    entries
-      .filter(([, entry]) => entry.runtime)
-      .map(([, entry]) => norm(entry.es))
-  );
-  const seen = new Set<string>();
-  for (const [es, en] of Object.entries(pairsOf(narrative.copy))) {
-    // `pairsOf` normaliza la clave; el par (es,en) es único por definición.
-    if (seen.has(es)) continue;
-    seen.add(es);
-    if (runtime.has(es)) continue;
-    const rendered = text.includes(es) || attrs.some((value) => value.includes(es));
+  const all = entries.map(([key, entry]) => ({ key, es: copyText(entry.es) }));
+  for (const [key, entry] of entries) {
+    if (entry.runtime) continue;
+    const es = copyText(entry.es);
+    // Un ES vacío ya se reportó arriba; sin texto no hay superficie que buscar.
+    if (!es) continue;
+    const covers = coveringKeys(
+      es,
+      all.filter((other) => other.key !== key)
+    );
+    const rendered =
+      credited(text, es, covers) ||
+      attrs.some((value) => credited(value, es, covers));
     if (!rendered) {
       errors.push(
-        `copy: clave huérfana — "${es}" no aparece en el render del tema ` +
-          `(¿la sacaste del template? ¿o le falta \`runtime: true\`?) [EN: "${en}"]`
+        `copy["${key}"]: clave huérfana — "${es}" no aparece en el render del tema ` +
+          `(¿la sacaste del template? ¿o le falta \`runtime: true\`?) [EN: "${copyText(entry.en)}"]`
       );
     }
   }
@@ -341,6 +378,15 @@ export function skinErrors(themeId: string, skin: SkinInput): string[] {
     if (!pair.usage || pair.usage.trim().length <= 10) {
       errors.push(`contraste: el par ${pair.fg}/${pair.bg} no declara para qué se usa`);
     }
+    // F3 del pase fresco de #158: el umbral no es autodeclarable. AA admite 4,5:1
+    // para texto normal y 3:1 para texto grande/piezas de UI; un `min: 1` (o
+    // cualquier otro valor) haría pasar un par ilegible por debajo de AA.
+    if (pair.min !== 4.5 && pair.min !== 3) {
+      errors.push(
+        `contraste: el par ${pairKey(pair)} declara un umbral inválido (${pair.min}:1); ` +
+          "AA es 4,5:1 para texto normal y 3:1 para texto grande o pieza de UI"
+      );
+    }
 
     let ratio: number;
     try {
@@ -449,7 +495,22 @@ export function checkTheme(
   if (theme.skinError) {
     errors.push(`piel: ${theme.skinError}`);
   } else if (theme.skin) {
+    // F4 del pase fresco de #158: `src/themes/skin.ts` emite SÓLO la piel de
+    // museo (ADR-001 §D11/S4 pendiente). Certificar la piel de un tema
+    // no-default sería certificar CSS que nunca llega al render.
+    if (id !== DEFAULT_THEME) {
+      errors.push(
+        `piel: el tema "${id}" declara skin.css propio pero el emisor ` +
+          `(src/themes/skin.ts) sólo emite la piel de "${DEFAULT_THEME}"; esta piel no ` +
+          "llega al render, así que el gate no puede certificarla (ADR-001 §D11/S4)"
+      );
+    }
     errors.push(...skinErrors(id, theme.skin));
+  } else if (id === DEFAULT_THEME) {
+    errors.push(
+      `piel: el tema default "${id}" no tiene src/themes/${id}/skin.css; ` +
+        "sin piel no hay nada que emitir (¿la movieron?)"
+    );
   } else {
     notes.push(`piel: el tema no tiene skin.css propio; hereda la del tema default`);
   }
@@ -612,9 +673,14 @@ async function main(): Promise<number> {
   for (const error of report.errors) console.error(`❌ ${error}`);
   if (report.ok) {
     const goldens = report.golden.filter((item) => item.present).length;
+    const own = themes.filter((theme) => theme.skin !== undefined).length;
+    const inherited = themes.filter(
+      (theme) => theme.skin === undefined && theme.skinError === undefined
+    ).length;
     console.log(
       `✅ themes:check — ${report.themes.length} tema(s), copy ES/EN, curación, ` +
-        `piel y contraste verdes · ${goldens} golden(s)`
+        `piel y contraste verdes · piel: ${own} propia(s)` +
+        `${inherited > 0 ? `, ${inherited} heredada(s)` : ""} · ${goldens} golden(s)`
     );
     return 0;
   }
