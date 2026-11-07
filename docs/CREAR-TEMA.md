@@ -177,7 +177,13 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
   La emite `src/themes/skin.ts` (`emitSkin`): los tokens del bloque marcado
   `@derived:begin … @derived:end` se resuelven a su literal mientras dure el
   congelamiento de I1 (#130). Publicarlos es un cambio de render declarado.
-- Todo par texto/fondo declara contraste y **pasa AA** (4,5:1 normal, 3:1 grande).
+- Todo par texto/fondo declara contraste y **pasa AA** (4,5:1 normal, 3:1 grande);
+  el umbral no es autodeclarable: `contrast.ts` sólo admite 3 o 4,5.
+- **Límite vigente (ADR-001 §D11, S4 pendiente):** `src/themes/skin.ts` emite la piel de
+  `museo` y sólo de `museo`. Un tema no-default con `skin.css` propio **no publica esa
+  piel**: `themes:check` lo falla en vez de certificar CSS que no llega al render. Hasta
+  que S4/#136 haga que `emitSkin` resuelva la piel del tema activo, un tema nuevo sin
+  `skin.css` hereda la del default (y el reporte lo declara).
 - Prohibido `!important` para pisar otro tema: si hace falta, falta un token.
 
 ## 7. Metadata y SEO del tema
@@ -228,14 +234,29 @@ subpaths con `Allow: /`).
 npm run curation:report           # I3: 100% de hechos con decisión
 npm run build                     # render fuente (default) + bundle + dist/<path>/index.html de cada tema + sitemap
 npm run build:all                 # construye TODOS los temas registrados (el artefacto los publica todos)
-npm test                          # unidades + golden del default
-# npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
+npm test                          # unidades + golden POR TEMA (tests/golden/<id>.html)
+npm run themes:check              # copy ES/EN, curación, literales de color y contraste AA, por tema
 npm run themes:assets             # smoke: assets del HTML + recursos del runtime + sitemap/robots (sobre el build completo)
 npm run build:html                # sólo el render fuente (commit del index.html)
 SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al final porque vacía `dist/`
 ```
 
-`themes:check` (completitud de copy, curación, literales, contraste) llega con #133.
+`themes:check` (#133) es el gate que corre en CI sobre **cada tema registrado**:
+
+- **copy**: toda clave tiene ES y EN no vacíos y el render del tema publica toda
+  clave no `runtime` (una huérfana falla; `runtime: true` declara el copy que
+  monta el JS).
+- **curación**: el tema tiene entrada en `CURATIONS`, cubre el 100% de los
+  hechos con `reason` en cada exclusión y `experienceSections` clasifica todas
+  las filas de `experience[]` del print-CV.
+- **piel**: `src/themes/<id>/skin.css` no tiene literales de color fuera de sus
+  bloques de tokens. Un tema sin `skin.css` propio hereda la piel del default
+  (el reporte lo declara).
+- **contraste**: todo `color: var(--x)` y toda combinación texto/tinte tiene par
+  declarado en `contrast.ts` y pasa AA; las deudas (`AA_DEBT`) se auto-eliminan
+  cuando el par empieza a cumplir.
+- **golden**: existe `tests/golden/<id>.html`; sin snapshot no hay comparación
+  byte a byte y el gate falla duro (`npm run golden:update` lo genera).
 
 ## 9. Checklist de aceptación (el PR no se abre sin esto)
 
@@ -246,8 +267,9 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
       `curation.experienceSections` cubre las filas de `experience[]` del print-CV.
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
-- [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
-- [ ] `npm run themes:assets` verde (`themes:check` llega con #133).
+- [ ] `npm run build:all` verde; golden del tema `museo` **intacto** y el tema
+      nuevo con su `tests/golden/<id>.html` (`npm run golden:update`).
+- [ ] `npm run themes:check` **y** `npm run themes:assets` verdes.
 - [ ] `meta` y `site` propios: title, description, ogImage; canonical por subpath.
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.
 

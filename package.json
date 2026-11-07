@@ -13,6 +13,7 @@
     "curation:report": "tsx tools/curation.ts --report",
     "golden:update": "tsx tools/golden/update.ts",
     "golden:policy": "tsx tools/golden/policy-cli.ts",
+    "themes:check": "tsx tools/themes/check.ts",
     "themes:assets": "tsx tools/themes/assets.ts",
     "sync:profile": "tsx tools/sync-profile.ts",
     "sync:profile:report": "tsx tools/sync-profile.ts --report",

@@ -590,8 +590,9 @@ golden de `museo` no cambia en ningún PR de la fase.
 - `npm test` (vitest: paridad generados + salas/render/i18n/print/jsonld + **golden por
   tema**).
 - `npm run build:all` (un bundle; una página por tema) + `SITE_THEME=<id> npm run build`.
-- `npm run themes:check` (**gate de #133**, todavía no existe): copy ES/EN completo,
-  cobertura de curación, 0 literales de color, contraste AA declarado.
+- `npm run themes:check` (gate de #133): copy ES/EN completo (0 huérfanas),
+  cobertura de curación con `experienceSections`, 0 literales de color, contraste AA
+  declarado — por cada tema registrado — y baseline de render por tema.
 - `npm run themes:assets`: toda URL de asset de cada tema existe en `dist/` (I6).
 - Browser headless **por tema**: ES/EN, nav, plano, intro, grafo, print-CV, JSON-LD
   parseable, `canonical`/`og:url` correctos al subpath, sin errores de consola.

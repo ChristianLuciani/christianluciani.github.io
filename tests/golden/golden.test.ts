@@ -3,8 +3,9 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { assembleHtml } from "../../src/templates/index.ts";
 import { SALAS } from "../../src/cv/salas.ts";
+import { THEMES, themeIds } from "../../src/themes/index.ts";
 import { describeDrift, firstDiff, sectionDrifts, sectionsOf } from "../../tools/golden/sections.ts";
-import { baselineFile } from "../../tools/golden/paths.ts";
+import { baselineFile, baselinePathFor } from "../../tools/golden/paths.ts";
 
 /**
  * GOLDEN DEL RENDER (SPEC §8 FASE 5, D9).
@@ -80,6 +81,22 @@ describe("golden — el render del tema default no cambia", () => {
       // El CSS global vive en head: si se extrae a un archivo (FASE 5), el golden
       // sigue cubriéndolo porque el <style> emitido no puede cambiar.
       expect(sectionsOf(requireGolden())[0].html).toContain("<style>");
+    });
+
+    /**
+     * GOLDEN POR TEMA (#133 · SPEC §8 FASE 5.6): el invariante I1 no es sólo del
+     * default. Un tema registrado sin baseline no tiene gate de render, así que
+     * `themes:check` exige el archivo y este test exige que su documento sea el
+     * snapshot commiteado. Un tema nuevo lo congela con `npm run golden:update`.
+     */
+    it("cada tema registrado reproduce su baseline byte a byte", () => {
+      for (const id of themeIds()) {
+        const path = baselinePathFor(id);
+        const file = resolve(process.cwd(), path);
+        expect(existsSync(file), `falta ${path}; corré \`npm run golden:update\``).toBe(true);
+        const drift = firstDiff(readFileSync(file, "utf8"), assembleHtml({ theme: THEMES[id] }), `tema ${id}`);
+        expect(drift, drift ? describeDrift(drift) : "").toBeNull();
+      }
     });
 
     it("muerde un espacio de diferencia", () => {
