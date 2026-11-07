@@ -113,9 +113,13 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
 ```ts
 // src/content/curation/ingenieria.ts
 export const CURATION: Curation = {
-  include: ["kontablo", "zentropy", "clapps"],
-  exclude: [{ id: "drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }],
-  order: { proyectos: ["kontablo", "zentropy", "clapps"] }
+  // ids namespaced: `colección:clave` (ver content/curation/keys.ts)
+  include: ["proyectos:Kontablo", "proyectos:ZENTROPY", "proyectos:CLAPPS.AI"],
+  exclude: [
+    { id: "proyectos:Drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }
+  ],
+  // `order` es por colección y usa claves SIN prefijo
+  order: { proyectos: ["Kontablo", "ZENTROPY", "CLAPPS.AI"] }
 };
 ```
 
@@ -150,9 +154,10 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
 
 `narrative.meta` provee `title`, `description`, `ogImage`; `narrative.site` + `path` dan
 la dirección de publicación. El render fuente emite `<title>`, `og:*` y `twitter:*` desde
-`meta`; `canonical`, `og:url` y `og:image` se aplican **al publicar** el artefacto
-(`dist/<path>/`), no en el documento fuente: así el golden del tema default queda
-byte-idéntico. Sin esto, dos temas compiten por la misma tarjeta social.
+`meta`; `canonical`, `og:url` y `og:image` toman la dirección del tema al publicar el
+artefacto (`dist/<path>/`: el publicador reescribe `og:url`/`og:image` y añade
+`canonical`), así el golden del tema default queda byte-idéntico. Sin esto, dos temas
+compiten por la misma tarjeta social.
 
 ## 8. Procedimiento (orden fijo)
 

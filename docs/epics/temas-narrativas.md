@@ -148,7 +148,7 @@ falla con la lista de temas válidos.
 - Las rutas `/assets/**` y las referencias de origen pasan por la base del artefacto
   (`SITE_BASE`); el origen (`site.origin`/`SITE_ORIGIN`) gobierna canonical/og/sitemap.
 - `title`/`description`/`og:*`/`twitter:*` desde `narrative.meta`; `canonical`/`og:url`
-  desde `narrative.site` + `path`, aplicados al publicar.
+  reproyectados con `narrative.site` + `path` al publicar.
 - `robots.txt` + `sitemap.xml` con todas las URLs publicadas.
 - `npm run build:all`; smoke `themes:assets` (toda URL referenciada existe en `dist/`).
 

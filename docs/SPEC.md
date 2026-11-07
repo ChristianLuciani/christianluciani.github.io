@@ -156,10 +156,10 @@ línea de registro (§8 FASE 5).
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
 | estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/cv/salas.ts` | estructura + narrativa (hoy) |
 | asignación de ilusión por sala | `src/cv/salas.ts` + `src/templates/sala_html.ts` | presentación (hoy) |
-| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/data/proyectos.ts` + `src/content/cv/proyectos.ts` | curación (hoy) |
+| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/content/curation/<id>.ts` (decisión) derivada por `src/data/proyectos.ts` + `src/data/publicaciones.ts` | curación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | copy (hoy) |
 | showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
-| curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
+| curación de presentación de El Marco / El Bastidor (subtítulo, `falta`, labels de link) | `src/content/cv/proyectos.ts` | curación (el ORDEN vive en la curación del tema) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
 | curación del print-CV (qué links entran al encabezado) | `src/content/cv/print.ts` (`PRINT_CV.contactPlatforms`) | curación (sin copy) |
@@ -390,8 +390,9 @@ export interface NarrativeManifest {
 
 Reglas: ningún template conoce el id del tema; el selector es `SITE_THEME` resuelto en el
 registro de temas; `meta` alimenta `<title>`, `og:*` y `twitter:*`; `site` + `path` producen
-`canonical`, `og:url` y `og:image` **al publicar** (el render fuente no conoce la
-dirección, para que el golden del default siga byte-idéntico).
+`canonical`, `og:url` y `og:image` con la dirección del tema: el documento fuente emite
+`og:*` con el origen por defecto y el publicador reescribe `og:url`/`og:image` y añade
+`canonical` (falla si `og:url` no está), así el golden del default queda byte-idéntico.
 
 ### 5.5 Curación — `curation.ts` por tema
 
