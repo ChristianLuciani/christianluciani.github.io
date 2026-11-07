@@ -1,7 +1,7 @@
 # SPEC — Separación contenido/presentación + dependencia de profile-data
 
 > Status: v0.2 — FASE 5 (temas) incorporada; **ratificada por el operador el 2026-11-06** (issue #132): ratifica el contenido de PR #121 (merge commit `e60d5e4`) sobre `main` al 2026-11-06 (`cd4c8b8`) · Method: spec-driven (dev-methodology)
-> **Enmienda 2026-11-07 (PR #155):** `Curation` incorpora `experienceSections`; las N páginas de tema se publican sobre un solo bundle y una sola raíz de assets, con dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`). Toca §5.4, §5.5, §8 FASE 5.5 y §9; se ratifica al mergear este PR.
+> **Enmienda 2026-11-07 (PR #156), ratificada por el operador el 2026-11-07** (traza: issues #128 y #131): `Curation` incorpora `experienceSections`; las N páginas de tema se publican sobre un solo bundle y una sola raíz de assets, con dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`). Toca §5.4, §5.5, §8 FASE 5.5 y §9.
 > Owner: Christian Luciani · Repo: `ChristianLuciani/christianluciani.github.io`
 > Fecha: 2026-08-15 · v0.2: 2026-11-05 (ADR-001: hechos · curación · narrativa · piel)
 > Relacionado: `docs/adr/ADR-001-temas-y-narrativas.md`, `docs/CREAR-TEMA.md`, `docs/epics/temas-narrativas.md`, profile-as-code `docs/SPEC.md` (§9.1 deploy surfaces, §15.6 v1.1), komuno manifiesto (IX–XI), AGOS (proyección read-only)
@@ -90,7 +90,7 @@ cuatro dimensiones — hechos · curación · narrativa · piel — y un selecto
 - No refactorizar las **ilusiones** (`src/ts/illusions/**`): se asignan por tema, no se
   editan. El resto de la UI **sí** se refactoriza (piel y narrativa son datos, ADR-001).
 - No implementar conmutador de tema en runtime en producción: el switch es la URL.
-- No compartir una página entre dos audiencias (un artefacto por tema).
+- No compartir una página entre dos audiencias (una página por tema).
 - No implementar el museo 3D.
 - No promover el renderer web a profile-as-code (M5) en este refactor — queda documentado
   como camino futuro (D4: se promueve después).
@@ -125,7 +125,7 @@ christianluciani.github.io (PÚBLICO · deploy surface)
   src/presentation/*               ← renderers genéricos: reciben {data, curation,
                                      narrative, skin}; no contienen copy ni hechos.
   index.html                       ← tema default, generado (sin cambio de contrato).
-  dist/<path>/index.html           ← un artefacto por tema publicado por subpath.
+  dist/<path>/index.html           ← una página por tema dentro del artefacto, publicada por subpath.
 ```
 
 **Regla de oro (komuno IX):** un hecho se edita UNA vez en `profile-data`; el CV deriva.

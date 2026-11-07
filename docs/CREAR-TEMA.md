@@ -144,9 +144,11 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
 
 ## 7. Metadata y SEO del tema
 
-`narrative.meta` provee `title`, `description`, `ogImage`. El build deriva de ahí
-`<title>`, `og:*`, `twitter:*`, `canonical` y `og:url` con el origen y el subpath del
-tema. Sin esto, dos temas compiten con la misma tarjeta social.
+`narrative.meta` provee `title`, `description`, `ogImage`; `narrative.site` + `path` dan
+la dirección de publicación. El render fuente emite `<title>`, `og:*` y `twitter:*` desde
+`meta`; `canonical`, `og:url` y `og:image` se aplican **al publicar** el artefacto
+(`dist/<path>/`), no en el documento fuente: así el golden del tema default queda
+byte-idéntico. Sin esto, dos temas compiten por la misma tarjeta social.
 
 ## 8. Procedimiento (orden fijo)
 
@@ -162,7 +164,7 @@ tema. Sin esto, dos temas compiten con la misma tarjeta social.
 ```bash
 npm run build:all                 # construye todos los temas
 npm test                          # unidades + golden por tema
-npm run themes:check              # completitud de copy, curación, tokens, contraste
+# npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
 npm run themes:assets             # smoke: toda URL de asset del tema existe en dist/
 SITE_THEME=<id> npm run build     # build aislado del tema
 ```
@@ -175,7 +177,7 @@ SITE_THEME=<id> npm run build     # build aislado del tema
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
-- [ ] `npm run themes:check` y `themes:assets` verdes.
+- [ ] `npm run themes:assets` verde; `themes:check` cuando exista (gate de #133).
 - [ ] `meta` propio: title, description, ogImage; canonical por subpath.
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.
 
