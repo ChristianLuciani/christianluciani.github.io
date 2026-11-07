@@ -7,7 +7,7 @@
  * vive en `profile-data` y se congela en `entity.generated.ts`:
  *
  *   1. `assembleHtml()` publica EXACTAMENTE un `Person` (con `@id`, `description`,
- *      `jobTitle`, `email` y los 12 `sameAs`) y un `FAQPage` con 4 preguntas.
+ *      `jobTitle`, `email` y los 13 `sameAs`) y un `FAQPage` con 4 preguntas.
  *   2. el bloque no se escribe a mano en `head_html.ts` (sin `jobTitle`/`sameAs`
  *      literales, sin el `"Independent Researcher"` que contradecía al SSOT).
  *   3. el snapshot es determinista y su header no miente sobre la procedencia.
@@ -58,8 +58,8 @@ describe("JSON-LD de la entidad — derivado del SSOT, no escrito a mano", () =>
     expect(person["description"]).toEqual(PERSON["description"]);
     expect(person["jobTitle"]).toEqual(PERSON["jobTitle"]);
     expect(person["email"]).toEqual(PERSON["email"]);
-    expect(person["sameAs"]).toHaveLength(12);
-    // Los 12 sameAs son EXACTAMENTE los del snapshot (ni menos ni otros).
+    expect(person["sameAs"]).toHaveLength(13);
+    // Los 13 sameAs son EXACTAMENTE los del snapshot (ni menos ni otros).
     expect(person["sameAs"]).toEqual(PERSON["sameAs"]);
   });
 
