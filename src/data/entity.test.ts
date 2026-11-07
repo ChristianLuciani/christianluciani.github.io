@@ -58,8 +58,8 @@ describe("JSON-LD de la entidad — derivado del SSOT, no escrito a mano", () =>
     expect(person["description"]).toEqual(PERSON["description"]);
     expect(person["jobTitle"]).toEqual(PERSON["jobTitle"]);
     expect(person["email"]).toEqual(PERSON["email"]);
-    expect(person["sameAs"]).toHaveLength(12);
-    // Los 12 sameAs son EXACTAMENTE los del snapshot (ni menos ni otros).
+    expect(person["sameAs"]).toHaveLength(13);
+    // Los 13 sameAs son EXACTAMENTE los del snapshot (ni menos ni otros); el 13º es Substack.
     expect(person["sameAs"]).toEqual(PERSON["sameAs"]);
   });
 
