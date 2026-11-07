@@ -11,7 +11,9 @@
  * - `num` NO se almacena: se deriva del orden de las salas VISIBLES (01..N) en
  *   `render.ts`. Esa decisión elimina la clase de bug de numeración desalineada
  *   (off-by-one / stale como "SALA 05" duplicado que había en galería).
- * - `hidden: true` (sala galería) → no se numera, no aparece en el nav, no se
+ * - `hidden` NO se declara acá: la visibilidad la decide la curación del TEMA
+ *   (`salas:<id>` en `exclude`) y la aplica `themes/<id>/narrative.ts` al construir
+ *   sus `rooms`. Una sala oculta no se numera, no aparece en el nav y no se
  *   re-renderiza su metadato. Se mantiene en SALAS porque su título participa en el
  *   orden posicional de `ROOM_EN` (el i18n recorre TODOS los `.room-title` del DOM).
  * - `titulo`/`subtitulo` ES deben ser byte-idénticos al HTML actual: el i18n busca
@@ -63,8 +65,6 @@ export interface SalaDef {
   navLabelEn: string;
   /** id del canvas de ilusión de fondo de la sala (museo 3D / metadata) */
   ilusion?: string;
-  /** true → sala oculta (no numerada, sin nav, sin re-render de metadatos) */
-  hidden?: boolean;
 }
 
 /** Entrada "hero" del nav lateral (punto de la entrada del museo). */
@@ -195,7 +195,6 @@ export const SALAS: SalaDef[] = [
     funcion: "Archivo visual: fotografías, documentos y momentos.",
     funcionEn: "Visual archive: photographs, documents and moments.",
     navLabel: "Archivo",
-    navLabelEn: "Archive",
-    hidden: true
+    navLabelEn: "Archive"
   }
 ];

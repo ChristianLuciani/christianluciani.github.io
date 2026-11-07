@@ -14,12 +14,8 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import {
-  EXPERIENCE_SECTIONS,
-  PRINT_CV,
-  experienceKey,
-  experienceSectionOf
-} from "../content/cv/print";
+import { PRINT_CV, experienceKey, experienceSectionOf } from "../content/cv/print";
+import { EXPERIENCE_SECTIONS } from "../content/curation/museo";
 import { orgEs } from "../content/cv/org";
 import { PROFILE_PROSE, profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";

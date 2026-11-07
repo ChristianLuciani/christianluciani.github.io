@@ -156,10 +156,10 @@ línea de registro (§8 FASE 5).
 | subtítulos de sala (parametrizados con `{location}` del SSOT) | `src/content/cv/museo.ts` | copy + hecho (hoy) |
 | estructura de salas (ids, orden, metáfora, nav/plano labels) | `src/cv/salas.ts` | estructura + narrativa (hoy) |
 | asignación de ilusión por sala | `src/cv/salas.ts` + `src/templates/sala_html.ts` | presentación (hoy) |
-| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `Curation` del tema (§5.5): decisión; derivación en `src/data/proyectos.ts` | curación |
+| qué proyectos/publicaciones/experiencias se presentan y en qué orden | `src/content/curation/museo.ts` (decisión de inclusión, exclusión y orden) → `curatedOrder()` (`src/content/curation/index.ts`) → `src/data/proyectos.ts` + `src/data/publicaciones.ts` | curación |
 | quote-block ("La física me enseñó…") | `src/content/cv/museo.ts` | copy (hoy) |
 | showcase Drahma (celdas, timeline, lab STEM) | `src/content/cv/museo.ts` (export `DRAHMA`) | copy (ref. `projects.yaml` por id) |
-| curación de presentación de El Marco / El Bastidor (subtítulo, `falta`, labels de link) | `src/content/cv/proyectos.ts` | curación (el ORDEN vive en la curación del tema) |
+| curación de El Marco / El Bastidor (subtítulo, `falta`, fecha de recencia, labels de link, nota) | `src/content/cv/proyectos.ts` | curación de presentación (el ORDEN vive en la curación del tema) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
 | curación del print-CV (qué links entran al encabezado) | `src/content/cv/print.ts` (`PRINT_CV.contactPlatforms`) | curación (sin copy) |
@@ -167,7 +167,7 @@ línea de registro (§8 FASE 5).
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
-| galería placeholders | roadmap — sala oculta en `src/cv/salas.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
+| galería placeholders | roadmap — la sala se oculta desde la curación del tema (`salas:galeria` en `exclude`), aplicada al construir las salas del manifest en `src/themes/museo/narrative.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
 | CSS: tokens, tipografía, densidad | `src/themes/museo/skin.css` (el head la emite) | presentación (FASE 5 · #130) |
 | ilusiones, animaciones, canvas | `src/ts/` | presentación (no editable por temas) |
 
@@ -375,6 +375,24 @@ Estado de migración: el material actual de `src/content/cv/` (`museo.ts`, `proy
 `print.ts`) se mueve **sin cambios de contenido** al layout de §8 FASE 5, con el golden
 byte a byte como gate (I1).
 
+Implementación (#128, FASE 5.2): `src/content/curation/museo.ts` declara
+`include`/`exclude`/`order`/`experienceSections`, y `src/content/curation/index.ts`
+registra una curación por tema. Los ids son `colección:clave` (`keys.ts`):
+`proyectos:Kontablo`, `experiencia:org|role|start`, `publicaciones:<doi|url>`, etc.;
+`order` es por colección y usa claves sin prefijo. `curatedOrder()` (`index.ts`) es el
+consumidor canónico —filtra lo excluido y ORDENA por `order`— que usan
+`proyectosDe()`/`publicacionesDe()`. La clasificación de `experience[]` es parte del
+contrato (`Curation.experienceSections`): la tabla de `museo` vive en `curation/museo.ts`
+y el print-CV COMPARTIDO la resuelve con `activeCuration()`, nunca importando el módulo
+de un tema. La visibilidad de salas es per-tema por la misma razón: cada
+`themes/<id>/narrative.ts` construye sus `rooms` desde `SALAS` aplicando SU curación
+(`salas:<id>` en `exclude`), así la galería oculta del museo no ata a otro tema.
+`tools/curation.ts --report` (`npm run curation:report`) enumera todo hecho curable por
+ítem del perfil y de las salas y sale 1 si alguno no tiene decisión o si un `exclude` no
+tiene razón (`validate.ts`). La Biblioteca todavía renderiza desde el pack (#99), así
+que `render-drift.test.ts` exige que el orden curado y el DOM coincidan hasta que
+consuma `publicacionesDe()`.
+
 ### 5.4 Contrato de narrativa — `narrative.ts` del tema
 
 ```ts
@@ -394,6 +412,9 @@ registro de temas; `meta` alimenta `<title>`, `og:*` y `twitter:*`; `site` + `pa
 `canonical`, `og:url` y `og:image` con la dirección del tema: el documento fuente emite
 `og:*` con el origen por defecto y el publicador reescribe `og:url`/`og:image` y añade
 `canonical` (falla si `og:url` no está), así el golden del default queda byte-idéntico.
+La narrativa declara las salas que EXISTEN y su `hidden` se resuelve con la curación de
+ESE tema (`salas:<id>` en `exclude`): la visibilidad no se hereda de otro tema ni se fija
+en la estructura compartida.
 
 ### 5.5 Curación — `curation.ts` por tema
 
@@ -422,7 +443,7 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 pares texto/fondo declarados.
 
 **Excepción declarada — clasificación de `experience[]` en el print-CV (D2, F1 de #119).**
-`Curation.experienceSections` (§5.5) reparte cada fila de `experience[]` en
+`Curation.experienceSections` (la tabla del tema `museo` vive en `src/content/curation/museo.ts`) reparte cada fila de `experience[]` en
 `professional`/`training` mediante una clave **derivada de hechos**
 (`org|role.es|start` —el rol sale en ES y cae a `role.en` si la fila no tiene
 ES, fallback que aplica `experienceKey`—, o `id` cuando existe), no por `id` estable:

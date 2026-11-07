@@ -18,7 +18,12 @@ export interface ProjectCuration {
   subtitle?: LangText;
   /** Qué le falta para pasar a El Marco. Curado, no inventado. */
   falta?: LangText;
-  /** Orden de presentación dentro de la sala (no es un hecho del SSOT). */
+  /**
+   * Fecha de recencia del proyecto: se expone en `data-recencia` y la curación
+   * exige que acompañe a `order.proyectos` (si divergen, el test falla). El
+   * ORDEN de presentación ya no vive acá: lo decide la curación del tema
+   * (`src/content/curation/museo.ts`).
+   */
   recencia?: string;
   /** true = su ficha es el showcase dedicado, no una tarjeta duplicada. */
   sinTarjeta?: boolean;
