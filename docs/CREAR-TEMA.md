@@ -103,8 +103,10 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   aparece en el render falla salvo que sea `runtime` o derivado del SSOT, y los
   pares de `SALAS` no tienen excepción.
 - El copy del print-CV usa las claves `print.*` del pack; `content/cv/print.ts`
-  declara sólo la **estructura y la curación** de esa superficie (qué links
-  entran al encabezado y la clasificación de Trayectoria), sin texto.
+  declara sólo la **estructura** de esa superficie (qué links entran al encabezado),
+  sin texto. La **clasificación de Trayectoria** (`experience[]` →
+  `professional`/`training`) es curación del tema: vive en
+  `Curation.experienceSections` (§5.5), no en el renderer.
 
 ## 4. Curación: mostrar sin borrar
 

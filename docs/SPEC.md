@@ -162,7 +162,8 @@ línea de registro (§8 FASE 5).
 | curación de El Marco / El Bastidor (subtítulo, `falta`, orden, labels de link) | `src/content/cv/proyectos.ts` | curación (ref. `projects` del SSOT por nombre) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
-| curación del print-CV (qué links entran al encabezado y clasificación de Trayectoria) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
+| curación del print-CV (qué links entran al encabezado) | `src/content/cv/print.ts` (`PRINT_CV.contactPlatforms`) | curación (sin copy) |
+| clasificación de Trayectoria (`experience[]` → `professional`/`training`) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
 | grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
@@ -404,8 +405,9 @@ export interface Curation {
 ```
 
 `experienceSections` es **opcional en el tipo** pero **obligatorio en la práctica**: el
-print-CV falla ruidoso si una fila de `experience[]` no está clasificada, y la cobertura de
-curación (I3) lo cuenta como hecho sin decisión.
+print-CV falla ruidoso si una fila de `experience[]` no está clasificada. El instrumento es
+el renderer (`print_cv_html.ts` lanza) y `print_cv.test.ts` (cobertura total contra
+`PROFILE.experience`), no el reporte de I3 — que sólo verifica `include`/`exclude`.
 
 Gate I3: `curation --report` lista todo hecho del perfil sin decisión (mostrado o excluido
 con razón) y no permite un `exclude` sin `reason`.
