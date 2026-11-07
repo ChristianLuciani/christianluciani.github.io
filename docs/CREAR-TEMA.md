@@ -164,7 +164,8 @@ compiten por la misma tarjeta social.
 1. Reservá el id: `[a-z0-9-]`, único en `THEMES`, sin colisionar con rutas existentes.
 2. Copiá la estructura de `src/themes/museo/` como andamiaje (no como contenido).
 3. Escribí `copy.ts` completo (ES+EN) antes de tocar `narrative.ts`.
-4. Declará `curation/<id>.ts` con include/exclude/orden y razones.
+4. Declará la curación del tema (include/exclude/orden y razones) y registrala en
+   `CURATIONS`, el registro que hoy trae `museo`.
 5. Asigná ilusiones; si ninguna encaja, dejá `undefined` y reportalo (no inventes canvas).
 6. Escribí `skin.css` con tokens primero; recién después reglas.
 7. Registrá el tema en `src/themes/index.ts` (una línea).

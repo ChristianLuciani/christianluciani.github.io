@@ -363,7 +363,8 @@ apuntar a un artifact privado.
 
 ### 5.3 Capa de curación — el único otro lugar editable por humano
 
-Tipada (TS), sin hechos. Referencia entidades del SSOT por **id estable**. Separa dos
+Tipada (TS), sin hechos. Referencia entidades del SSOT por **clave derivada**
+(`colección:clave`), no por id de fila: la proyección no expone ids estables. Separa dos
 cosas que hoy están mezcladas (D8):
 
 - **curación** = qué se presenta, en qué orden y qué se excluye (`include`, `exclude` con

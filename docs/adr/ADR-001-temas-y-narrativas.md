@@ -147,8 +147,9 @@ export interface Curation {
   (`SITE_THEME=<id>`). El tema default no cambia de URL.
 - **CI:** paridad por tema + smoke de assets + completitud i18n + contraste. El gate deja
   de comparar "el" `index.html` y pasa a comparar "el golden de cada tema".
-- **SEO:** mismo origen ⇒ autoridad compartida. Cada tema declara `title`, `description`,
-  `canonical`, `og:url`, `og:image` y JSON-LD propios; `sitemap.xml` lista todas las URLs.
+- **SEO:** mismo origen ⇒ autoridad compartida. Cada tema declara `title`, `description` y
+  JSON-LD propios; el publicador produce `canonical`, `og:url` y `og:image` desde `site` +
+  `path`, y `sitemap.xml` lista todas las URLs.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
 - **Migración futura a subdominio:** es configuración (`site.origin` del tema +
