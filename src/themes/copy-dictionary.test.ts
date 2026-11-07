@@ -27,7 +27,8 @@ describe("copy — el diccionario derivado declara sus categorías", () => {
    * Un par que no cae en ninguna categoría ES una clave muerta real: falla.
    */
   it("todo par está en el render o es runtime/derivado del SSOT", async () => {
-    const { COPY, copyPairs } = await import("../content/copy.ts");
+    const { activeCopy, copyPairs } = await import("../content/copy.ts");
+    const COPY = activeCopy();
     const { mapExtra } = await import("../cv/render.ts");
     const { profileI18nPairs } = await import("../content/cv/i18n.ts");
     const { COPY_ATTRS } = await import("../../tools/copy/lint.ts");

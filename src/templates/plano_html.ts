@@ -1,10 +1,11 @@
 /**
- * PLANO: blueprint navegable del museo. Las celdas .bp-room se generan desde
- * SALAS (etiquetas y números) sobre una grilla 3×2 de coordenadas CALCULADAS
+ * PLANO: blueprint navegable. Las celdas .bp-room se generan desde las salas de
+ * la narrativa activa (etiquetas y números) sobre una grilla 3×2 de coordenadas CALCULADAS
  * (x = 60 + col·270, y = 80 + row·160) — añadir/quitar sala reposiciona solo.
  */
-import { HERO_NAV, SALAS } from "../cv/salas.ts";
+import { HERO_NAV } from "../cv/salas.ts";
 import { numFor, sectionId, visibleSalas } from "../cv/render.ts";
+import { activeRooms } from "../themes/index.ts";
 import { t, ta } from "../content/copy.ts";
 
 const PLANO_TOP = `<!-- ════════════════════════════════════════════════════
@@ -90,7 +91,7 @@ export function planoHtml(): string {
 export function planoCellMeta(): { id: string; sala: string; num: string; label: string }[] {
   const ids = [HERO_NAV.id, ...visibleSalas().map((s) => s.id)];
   return ids.map((id) => {
-    const s = SALAS.find((x) => x.id === id);
+    const s = activeRooms().find((x) => x.id === id);
     const label = s ? s.titulo.replace(/<[^>]*>/g, "").toUpperCase() : t("plano.entry");
     const num = id === HERO_NAV.id ? "00" : (numFor(id) ?? "");
     return { id, sala: t("plano.sala"), num, label };

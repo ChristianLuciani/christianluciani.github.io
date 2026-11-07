@@ -2,8 +2,9 @@
  * Acceso al pack de copy del tema vigente.
  *
  * Los renderers NO importan el pack directo: piden `t()`/`th()` acá. Así el
- * template no conoce el id del tema (ADR-001 §2) y S3 (registro de narrativas)
- * cambia este único punto por `THEMES[SITE_THEME].narrative.copy`.
+ * template no conoce el id del tema (ADR-001 §2): el pack vigente es el de la
+ * narrativa activa del registro (`src/themes/index.ts`), que `assembleHtml({
+ * theme })` instala y restaura.
  *
  * `t()`  → devuelve el copy con markup tal cual (títulos con <em>, <br>).
  * `th()` → escapa &, < y > para inyectar texto plano en HTML sin cambiar los
@@ -12,15 +13,20 @@
  * Clave inexistente = error de build, nunca un fallback silencioso: un template
  * que pide copy que no existe es un bug, no un caso borde.
  */
-import { pairsOf, type CopyEntry } from "../themes/types.ts";
-import { MUSEO_COPY } from "../themes/museo/copy.ts";
+import { activeNarrative } from "../themes/index.ts";
+import { pairsOf, type CopyEntry, type CopyPack } from "../themes/types.ts";
 
-/** Pack vigente (default: el tema `museo`). */
-export const COPY = MUSEO_COPY;
+/**
+ * Pack vigente: el de la narrativa activa (default `museo`), no una copia.
+ * Función y no constante: el pack cambia con el tema del render.
+ */
+export function activeCopy(): CopyPack {
+  return activeNarrative().copy;
+}
 
 /** Entrada de copy completa (ES + EN) de una clave semántica. */
 export function copy(key: string): CopyEntry {
-  const entry = COPY[key];
+  const entry = activeCopy()[key];
   if (!entry) {
     throw new Error(`copy: no existe la clave "${key}" en el pack del tema vigente`);
   }
@@ -64,5 +70,5 @@ export function th(key: string): string {
 
 /** Pares ES→EN del pack (los consume el diccionario i18n). */
 export function copyPairs(): Record<string, string> {
-  return pairsOf(COPY);
+  return pairsOf(activeCopy());
 }
