@@ -15,6 +15,12 @@ decided_by: operador (sesión dsh/norma/temas-narrativas)
 v0.2 (FASE 5); `docs/CREAR-TEMA.md` queda como contrato operativo. La decisión de este ADR
 no cambia (`status: accepted`).
 
+**Enmienda 2026-11-07 (PR #155):** `Curation` incorpora `experienceSections` (el print-CV
+compartido clasifica con la curación de SU tema, ADR-001 §1–§2); y la publicación de N temas
+usa **un** bundle y **una** raíz de assets con dirección **por tema** (`narrative.site`),
+en lugar de N invocaciones de Vite con N copias de assets. Reemplaza las cláusulas de
+§Consecuencias que decían lo contrario; el resto del ADR no cambia.
+
 ## Contexto
 
 El sitio fue diseñado como **museo de ilusiones ópticas** (`docs/SPEC.md`, `SALAS`). El
@@ -90,6 +96,7 @@ export interface NarrativeManifest {
   copy: CopyPack;                // claves semánticas ES/EN (todas obligatorias)
   illusions: Record<string, string>;  // roomId → canvas id de src/ts/illusions
   meta: { title: string; description: string; ogImage: string };
+  site: { origin: string; base: string };  // dirección de publicación (SPEC §5.4/§8 5.5)
 }
 
 // content/curation/<id>.ts
@@ -97,6 +104,7 @@ export interface Curation {
   include: string[];             // project/publication/experience ids del SSOT
   exclude: { id: string; reason: string }[];
   order?: Record<string, string[]>;
+  experienceSections?: Record<string, "professional" | "training">;  // clave de fila → sección del print-CV
 }
 
 // skin.css — sólo tokens y reglas; sin literales de color
@@ -125,18 +133,23 @@ export interface Curation {
 
 ## Consecuencias
 
-- **Build:** N invocaciones de Vite (una por tema) con `base` propio; un artefacto de
-  deploy con N directorios. El tema default no cambia de URL.
+- **Build:** un artefacto de deploy con N directorios de página sobre **un** bundle y **una**
+  raíz de assets. El `path` del tema mueve su página y su canónica, no duplica assets. La
+  dirección (`origin`/`base`) se declara **por tema** en `narrative.site` y se puede
+  overridear al construir con `SITE_ORIGIN`/`SITE_BASE`; todos los temas de un mismo
+  artefacto comparten `base` y un tema con otro prefijo se publica como artefacto propio
+  (`SITE_THEME=<id>`). El tema default no cambia de URL.
 - **CI:** paridad por tema + smoke de assets + completitud i18n + contraste. El gate deja
   de comparar "el" `index.html` y pasa a comparar "el golden de cada tema".
 - **SEO:** mismo origen ⇒ autoridad compartida. Cada tema declara `title`, `description`,
   `canonical`, `og:url`, `og:image` y JSON-LD propios; `sitemap.xml` lista todas las URLs.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
-- **Migración futura a subdominio:** es configuración (`SITE_BASE`/`SITE_ORIGIN` por tema)
-  + infraestructura, **no** un refactor del modelo.
-- **Riesgo aceptado:** N copias de los assets hasheados en `dist/` (irrelevante en peso de
-  repo; no se comparte caché entre subpaths).
+- **Migración futura a subdominio:** es configuración (`site.origin` del tema +
+  `SITE_ORIGIN`) + infraestructura, **no** un refactor del modelo.
+- **Riesgo aceptado:** el bundle y `public/` se publican **una vez** en la raíz del
+  artefacto (no hay copia por tema): el peso no se multiplica, pero un tema no puede
+  aislar sus assets del resto del artefacto.
 
 ## Referencias
 

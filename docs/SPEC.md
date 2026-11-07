@@ -1,6 +1,7 @@
 # SPEC — Separación contenido/presentación + dependencia de profile-data
 
 > Status: v0.2 — FASE 5 (temas) incorporada; **ratificada por el operador el 2026-11-06** (issue #132): ratifica el contenido de PR #121 (merge commit `e60d5e4`) sobre `main` al 2026-11-06 (`cd4c8b8`) · Method: spec-driven (dev-methodology)
+> **Enmienda 2026-11-07 (PR #155):** `Curation` incorpora `experienceSections`; las N páginas de tema se publican sobre un solo bundle y una sola raíz de assets, con dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`). Toca §5.4, §5.5, §8 FASE 5.5 y §9; se ratifica al mergear este PR.
 > Owner: Christian Luciani · Repo: `ChristianLuciani/christianluciani.github.io`
 > Fecha: 2026-08-15 · v0.2: 2026-11-05 (ADR-001: hechos · curación · narrativa · piel)
 > Relacionado: `docs/adr/ADR-001-temas-y-narrativas.md`, `docs/CREAR-TEMA.md`, `docs/epics/temas-narrativas.md`, profile-as-code `docs/SPEC.md` (§9.1 deploy surfaces, §15.6 v1.1), komuno manifiesto (IX–XI), AGOS (proyección read-only)
@@ -382,12 +383,14 @@ export interface NarrativeManifest {
   copy: CopyPack;                   // claves semánticas ES/EN, 100% completas (I4)
   illusions: Record<string, string>;// roomId → canvas id existente en src/ts/illusions
   meta: { title: string; description: string; ogImage: string };
+  site: { origin: string; base: string }; // dirección de publicación (origen + prefijo)
 }
 ```
 
 Reglas: ningún template conoce el id del tema; el selector es `SITE_THEME` resuelto en el
-registro de temas; `meta` alimenta `<title>`, `og:*`, `twitter:*`, `canonical` y `og:url`
-con el origen y el subpath del tema.
+registro de temas; `meta` alimenta `<title>`, `og:*` y `twitter:*`; `site` + `path` producen
+`canonical`, `og:url` y `og:image` **al publicar** (el render fuente no conoce la
+dirección, para que el golden del default siga byte-idéntico).
 
 ### 5.5 Curación — `curation.ts` por tema
 
@@ -396,6 +399,7 @@ export interface Curation {
   include: string[];                          // ids del SSOT (projects/publications/…)
   exclude: { id: string; reason: string }[];  // excluir no borra; reason obligatoria
   order?: Record<string, string[]>;
+  experienceSections?: Record<string, "professional" | "training">;  // clave de fila → sección del print-CV
 }
 ```
 
@@ -440,7 +444,7 @@ lista copiada a mano). **Condición de salida:** si el SSOT/proyección empieza 
 | D9 | **Paridad por tema (golden)**, no contra un único `index.html` | El refactor de la FASE 5 debe dejar el tema default byte-idéntico; con dos temas, el gate histórico se vuelve rojo o se borra. Golden por tema = instrumento único de "el render no cambió". |
 | D10 | **Narrativa = datos** (`narrative.ts` + `copy.ts` del tema), no markup | Es la diferencia entre "otra piel" y "otra audiencia". Tocar templates para cambiar de voz reintroduce la duplicación que esta SPEC cierra. |
 | D11 | **Piel = tokens** (`skin.css` del tema), sin literales de color | Un segundo tema hoy exige tocar 74 literales de color y 30 tintes teal con alpha propio: sin tokens, cada piel es un fork del CSS. |
-| D12 | **Topología: subpath con selector `SITE_THEME`**; un sitio Pages, un artefacto de deploy | El "switch" es la URL en cualquier topología; el subdominio exige un segundo sitio Pages (otro repo) y duplica pipeline, secretos y rollback. `SITE_BASE`/`SITE_ORIGIN` por tema dejan la migración a subdominio como configuración, no refactor. |
+| D12 | **Topología: subpath con selector `SITE_THEME`**; un sitio Pages, un artefacto de deploy | El "switch" es la URL en cualquier topología; el subdominio exige un segundo sitio Pages (otro repo) y duplica pipeline, secretos y rollback. `site` por tema (+ overrides `SITE_ORIGIN`/`SITE_BASE`) deja la migración a subdominio como configuración, no refactor. |
 | D13 | **Prosa de perfil = una pieza derivada del SSOT** (`PROFILE.positioning.statement`, resuelta por `profile-prose.ts`); print-CV y sala de Perfil la comparten | El claim «más de 20 años» vivía escrito a mano en dos archivos, con dos redacciones y sin respaldo en el SSOT: un mismo claim duplicado es un defecto de arquitectura (SPEC §3), no curación. Un fallback declarado dentro del SSOT (`audiences.recruiters`) evita redactar copy nuevo cuando el primario falta. |
 | D14 | **Reglas del print = una constante** (`print-tokens.ts`) con el teal del brand, no grises fijos por bloque | Las reglas de sección (`#ccc`) y del footer (`#ddd`) eran dos literales independientes: el print no compartía el color de la marca y cada bloque podía derivar sin que nadie lo viera. El test compara la constante contra el token `--teal` de pantalla. |
 
@@ -530,7 +534,8 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
 - **5.4 — Piel extraída.** Tokens a `themes/museo/skin.css`; 74 literales de color → tokens
   (I5); contraste AA verificado.
 - **5.5 — Selector + subpath.** `SITE_THEME=<id> npm run build`; raíz default; `/<path>/`
-  por tema; `SITE_BASE`/`SITE_ORIGIN` por tema; `canonical`, `og:url`, `og:image`,
+  por tema; dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`)
+  sobre un solo bundle y una sola raíz de assets; `canonical`, `og:url`, `og:image`,
   `sitemap.xml`; smoke de assets por tema (I6).
 - **5.6 — Gates de CI.** Golden por tema + completitud copy ES/EN + cobertura de curación +
   contraste + build de todos los temas.
@@ -555,9 +560,9 @@ golden de `museo` no cambia en ningún PR de la fase.
 
 - `npm test` (vitest: paridad generados + salas/render/i18n/print/jsonld + **golden por
   tema**).
-- `npm run build:all` (Vite, una pasada por tema) + `SITE_THEME=<id> npm run build`.
-- `npm run themes:check`: copy ES/EN completo, cobertura de curación, 0 literales de color,
-  contraste AA declarado.
+- `npm run build:all` (un bundle; una página por tema) + `SITE_THEME=<id> npm run build`.
+- `npm run themes:check` (**gate de #133**, todavía no existe): copy ES/EN completo,
+  cobertura de curación, 0 literales de color, contraste AA declarado.
 - `npm run themes:assets`: toda URL de asset de cada tema existe en `dist/` (I6).
 - Browser headless **por tema**: ES/EN, nav, plano, intro, grafo, print-CV, JSON-LD
   parseable, `canonical`/`og:url` correctos al subpath, sin errores de consola.
