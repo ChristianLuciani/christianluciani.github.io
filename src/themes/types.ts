@@ -69,13 +69,22 @@ export interface NarrativeManifest {
   readonly id: string;
   /** subpath de publicación: `""` = raíz del sitio. */
   readonly path: string;
+  /**
+   * Dirección de publicación del tema (SPEC §8 FASE 5.5): origen y prefijo de
+   * deploy. `SITE_ORIGIN`/`SITE_BASE` los overridean al construir
+   * (`src/themes/site.ts`); el `path` del tema se suma al `base`.
+   */
+  readonly site: {
+    readonly origin: string;
+    readonly base: string;
+  };
   /** Salas incluidas, en orden DOM (incluye las ocultas). */
   readonly rooms: readonly RoomRef[];
   /** Pack de copy 100% ES/EN (I4). */
   readonly copy: CopyPack;
   /** roomId → id de canvas existente (ADR-001 §7). */
   readonly illusions: Readonly<Record<string, string>>;
-  /** Metadata del tema; S5 la proyecta a title/og/twitter/canonical. */
+  /** Metadata del tema; el publicador la proyecta a title/og/twitter/canonical. */
   readonly meta: {
     readonly title: string;
     readonly description: string;

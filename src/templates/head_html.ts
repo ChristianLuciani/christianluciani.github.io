@@ -5,10 +5,20 @@ import {
 import { ENTITY } from "../data/entity.generated.ts";
 import { PRINT_RULE_COLOR } from "./print-tokens.ts";
 import { emitSkin } from "../themes/skin.ts";
-import { t, ta } from "../content/copy.ts";
+import { activeNarrative } from "../themes/index.ts";
+import { attrEscape, t, ta } from "../content/copy.ts";
 
 /** Origen canónico del sitio (OG necesita URL absoluta, no relativa). */
 const SITE_ORIGIN = "https://christianluciani.github.io";
+
+/*
+ * METADATA DEL TEMA (`NarrativeManifest.meta`, SPEC §8 FASE 5.5): title,
+ * description y og:image salen del manifest del tema vigente; el pack sigue
+ * siendo la fuente de las variantes sociales. La CANÓNICA y el `og:url`
+ * dependen de la dirección de deploy y por eso se aplican al publicar
+ * (`src/artifact/pages.ts`), no acá: el documento renderizado es el mismo para
+ * cualquier origen y su golden queda intacto (invariante del epic #125).
+ */
 
 /**
  * Bloques JSON-LD de la entidad (`Person`) + `FAQPage`, derivados del SSOT
@@ -43,26 +53,27 @@ function headline(key: string): string {
 }
 
 export function headHtml(): string {
+  const { meta } = activeNarrative();
   return `<!DOCTYPE html>
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>${t("meta.title")}</title>
-<meta name="description" content="${ta("meta.description")}">
+<title>${meta.title}</title>
+<meta name="description" content="${attrEscape(meta.description)}">
 <meta name="author" content="Christian Luciani">
 <meta property="og:type" content="profile">
 <meta property="og:title" content="${ta("meta.ogTitle")}">
 <meta property="og:description" content="${ta("meta.ogDescription")}">
 <meta property="og:url" content="https://christianluciani.github.io/">
-<meta property="og:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
+<meta property="og:image" content="${absoluteAssetUrl(meta.ogImage, SITE_ORIGIN)}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="es_ES">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="${ta("meta.ogTitle")}">
 <meta name="twitter:description" content="${ta("meta.twitterDescription")}">
-<meta name="twitter:image" content="${absoluteAssetUrl("/assets/og-image.png", SITE_ORIGIN)}">
+<meta name="twitter:image" content="${absoluteAssetUrl(meta.ogImage, SITE_ORIGIN)}">
 <link rel="icon" type="image/svg+xml" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal.svg")}>
 <link rel="icon" type="image/png" sizes="32x32" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-32.png")}>
 <link rel="icon" type="image/png" sizes="16x16" ${assetAttrsFor("href", "/assets/brand/favicon-aurea-teal-16.png")}>

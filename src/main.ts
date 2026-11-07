@@ -14,6 +14,7 @@ import { initAmbientSound } from "./ts/app/ambient";
 import { initUI } from "./ts/app/ui";
 import { mountGrafo } from "./ts/graph/grafo";
 
+import { LAB_ASSET, runtimeAsset } from "./ts/app/runtime-assets.ts";
 import { mountBrandLogo } from "./ts/brand/logoAnim.js";
 import { mountKochArt } from "./ts/fractals/koch";
 import { id as neckerBgId, mountNeckerBg } from "./ts/illusions/neckerBg";
@@ -43,8 +44,11 @@ const SAFETY_MINIMIZE_DELAY_MS = 60000; // red de seguridad: la intro lo resuelv
 const REDUCED_MINIMIZE_DELAY_MS = 300; // reduced-motion: ocultar ya
 
 // El mark minimizado (Espirángulo) abre el laboratorio temporal (portada de propuestas).
-// En dev la fuente vive en proposals/; en build se publica en /laboratorio/.
-const LAB_URL = import.meta.env.DEV ? "/proposals/logo-timing/" : "/laboratorio/";
+// En dev la fuente vive en proposals/; en build se publica en <base>/laboratorio/
+// (`runtimeAsset` aplica el prefijo del artefacto, SPEC §8 FASE 5.5).
+const LAB_URL = import.meta.env.DEV
+  ? "/proposals/logo-timing/"
+  : runtimeAsset(LAB_ASSET);
 
 const CANVAS_MODULES: CanvasModule[] = [
   { id: neckerBgId, mount: (c) => mountNeckerBg(c) },

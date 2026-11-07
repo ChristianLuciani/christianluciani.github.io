@@ -35,19 +35,23 @@
  */
 
 import { t, te } from "../../content/copy.ts";
+import { AUDIO_TRACKS, runtimeAsset } from "./runtime-assets.ts";
 
-const AUDIO_DIR = "/audio/";
-/** Pista de la entrada (hero) y por defecto: canto de ballena jorobada. */
-const DEFAULT_AUDIO = AUDIO_DIR + "whale-song.mp3";
+/**
+ * Pista de la entrada (hero) y por defecto: canto de ballena jorobada.
+ * Las URLs se componen con `runtimeAsset`: la base del artefacto
+ * (`import.meta.env.BASE_URL`) entra acá, no en una constante raíz-absoluta.
+ */
+const DEFAULT_AUDIO = runtimeAsset(AUDIO_TRACKS.default);
 
 /** Pista por sala (id de <section> → archivo en public/audio/). */
 const ROOM_AUDIO: Record<string, string> = {
-  perfil: AUDIO_DIR + "room-dolphin.mp3", // comunicación subacuática de delfines
-  proyectos: AUDIO_DIR + "room-forest.mp3", // viento en el bosque
-  experiencia: AUDIO_DIR + "room-moo.mp3",
-  fisica: AUDIO_DIR + "room-s001.mp3",
-  competencias: AUDIO_DIR + "room-wheezeblow.mp3",
-  grafo: AUDIO_DIR + "room-constelacion.mp3" // ambient espacial, evoca Interstellar
+  perfil: runtimeAsset(AUDIO_TRACKS.perfil), // comunicación subacuática de delfines
+  proyectos: runtimeAsset(AUDIO_TRACKS.proyectos), // viento en el bosque
+  experiencia: runtimeAsset(AUDIO_TRACKS.experiencia),
+  fisica: runtimeAsset(AUDIO_TRACKS.fisica),
+  competencias: runtimeAsset(AUDIO_TRACKS.competencias),
+  grafo: runtimeAsset(AUDIO_TRACKS.grafo) // ambient espacial, evoca Interstellar
   // contacto y hero (entrada) → pista por defecto (whale-song.mp3)
 };
 

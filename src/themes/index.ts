@@ -13,9 +13,11 @@
  * hasta entonces la entrada del registro ES el `NarrativeManifest`.
  */
 import { museo } from "./museo/narrative.ts";
+import { resolveThemeAddress } from "./site.ts";
 import type { NarrativeManifest, RoomRef } from "./types.ts";
 
 export type { NarrativeManifest, RoomRef } from "./types.ts";
+export type { SiteAddress } from "./site.ts";
 
 /** Registro: una entrada por tema. S8 añade `ingenieria` con una línea. */
 const registry = { museo } as const satisfies Record<string, NarrativeManifest>;
@@ -30,6 +32,47 @@ export const DEFAULT_THEME: ThemeId = "museo";
 /** Ids registrados, en el orden de declaración. */
 export function themeIds(): ThemeId[] {
   return Object.keys(THEMES) as ThemeId[];
+}
+
+/**
+ * Temas que publica un build: `SITE_THEME=<id>` aísla uno; sin selector, el
+ * artefacto publica TODO el registro (es lo que corre el deploy). El render
+ * fuente (`<repo>/index.html`) es siempre el del tema default: `SITE_THEME` no
+ * lo toca, así el archivo commiteado y su golden no dependen del selector.
+ */
+export function buildThemes(
+  env: Record<string, string | undefined> = typeof process !== "undefined"
+    ? process.env
+    : {}
+): NarrativeManifest[] {
+  const selector = (env.SITE_THEME ?? "").trim();
+  return selector ? [resolveTheme(selector)] : themeIds().map((id) => THEMES[id]);
+}
+
+/**
+ * Prefijo de deploy del artefacto. Hay UN bundle y UN root de assets, así que
+ * todos los temas del build tienen que resolver el mismo `base`; si dos temas
+ * declaran prefijos distintos no comparten artefacto y el build falla con la
+ * instrucción (publicá ese tema con `SITE_THEME=<id>`).
+ */
+export function artifactBase(
+  env: Record<string, string | undefined> = typeof process !== "undefined"
+    ? process.env
+    : {}
+): string {
+  const addresses = buildThemes(env).map((theme) => resolveThemeAddress(theme, env));
+  const bases = new Map(addresses.map((address) => [address.path, address.base]));
+  const distinct = new Set(bases.values());
+  if (distinct.size > 1) {
+    const detail = [...bases]
+      .map(([path, base]) => `"${path || "/"}"→"${base || "/"}"`)
+      .join(", ");
+    throw new Error(
+      `themes: los temas del build declaran prefijos de deploy distintos (${detail}); ` +
+        "comparten un solo bundle de assets. Publicá cada uno como artefacto propio con SITE_THEME=<id>."
+    );
+  }
+  return addresses[0].base;
 }
 
 /** Guard de id: sólo claves PROPIAS del registro (no `toString`, `__proto__`, …). */

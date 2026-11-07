@@ -3,6 +3,16 @@ import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
 import { PRINT_LOGO_PATH } from "./src/templates/print-tokens.ts";
+import { artifactBase } from "./src/themes/index.ts";
+
+const ROOT = fileURLToPath(new URL(".", import.meta.url));
+
+/* Base del artefacto (SPEC §8 FASE 5.5): la declara cada tema en su manifest y
+ * `SITE_BASE` la overridea; `artifactBase()` exige que los temas del build
+ * compartan el prefijo. Vite la usa para el `base` del bundle y
+ * `import.meta.env.BASE_URL`, que es lo que resuelve los recursos del runtime
+ * (`src/ts/app/runtime-assets.ts`). `""` ⇒ la raíz del dominio, el caso de Pages. */
+const ASSET_BASE = artifactBase();
 
 /* Copia vendored de los assets de marca que el sitio SIRVE, pineada en
  * brand-kit.lock.json (cluciani-brand-kit@tag).
@@ -30,30 +40,33 @@ const BRAND_SERVED_FILES = [
 const copyTimingLab = (): Plugin => ({
   name: "copy-timing-lab",
   closeBundle() {
-    const root = fileURLToPath(new URL(".", import.meta.url));
-    const dest = resolve(root, "dist/laboratorio");
+    const dest = resolve(ROOT, "dist/laboratorio");
     rmSync(dest, { recursive: true, force: true });
-    cpSync(resolve(root, "proposals/logo-timing"), dest, { recursive: true });
+    cpSync(resolve(ROOT, "proposals/logo-timing"), dest, { recursive: true });
   },
 });
 
 const copyBrandAssets = (): Plugin => ({
   name: "copy-brand-assets",
   closeBundle() {
-    const root = fileURLToPath(new URL(".", import.meta.url));
     for (const file of BRAND_SERVED_FILES) {
-      const dest = resolve(root, "dist/assets/brand", file);
+      const dest = resolve(ROOT, "dist/assets/brand", file);
       mkdirSync(dirname(dest), { recursive: true });
-      copyFileSync(resolve(root, "assets/brand/logo", file), dest);
+      copyFileSync(resolve(ROOT, "assets/brand/logo", file), dest);
     }
   },
 });
 
 export default defineConfig({
-  base: "/",
+  base: `${ASSET_BASE}/`,
   plugins: [copyBrandAssets(), copyTimingLab()],
   build: {
-    sourcemap: true
+    sourcemap: true,
+    // El HTML no es entry de Vite: lo escribe `build.ts` (modo `--dist`) con la
+    // ruta del bundle inyectada. Vite sólo produce el JS + el manifest; así
+    // ninguna URL del render la reescribe el bundler (las genera `site.ts`).
+    manifest: true,
+    rollupOptions: { input: resolve(ROOT, "src/main.ts") }
   },
   test: {
     globals: true,
