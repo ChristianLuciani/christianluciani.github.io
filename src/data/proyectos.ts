@@ -15,6 +15,7 @@
  * Bastidor, la línea de graduación. `src/data/private-surfaces.test.ts` (#114)
  * escanea estas fichas: no pueden enlazar una superficie privada.
  */
+import { DEFAULT_CURATION, curatedOrder, type Curation } from "../content/curation/index.ts";
 import { MARCO, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
 import { PROFILE } from "./profile.generated.ts";
@@ -30,9 +31,10 @@ export interface Proyecto {
   /** Estado del SSOT (`active`, `experimental`, `planning`, `maintained`, …). */
   status?: string;
   /**
-   * Orden de presentación (más reciente primero). No es un hecho del SSOT:
-   * es curación museográfica. Sin fecha verificable queda al final; no se
-   * inventa una.
+   * Fecha de recencia del proyecto, expuesta en `data-recencia` (tests y
+   * depuración). No es un hecho del SSOT ni decide el orden: el ORDEN lo fija
+   * `order.proyectos` de la curación del tema. La curación exige que ambos
+   * coincidan, así que una ficha sin fecha verificable no se inventa.
    */
   recencia?: string;
   /** Qué le falta para pasar a El Marco (sólo fichas sin artefacto público). */
@@ -151,26 +153,48 @@ export function toProyecto(project: ProjectItem): Proyecto {
   };
 }
 
-/** Todas las fichas del SSOT (en orden del SSOT, sin ordenar). */
-export function proyectosDe(profile: CvProfile = PROFILE as unknown as CvProfile): Proyecto[] {
-  return profile.projects.map((p) => toProyecto(p));
+/**
+ * Fichas presentadas por el tema, en el ORDEN de la curación.
+ *
+ * La curación decide qué proyecto se presenta (`exclude`) y en qué orden
+ * (`order.proyectos`), vía `curatedOrder()`: una sola implementación para todos
+ * los consumidores. `include` declara la decisión y la cobertura, pero NO
+ * oculta: un proyecto nuevo del SSOT sin decisión se muestra (y el reporte lo
+ * marca en rojo) en vez de desaparecer del sitio en silencio. Si una ficha
+ * incluida queda fuera del orden declarado —curación incompleta— queda al
+ * final, en el orden estable del SSOT.
+ *
+ * El split El Marco / El Bastidor NO se decide acá: se deriva de
+ * `ProjectItem.published` (artifactRefs → artifact público, #109/F4).
+ */
+export function proyectosDe(
+  profile: CvProfile = PROFILE as unknown as CvProfile,
+  curation: Curation = DEFAULT_CURATION
+): Proyecto[] {
+  return curatedOrder(
+    curation,
+    "proyectos",
+    profile.projects,
+    (project) => projectKey(project.name)
+  ).map((project) => toProyecto(project));
 }
 
 export const PROYECTOS: readonly Proyecto[] = proyectosDe();
 
-/* Orden de tarjetas: más reciente primero. `recencia` es ISO, así que el orden
- * lexicográfico es el cronológico; una ficha sin fecha verificable va al final. */
-const porRecencia = (a: Proyecto, b: Proyecto): number =>
-  (b.recencia ?? "").localeCompare(a.recencia ?? "");
-
 /** Obra publicada y auditable: lo que El Marco puede colgar. */
-export function publicadosDe(profile: CvProfile = PROFILE as unknown as CvProfile): Proyecto[] {
-  return proyectosDe(profile).filter((p) => p.published).sort(porRecencia);
+export function publicadosDe(
+  profile: CvProfile = PROFILE as unknown as CvProfile,
+  curation: Curation = DEFAULT_CURATION
+): Proyecto[] {
+  return proyectosDe(profile, curation).filter((p) => p.published);
 }
 
 /** Sin artefacto público: cada una declara qué le falta (si está curada). */
-export function enDesarrolloDe(profile: CvProfile = PROFILE as unknown as CvProfile): Proyecto[] {
-  return proyectosDe(profile).filter((p) => !p.published).sort(porRecencia);
+export function enDesarrolloDe(
+  profile: CvProfile = PROFILE as unknown as CvProfile,
+  curation: Curation = DEFAULT_CURATION
+): Proyecto[] {
+  return proyectosDe(profile, curation).filter((p) => !p.published);
 }
 
 /**

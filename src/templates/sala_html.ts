@@ -795,9 +795,20 @@ function roomHeader(s: RoomRef): string {
   );
 }
 
+/**
+ * Shell de la sala con la clase `room--hidden` coherente con la NARRATIVA: el
+ * literal del shell es el default de la galería, pero la visibilidad la decide
+ * la curación del tema (`RoomRef.hidden`). Para `museo` el byte no cambia (la
+ * galería sigue oculta); un tema que la presente no hereda una sala invisible.
+ */
+function shellFor(s: RoomRef): string {
+  const shell = ROOM_SHELL[s.id] ?? "";
+  return s.hidden ? shell : shell.replace('class="room room--hidden"', 'class="room"');
+}
+
 /** Sala completa: comentario + shell + header(narrativa) + body. */
 export function renderRoom(s: RoomRef): string {
-  return ROOM_SHELL[s.id] + roomHeader(s) + roomBody(s);
+  return shellFor(s) + roomHeader(s) + roomBody(s);
 }
 
 /** Todas las salas de la NARRATIVA ACTIVA, en orden DOM. */

@@ -147,7 +147,8 @@ function experienceSectionTitle(id: ExperienceSectionId): string {
 
 /**
  * Las 23 filas de `experience[]` se reparten en dos subsecciones (F1 de #116)
- * según `EXPERIENCE_SECTIONS` (curación en `src/content/cv/print.ts`).
+ * según `Curation.experienceSections` del tema activo (la del museo vive en
+ * `src/content/curation/museo.ts`).
  *
  * Una fila sin clasificar NO se adivina ni se esconde: el render falla. Así una
  * entrada nueva del SSOT rompe el test en vez de aterrizar en la sección

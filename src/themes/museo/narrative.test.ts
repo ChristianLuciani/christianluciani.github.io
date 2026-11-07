@@ -20,10 +20,14 @@ describe("themes/museo — manifest", () => {
     expect(museo.path).toBe("");
   });
 
-  it("sus salas SON las de SALAS: mismo orden, misma data (sin copia)", () => {
-    expect(museo.rooms).toEqual(SALAS);
+  it("sus salas SON las de SALAS (mismo orden y data); la visibilidad la aplica la curación", () => {
+    expect(museo.rooms.map((room) => room.id)).toEqual(SALAS.map((room) => room.id));
     for (let i = 0; i < SALAS.length; i++) {
-      expect(museo.rooms[i]).toBe(SALAS[i]);
+      const { hidden, ...room } = museo.rooms[i];
+      expect(room).toEqual(SALAS[i]);
+      // `hidden` no es un dato de la estructura: sólo la curación lo agrega.
+      if (SALAS[i].id === "galeria") expect(hidden).toBe(true);
+      else expect(hidden).toBeUndefined();
     }
   });
 

@@ -6,11 +6,15 @@
  * title/og/twitter/canonical. No crea hechos ni duplica valores: cada pieza
  * tiene una sola fuente.
  *
- * `rooms` referencia `SALAS` (no la copia): mientras `museo` sea la única
- * narrativa, la estructura vigente es la suya; un tema nuevo declara su propio
- * arreglo (subconjunto/reordenamiento) sin tocar templates ni esta estructura.
+ * `rooms` DERIVA de `SALAS` (no la copia) y aplica la VISIBILIDAD de la curación
+ * de ESTE tema (`Curation.exclude`, ids `salas:<id>`): la estructura decide qué
+ * salas existen; la curación del tema, cuáles se presentan. Un tema nuevo
+ * declara su propio arreglo con SU curación, sin tocar `museo.ts` ni templates.
  */
 import { SALAS } from "../../cv/salas.ts";
+import { isExcluded } from "../../content/curation/index.ts";
+import { factId } from "../../content/curation/keys.ts";
+import { MUSEO_CURATION } from "../../content/curation/museo.ts";
 import type { NarrativeManifest } from "../types.ts";
 import { DEFAULT_ORIGIN } from "../site.ts";
 import { MUSEO_COPY } from "./copy.ts";
@@ -24,7 +28,11 @@ export const museo: NarrativeManifest = {
   // overridean al construir, para migrar de dominio o de prefijo sin tocar el
   // tema.
   site: { origin: DEFAULT_ORIGIN, base: "" },
-  rooms: SALAS,
+  // La estructura decide qué salas existen; la curación del tema, cuáles se
+  // presentan (SPEC §5.4).
+  rooms: SALAS.map((room) =>
+    isExcluded(MUSEO_CURATION, factId("salas", room.id)) ? { ...room, hidden: true } : room
+  ),
   copy: MUSEO_COPY,
   illusions: MUSEO_ILLUSIONS,
   meta: {

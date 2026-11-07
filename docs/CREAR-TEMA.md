@@ -121,7 +121,7 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
 ```ts
 // src/content/curation/ingenieria.ts
 export const CURATION: Curation = {
-  // ids namespaced `colección:clave` (ver §4: la clave es derivada, no un id de fila)
+  // ids namespaced `colección:clave` (ver content/curation/keys.ts; la clave es derivada, no un id de fila)
   include: ["proyectos:Kontablo", "proyectos:ZENTROPY", "proyectos:CLAPPS.AI"],
   exclude: [
     { id: "proyectos:Drahma", reason: "storytelling de aula; fuera del marco de ingeniería" }
@@ -133,14 +133,36 @@ export const CURATION: Curation = {
 
 - `exclude` **nunca** borra: el hecho sigue en el SSOT y en los demás temas.
 - Toda exclusión exige `reason` redactada para el operador, no "n/a".
-- `curation --report` debe salir sin hechos sin decisión (gate I3).
+- El universo incluye las 8 colecciones del perfil (proyectos, publicaciones,
+  experiencia, formación, competencias, idiomas, credenciales, artefactos) y las
+  salas: un hecho que el tema no muestra también se decide, con `exclude` y su
+  razón. `include`/`exclude` deben cubrir el 100%.
+- `curatedOrder(curation, colección, hechos, keyOf)` es el consumidor canónico:
+  filtra lo excluido y ordena por `order`. No lo reimplementes a mano.
+- `experienceSections` del contrato es la clasificación de `experience[]` que
+  imprime el print-CV (clave de fila → `professional`/`training`); el print
+  compartido la pide al tema activo, no al módulo de un tema.
+- `npm run curation:report` (o `tsx tools/curation.ts --report`) sale 1 con un
+  hecho sin decisión, un id inexistente o un `exclude` sin razón (gate I3).
 
 ## 5. Hechos: referencia, jamás copia
 
 ```ts
-// correcto
-const proyectos = PROFILE.projects.filter(p => curation.include.includes(p.id));
-// prohibido
+// correcto — un solo consumidor: excluye y ORDENA con la curación del tema.
+// `keyOf` deriva la clave estable del hecho (content/curation/keys.ts).
+const proyectos = curatedOrder(
+  curation,
+  "proyectos",
+  PROFILE.projects,
+  (project) => projectKey(project.name)
+);
+// o, ya resuelto para el sitio: proyectosDe() / publicacionesDe()
+
+// prohibido — filtrar a mano sin `order` publica en el orden del SSOT
+const proyectos = PROFILE.projects.filter(
+  (project) => !curation.exclude.some((e) => e.id === `proyectos:${projectKey(project.name)}`)
+);
+// prohibido — copiar hechos
 const proyectos = [{ name: "Kontablo", status: "Publicado", … }];
 ```
 
@@ -203,10 +225,11 @@ subpaths con `Allow: /`).
 8. Corré los gates y pegá la salida en el body del PR.
 
 ```bash
+npm run curation:report           # I3: 100% de hechos con decisión
 npm run build                     # render fuente (default) + bundle + dist/<path>/index.html de cada tema + sitemap
-npm run build:all                 # alias de build: el artefacto publica TODOS los temas registrados
+npm run build:all                 # construye TODOS los temas registrados (el artefacto los publica todos)
 SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema (no toca index.html)
-npm test                          # unidades + golden del default
+npm test                          # unidades + golden por tema
 # npm run themes:check            # gate de #133 (todavía no existe): copy, curación, tokens, contraste
 npm run themes:assets             # smoke: assets del HTML + recursos del runtime + sitemap/robots
 npm run build:html                # sólo el render fuente (commit del index.html)
@@ -218,8 +241,9 @@ npm run build:html                # sólo el render fuente (commit del index.htm
 
 - [ ] `src/themes/<id>/` completo; **0** cambios fuera de ahí salvo la línea de registro.
 - [ ] Copy 100% ES+EN; 0 claves huérfanas; 0 strings visibles en templates.
-- [ ] `curation` declara include/exclude; toda exclusión con `reason`;
-      `curation.experienceSections` cubre las filas de `experience[]` que imprime el print-CV.
+- [ ] `curation` declara include/exclude; toda exclusión con `reason`; el
+      reporte cubre el 100% de los hechos (`npm run curation:report` verde) y
+      `curation.experienceSections` cubre las filas de `experience[]` del print-CV.
 - [ ] `skin.css` sin literales de color; contraste AA verificado.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto**.
