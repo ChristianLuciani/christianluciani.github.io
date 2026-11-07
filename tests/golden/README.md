@@ -1,8 +1,10 @@
 # Golden del render
 
-Copia congelada del HTML del tema default (`museo`), cortada por secciones. Es el
-instrumento del invariante **I1**: durante la FASE 5 (`docs/SPEC.md` §8, ADR-001) el
-render del sitio no puede cambiar, y esto lo verifica mecánicamente.
+Copia congelada del HTML de **cada tema registrado** (`tests/golden/<id>.html`; `museo`
+es el default y publica en la raíz), cortada por secciones. Es el instrumento del
+invariante **I1**: durante la FASE 5 (`docs/SPEC.md` §8, ADR-001) el render del sitio no
+puede cambiar, y esto lo verifica mecánicamente. `npm run themes:check` exige que todo
+tema registrado tenga su baseline: un tema sin snapshot no tiene gate de render.
 
 ## Por qué no alcanza `build.test.ts`
 
@@ -30,7 +32,10 @@ sería la declaración más barata para mover el golden por presentación.
 El job `refresh-now.yml` regenera el golden y lo commitea con ese trailer: un robot de
 datos no puede dejar la suite roja al día siguiente.
 
-El trailer va en cualquier commit del PR; si hay varios, `render` gana.
+El trailer va en cualquier commit del PR; si hay varios, `render` gana. La guarda de
+trailers (`golden:policy`) mira el baseline del **tema default** (`museo.html`): un
+baseline de un tema nuevo es un artefacto nuevo, no un cambio del render del default, y
+`npm test` lo compara byte a byte contra el render de su tema.
 
 En cualquier otro PR —refactor, extracción de copy, tokens, i18n, selector de tema— el
 golden **no se toca**: si el test falla, el refactor cambió el render y hay que corregir
@@ -39,7 +44,7 @@ el refactor, no el golden.
 ## Cómo
 
 ```bash
-npm run golden:update   # reescribe tests/golden/museo.html desde assembleHtml()
+npm run golden:update   # reescribe tests/golden/<id>.html de CADA tema desde assembleHtml({ theme })
 npm run build           # reescribe index.html (build.test.ts exige que coincida)
 npm test                # verde antes de commitear
 ```

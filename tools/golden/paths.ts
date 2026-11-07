@@ -8,6 +8,20 @@
 export const BASELINE_PATH = "tests/golden/museo.html";
 
 /**
+ * Baseline de UN tema registrado (#133). El default publica en la raíz y su
+ * snapshot es `tests/golden/museo.html` — la misma ruta que `BASELINE_PATH`.
+ *
+ * Un tema nuevo congela su documento en `tests/golden/<id>.html`: el gate de
+ * #133 exige ese archivo y `golden.test.ts` compara el render del tema contra
+ * él. La guarda de trailers (`golden:policy`) sigue atada al baseline del
+ * default: un baseline nuevo es un artefacto nuevo, no un cambio del render
+ * del default.
+ */
+export function baselinePathFor(themeId: string): string {
+  return `tests/golden/${themeId}.html`;
+}
+
+/**
  * Artefactos de datos que el render consume. Su cambio es la única causa
  * legítima de "Datos" (el perfil, el feed «Ahora» y —#140— la entidad JSON-LD
  * que `head_html.ts` serializa en el head).

@@ -47,6 +47,12 @@ jobs:
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test
+      # Gates multi-tema (#133): copy ES/EN completo (sin claves huérfanas),
+      # curación 100% decidida con `reason` y `experienceSections` completa,
+      # 0 literales de color en la piel y contraste AA declarado — por CADA tema
+      # registrado — más el baseline de render de cada tema. No necesita `dist/`:
+      # el gate de assets corre después del build.
+      - run: npm run themes:check
       # Guard de cero consumidores (#110/#99): el gate de frescura de
       # profile-data puede estar verde con la demo ciega. Falla si el sitio deja
       # de importar PROFILE o si una superficie migrada al SSOT deja de consumirlo.
@@ -96,7 +102,9 @@ jobs:
           test "$(grep -o 'data-local=' dist/index.html | wc -l)" -eq 9
       - name: build en modo Pages (sin data-local, index.html sin drift)
         run: |
-          npm run build
+          # `build:all` construye TODOS los temas registrados: el artefacto
+          # publica una página por tema (hoy una). #133 cierra el gate multi-tema.
+          npm run build:all
           ! grep -q 'data-local=' dist/index.html
           grep -q 'href="/assets/brand/favicon-aurea-teal.svg"' dist/index.html
           # Política IA + entidad en la RAÍZ del dominio (#140): `public/` se
@@ -128,7 +136,7 @@ jobs:
       # I6 (ADR-001, #131): toda URL de asset de cada página publicada existe en
       # dist/, el sitemap lista exactamente esas páginas y los recursos que pide
       # el RUNTIME (audio, laboratorio) están en el artefacto con la base
-      # compilada. El resto de los gates multi-tema es #133.
+      # compilada. El resto de los gates multi-tema corre en `themes:check` (#133).
       - run: npm run themes:assets
       # gate real de paginación del print-CV (F3 de #119): mide el PDF de Chrome
       # sobre dist/, no el texto del CSS. Falla si una página no es A4, si el
