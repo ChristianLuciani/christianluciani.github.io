@@ -168,6 +168,33 @@ describe("pages — publicar", () => {
     );
     expect(absent.missing).toEqual(["/assets/icons/x.svg"]);
   });
+
+  it("publica la identidad del tema en <html data-theme> (el runtime la lee)", () => {
+    const document =
+      '<!DOCTYPE html>\n<html lang="es">\n<head>\n' +
+      '<meta property="og:url" content="https://christianluciani.github.io/">\n' +
+      "</head>\n<body></body>\n</html>";
+    const { html } = publishPage(document, INGENIERIA, new Map(), "ingenieria");
+    expect(html).toContain('<html lang="es" data-theme="ingenieria">');
+  });
+
+  it("sin id de tema no inventa identidad (el render fuente no la lleva)", () => {
+    const document =
+      '<!DOCTYPE html>\n<html lang="es"><head>\n' +
+      '<meta property="og:url" content="https://christianluciani.github.io/">\n' +
+      "</head><body></body></html>";
+    const { html } = publishPage(document, ROOT);
+    expect(html).not.toContain("data-theme");
+    // El render fuente (golden) sigue sin identidad: el atributo es del artefacto.
+    expect(assembleHtml()).not.toContain("data-theme");
+  });
+
+  it("un id de tema inválido falla en vez de publicar un documento sin identidad", () => {
+    const document = '<!DOCTYPE html>\n<html lang="es"><head>\n' +
+      '<meta property="og:url" content="https://christianluciani.github.io/">\n' +
+      "</head></html>";
+    expect(() => publishPage(document, ROOT, new Map(), "../x")).toThrow(/data-theme/);
+  });
 });
 
 describe("pages — sitemap", () => {

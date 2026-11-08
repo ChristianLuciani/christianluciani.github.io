@@ -8,7 +8,7 @@
  * tema. Sin opciones resuelve el default del registro; build.ts le pasa el
  * `SITE_THEME` ya resuelto.
  */
-import { BODY_OPEN } from "./body_open.ts";
+import { bodyOpen } from "./body_open.ts";
 import { coverHtml } from "./cover_html.ts";
 import { headHtml } from "./head_html.ts";
 import { heroHtml } from "./hero_html.ts";
@@ -45,7 +45,7 @@ export function assembleHtml({ theme = DEFAULT_THEME }: AssembleOptions = {}): s
   const narrative = typeof theme === "string" ? resolveTheme(theme) : theme;
   return withNarrative(narrative, () =>
     headHtml() +
-    BODY_OPEN +
+    bodyOpen() +
     // El print deriva del SSOT (CvProfile): el snapshot es `as const`, de ahí el cast.
     printCvHtml(PROFILE as unknown as CvProfile) +
     coverHtml() +

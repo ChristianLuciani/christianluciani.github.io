@@ -14,7 +14,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { PRINT_CV, experienceKey, experienceSectionOf } from "../content/cv/print";
+import { printCvCuration, experienceKey, experienceSectionOf } from "../content/cv/print";
 import { EXPERIENCE_SECTIONS } from "../content/curation/museo";
 import { orgEs } from "../content/cv/org";
 import { PROFILE_PROSE, profileProse } from "../content/cv/profile-prose";
@@ -148,7 +148,7 @@ describe("print-CV — footer de procedencia (solo print)", () => {
       ...profile,
       source: { ...profile.source, commitDate: null }
     };
-    expect(printCvHtml(fixture)).toContain(PRINT_CV.labels.footerNoDate);
+    expect(printCvHtml(fixture)).toContain(printCvCuration().labels.footerNoDate);
   });
 
   it("vive dentro de #print-cv, que está oculto en pantalla y visible al imprimir", () => {
@@ -207,8 +207,8 @@ describe("print-CV — F1: dos secciones de Trayectoria (curación D2)", () => {
   });
 
   it("las dos secciones se imprimen, en orden, y cada fila cae en la suya", () => {
-    const trainingHeading = `<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`;
-    const professionalHeading = `<h3 class="p-subhead">${PRINT_CV.sections.professional}</h3>`;
+    const trainingHeading = `<h3 class="p-subhead">${printCvCuration().sections.training}</h3>`;
+    const professionalHeading = `<h3 class="p-subhead">${printCvCuration().sections.professional}</h3>`;
     const [beforeTraining, trainingPart] = HTML.split(trainingHeading);
     const [container, professionalPart] = beforeTraining.split(professionalHeading);
 
@@ -265,12 +265,12 @@ describe("print-CV — F1: dos secciones de Trayectoria (curación D2)", () => {
 
 describe("print-CV — F2: Trayectoria y org localizado", () => {
   it("el bloque contenedor sigue titulándose «Trayectoria» con su nota", () => {
-    expect(PRINT_CV.sections.experience.es).toBe("Trayectoria");
-    expect(PRINT_CV.sections.experience.en).toBe("Trajectory");
+    expect(printCvCuration().sections.experience.es).toBe("Trayectoria");
+    expect(printCvCuration().sections.experience.en).toBe("Trajectory");
     expect(HTML).toContain("<h2>Trayectoria</h2>");
     expect(HTML).toContain("Empleo, formación y talleres");
-    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.professional}</h3>`);
-    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`);
+    expect(HTML).toContain(`<h3 class="p-subhead">${printCvCuration().sections.professional}</h3>`);
+    expect(HTML).toContain(`<h3 class="p-subhead">${printCvCuration().sections.training}</h3>`);
   });
 
   it("localiza el org por token: país y glosa en ES, nombres propios intactos", () => {
@@ -291,10 +291,10 @@ describe("print-CV — F2 de #119: rótulos de formación desambiguados", () => 
   it("«Formación y talleres» (experience) no compite con «Formación académica» (education)", () => {
     // El subhead de talleres es una decisión registrada del operador (#108 §9):
     // no se renombra; se desambigua el otro lado.
-    expect(PRINT_CV.sections.training).toBe("Formación y talleres");
-    expect(PRINT_CV.sections.education).toBe("Formación académica");
-    expect(HTML).toContain(`<h3 class="p-subhead">${PRINT_CV.sections.training}</h3>`);
-    expect(HTML).toContain(`<h2>${PRINT_CV.sections.education}</h2>`);
+    expect(printCvCuration().sections.training).toBe("Formación y talleres");
+    expect(printCvCuration().sections.education).toBe("Formación académica");
+    expect(HTML).toContain(`<h3 class="p-subhead">${printCvCuration().sections.training}</h3>`);
+    expect(HTML).toContain(`<h2>${printCvCuration().sections.education}</h2>`);
     expect(HTML).not.toContain("<h2>Formación</h2>");
     expect(occurrences(HTML, "Formación académica")).toBe(1);
   });
@@ -373,9 +373,9 @@ describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuen
     expect(HTML).not.toContain("20 años");
   });
 
-  it("PRINT_CV.profile es una SELECCIÓN de campo, no texto", () => {
-    expect(PRINT_CV.profile).toEqual(PROFILE_PROSE);
-    expect(JSON.stringify(PRINT_CV.profile)).not.toMatch(/Físico|Physicist|años|years/);
+  it("printCvCuration().profile es una SELECCIÓN de campo, no texto", () => {
+    expect(printCvCuration().profile).toEqual(PROFILE_PROSE);
+    expect(JSON.stringify(printCvCuration().profile)).not.toMatch(/Físico|Physicist|años|years/);
   });
 
   it("mover `positioning.statement` mueve la prosa del print (#109)", () => {

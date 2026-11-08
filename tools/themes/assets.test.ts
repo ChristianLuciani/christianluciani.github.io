@@ -55,7 +55,9 @@ function writeArtifact(files: Record<string, string>): string {
 /** Página publicada con la forma que produce `publishPage`. */
 function page(address: SiteAddress): string {
   const asset = (path: string) => servedAssetPath(path, address);
-  return `<!DOCTYPE html><html><head>
+  // El publicador inyecta la identidad del tema (F1 de #159): el runtime la lee.
+  const theme = address.path || "museo";
+  return `<!DOCTYPE html><html lang="es" data-theme="${theme}"><head>
 <link rel="canonical" href="${pageUrl(address)}">
 <link rel="icon" href="${asset("/assets/brand/favicon.svg")}">
 <meta property="og:image" content="${address.origin}${asset("/assets/og.png")}">
@@ -159,6 +161,30 @@ describe("themes/assets — gate del artefacto", () => {
     expect(report.missing).toEqual([]);
     expect(report.ok).toBe(true);
     expect(report.pages.map((check) => check.page)).toEqual(["index.html", "ingenieria/index.html"]);
+  });
+
+  it("cada página declara la identidad de SU tema (el runtime la lee)", () => {
+    const dir = artifact({
+      overrides: {
+        "ingenieria/index.html": page(INGENIERIA).replace(
+          'data-theme="ingenieria"',
+          'data-theme="museo"'
+        )
+      }
+    });
+    const errors = checkThemeAssets({ distDir: dir, themes: THEMES }).errors.join("\n");
+    expect(errors).toContain('data-theme="museo"');
+    expect(errors).toContain('"ingenieria"');
+  });
+
+  it("sin data-theme el runtime no puede resolver el tema: el gate lo falla", () => {
+    const dir = artifact({
+      overrides: {
+        "ingenieria/index.html": page(INGENIERIA).replace(' data-theme="ingenieria"', "")
+      }
+    });
+    const errors = checkThemeAssets({ distDir: dir, themes: THEMES }).errors.join("\n");
+    expect(errors).toContain("no declara la identidad del tema");
   });
 
   it("un asset referenciado que no está en dist falla con página y URL", () => {
