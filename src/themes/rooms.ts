@@ -38,17 +38,29 @@ import type { Curation } from "../content/curation/types.ts";
 import type { RoomRef } from "./types.ts";
 
 /**
- * Rótulos de PRESENTACIÓN del tema, por id de sala: la voz renombra la metáfora,
- * no decide la estructura. Quedan fuera `id`, `hidden` y `subtitulo` (este último
- * se re-deriva de la curación: dejar que la voz lo pise permitiría publicar un
- * conteo que la sala desmiente — F4 del pase fresco de #165).
+ * CAMPOS DE PRESENTACIÓN que la voz puede fijar. Lista ÚNICA: de acá derivan el
+ * tipo (`RoomVoice`) y la composición del `return`, así agregar un campo nuevo
+ * no puede quedar ignorado en silencio en runtime (nit F1 del pase fresco de
+ * #166: la lista vivía dos veces y nada mecánico las ataba).
+ *
+ * Quedan fuera `id`, `hidden` y `subtitulo`/`subtituloEn`: la identidad y la
+ * visibilidad son estructura (las decide la curación) y el subtítulo se
+ * re-deriva de ella — dejar que la voz lo pise publicaría un conteo que la sala
+ * desmiente (F4 del pase fresco de #165).
  */
-export type RoomVoice = Readonly<
-  Record<
-    string,
-    Partial<Pick<RoomRef, "titulo" | "tituloEn" | "funcion" | "funcionEn" | "navLabel" | "navLabelEn">>
-  >
->;
+export const VOICE_FIELDS = [
+  "titulo",
+  "tituloEn",
+  "funcion",
+  "funcionEn",
+  "navLabel",
+  "navLabelEn"
+] as const;
+
+export type VoiceField = (typeof VOICE_FIELDS)[number];
+
+/** Rótulos de presentación del tema, por id de sala. */
+export type RoomVoice = Readonly<Record<string, Partial<Pick<RoomRef, VoiceField>>>>;
 
 /** Salas del tema `curation`, en orden DOM, con la voz aplicada. */
 export function roomsFromCuration(
@@ -72,10 +84,20 @@ export function roomsFromCuration(
   );
   return [...sorted, ...hidden].map((room) => {
     const counts = subtitulosCurados(room.id, curation);
+    // La voz se COMPONE campo por campo, nunca se esparce: así una voz que en
+    // runtime traiga de más (`hidden`, `subtitulo`, `id`) no puede pisar la
+    // estructura ni el conteo re-derivado. `RoomVoice` ya lo impide en compile
+    // time; esto lo sostiene en runtime (F4 del pase fresco de #165).
+    const v = voice[room.id] ?? {};
+    // Se recorre `VOICE_FIELDS`, no una lista repetida: la composición no puede
+    // divergir del tipo (un campo nuevo entra en los dos lados a la vez).
+    const presentacion = {} as Record<VoiceField, string>;
+    for (const field of VOICE_FIELDS) presentacion[field] = v[field] ?? room[field];
     return {
       ...room,
-      ...(counts ? { subtitulo: counts.es, subtituloEn: counts.en } : {}),
-      ...(voice[room.id] ?? {}),
+      ...presentacion,
+      subtitulo: counts?.es ?? room.subtitulo,
+      subtituloEn: counts?.en ?? room.subtituloEn,
       ...(hiddenIds.has(room.id) ? { hidden: true } : {})
     };
   });

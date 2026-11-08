@@ -215,7 +215,8 @@ const SITIO_COMO_OBRA =
 const STACK_COMO_SALA =
   "El Compás presenta el stack como índice. En esta piel la capacidad se lee en la " +
   "obra y en la trayectoria, y las filas completas se imprimen en el CV: la sala " +
-  "repite el índice. Ocultar no borra el hecho, que sigue en `include`.";
+  "repite el índice. Ocultar no borra el hecho: las filas siguen en el SSOT y en " +
+  "el print-CV, y un tema que sí la publique puede incluirla.";
 
 /* ── La curación ────────────────────────────────────────────────────────── */
 
