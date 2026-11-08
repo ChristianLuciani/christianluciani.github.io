@@ -154,9 +154,9 @@ DOS lugares, y ninguno lo reimplementa un template:
 
 **`hidden` es de cualquier sala, no de la galería.** `shellFor()` agrega O quita
 `room--hidden` según `RoomRef.hidden`; antes sólo sabía quitarla, así que excluir otra sala
-era decorativo. **La curación es vinculante en el DOM:** los bodies compartidos (El Marco,
-El Bastidor) consumen `activeCuration()`, no el default, de modo que una ficha excluida
-sale del DOM y del conteo a la vez. Instrumento: `roomLayoutErrors()` en `themes:check`
+era decorativo. **La curación es vinculante en el DOM:** los bodies compartidos (El Marco — tarjetas
+Y ficha del showcase — y El Bastidor) consumen `activeCuration()`, no el default, de modo
+que una ficha excluida sale del DOM, de sus superficies y del conteo a la vez. Instrumento: `roomLayoutErrors()` en `themes:check`
 exige que `order.salas` coincida con el orden visible de `rooms` y que todo grupo nombre
 salas existentes, visibles, ≥2, sin repetir, sin solapar y contiguas en ese orden.
 

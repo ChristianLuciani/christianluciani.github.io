@@ -431,8 +431,8 @@ y re-deriva los conteos de los subtítulos; `groups` declara qué salas son UNA 
 navegación y `navUnits()` (`src/cv/render.ts`) es la derivación única que consumen HUD,
 plano, numeración y diccionario i18n. Agrupar no fusiona contenido: cada sala conserva su
 `<section>`, su cuerpo y su lugar en el DOM. `hidden` funciona para CUALQUIER sala (no sólo
-la galería) y la curación del tema es vinculante en el DOM (El Marco/El Bastidor filtran con
-`activeCuration()`), así que excluir una ficha la saca de la página y del conteo a la vez.
+la galería) y la curación del tema es vinculante en el DOM (El Marco — tarjetas y showcase — y El
+Bastidor filtran con `activeCuration()`), así que excluir una ficha la saca de la página y del conteo a la vez.
 `themes:check` (`roomLayoutErrors`) exige `order.salas` == orden visible y grupos válidos
 (existentes, visibles, ≥2, sin solape y contiguos).
 

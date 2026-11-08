@@ -8,6 +8,9 @@ import { t, ta, th } from "../content/copy.ts";
 import type { RoomRef } from "../themes/types.ts";
 import { activeRooms } from "../themes/index.ts";
 import { activeCuration } from "../content/curation/active.ts";
+import { isExcluded } from "../content/curation/index.ts";
+import { factId } from "../content/curation/keys.ts";
+import type { Curation } from "../content/curation/types.ts";
 import { numFor } from "../cv/render.ts";
 import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
@@ -158,10 +161,15 @@ function hostOf(url: string): string {
  * descripción base, link y fecha verificable salen del SSOT; las celdas de
  * interpretación (diseño, pedagogía, campo) son curación de `src/content/cv/`.
  */
-export function drahmaShowcase(profile: CvProfile): string {
+export function drahmaShowcase(profile: CvProfile, curation: Curation = activeCuration()): string {
   const project = showcaseProject(profile);
   if (!project) return "";
   const key = projectKey(project.name);
+  // La ficha del showcase es una superficie MÁS: si la curación del tema
+  // excluye el proyecto, no se publica. Sin esto, excluir `proyectos:Drahma`
+  // sacaba la tarjeta (que no existe) y dejaba el showcase entero — la
+  // decisión se cumplía sólo en apariencia. En `museo` no cambia nada.
+  if (isExcluded(curation, factId("proyectos", key))) return "";
   const verified = project.evidence.find((e) => e.verified)?.verified;
   const date = formatMonthYear(verified);
   // El status del SSOT decide sala y clase; la píldora curada (licencia/fecha/
@@ -760,8 +768,9 @@ export function marcoHtml(profile: CvProfile = P): string {
   // La curación es la del TEMA ACTIVO (no el default): excluir una ficha en
   // `curation/<tema>.ts` tiene que sacarla del DOM y del conteo derivado del
   // subtítulo a la vez. En `museo` la activa ES el default: el byte no cambia.
-  const cards = tarjetas(publicadosDe(profile, activeCuration()).filter((p) => !p.sinTarjeta));
-  return `${cards}${drahmaShowcase(profile)}`;
+  const curation = activeCuration();
+  const cards = tarjetas(publicadosDe(profile, curation).filter((p) => !p.sinTarjeta));
+  return `${cards}${drahmaShowcase(profile, curation)}`;
 }
 
 /** El Bastidor: sin artefacto público; cada ficha declara su `falta` curada. */

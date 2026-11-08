@@ -3,6 +3,9 @@ import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { SALAS } from "../cv/salas";
 import { activateTheme } from "../themes/index";
+import { MUSEO_CURATION } from "../content/curation/museo";
+import { factId } from "../content/curation/keys";
+import type { Curation } from "../content/curation/types";
 import { enDesarrolloDe } from "../data/proyectos";
 import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
@@ -354,6 +357,24 @@ describe("la curación del tema manda en el DOM (S9 · #135)", () => {
    * Hasta S9 `hidden` sólo funcionaba para la galería: el helper sabía QUITAR la
    * clase del literal, nunca agregarla. Ocultar otra sala era decorativo.
    */
+
+  /**
+   * El showcase de Drahma es una superficie del mismo contrato: si la curación
+   * del tema excluye el proyecto, la ficha completa tampoco se publica. Excluir
+   * `proyectos:Drahma` sacaba la tarjeta (que no existe) y dejaba el showcase.
+   */
+  it("la ficha del showcase obedece a la curación, no sólo la tarjeta", () => {
+    const excluyeDrahma: Curation = {
+      ...MUSEO_CURATION,
+      exclude: [
+        ...MUSEO_CURATION.exclude,
+        { id: factId("proyectos", "Drahma"), reason: "prueba: la ficha completa no se publica" }
+      ]
+    };
+    expect(drahmaShowcase(profile, MUSEO_CURATION)).not.toBe("");
+    expect(drahmaShowcase(profile, excluyeDrahma)).toBe("");
+  });
+
   it("ocultar una sala que no es la galería la deja fuera de la visita", () => {
     activateTheme("ingenieria");
     const html = roomsHtml();
