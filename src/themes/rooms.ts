@@ -7,9 +7,11 @@
  *
  *   1. VISIBILIDAD — `salas:<id>` en `exclude` ⇒ `hidden: true` (la sala sigue
  *      en `rooms` y en el DOM: ocultar no borra).
- *   2. ORDEN — `order.salas` de la curación del tema; lo no declarado conserva
- *      el orden de `SALAS`. La curación es el ÚNICO lever del orden de salas,
- *      igual que `order.proyectos` lo es de las tarjetas (`curatedOrder`).
+ *   2. ORDEN — `order.salas` de la curación del tema. Cuando se declara es
+ *      COMPLETO: nombra todas las salas visibles, porque `validateCuration`
+ *      exige que `order` cubra todo hecho incluido (un orden parcial dejaría
+ *      salas en un orden no declarado). La curación es el ÚNICO lever del orden
+ *      de salas, igual que `order.proyectos` lo es de las tarjetas.
  *   3. CONTEOS — los subtítulos que cuentan fichas (`proyectos`, `bastidor`)
  *      se re-derivan de la curación RECIBIDA, no del default compartido
  *      (`subtitulosCurados`): un tema que excluye una ficha no puede publicar
@@ -18,7 +20,10 @@
  *
  * Las salas ocultas se anexan al final (en orden de `SALAS`), así el orden DOM
  * de las visibles es exactamente el de la curación y `ROOM_EN` —posicional
- * sobre `rooms`— sigue casando con los `.room-title` del documento.
+ * sobre `rooms`— sigue casando con los `.room-title` del documento. El
+ * `?? MAX_SAFE_INTEGER` del comparador es DEFENSA (una sala sin posición no
+ * rompe el render): no es un contrato alcanzable — un `order.salas` declarado
+ * que omita una sala visible lo rechazan `validateCuration` y `themes:check`.
  *
  * Por qué existe (bug de contrato): antes cada `narrative.ts` repetía el
  * `SALAS.map(...)` con la visibilidad, y el orden de salas no tenía consumidor
@@ -32,8 +37,18 @@ import { factId } from "../content/curation/keys.ts";
 import type { Curation } from "../content/curation/types.ts";
 import type { RoomRef } from "./types.ts";
 
-/** Rótulos de presentación del tema, por id de sala. `subtitulo` se re-deriva. */
-export type RoomVoice = Readonly<Record<string, Partial<RoomRef>>>;
+/**
+ * Rótulos de PRESENTACIÓN del tema, por id de sala: la voz renombra la metáfora,
+ * no decide la estructura. Quedan fuera `id`, `hidden` y `subtitulo` (este último
+ * se re-deriva de la curación: dejar que la voz lo pise permitiría publicar un
+ * conteo que la sala desmiente — F4 del pase fresco de #165).
+ */
+export type RoomVoice = Readonly<
+  Record<
+    string,
+    Partial<Pick<RoomRef, "titulo" | "tituloEn" | "funcion" | "funcionEn" | "navLabel" | "navLabelEn">>
+  >
+>;
 
 /** Salas del tema `curation`, en orden DOM, con la voz aplicada. */
 export function roomsFromCuration(

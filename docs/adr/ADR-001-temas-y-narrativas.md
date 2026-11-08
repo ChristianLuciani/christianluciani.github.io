@@ -137,12 +137,15 @@ export interface Curation {
 DOS lugares, y ninguno lo reimplementa un template:
 
 - **`order.salas` (curación) es el orden.** `roomsFromCuration()` (`src/themes/rooms.ts`)
-  toma `SALAS`, marca `hidden` por `exclude` (`salas:<id>`) y ordena por `order.salas`; lo
-  no declarado conserva el orden de `SALAS` y las ocultas se anexan al final en orden de
+  toma `SALAS`, marca `hidden` por `exclude` (`salas:<id>`) y ordena por `order.salas`.
+  Cuando se declara, el orden es **COMPLETO**: nombra TODAS las salas visibles, porque
+  `validateCuration` exige que `order` cubra todo hecho incluido (un orden parcial dejaría
+  salas en un orden no declarado y el gate lo rechaza). Sin `order.salas` el resultado es el
+  de siempre (museo), en el orden de `SALAS`. Las ocultas se anexan al final en orden de
   `SALAS` (así `ROOM_EN`, posicional sobre `rooms`, sigue casando con el DOM). El subtítulo
   que cuenta fichas se RE-DERIVA de la curación recibida (`subtitulosCurados()`): un tema
-  que excluye una ficha no publica el número del default. La voz del tema (rótulos) se
-  aplica encima; sin `order.salas` el resultado es el de siempre (museo).
+  que excluye una ficha no publica el número del default. La voz del tema (rótulos de
+  presentación: `titulo`, `funcion`, `navLabel` y sus EN) se aplica encima.
 - **`groups` (narrativa) son las unidades de navegación.** Dos o más salas visibles y
   contiguas se presentan como UNA unidad: comparten número, entrada del HUD y celda del
   plano (`navUnits()` en `src/cv/render.ts` es la derivación única que consumen HUD, plano,

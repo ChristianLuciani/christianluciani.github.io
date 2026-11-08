@@ -846,21 +846,25 @@ function roomHeader(s: RoomRef): string {
  * Shell de la sala con la clase `room--hidden` coherente con la NARRATIVA: el
  * literal del shell es el default de la galería, pero la visibilidad la decide
  * la curación del tema (`RoomRef.hidden`). Para `museo` el byte no cambia (la
- * galería sigue oculta).
+ * galería sigue oculta y las visibles no traen la clase).
  *
- * Ocultar una sala DISTINTA de la galería tiene que funcionar: hasta S9 este
- * helper sólo sabía QUITAR la clase del literal (la galería), así que un tema
- * que excluía otra sala la seguía publicando — `hidden` era decorativo fuera de
- * la galería. Ahora la clase se AGREGA cuando falta y se quita cuando sobra, en
- * los dos sentidos.
+ * La clase se NORMALIZA sobre el atributo completo del `<section>`: los shells
+ * no son todos `class="room"` — perfil/experiencia/fisica son `room room--alt` y
+ * contacto `room room--alt room--contact`. Comparar contra el literal exacto
+ * dejaba a esas salas visibles aunque la curación las excluyera (F1 del pase
+ * fresco de #165). Se agrega/quita el token `room--hidden` UNA sola vez y se
+ * conserva el orden de las demás clases.
  */
 function shellFor(s: RoomRef): string {
   const shell = roomShells()[s.id] ?? "";
-  if (s.hidden) {
-    if (shell.includes('class="room room--hidden"')) return shell;
-    return shell.replace('class="room"', 'class="room room--hidden"');
-  }
-  return shell.replace('class="room room--hidden"', 'class="room"');
+  return shell.replace(/<section class="([^"]*)"/, (_match, classes: string) => {
+    const tokens = classes
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((token) => token !== "room--hidden");
+    if (s.hidden) tokens.push("room--hidden");
+    return `<section class="${tokens.join(" ")}"`;
+  });
 }
 
 /** Sala completa: comentario + shell + header(narrativa) + body. */

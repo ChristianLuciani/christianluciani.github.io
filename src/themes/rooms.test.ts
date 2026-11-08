@@ -4,6 +4,8 @@ import { INGENIERIA_CURATION } from "../content/curation/ingenieria.ts";
 import { MUSEO_CURATION } from "../content/curation/museo.ts";
 import type { Curation } from "../content/curation/types.ts";
 import { SALAS } from "../cv/salas.ts";
+import { factUniverse } from "../content/curation/facts.ts";
+import { validateCuration } from "../content/curation/validate.ts";
 import { navDotsHtml, navUnits, numFor, visibleSalas } from "../cv/render.ts";
 import { planoCellMeta } from "../templates/plano_html.ts";
 import { activateTheme } from "./index.ts";
@@ -52,13 +54,21 @@ describe("roomsFromCuration — visibilidad, orden, conteos y voz", () => {
   });
 
   it("order.salas manda el orden de las visibles; las ocultas van al final", () => {
-    const rooms = roomsFromCuration({
-      ...SIN_GALERIA,
-      order: { salas: ["contacto", "perfil", "proyectos"] }
-    });
-    // Lo no declarado conserva el orden de SALAS, después de lo declarado.
-    expect(rooms.slice(0, 3).map((room) => room.id)).toEqual(["contacto", "perfil", "proyectos"]);
-    expect(rooms[rooms.length - 1]!.id).toBe("galeria");
+    // `order.salas` es COMPLETO cuando se declara: `validateCuration` exige que
+    // `order` cubra todo hecho incluido, así que un orden parcial no es una
+    // curación válida (F2 del pase fresco de #165).
+    const VISIBLES = SALAS.filter((sala) => sala.id !== "galeria").map((sala) => sala.id);
+    const ORDEN = ["contacto", "perfil", ...VISIBLES.filter((id) => id !== "contacto" && id !== "perfil")];
+    const curation: Curation = {
+      include: [...VISIBLES.map((id) => factId("salas", id))],
+      exclude: [
+        { id: factId("salas", "galeria"), reason: "prueba: la sala no tiene piezas curadas" }
+      ],
+      order: { salas: ORDEN }
+    };
+    expect(validateCuration(curation, factUniverse()).errors).toEqual([]);
+    const rooms = roomsFromCuration(curation);
+    expect(rooms.map((room) => room.id)).toEqual([...ORDEN, "galeria"]);
     expect(rooms[rooms.length - 1]!.hidden).toBe(true);
   });
 

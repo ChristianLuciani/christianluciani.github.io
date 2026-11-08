@@ -175,12 +175,18 @@ rooms: roomsFromCuration(CURATION, VOICE),               // deriva visibilidad +
 groups: [{ id: "ciencia", label: "Ciencia", labelEn: "Science", rooms: ["fisica", "grafo"] }]
 ```
 
-- **Ordenar:** `order.salas` (claves sin prefijo, sólo salas visibles). No toques
-  `rooms` a mano ni reordenes `SALAS`: `roomsFromCuration()` aplica el orden y
-  `themes:check` falla si `rooms` y `order.salas` discrepan.
-- **Ocultar:** `salas:<id>` en `exclude`, con `reason`. Vale para CUALQUIER sala (no
-  sólo la galería): la sala sigue en el DOM con `room--hidden`, no se numera ni
-  entra al HUD/plano. Ocultar no borra el hecho.
+- **Ordenar:** `order.salas` (claves sin prefijo). Cuando se declara es **COMPLETO**:
+  nombra TODAS las salas visibles, porque `validateCuration` exige que `order` cubra
+  todo hecho incluido — un orden parcial es una curación inválida. No toques `rooms` a
+  mano ni reordenes `SALAS`: `roomsFromCuration()` aplica el orden y `themes:check`
+  falla si `rooms` y `order.salas` discrepan.
+- **Ocultar:** `salas:<id>` en `exclude`, con `reason`, **y** sacá el hecho de
+  `include` y de `order.salas`: `include`/`exclude` son excluyentes (`validateCuration`
+  rechaza un hecho incluido y excluido a la vez) y `order` sólo nombra incluidos. Vale
+  para CUALQUIER sala (no sólo la galería): la sala sigue en el DOM con `room--hidden`,
+  sale del HUD/plano y no cuenta en la numeración de unidades. La galería conserva su
+  «SALA 05» histórico (`legacyNum`, paridad byte a byte); una sala oculta sin número
+  heredado no publica renglón de número. Ocultar no borra el hecho.
 - **Agrupar:** `groups` con ≥2 salas VISIBLES y CONTIGUAS. La unidad comparte
   número, entrada del HUD y celda del plano (`navUnits()`); cada sala conserva su
   `<section>` y su cuerpo. No inventes una sala ni fusiones contenido.

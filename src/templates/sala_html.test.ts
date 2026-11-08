@@ -19,9 +19,12 @@ import {
   frisoHtml,
   marcoHtml,
   primerArtefacto,
+  renderRoom,
   roomBody,
-  roomsHtml
+  roomsHtml,
+  roomShells
 } from "./sala_html";
+import { museo } from "../themes/museo/narrative";
 
 const profile = PROFILE as unknown as CvProfile;
 const FRISO = frisoHtml(profile);
@@ -365,6 +368,32 @@ describe("la curación del tema manda en el DOM (S9 · #135)", () => {
     expect(html).toContain('<section class="room room--hidden" id="room-competencias">');
     expect(html).toContain('<section class="room" id="room-proyectos">');
     expect(html).not.toContain('<div class="room-number" data-scroll="up">SALA </div>');
+  });
+
+
+  /**
+   * F1 del pase fresco de #165: los shells NO son todos `class="room"` (perfil,
+   * experiencia y fisica traen `room--alt`; contacto suma `room--contact`).
+   * Normalizar por literal exacto dejaba a esas salas visibles y sin número
+   * aunque la curación las excluyera.
+   */
+  it("ocultar CUALQUIER sala normaliza la clase de su shell, con sus clases extra", () => {
+    activateTheme("museo");
+    for (const id of Object.keys(roomShells())) {
+      const room = museo.rooms.find((candidate) => candidate.id === id);
+      expect(room, `sala ${id} en la narrativa`).toBeDefined();
+      const hidden = /<section class="([^"]*)"/.exec(renderRoom({ ...room!, hidden: true }))![1]!;
+      const hiddenTokens = hidden.split(" ");
+      expect(hiddenTokens, `oculta ${id}`).toContain("room--hidden");
+      expect(hiddenTokens.filter((token) => token === "room--hidden"), `duplicada ${id}`).toHaveLength(1);
+      const shown = /<section class="([^"]*)"/.exec(renderRoom({ ...room!, hidden: false }))![1]!;
+      expect(shown.split(" "), `visible ${id}`).not.toContain("room--hidden");
+    }
+    // El orden de las clases propias se conserva: el token entra al final.
+    const contacto = museo.rooms.find((candidate) => candidate.id === "contacto")!;
+    expect(/<section class="([^"]*)"/.exec(renderRoom({ ...contacto, hidden: true }))![1]).toBe(
+      "room room--alt room--contact room--hidden"
+    );
   });
 
   /**
