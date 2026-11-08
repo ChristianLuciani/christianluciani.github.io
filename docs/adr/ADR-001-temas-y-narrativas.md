@@ -107,22 +107,58 @@ export interface NarrativeManifest {
   path: string;                  // subpath de publicación ("" = raíz)
   variantOf?: string;            // S10: variante de piel; reusa copy/rooms/illusions/meta y curación POR REFERENCIA
   rooms: RoomRef[];              // orden, ids y metáfora; pueden reusar o subconjunto de SALAS
+  groups?: RoomGroup[];          // S9: unidades de navegación (≥2 salas visibles y contiguas comparten número, HUD y celda del plano)
   copy: CopyPack;                // claves semánticas ES/EN (todas obligatorias)
   illusions: Record<string, string>;  // roomId → canvas id de src/ts/illusions
   meta: { title: string; description: string; ogImage: string };
   site: { origin: string; base: string };  // dirección de publicación (SPEC §5.4/§8 5.5)
 }
 
+// S9 · control total del layout — el tema declara, el código deriva
+export interface RoomGroup {
+  id: string;                    // slug estable dentro del tema
+  label: string;                 // rótulo de la unidad en el HUD y el plano (ES)
+  labelEn: string;               // el HUD se traduce: las dos lenguas son obligatorias
+  rooms: readonly string[];      // ids de sala, en orden DOM; ≥2 y CONTIGUOS en el orden visible
+}
+
 // content/curation/<id>.ts
 export interface Curation {
   include: string[];             // claves `colección:clave` (derivadas, no ids de fila)
   exclude: { id: string; reason: string }[];
-  order?: Record<string, string[]>;
+  order?: Record<string, string[]>;   // por colección; `order.salas` = ÚNICO lever del orden de salas
   experienceSections?: Record<string, "professional" | "training">;  // clave de fila → sección del print-CV (obligatorio en la práctica: el print falla si una fila no está clasificada)
 }
 
 // skin.css — sólo tokens y reglas; sin literales de color
 ```
+
+**Layout de salas — contrato único (S9 · #135).** El layout de un tema se declara en
+DOS lugares, y ninguno lo reimplementa un template:
+
+- **`order.salas` (curación) es el orden.** `roomsFromCuration()` (`src/themes/rooms.ts`)
+  toma `SALAS`, marca `hidden` por `exclude` (`salas:<id>`) y ordena por `order.salas`; lo
+  no declarado conserva el orden de `SALAS` y las ocultas se anexan al final en orden de
+  `SALAS` (así `ROOM_EN`, posicional sobre `rooms`, sigue casando con el DOM). El subtítulo
+  que cuenta fichas se RE-DERIVA de la curación recibida (`subtitulosCurados()`): un tema
+  que excluye una ficha no publica el número del default. La voz del tema (rótulos) se
+  aplica encima; sin `order.salas` el resultado es el de siempre (museo).
+- **`groups` (narrativa) son las unidades de navegación.** Dos o más salas visibles y
+  contiguas se presentan como UNA unidad: comparten número, entrada del HUD y celda del
+  plano (`navUnits()` en `src/cv/render.ts` es la derivación única que consumen HUD, plano,
+  numeración e i18n). Cada sala conserva su `<section>`, su cuerpo y su lugar en el DOM:
+  agrupar **no** fusiona contenido ni inventa una sala; cambia cómo se entra y cómo se
+  numera. El HUD marca la unidad cuando cualquiera de sus salas cruza la banda activa
+  (`data-rooms`, que sólo se emite para unidades de >1 sala para no tocar el HTML del
+  default).
+
+**`hidden` es de cualquier sala, no de la galería.** `shellFor()` agrega O quita
+`room--hidden` según `RoomRef.hidden`; antes sólo sabía quitarla, así que excluir otra sala
+era decorativo. **La curación es vinculante en el DOM:** los bodies compartidos (El Marco,
+El Bastidor) consumen `activeCuration()`, no el default, de modo que una ficha excluida
+sale del DOM y del conteo a la vez. Instrumento: `roomLayoutErrors()` en `themes:check`
+exige que `order.salas` coincida con el orden visible de `rooms` y que todo grupo nombre
+salas existentes, visibles, ≥2, sin repetir, sin solapar y contiguas en ese orden.
 
 ### Invariantes (verificables, no aspiracionales)
 
@@ -134,6 +170,7 @@ export interface Curation {
 | I4 | Toda clave de copy tiene ES y EN | test de completitud del pack |
 | I5 | Ningún template contiene copy ni literales de color | lint de templates (S7) |
 | I6 | Toda URL de tema existe en `dist/` con sus assets | smoke de assets por tema (S5) |
+| I7 | El layout declarado (`order.salas` + `groups`) es el que publican HUD, plano y numeración — y la curación del tema es la que filtra el DOM | `roomLayoutErrors` (`themes:check`) + golden por tema |
 
 ## Alternativas consideradas
 
@@ -171,6 +208,19 @@ export interface Curation {
   su pack), o excluirla del deploy; el PR que agregue una variante declara el duplicado.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
+- **Control total del layout (S9, resuelto en #135):** probar «reordenar, agrupar, ocultar
+  y excluir» sobre `ingenieria` encontró CUATRO agujeros de contrato, y se cerraron en el
+  contrato, no con parches del tema: (a) `hidden` sólo funcionaba para la galería
+  (`shellFor` sabía quitar la clase, nunca agregarla); (b) `order.salas` estaba tipado y
+  sin consumidor; (c) no existía forma de declarar que dos salas son un destino; (d) el
+  render de las salas leía la curación DEFAULT, así que excluir una ficha no la sacaba del
+  DOM. Las derivaciones quedaron una sola vez (`roomsFromCuration`, `navUnits`) y el gate
+  las exige coherentes. **Alternativa descartada:** fusionar los bodies de dos salas en un
+  único `<section>` — habría duplicado copy, roto la identidad por id de sala (`roomBodies`
+  está indexado por id) y hecho perder a la curación su unidad mínima; agrupar es una
+  decisión de NAVEGACIÓN (número, HUD, celda) y el contenido sigue siendo de cada sala. El
+  layout de la variante `ingenieria-nocturno` se mueve con el base por herencia de
+  `rooms`/`groups`, sin copiar nada.
 - **Identidad del tema en el runtime (resuelto en #134, autorizado por el operador
   el 2026-11-07 tras el pase fresco del PR #159):** el bundle es único (D12) y no
   puede inferir la página; el publicador inyecta `<html data-theme="<id>">` y
