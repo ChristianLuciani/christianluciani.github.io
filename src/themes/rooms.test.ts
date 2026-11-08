@@ -9,7 +9,7 @@ import { validateCuration } from "../content/curation/validate.ts";
 import { navDotsHtml, navUnits, numFor, visibleSalas } from "../cv/render.ts";
 import { planoCellMeta } from "../templates/plano_html.ts";
 import { activateTheme } from "./index.ts";
-import { roomsFromCuration } from "./rooms.ts";
+import { roomsFromCuration, type RoomVoice } from "./rooms.ts";
 
 /**
  * CONTROL TOTAL DEL LAYOUT (S9 · #135 · SPEC §5.4 · ADR-001 §Contratos).
@@ -80,6 +80,22 @@ describe("roomsFromCuration — visibilidad, orden, conteos y voz", () => {
     const curados = roomsFromCuration(INGENIERIA_CURATION).find((room) => room.id === "proyectos")!;
     expect(curados.subtitulo).toBe("OBRA PUBLICADA · ARTEFACTO AUDITABLE · 2 PROYECTOS");
     expect(curados.subtituloEn).toBe("PUBLISHED WORK · AUDITABLE ARTIFACT · 2 PROJECTS");
+  });
+
+  it("una voz hostil en runtime no pisa estructura, conteo ni visibilidad", () => {
+    // `RoomVoice` lo impide en compile time; esto lo sostiene si la voz llega
+    // casteada o desde JSON. `titulo` SÍ es presentación y debe aplicarse.
+    const hostil = {
+      proyectos: { titulo: "X", subtitulo: "0 PROYECTOS", hidden: true },
+      galeria: { hidden: false }
+    } as unknown as RoomVoice;
+    const rooms = roomsFromCuration(INGENIERIA_CURATION, hostil);
+    const proyectos = rooms.find((room) => room.id === "proyectos")!;
+    expect(proyectos.titulo).toBe("X");
+    expect(proyectos.subtitulo).toBe("OBRA PUBLICADA · ARTEFACTO AUDITABLE · 2 PROYECTOS");
+    expect(proyectos.hidden).toBeUndefined();
+    const galeria = rooms.find((room) => room.id === "galeria")!;
+    expect(galeria.hidden).toBe(true);
   });
 
   it("la voz del tema pisa los rótulos de presentación, nunca la estructura", () => {

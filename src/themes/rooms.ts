@@ -72,10 +72,21 @@ export function roomsFromCuration(
   );
   return [...sorted, ...hidden].map((room) => {
     const counts = subtitulosCurados(room.id, curation);
+    // La voz se COMPONE campo por campo, nunca se esparce: así una voz que en
+    // runtime traiga de más (`hidden`, `subtitulo`, `id`) no puede pisar la
+    // estructura ni el conteo re-derivado. `RoomVoice` ya lo impide en compile
+    // time; esto lo sostiene en runtime (F4 del pase fresco de #165).
+    const v = voice[room.id] ?? {};
     return {
       ...room,
-      ...(counts ? { subtitulo: counts.es, subtituloEn: counts.en } : {}),
-      ...(voice[room.id] ?? {}),
+      titulo: v.titulo ?? room.titulo,
+      tituloEn: v.tituloEn ?? room.tituloEn,
+      funcion: v.funcion ?? room.funcion,
+      funcionEn: v.funcionEn ?? room.funcionEn,
+      navLabel: v.navLabel ?? room.navLabel,
+      navLabelEn: v.navLabelEn ?? room.navLabelEn,
+      subtitulo: counts?.es ?? room.subtitulo,
+      subtituloEn: counts?.en ?? room.subtituloEn,
       ...(hiddenIds.has(room.id) ? { hidden: true } : {})
     };
   });
