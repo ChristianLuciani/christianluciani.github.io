@@ -97,9 +97,9 @@ jobs:
             grep -q "$BRAND_BASE/assets/logo/$path" dist/index.html || { echo "falta la marca $path"; exit 1; }
           done
           grep -q "content=\"$BASE/public/assets/og-image.png\"" dist/index.html
-          # 9 data-local (4 thumbs + 4 favicons + el logo del print, #122);
-          # el OG es meta y no tiene fallback
-          test "$(grep -o 'data-local=' dist/index.html | wc -l)" -eq 9
+          # 10 data-local (4 thumbs + 4 favicons + el logo del print en las DOS
+          # variantes de idioma, #122/#160); el OG es meta y no tiene fallback
+          test "$(grep -o 'data-local=' dist/index.html | wc -l)" -eq 10
       - name: build en modo Pages (sin data-local, index.html sin drift)
         run: |
           # `build` ya publica TODOS los temas registrados (una página por tema);

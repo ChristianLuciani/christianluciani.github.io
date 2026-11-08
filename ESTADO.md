@@ -172,7 +172,7 @@ https://christianluciani.github.io/  (raíz · base "/")
 - WhatsApp, LinkedIn, ResearchGate, X, Instagram
 - Thumbnails reales de papers (figuras de portada) en Sala 05 Biblioteca
 - Enlaces a ilusiones ópticas (michaelbach.de) en cada `.illusion-frame`
-- i18n ES/EN (toggle + diccionario `MAP`) para el sitio; print-CV/imprimible actualmente solo en ES
+- i18n ES/EN (toggle + diccionario `MAP`) para el sitio; print-CV/imprimible también: dos bloques deterministas (ES/EN) y la piel muestra el del `html[lang]` activo al imprimir (#160)
 - Necker BG full-width en Sala 01
 - Sala de Proyectos dividida por etapa (`src/data/proyectos.ts`): **El Marco** (publicado y
   auditable: Kontablo, Drahma, profile-as-code) + **El Bastidor** (en desarrollo: ZENTROPY,

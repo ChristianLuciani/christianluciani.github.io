@@ -143,13 +143,19 @@ export function importsProfileText(source: string): boolean {
  * el renderer declara `printCvHtml(profile: CvProfile)` y el ensamblador llama
  * `printCvHtml(PROFILE…)`. Cambiar la llamada por otro objeto —dejando el
  * import sin usar— tiene que romper este predicado.
+ *
+ * Desde #160 el ensamblador hace DOS llamadas (una por idioma): el predicado
+ * exige que TODAS reciban `PROFILE`, no sólo que alguna lo haga — con `some`
+ * una variante alimentada con un objeto falso pasaba verde.
  */
 export function printCvProblems(indexSource: string, printSource: string): string[] {
   const problems: string[] = [];
   if (!/export function printCvHtml\s*\(\s*\w+\s*:\s*CvProfile\b/.test(stripComments(printSource))) {
     problems.push("print_cv_html.ts no declara printCvHtml(profile: CvProfile)");
   }
-  if (!/printCvHtml\s*\(\s*PROFILE\b/.test(stripComments(indexSource))) {
+  const calls = [...stripComments(indexSource).matchAll(/printCvHtml\s*\(/g)];
+  const withProfile = [...stripComments(indexSource).matchAll(/printCvHtml\s*\(\s*PROFILE\b/g)];
+  if (calls.length === 0 || withProfile.length !== calls.length) {
     problems.push("templates/index.ts no alimenta printCvHtml con PROFILE (uso real, no sólo import)");
   }
   return problems;
