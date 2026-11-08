@@ -736,11 +736,17 @@ export function bastidorHtml(profile: CvProfile = P): string {
 }
 
 /**
- * Body de El Buzón: los links de contacto SE DERIVAN de `PROFILE.identity.links`
- * (`contactLinks()`), así que agregar un link al SSOT lo hace aparecer acá sin
- * tocar el template. El `mailto:` es la ÚNICA fila literal y está declarada: la
- * proyección pública no expone `email` (`profile.types.ts`), así que no hay SSOT
- * del que derivarla — la fuga la reporta `print_cv_html.ts` desde #116.
+ * Body de El Buzón: las filas se generan desde `contactLinks()`, que resuelve
+ * `BUZON_CONTACT_PLATFORMS` (`content/cv/platforms.ts`) contra
+ * `PROFILE.identity.links`. El template no se toca, pero una plataforma NUEVA
+ * del SSOT no aparece sola: exige entrada en esa lista, su clave
+ * `room.contacto.<plataforma>` y su icono. El gate de `contacto.test.ts` falla
+ * nombrando la plataforma si el snapshot trae una sin decisión (declararla o
+ * justificarla en `OMITTED_CONTACT_PLATFORMS`).
+ *
+ * El `mailto:` es la ÚNICA fila literal y está declarada: la proyección pública
+ * no expone `email` (`profile.types.ts`), así que no hay SSOT del que
+ * derivarla — la fuga la reporta `print_cv_html.ts` desde #116.
  *
  * `rel="noopener noreferrer"` uniforme: la fila se genera una sola vez, no se
  * copia por link (el patreon era el único que la traía).

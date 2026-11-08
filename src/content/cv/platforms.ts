@@ -9,9 +9,14 @@
  * Una plataforma que NO está en la lista no se muestra aunque exista en el
  * SSOT: la membresía es una decisión editorial (documentada en
  * `docs/CREAR-TEMA.md` §5), no una consecuencia automática de re-sincronizar el
- * perfil. Es el precio declarado de un orden estable: agregar una plataforma
- * visible = entrada acá + clave de copy + icono, y el build falla con el nombre
- * exacto si falta cualquiera de las tres.
+ * perfil. Agregar una plataforma visible = entrada acá + clave de copy + icono,
+ * y el build falla con el nombre exacto si falta cualquiera de las tres.
+ *
+ * El silencio no es una opción: `OMITTED_CONTACT_PLATFORMS` declara la razón de
+ * cada plataforma del SSOT que NO se publica, y el gate de `contacto.test.ts`
+ * falla nombrando cualquier plataforma del snapshot que no esté ni acá ni ahí.
+ * Así una plataforma nueva de profile-data obliga a una decisión (mostrarla o
+ * justificar la omisión) en vez de desaparecer sin que nadie lo note.
  *
  * Una plataforma DECLARADA pero sin fila en el SSOT no se inventa: la fila
  * desaparece hasta que el dato exista.
@@ -41,3 +46,14 @@ export const BUZON_CONTACT_PLATFORMS: readonly string[] = [
   "patreon",
   "substack"
 ];
+
+/**
+ * Plataformas del SSOT que NO se publican en El Buzón, con su razón. No es una
+ * lista de descarte: es la decisión explícita que el gate exige por cada
+ * plataforma del snapshot. Una plataforma nueva se declara en
+ * `BUZON_CONTACT_PLATFORMS` o acá; si no está en ninguna, el test falla con su
+ * nombre.
+ */
+export const OMITTED_CONTACT_PLATFORMS: Readonly<Record<string, string>> = {
+  website: "es este mismo sitio: un link al sitio dentro del sitio"
+};
