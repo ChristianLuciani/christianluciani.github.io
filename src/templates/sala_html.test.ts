@@ -344,6 +344,21 @@ describe("El Buzón — paridad 1:1 con identity.links", () => {
     expect(HREFS.slice(1)).toEqual(contactLinks(profile).map((link) => link.url));
   });
 
+  it("el body no hardcodea el email: la fila sale de contactEmail() (guard de fuente)", () => {
+    // La paridad detecta DIVERGENCIA; esto detecta la REINTRODUCCIÓN del literal
+    // con el valor actual (mutación B del pase de cierre de #161). Mismo patrón
+    // de guard de fuente que usa El Friso para sus hechos.
+    const source = readFileSync(resolve(process.cwd(), "src", "templates", "sala_html.ts"), "utf8");
+    const from = source.indexOf("function contactoBody");
+    const to = source.indexOf("export function roomBody");
+    expect(from).toBeGreaterThan(-1);
+    expect(to).toBeGreaterThan(from);
+    const fn = source.slice(from, to);
+    expect(fn).toContain("contactEmail()");
+    expect(fn).not.toMatch(/[\w.+-]+@[\w-]+\.[a-z]{2,}/i);
+    expect(fn).not.toMatch(/mailto:[^$`]/);
+  });
+
   it("el mailto es el email del JSON-LD (ENTITY), no un literal que puede divergir", () => {
     // La sala y el `<script type="application/ld+json">` leen el MISMO `ENTITY`
     // (`contactEmail()`): si profile-data cambia `Person.email`, cambian los dos.
