@@ -64,10 +64,15 @@ PIEL        themes/<id>/skin.css       (tokens + reglas)
 
 1. **Un tema = un directorio.** `src/themes/<id>/` con `narrative.ts`, `copy.ts`,
    `skin.css`, `illusions.ts`, más una línea de registro en `src/themes/index.ts`.
+   Una **variante de piel** (S10 · #136) declara `variantOf` y omite `copy.ts`/
+   `illusions.ts`: reusa por referencia el manifest del base y la MISMA entrada de
+   `CURATIONS`; sólo aportan `skin.css` + `contrast.ts`.
 2. **Selector único de build:** `SITE_THEME`; default `museo`, que publica en la raíz.
    Ningún template conoce el id del tema; prohibido hardcodearlo fuera del registro.
 3. **Narrativa ≠ piel.** La narrativa posee estructura, voz y curación; la piel posee
-   tokens, tipografía y densidad. Un tema puede cambiar una sin la otra.
+   tokens, tipografía y densidad. Un tema puede cambiar una sin la otra, y la variante de
+   piel lo instrumenta: el gate exige IDENTIDAD de referencia en copy/salas/ilusiones/
+   metadata/curación, no igualdad de valor (una copia divergiría en silencio).
 4. **Topología: subpath** (`/ingenieria/`, `/museo/`), un solo sitio Pages y un solo
    artefacto de deploy con **una página por tema** (un bundle y una raíz de assets). Se
    rechaza el subdominio (ver alternativas); un tema que necesite otro `base` se publica en
@@ -98,6 +103,7 @@ export interface Theme {
 export interface NarrativeManifest {
   id: string;                    // slug estable [a-z0-9-], clave del registro
   path: string;                  // subpath de publicación ("" = raíz)
+  variantOf?: string;            // S10: variante de piel; reusa copy/rooms/illusions/meta y curación POR REFERENCIA
   rooms: RoomRef[];              // orden, ids y metáfora; pueden reusar o subconjunto de SALAS
   copy: CopyPack;                // claves semánticas ES/EN (todas obligatorias)
   illusions: Record<string, string>;  // roomId → canvas id de src/ts/illusions

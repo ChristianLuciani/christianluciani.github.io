@@ -16,6 +16,7 @@ import {
   checkThemes,
   copyErrors,
   curationErrors,
+  lineageErrors,
   loadThemes,
   skinErrors,
   type SkinInput,
@@ -388,6 +389,94 @@ describe("themes/check — registro, metadata y golden", () => {
       requireGolden: false
     });
     expect(report.themes[0]!.errors.join("\n")).toContain("no hay evidencia");
+    expect(report.ok).toBe(false);
+  });
+});
+
+describe("themes/check — variantes de piel (S10 · #136)", () => {
+  /**
+   * El invariante de una variante: dos temas que comparten narrativa NO pueden
+   * divergir en copy. La prueba es la IDENTIDAD de referencia (import, no
+   * copia): un `{...copy}` con el mismo texto pasa cualquier comparación por
+   * valor y vuelve a duplicar el texto — que es exactamente lo que la variante
+   * existe para evitar. El gate tiene que morder en esa diferencia.
+   */
+  const variant = (overrides: Partial<NarrativeManifest> = {}): NarrativeManifest => ({
+    ...museo,
+    id: "museo-nocturno",
+    path: "museo-nocturno",
+    variantOf: "museo",
+    ...overrides
+  });
+  const registry = (v: NarrativeManifest = variant()): Record<string, NarrativeManifest> => ({
+    museo,
+    [v.id]: v
+  });
+  const curations = { museo: MUSEO_CURATION, "museo-nocturno": MUSEO_CURATION };
+  const errorsOf = (v: NarrativeManifest): string =>
+    lineageErrors(v, registry(v), curations).join("\n");
+
+  it("una variante con la narrativa y la curación del base POR REFERENCIA pasa", () => {
+    expect(errorsOf(variant())).toBe("");
+  });
+
+  it("copiar el copy (mismo texto, otra referencia) es un error que nombra el eje", () => {
+    const copied = variant({ copy: { ...museo.copy } });
+    const errors = errorsOf(copied);
+    expect(errors).toContain("copy");
+    expect(errors).toContain("por referencia");
+  });
+
+  it("copiar las salas también diverge: no se admite otro arreglo", () => {
+    expect(errorsOf(variant({ rooms: [...museo.rooms] }))).toContain("rooms");
+  });
+
+  it("copiar las ilusiones es duplicar el mapa de la narrativa base", () => {
+    expect(errorsOf(variant({ illusions: { ...museo.illusions } }))).toContain("illusions");
+  });
+
+  it("la metadata (title/description/ogImage) también se reusa por referencia", () => {
+    expect(errorsOf(variant({ meta: { ...museo.meta } }))).toContain("meta");
+  });
+
+  it("una curación clonada es divergencia aunque hoy tenga las mismas decisiones", () => {
+    const errors = lineageErrors(variant(), registry(), {
+      museo: MUSEO_CURATION,
+      "museo-nocturno": { ...MUSEO_CURATION }
+    }).join("\n");
+    expect(errors).toContain("curación");
+    expect(errors).toContain("por referencia");
+  });
+
+  it("variantOf tiene que apuntar a un tema registrado", () => {
+    const errors = lineageErrors(variant({ variantOf: "noexiste" }), registry(), curations).join("\n");
+    expect(errors).toContain("noexiste");
+    expect(errors).toContain("registrad");
+  });
+
+  it("un tema no puede ser variante de sí mismo", () => {
+    expect(errorsOf(variant({ variantOf: "museo-nocturno" }))).toContain("sí mismo");
+  });
+
+  it("una variante no puede heredar la piel: existe para cambiarla", () => {
+    const errors = lineageErrors(
+      variant({ skin: "inherit" }),
+      registry(variant({ skin: "inherit" })),
+      curations
+    ).join("\n");
+    expect(errors).toContain("inherit");
+    expect(errors).toContain("piel");
+  });
+
+  it("checkThemes publica el error de linaje en el reporte del tema", () => {
+    const copied = variant({ copy: { ...museo.copy } });
+    const report = checkThemes({
+      themes: [themeInput({ narrative: copied, curation: MUSEO_CURATION })],
+      registry: registry(copied),
+      curations,
+      requireGolden: false
+    });
+    expect(report.themes[0]!.errors.join("\n")).toContain("por referencia");
     expect(report.ok).toBe(false);
   });
 });

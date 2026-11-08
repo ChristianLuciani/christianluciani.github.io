@@ -600,6 +600,15 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
 - **5.8 — Control total (S9).** Segundo PR del piloto: reordena/agrupa/oculta salas y cura
   ítems. **Prueba de aceptación del contrato**: cualquier cambio necesario fuera de
   `themes/<id>/` + registro se corrige en el contrato, no con un parche lateral.
+- **5.9 — Segunda piel sobre la misma narrativa (S10 · #136).** `themes/ingenieria-nocturno/`
+  es una VARIANTE de `ingenieria`: su manifest (`variantOf`) reusa por referencia `copy`,
+  `rooms`, `illusions`, `meta` y `site`, y `CURATIONS` apunta a la MISMA entrada del base;
+  la variante sólo aporta `skin.css` (paleta y densidad) + `contrast.ts` + la línea de
+  registro. Publica en `/ingenieria-nocturno/` con `data-theme` y golden propios, y la
+  canónica/sitemap salen del `path` del tema. **Invariante instrumentado**: dos temas que
+  comparten narrativa no pueden divergir en copy — `themes:check` lo verifica por
+  IDENTIDAD de referencia (una copia con el mismo texto es un error). Editar el copy o la
+  curación del base se refleja en la variante sin tocar la variante.
 
 **DoD de la fase:** `SITE_THEME=ingenieria npm run build` produce `/ingenieria/` sin tocar
 `src/data`, `src/content/curation/museo.ts` ni el tema `museo`; el golden de `museo` (y
