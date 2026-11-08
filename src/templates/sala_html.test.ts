@@ -9,6 +9,8 @@ import type { Curation } from "../content/curation/types";
 import { enDesarrolloDe } from "../data/proyectos";
 import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
+import { contactEmail, contactLinks } from "../content/cv/contacto";
+import { ENTITY } from "../data/entity.generated";
 import { PROFILE_COMMIT, PROFILE_ENGINE, provenanceHtml } from "../data/profile.provenance";
 import type { CvProfile } from "../data/profile.types";
 import {
@@ -357,6 +359,13 @@ describe("la curación del tema manda en el DOM (S9 · #135)", () => {
    * Hasta S9 `hidden` sólo funcionaba para la galería: el helper sabía QUITAR la
    * clase del literal, nunca agregarla. Ocultar otra sala era decorativo.
    */
+  it("ocultar una sala que no es la galería la deja fuera de la visita", () => {
+    activateTheme("ingenieria");
+    const html = roomsHtml();
+    expect(html).toContain('<section class="room room--hidden" id="room-competencias">');
+    expect(html).toContain('<section class="room" id="room-proyectos">');
+    expect(html).not.toContain('<div class="room-number" data-scroll="up">SALA </div>');
+  });
 
   /**
    * El showcase de Drahma es una superficie del mismo contrato: si la curación
@@ -374,12 +383,50 @@ describe("la curación del tema manda en el DOM (S9 · #135)", () => {
     expect(drahmaShowcase(profile, MUSEO_CURATION)).not.toBe("");
     expect(drahmaShowcase(profile, excluyeDrahma)).toBe("");
   });
+});
 
-  it("ocultar una sala que no es la galería la deja fuera de la visita", () => {
-    activateTheme("ingenieria");
-    const html = roomsHtml();
-    expect(html).toContain('<section class="room room--hidden" id="room-competencias">');
-    expect(html).toContain('<section class="room" id="room-proyectos">');
-    expect(html).not.toContain('<div class="room-number" data-scroll="up">SALA </div>');
+/**
+ * El Buzón copiaba las URL a mano en el template: el link de Substack del SSOT
+ * (#33) llegó al JSON-LD pero nunca a la página (#157 no lo renderizó). La
+ * paridad 1:1 con `identity.links` cierra la clase: agregar un link al SSOT lo
+ * hace aparecer acá, y una fila literal nueva rompe este test.
+ */
+describe("El Buzón — paridad 1:1 con identity.links", () => {
+  const HTML = roomsHtml();
+  const HREFS = [...HTML.matchAll(/<a class="contact-link" href="([^"]+)"/g)].map((m) => m[1]);
+
+  it("renderiza una fila por link de contacto del SSOT, en su orden", () => {
+    expect(HREFS.slice(1)).toEqual(contactLinks(profile).map((link) => link.url));
+  });
+
+  it("el body no hardcodea el email: la fila sale de contactEmail() (guard de fuente)", () => {
+    // La paridad detecta DIVERGENCIA; esto detecta la REINTRODUCCIÓN del literal
+    // con el valor actual (mutación B del pase de cierre de #161). Mismo patrón
+    // de guard de fuente que usa El Friso para sus hechos.
+    const source = readFileSync(resolve(process.cwd(), "src", "templates", "sala_html.ts"), "utf8");
+    const from = source.indexOf("function contactoBody");
+    const to = source.indexOf("export function roomBody");
+    expect(from).toBeGreaterThan(-1);
+    expect(to).toBeGreaterThan(from);
+    const fn = source.slice(from, to);
+    expect(fn).toContain("contactEmail()");
+    expect(fn).not.toMatch(/[\w.+-]+@[\w-]+\.[a-z]{2,}/i);
+    expect(fn).not.toMatch(/mailto:[^$`]/);
+  });
+
+  it("el mailto es el email del JSON-LD (ENTITY), no un literal que puede divergir", () => {
+    // La sala y el `<script type="application/ld+json">` leen el MISMO `ENTITY`
+    // (`contactEmail()`): si profile-data cambia `Person.email`, cambian los dos.
+    const person = ENTITY.nodes.find((node) => node["@type"] === "Person") as
+      | { email?: string }
+      | undefined;
+    expect(contactEmail()).toBe(person?.email);
+    expect(HREFS[0]).toBe(`mailto:${person!.email}`);
+    expect(HTML).toContain(`>${person!.email}</a>`);
+  });
+
+  it("el Substack del SSOT llega a la página, no sólo al JSON-LD", () => {
+    expect(HREFS).toContain("https://cluciani.substack.com");
+    expect(HTML).toContain('src="assets/icons/substack.svg"');
   });
 });

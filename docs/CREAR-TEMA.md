@@ -212,6 +212,24 @@ const proyectos = PROFILE.projects.filter(
 const proyectos = [{ name: "Kontablo", status: "Publicado", … }];
 ```
 
+El **Buzón** (sala Contacto) declara MEMBRESÍA y ORDEN en
+`BUZON_CONTACT_PLATFORMS` (`src/content/cv/platforms.ts`): las filas y el `href`
+salen de `PROFILE.identity.links`, resueltos contra esa lista. Lo que se muestra
+es la lista declarada ∩ SSOT, en ese orden. Toda plataforma del snapshot tiene
+decisión: se muestra (lista) o se justifica en `OMITTED_CONTACT_PLATFORMS`
+(`website` es el único caso hoy); una plataforma nueva sin decisión rompe el
+gate de `contacto.test.ts` con su nombre. La fila del EMAIL no es de esta
+lista: sale de `ENTITY` (nodo `Person`), la misma fuente que el JSON-LD. El
+LABEL es copy del pack
+(`room.contacto.<plataforma>`, accesor estricto, sin fallback): el `label` del
+SSOT no se publica en esta sala (nombra las filas de repo en El Marco).
+Plataforma nueva visible ⇒ entrada en la lista + clave de copy + icono en
+`assets/icons/<plataforma>.svg`; si falta el copy o el archivo, el build falla
+con la clave o el archivo exacto, y si falta la entrada, el gate de
+`contacto.test.ts` la nombra. Declarar la plataforma ANTES de que exista su fila
+en el SSOT deja la clave de copy huérfana y `themes:check` la rechaza: se da de
+alta cuando el dato exista, o se marca `runtime: true` mientras tanto.
+
 Si el tema necesita un hecho que no existe en `CvProfile`: **STOP**. Se reporta como
 hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el operador).
 
