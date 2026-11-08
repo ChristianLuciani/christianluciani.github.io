@@ -113,9 +113,10 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
     atrapa una clave muerta real del pack.
   - **MAP → nodo del walker** (lo que NO mide): el walker recorre nodos de
     texto, así que hay pares derivados que nunca consulta y **no son deuda**:
-    los `print.*` (el walker salta `#print-cv`) y los sólo-atributo
-    (aria/alt/meta/caption, que viajan en atributos, no en nodos), más los
-    pares derivados de una rama del SSOT/curación que los datos de hoy no
+    los `print.*` (el walker salta los DOS bloques del print, `#print-cv` y
+    `#print-cv-en`: el print se resuelve por idioma en el build, #160) y los
+    sólo-atributo (aria/alt/meta/caption, que viajan en atributos, no en nodos),
+    más los pares derivados de una rama del SSOT/curación que los datos de hoy no
     renderizan (p. ej. un `statusLabel` sin proyecto en ese estado). Que existan
     no significa que estén mal: no se mantienen a mano ni pueden quedar stale
     respecto de una fuente que ya no existe.
@@ -127,6 +128,42 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   sin texto. La **clasificación de Trayectoria** (`experience[]` →
   `professional`/`training`) es curación del tema: vive en
   `Curation.experienceSections` (§5.5), no en el renderer.
+
+### 3.2 El CV impreso sigue al selector ES/EN (#160)
+
+El print-CV es la ÚNICA superficie con **dos bloques deterministas**, uno por
+idioma, generados en el build (`printCvHtml(profile, lang)`): `#print-cv` (ES,
+el histórico) y `#print-cv-en` (EN, con `lang="en"`). El print NO pasa por el
+walker i18n y NO depende de JS: la alternancia es CSS.
+
+Contrato de piel (obligatorio en CADA `skin.css`; el resto del layout del print
+ya vive ahí):
+
+```css
+#print-cv, #print-cv-en { display:none; }          /* pantalla: ninguno */
+@media print {
+  body > *:not(#print-cv):not(#print-cv-en) { display:none !important; }
+  #print-cv, #print-cv-en { display:block !important; /* …layout A4… */ }
+  html[lang="en"] #print-cv { display:none !important; }        /* el otro idioma no entra */
+  html:not([lang="en"]) #print-cv-en { display:none !important; }
+  /* EN: la última sección arranca en página propia (si no, su texto deja una
+     cola de 2 líneas sola en la última página — medido con print:verify). */
+  html[lang="en"] #print-cv-en .p-section.p-keep { break-before: page; }
+}
+```
+
+- Un tema nuevo **copia estas reglas** en su `skin.css`; sin ellas el PDF sale
+  con los dos CV (ES + EN) apilados.
+- La regla `break-before: page` de la variante EN gana por especificidad a la
+  regla del `<style>` embebido en el bloque (que se conserva para no cambiar los
+  bytes del bloque ES). El flujo ES no se altera.
+- El texto EN sale del MISMO pack (`print.*` en `copy.ts`): un tema que no
+  traduzca esas claves rompe el build, no imprime un PDF bilingüe a medias.
+- Los invariantes del SSOT (`org`, `institution`, `skills[].name`,
+  publicaciones) se imprimen iguales en ambos idiomas; el ES localiza `org` con
+  `orgEs()`, el EN imprime el valor crudo.
+- `npm run print:verify` mide el PDF de las DOS variantes (A4, footer no
+  huérfano, última página no vacía): el EN es más corto y mueve los cortes.
 
 ## 4. Curación: mostrar sin borrar
 

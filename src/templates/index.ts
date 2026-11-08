@@ -47,7 +47,10 @@ export function assembleHtml({ theme = DEFAULT_THEME }: AssembleOptions = {}): s
     headHtml() +
     bodyOpen() +
     // El print deriva del SSOT (CvProfile): el snapshot es `as const`, de ahí el cast.
+    // Dos variantes deterministas (ES `#print-cv`, EN `#print-cv-en`): la piel
+    // del tema muestra en `@media print` la del `html[lang]` activo (#160).
     printCvHtml(PROFILE as unknown as CvProfile) +
+    printCvHtml(PROFILE as unknown as CvProfile, "en") +
     coverHtml() +
     heroHtml() +
     // Feed estático (#117): chrome, no hecho citable; va bajo el bloque de

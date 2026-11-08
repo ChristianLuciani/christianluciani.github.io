@@ -13,7 +13,9 @@ import {
   lastPageFillViolation,
   pageCount,
   pageTextExtents,
+  printBlockRange,
   removeFooterDiv,
+  withDocumentLang,
 } from "./verify-pagination.mjs";
 
 const a4Box = "/MediaBox [0 0 594.95996 841.91998]";
@@ -45,19 +47,48 @@ describe("verify-pagination — parsers del PDF", () => {
   });
 });
 
-describe("verify-pagination — precondición del footer", () => {
-  const html = `<div id="print-cv"><p>x</p><div class="p-footer">generado @ abc</div></div>`;
+describe("verify-pagination — precondición del footer por variante de idioma (#160)", () => {
+  const es = `<div id="print-cv"><p>x</p><div class="p-footer">generado @ abc</div></div>`;
+  const en = `<div id="print-cv-en" lang="en"><p>x</p><div class="p-footer">generated @ abc</div></div>`;
+  const doc = `<html lang="es"><body>${es}${en}<header class="hud">chrome</header></body></html>`;
 
-  it("quita el único footer", () => {
-    const without = removeFooterDiv(html);
-    expect(without).not.toContain("p-footer");
-    expect(without).toContain("<p>x</p>");
-    expect(without).toContain("</div>");
+  it("quita el footer SÓLO del bloque medido (el otro idioma queda intacto)", () => {
+    const without = removeFooterDiv(doc, "print-cv");
+    expect(without).not.toContain("generado @ abc");
+    expect(without).toContain("generated @ abc");
+    expect(without).toContain('<header class="hud">');
   });
 
-  it("falla ruidoso si no hay footer o si hay más de uno", () => {
-    expect(() => removeFooterDiv("<div id=\"print-cv\"></div>")).toThrow(GateError);
-    expect(() => removeFooterDiv(`${html}${html}`)).toThrow(/encontré 2/);
+  it("quitar el footer del bloque EN no toca el ES", () => {
+    const without = removeFooterDiv(doc, "print-cv-en");
+    expect(without).not.toContain("generated @ abc");
+    expect(without).toContain("generado @ abc");
+  });
+
+  it("el rango del bloque termina en el siguiente bloque o en el chrome, no en el body entero", () => {
+    const range = printBlockRange(doc, "print-cv");
+    expect(doc.slice(range.start, range.end)).toBe(es);
+    const enRange = printBlockRange(doc, "print-cv-en");
+    expect(doc.slice(enRange.start, enRange.end)).toBe(en);
+  });
+
+  it("falla ruidoso si el bloque no existe o no tiene exactamente un footer", () => {
+    expect(() => removeFooterDiv("<div id=\"print-cv\"></div>", "print-cv")).toThrow(/encontré 0/);
+    expect(() => removeFooterDiv(doc, "print-cv-xx")).toThrow(/no encontré el bloque/);
+    const twice = `<div id="print-cv"><p>x</p><div class="p-footer">a</div><div class="p-footer">b</div></div>`;
+    expect(() => removeFooterDiv(twice, "print-cv")).toThrow(/encontré 2/);
+  });
+});
+
+describe("verify-pagination — variante EN por `html[lang]` (#160)", () => {
+  it("reescribe el lang del documento para imprimir la variante EN", () => {
+    const html = '<!doctype html><html lang="es"><body>x</body></html>';
+    expect(withDocumentLang(html, "en")).toContain('<html lang="en">');
+  });
+
+  it("un documento sin `lang` no se puede medir por variante (falla ruidoso)", () => {
+    expect(() => withDocumentLang("<html><body>x</body></html>", "en")).toThrow(GateError);
+    expect(() => withDocumentLang("<html><body>x</body></html>", "en")).toThrow(/no declara `lang`/);
   });
 });
 

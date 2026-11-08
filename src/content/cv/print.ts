@@ -27,9 +27,13 @@
  * Si una fila del SSOT no está en la tabla (o cambió su clave), el render falla
  * — la deriva se ve, no se adivina ni se esconde.
  *
- * IDIOMA: el print queda fuera del toggle ES/EN (`src/cv/i18n.ts` salta
- * `#print-cv`), así que hoy renderiza ES. Los campos `LangText` llevan EN para
- * cuando el print tenga su propia versión bilingüe.
+ * IDIOMA (#160): el print tiene DOS variantes deterministas, una por idioma del
+ * selector global (`printCvHtml(profile, lang)`): el build emite `#print-cv` en
+ * ES y `#print-cv-en` en EN, y la piel del tema decide cuál entra al PDF según
+ * `html[lang]` en `@media print`. Ninguna variante pasa por el walker i18n
+ * (`src/cv/i18n.ts` salta los dos bloques): el PDF no depende de que el JS haya
+ * corrido. Acá se declara la ESTRUCTURA de cada variante; el texto sale del
+ * pack del tema, en el idioma pedido.
  */
 import type { LangText } from "../../data/profile.types.ts";
 import { activeCuration } from "../curation/active.ts";
@@ -119,14 +123,30 @@ export function experienceSectionOf(item: {
   return sectionOf(activeCuration(), item);
 }
 
-export function printCvCuration(): PrintCvCuration {
+/** Idioma de una variante del print: el del selector global (`html[lang]`). */
+export type PrintLang = "es" | "en";
+
+/**
+ * Copy de una clave del pack en el idioma pedido. `t()`/`te()` son la ÚNICA
+ * puerta al pack: acá no se escribe texto ni se cae a un default silencioso.
+ */
+function copyFor(lang: PrintLang, key: string): string {
+  return lang === "en" ? te(key) : t(key);
+}
+
+/**
+ * Curación del print en el idioma pedido. Default `es`: el render fuente y los
+ * tests históricos consumen esta forma. Una clave inexistente sigue siendo
+ * error de build (`t()`/`te()` la lanzan).
+ */
+export function printCvCuration(lang: PrintLang = "es"): PrintCvCuration {
   return {
   // #122: el dato vive en `PROFILE.positioning`; acá sólo se declara el campo.
   profile: PROFILE_PROSE,
   // El copy del print vive en el pack del tema (#127): este módulo declara la
   // ESTRUCTURA de la superficie, no su texto.
   sections: {
-    profile: t("print.sections.profile"),
+    profile: copyFor(lang, "print.sections.profile"),
     experience: {
       es: t("print.sections.experience"),
       en: te("print.sections.experience")
@@ -135,31 +155,31 @@ export function printCvCuration(): PrintCvCuration {
       es: t("print.sections.experienceNote"),
       en: te("print.sections.experienceNote")
     },
-    professional: t("print.sections.professional"),
-    training: t("print.sections.training"),
-    education: t("print.sections.education"),
-    publications: t("print.sections.publications"),
-    skills: t("print.sections.skills")
+    professional: copyFor(lang, "print.sections.professional"),
+    training: copyFor(lang, "print.sections.training"),
+    education: copyFor(lang, "print.sections.education"),
+    publications: copyFor(lang, "print.sections.publications"),
+    skills: copyFor(lang, "print.sections.skills")
   },
   labels: {
-    present: t("print.labels.present"),
-    languages: t("print.labels.languages"),
-    footer: t("print.labels.footer"),
-    footerNoDate: t("print.labels.footerNoDate")
+    present: copyFor(lang, "print.labels.present"),
+    languages: copyFor(lang, "print.labels.languages"),
+    footer: copyFor(lang, "print.labels.footer"),
+    footerNoDate: copyFor(lang, "print.labels.footerNoDate")
   },
   contactPlatforms: [...PRINT_CONTACT_PLATFORMS],
   languageNames: {
-    es: t("print.language.es"),
-    en: t("print.language.en"),
-    fr: t("print.language.fr")
+    es: copyFor(lang, "print.language.es"),
+    en: copyFor(lang, "print.language.en"),
+    fr: copyFor(lang, "print.language.fr")
   },
   levelLabels: {
-    native: t("print.level.native"),
-    fluent: t("print.level.fluent"),
-    expert: t("print.level.expert"),
-    advanced: t("print.level.advanced"),
-    intermediate: t("print.level.intermediate"),
-    basic: t("print.level.basic")
+    native: copyFor(lang, "print.level.native"),
+    fluent: copyFor(lang, "print.level.fluent"),
+    expert: copyFor(lang, "print.level.expert"),
+    advanced: copyFor(lang, "print.level.advanced"),
+    intermediate: copyFor(lang, "print.level.intermediate"),
+    basic: copyFor(lang, "print.level.basic")
   }
   };
 }

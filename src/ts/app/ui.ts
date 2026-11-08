@@ -9,11 +9,13 @@
 /**
  * Descarga el CV abriendo el diálogo de impresión (Guardar como PDF).
  *
- * `#print-cv` NUNCA se muestra en pantalla: `@media print` lo hace visible solo
- * al imprimir (head_html.ts). Antes se alternaba `display` desde acá, lo que
- * desplegaba el CV en la parte superior de la página; además el `afterprint` se
- * registraba DESPUÉS de `window.print()` (bloqueante), así que podía no llegar
- * nunca y el bloque quedaba visible al salir del diálogo.
+ * Los dos bloques del print (`#print-cv` ES y `#print-cv-en` EN) NUNCA se
+ * muestran en pantalla: `@media print` los hace visibles y el CSS de la piel
+ * deja entrar sólo el del `html[lang]` activo (head_html.ts + skin del tema,
+ * #160). Antes se alternaba `display` desde acá, lo que desplegaba el CV en la
+ * parte superior de la página; además el `afterprint` se registraba DESPUÉS de
+ * `window.print()` (bloqueante), así que podía no llegar nunca y el bloque
+ * quedaba visible al salir del diálogo.
  */
 export function printCV(): void {
   window.print();

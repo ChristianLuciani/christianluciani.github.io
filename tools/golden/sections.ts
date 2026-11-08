@@ -19,6 +19,8 @@ export interface Section {
 /** Marcadores de apertura en el orden en que `assembleHtml()` los emite. */
 const FIXED_STARTS: { name: string; marker: string }[] = [
   { name: "print-cv", marker: '<div id="print-cv"' },
+  // Variante EN del print (#160): bloque hermano, mismo layout, texto EN.
+  { name: "print-cv-en", marker: '<div id="print-cv-en"' },
   { name: "cover", marker: '<header class="hud">' },
   { name: "hero", marker: '<section id="hero">' },
   { name: "plano", marker: '<section id="room-plano">' }

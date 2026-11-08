@@ -29,10 +29,11 @@ import { copyPairs } from "../content/copy.ts";
  *   · `copyPairs()`   — pack de copy del tema (chrome + salas, #127);
  *   · `mapExtra()`    — numeración, subtítulos y funciones de SALAS;
  *   · `profileI18nPairs()` — pares derivados del SSOT (roles, highlights, …).
- * El walker recorre NODOS DE TEXTO: los pares `print.*` (salta `#print-cv`) y
- * los sólo-atributo (aria/alt/meta/caption) no los consulta, y un par derivado
- * de una rama del SSOT que los datos de hoy no renderizan queda sin nodo. Son
- * categorías declaradas, no claves muertas de mantenimiento (ver
+ * El walker recorre NODOS DE TEXTO: los pares `print.*` (salta los bloques
+ * `#print-cv` / `#print-cv-en`: el print ya viene resuelto por idioma desde el
+ * build, #160) y los sólo-atributo (aria/alt/meta/caption) no los consulta, y un
+ * par derivado de una rama del SSOT que los datos de hoy no renderizan queda sin
+ * nodo. Son categorías declaradas, no claves muertas de mantenimiento (ver
  * `docs/CREAR-TEMA.md` §3.1 y el gate de categorías en el test).
  * Agregar copy = agregar una entrada al pack; el diccionario la ve solo.
  */
@@ -63,7 +64,10 @@ export function initI18n(): void {
   Object.assign(MAP, mapExtra(), profileI18nPairs());
   const roomTitlesEn = roomEnList();
 
-  const printcv = document.getElementById("print-cv");
+  /* Los dos bloques del print (ES/EN) traen su texto resuelto por el build: el
+     walker no los toca. Se comparan por id, no por referencia al primer nodo,
+     porque ahora son dos hermanos (#160). */
+  const PRINT_BLOCKS = new Set(["print-cv", "print-cv-en"]);
   const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
     acceptNode: (n: Text) => {
       if (!n.nodeValue || !/\S/.test(n.nodeValue)) return NodeFilter.FILTER_REJECT;
@@ -72,7 +76,7 @@ export function initI18n(): void {
         if (p.nodeType === 1) {
           const el = p as Element;
           if (SKIP[el.tagName]) return NodeFilter.FILTER_REJECT;
-          if (p === printcv) return NodeFilter.FILTER_REJECT;
+          if (PRINT_BLOCKS.has(el.id)) return NodeFilter.FILTER_REJECT;
           if (el.id === "btn-lang") return NodeFilter.FILTER_REJECT;
         }
         p = p.parentNode;
