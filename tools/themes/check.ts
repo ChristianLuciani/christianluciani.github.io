@@ -28,11 +28,13 @@
  * reciben la piel/el render/la curación inyectados para que los tests puedan
  * recorrer los caminos rojos sin crear un tema real.
  *
- * LÍMITE DECLARADO: mientras `NarrativeManifest` no exponga `skin` (ADR-001
- * §D11, S4), la piel se resuelve por CONVENCIÓN: `src/themes/<id>/skin.css` +
- * `src/themes/<id>/contrast.ts`. Un tema sin `skin.css` propio HEREDA la piel
- * del tema default (ya validada en su propia entrada) y el reporte lo declara.
- * Cuando el manifest exponga `skin`, el resolver cambia en este único punto.
+ * PIEL QUE LLEGA AL RENDER (S4 de ADR-001 §D11): la piel se resuelve por
+ * CONVENCIÓN (`src/themes/<id>/skin.css` + `contrast.ts`) y el gate NO confía en
+ * que el emisor la use: extrae el `<style>` de piel del render de ESE tema y lo
+ * compara con el CSS que corresponde a su fuente. Un tema no-default con
+ * `skin.css` propio pasa sólo si esa piel llega al documento; si el emisor
+ * resolviera otra (p. ej. la del default) el gate lo falla. Un tema sin
+ * `skin.css` propio HEREDA la del default y el reporte lo declara.
  *
  * Uso: npm run themes:check
  *      (no necesita `dist/`; `themes:assets` sí, y corre después del build)
@@ -48,6 +50,7 @@ import { validateCuration } from "../../src/content/curation/validate.ts";
 import { PROFILE } from "../../src/data/profile.generated.ts";
 import type { CvProfile } from "../../src/data/profile.types.ts";
 import { assembleHtml } from "../../src/templates/index.ts";
+import { PRINT_RULE_COLOR } from "../../src/templates/print-tokens.ts";
 import {
   resolvePair,
   type ContrastDebt,
@@ -59,6 +62,7 @@ import {
   tokenDeclarations
 } from "../../src/themes/museo/skin.ts";
 import { DEFAULT_THEME, THEMES, themeIds } from "../../src/themes/index.ts";
+import { skinCss } from "../../src/themes/skin.ts";
 import { resolveThemeAddress } from "../../src/themes/site.ts";
 import type { NarrativeManifest } from "../../src/themes/types.ts";
 import { COPY_ATTRS } from "../copy/lint.ts";
@@ -71,6 +75,13 @@ export interface SkinInput {
   readonly source: string;
   readonly contrastPairs: readonly ContrastPair[];
   readonly debt: readonly ContrastDebt[];
+  /**
+   * CSS de piel que el RENDER de este tema publicó (extracto del `<style>` del
+   * documento). Es la evidencia de F4/S4: sin ella no se puede certificar que
+   * la piel declarada llegue al render. `loadThemes` la extrae del HTML real;
+   * los fixtures de test la inyectan.
+   */
+  readonly emitted?: string;
   /** Ruta lógica para el mensaje; default: `src/themes/<id>/skin.css`. */
   readonly file?: string;
 }
@@ -466,6 +477,22 @@ function manifestErrors(narrative: NarrativeManifest): string[] {
   return errors;
 }
 
+/**
+ * CSS de piel publicado por el documento: el `<style>` que declara los tokens
+ * (`:root {`). El render tiene varios `<style>` (print, plano); el de la piel es
+ * el único con la paleta, y el primero del documento (head). Devuelve undefined
+ * si el render no trae piel: eso es un error del tema, no un "no aplica".
+ */
+export function skinCssIn(html: string): string | undefined {
+  for (const match of html.matchAll(/<style>([\s\S]*?)<\/style>/g)) {
+    const content = match[1];
+    if (!/:root\s*\{/.test(content)) continue;
+    // El template emite `<style>\n${emitSkin(...)}`; el salto es del markup.
+    return content.startsWith("\n") ? content.slice(1) : content;
+  }
+  return undefined;
+}
+
 /** Reporte de UN tema: manifest + render + copy + curación + piel. */
 export function checkTheme(
   theme: ThemeInput,
@@ -492,17 +519,33 @@ export function checkTheme(
     )
   );
 
+  const declaresInherit = theme.narrative.skin === "inherit";
+
   if (theme.skinError) {
     errors.push(`piel: ${theme.skinError}`);
   } else if (theme.skin) {
-    // F4 del pase fresco de #158: `src/themes/skin.ts` emite SÓLO la piel de
-    // museo (ADR-001 §D11/S4 pendiente). Certificar la piel de un tema
-    // no-default sería certificar CSS que nunca llega al render.
-    if (id !== DEFAULT_THEME) {
+    if (declaresInherit) {
       errors.push(
-        `piel: el tema "${id}" declara skin.css propio pero el emisor ` +
-          `(src/themes/skin.ts) sólo emite la piel de "${DEFAULT_THEME}"; esta piel no ` +
-          "llega al render, así que el gate no puede certificarla (ADR-001 §D11/S4)"
+        `piel: "${id}" declara skin: "inherit" pero tiene ${theme.skin.file ?? `src/themes/${id}/skin.css`}; ` +
+          "la declaración y el archivo se contradicen (elegí uno)"
+      );
+    }
+    // F4/S4: la piel del tema tiene que LLEGAR al render. No alcanza con que el
+    // archivo exista ni con que el emisor "diga" que la resuelve: se compara el
+    // `<style>` del documento con el CSS que corresponde a su fuente. Si un
+    // tema no-default emite la piel del default, el gate lo falla (el falso
+    // verde que cerró F4).
+    const expected = skinCss(theme.skin.source, PRINT_RULE_COLOR);
+    if (theme.skin.emitted === undefined) {
+      errors.push(
+        `piel: no hay evidencia de que la piel de ${theme.skin.file ?? `src/themes/${id}/skin.css`} ` +
+          `llegue al render de "${id}"; el gate necesita el CSS emitido en el documento`
+      );
+    } else if (theme.skin.emitted !== expected) {
+      errors.push(
+        `piel: el render de "${id}" no publica la piel de su skin.css; el bloque ` +
+          `<style> del documento no coincide con el CSS emitido para ese tema (el emisor está ` +
+          "resolviendo otra piel — ADR-001 §D11/S4)"
       );
     }
     errors.push(...skinErrors(id, theme.skin));
@@ -511,8 +554,15 @@ export function checkTheme(
       `piel: el tema default "${id}" no tiene src/themes/${id}/skin.css; ` +
         "sin piel no hay nada que emitir (¿la movieron?)"
     );
+  } else if (declaresInherit) {
+    notes.push(`piel: hereda la del tema default por declaración explícita (skin: "inherit")`);
   } else {
-    notes.push(`piel: el tema no tiene skin.css propio; hereda la del tema default`);
+    // F4 del pase fresco de #159: borrar el skin.css de un tema registrado no
+    // puede leerse como herencia. La herencia es una DECISIÓN declarada.
+    errors.push(
+      `piel: el tema "${id}" no tiene src/themes/${id}/skin.css y no declara ` +
+        `skin: "inherit"; un tema registrado nace con piel propia (o declara la herencia)`
+    );
   }
 
   return { id, errors, notes };
@@ -632,6 +682,9 @@ export async function loadThemes(): Promise<ThemeInput[]> {
     let skinError: string | undefined;
     try {
       skin = await resolveSkin(id);
+      // Evidencia de F4/S4: lo que el render de ESTE tema publicó como piel.
+      const emitted = html === undefined ? undefined : skinCssIn(html);
+      if (skin && emitted !== undefined) skin = { ...skin, emitted };
     } catch (error) {
       // La piel ilegible se reporta como error del tema, no como crash: el
       // reporte tiene que nombrar el archivo y el motivo.

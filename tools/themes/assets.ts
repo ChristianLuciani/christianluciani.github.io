@@ -221,7 +221,26 @@ export function checkThemeAssets({
       errors.push(`falta la página ${page} (¿corriste \`npm run build\`?)`);
       return;
     }
-    for (const ref of assetRefs(readFileSync(file, "utf8"))) {
+    const html = readFileSync(file, "utf8");
+
+    // Identidad del tema en la página (F1 del pase fresco de #159): el bundle es
+    // compartido, así que sin `data-theme` el runtime monta la narrativa del
+    // default sobre el HTML del otro tema. El gate verifica que la página
+    // declare SU id (y que no sea otro).
+    const themeId = themes[index].id;
+    const declared = /<html\b[^>]*\bdata-theme="([^"]*)"/i.exec(html)?.[1];
+    if (!declared) {
+      errors.push(
+        `${page}: no declara la identidad del tema (<html data-theme="…">); ` +
+          `el runtime no puede resolver la narrativa de "${themeId}"`
+      );
+    } else if (declared !== themeId) {
+      errors.push(
+        `${page}: declara data-theme="${declared}" y el tema publicado es "${themeId}"`
+      );
+    }
+
+    for (const ref of assetRefs(html)) {
       const resolved = resolveAssetUrl(ref.url, addresses[index]);
       if (resolved.kind === "external") continue;
       if (resolved.kind === "invalid") {

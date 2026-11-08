@@ -65,7 +65,7 @@ build:html` (o `npm run build`). Los tests `src/cv/parity.test.ts` y `src/cv/bui
 fallan si algo queda desalineado o el HTML no se regeneró.
 
 ### Editar el contenido (recomendado)
-Cada `<section class="room">` vive en `src/templates/sala_html.ts` (`ROOM_SHELL` + `ROOM_BODY` por
+Cada `<section class="room">` vive en `src/templates/sala_html.ts` (`roomShells` + `roomBodies` por
 sala; el header número/título/subtítulo se genera desde `SALAS`). El head vive en
 `src/templates/head_html.ts`, la piel (todo el `<style>` global) en
 `src/themes/museo/skin.css` y el plano en `src/templates/plano_html.ts`. Cambiá la fuente y
