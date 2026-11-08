@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { MUSEO_CURATION } from "../../src/content/curation/museo.ts";
+import type { Curation } from "../../src/content/curation/types.ts";
 import { factUniverse } from "../../src/content/curation/facts.ts";
 import { PROFILE } from "../../src/data/profile.generated.ts";
 import type { CvProfile } from "../../src/data/profile.types.ts";
@@ -18,6 +19,7 @@ import {
   curationErrors,
   lineageErrors,
   loadThemes,
+  roomLayoutErrors,
   skinErrors,
   type SkinInput,
   type ThemeInput
@@ -484,6 +486,83 @@ describe("themes/check — variantes de piel (S10 · #136)", () => {
     });
     expect(report.themes[0]!.errors.join("\n")).toContain("por referencia");
     expect(report.ok).toBe(false);
+  });
+});
+
+describe("themes/check — layout de salas (S9 · #135)", () => {
+  /**
+   * El orden de las salas y sus grupos son contrato, no detalle de render: el
+   * gate tiene que morder cuando la curación y la narrativa declaran cosas
+   * distintas, o cuando un grupo promete una unidad de navegación imposible
+   * (una sala oculta, una sola sala, dos unidades solapadas, un hueco en el
+   * medio).
+   */
+  const GRUPO = {
+    id: "ciencia",
+    label: "Ciencia",
+    labelEn: "Science",
+    rooms: ["fisica", "grafo"]
+  };
+  const conGrupos = (groups: NarrativeManifest["groups"]): NarrativeManifest => ({
+    ...museo,
+    groups
+  });
+  const errores = (
+    narrative: NarrativeManifest,
+    curation: Curation = MUSEO_CURATION
+  ): string => roomLayoutErrors(narrative, curation).join("\n");
+
+  it("museo, sin grupos ni order.salas, no declara nada que verificar", () => {
+    expect(errores(museo)).toBe("");
+  });
+
+  it("un grupo de salas visibles y contiguas es válido", () => {
+    expect(errores(conGrupos([GRUPO]))).toBe("");
+  });
+
+  it("order.salas tiene que coincidir con el orden visible de rooms", () => {
+    const desordenada: Curation = {
+      ...MUSEO_CURATION,
+      order: { salas: ["contacto", "perfil", "proyectos"] }
+    };
+    expect(errores(museo, desordenada)).toContain("order.salas");
+  });
+
+  it("el orden declarado que omite una sala visible también es divergencia", () => {
+    const parcial: Curation = {
+      ...MUSEO_CURATION,
+      order: { salas: museo.rooms.filter((room) => !room.hidden && room.id !== "grafo").map((room) => room.id) }
+    };
+    expect(errores(museo, parcial)).toContain("order.salas");
+  });
+
+  it("agrupar una sala OCULTA sería prometer una unidad que no se puede visitar", () => {
+    expect(errores(conGrupos([{ ...GRUPO, rooms: ["fisica", "galeria"] }]))).toContain("OCULTA");
+  });
+
+  it("un grupo de una sola sala no es un grupo", () => {
+    expect(errores(conGrupos([{ ...GRUPO, rooms: ["fisica"] }]))).toContain("≥2");
+  });
+
+  it("una sala no puede pertenecer a dos unidades", () => {
+    const erroresDos = errores(
+      conGrupos([GRUPO, { ...GRUPO, id: "otro", rooms: ["fisica", "perfil"] }])
+    );
+    expect(erroresDos).toContain("está en");
+  });
+
+  it("un grupo no contiguo dejaría la unidad partida por una sala suelta", () => {
+    expect(errores(conGrupos([{ ...GRUPO, rooms: ["proyectos", "fisica"] }]))).toContain("contiguo");
+  });
+
+  it("el rótulo del HUD se traduce: falta labelEn es un error", () => {
+    expect(errores(conGrupos([{ ...GRUPO, labelEn: " " }]))).toContain("labelEn");
+  });
+
+  it("nombra salas que existen y no repite ids de grupo", () => {
+    expect(errores(conGrupos([{ ...GRUPO, rooms: ["fisica", "noexiste"] }]))).toContain("inexistente");
+    expect(errores(conGrupos([GRUPO, GRUPO]))).toContain("duplicado");
+    expect(errores(conGrupos([{ ...GRUPO, id: "Ciencia!" }]))).toContain("slug");
   });
 });
 

@@ -1,24 +1,26 @@
 /**
- * NARRATIVA DEL TEMA `ingenieria` (SPEC §8 FASE 5.7 · ADR-001 · issue #134).
+ * NARRATIVA DEL TEMA `ingenieria` (SPEC §5.4 · ADR-001 · issues #134, #135).
  *
- * PILOTO DE PLOMERÍA: las MISMAS 8 salas visibles del museo (misma estructura,
- * mismos ids, mismas ilusiones y misma curación de conjunto), con otra VOZ y
- * otra PIEL para una audiencia de ingeniería. No inventa hechos, no reordena
- * salas y no toca `SALAS`: cambia los rótulos de presentación (título,
- * función y label del HUD) y deja que el pack (`copy.ts`) y la piel
- * (`skin.css`) hagan el resto.
+ * S9 (#135) — CONTROL TOTAL. Esta narrativa ya no es una copia con otra voz: es
+ * la prueba de que el contrato deja reorganizar la visita sin tocar templates:
  *
- * `rooms` DERIVA de `SALAS` y aplica la VISIBILIDAD de SU curación
- * (`Curation.exclude`, ids `salas:<id>`): la galería sigue oculta, decidida en
- * `src/content/curation/ingenieria.ts`, no heredada del museo. Los subtítulos
- * son metadata factual de `SALAS` (conteos derivados del SSOT): el tema no los
- * reescribe para no duplicar cifras que pueden cambiar.
+ *   · `rooms` se DERIVA con `roomsFromCuration()` (ver `src/themes/rooms.ts`):
+ *     visibilidad y ORDEN salen de `INGENIERIA_CURATION` (`exclude` + `order.salas`),
+ *     la voz de `VOICE` y los conteos que cuentan fichas se re-derivan de ESA
+ *     curación. La narrativa no repite el `SALAS.map(...)` ni el cruce.
+ *   · `groups` declara que Biblioteca (fisica) y Compás (grafo) son UNA unidad
+ *     de navegación «Ciencia»: comparten número, entrada del HUD y celda del
+ *     plano, y conservan cada una su `<section>` y su cuerpo. Agrupar NO fusiona
+ *     contenido ni inventa una sala.
+ *
+ * Lo que NO cambia: los hechos (SSOT) y las ilusiones (los canvas son piezas
+ * existentes de `src/ts/illusions`). La voz renombra metáforas del museo por
+ * vocabulario de ingeniería; el pack (`copy.ts`) y la piel (`skin.css`) hacen el
+ * resto.
  */
-import { SALAS } from "../../cv/salas.ts";
-import { isExcluded } from "../../content/curation/index.ts";
-import { factId } from "../../content/curation/keys.ts";
+import { roomsFromCuration } from "../rooms.ts";
 import { INGENIERIA_CURATION } from "../../content/curation/ingenieria.ts";
-import type { NarrativeManifest, RoomRef } from "../types.ts";
+import type { NarrativeManifest, RoomGroup, RoomRef } from "../types.ts";
 import { DEFAULT_ORIGIN } from "../site.ts";
 import { INGENIERIA_COPY } from "./copy.ts";
 import { INGENIERIA_ILLUSIONS } from "./illusions.ts";
@@ -75,12 +77,12 @@ const VOICE: Readonly<Record<string, Partial<RoomRef>>> = {
     navLabelEn: "Papers"
   },
   grafo: {
-    titulo: "Mapa de <em>Dependencias</em>",
-    tituloEn: "<em>Dependency</em> Map",
-    funcion: "Grafo de dependencias entre áreas, sistemas y publicaciones.",
-    funcionEn: "Dependency graph between areas, systems and publications.",
-    navLabel: "Dependencias",
-    navLabelEn: "Dependencies"
+    titulo: "Mapa de <em>Sistemas</em>",
+    tituloEn: "<em>Systems</em> Map",
+    funcion: "Grafo de dependencias entre sistemas, áreas y publicaciones.",
+    funcionEn: "Dependency graph between systems, areas and publications.",
+    navLabel: "Sistemas",
+    navLabelEn: "Systems"
   },
   perfil: {
     titulo: "Perfil <em>Técnico</em>",
@@ -100,6 +102,17 @@ const VOICE: Readonly<Record<string, Partial<RoomRef>>> = {
   }
 };
 
+/**
+ * UNIDADES de navegación de este tema (S9 · #135). «Ciencia» presenta juntas la
+ * Biblioteca (publicaciones) y el Compás (mapa de sistemas): son el mismo
+ * módulo para el lector —qué se publicó y cómo se conecta—, así que comparten
+ * número, entrada del HUD y celda del plano. `themes:check` exige que las salas
+ * existan, estén visibles y sean contiguas en el orden de la curación.
+ */
+const GROUPS: readonly RoomGroup[] = [
+  { id: "ciencia", label: "Ciencia", labelEn: "Science", rooms: ["fisica", "grafo"] }
+];
+
 export const ingenieria: NarrativeManifest = {
   id: "ingenieria",
   // Publica en /ingenieria/ dentro del mismo artefacto (SPEC §8 FASE 5.5).
@@ -107,14 +120,8 @@ export const ingenieria: NarrativeManifest = {
   // Misma dirección de deploy que el default: hay UN bundle y UN root de
   // assets. `SITE_ORIGIN`/`SITE_BASE` la overridean al construir.
   site: { origin: DEFAULT_ORIGIN, base: "" },
-  rooms: SALAS.map((room) => {
-    const hidden = isExcluded(INGENIERIA_CURATION, factId("salas", room.id));
-    return {
-      ...room,
-      ...(VOICE[room.id] ?? {}),
-      ...(hidden ? { hidden: true } : {})
-    };
-  }),
+  rooms: roomsFromCuration(INGENIERIA_CURATION, VOICE),
+  groups: GROUPS,
   copy: INGENIERIA_COPY,
   illusions: INGENIERIA_ILLUSIONS,
   meta: {

@@ -1,21 +1,29 @@
 /**
- * CURACIÓN DEL TEMA `ingenieria` (SPEC §5.3/§5.5 · ADR-001 §6 · issue #128).
+ * CURACIÓN DEL TEMA `ingenieria` (SPEC §5.3/§5.5 · ADR-001 §6 · issues #128, #135).
  *
  * QUÉ ES: las decisiones de presentación del tema `ingenieria`, explícitas y con
  * razón. Reproduce la curación que ya existía dispersa:
  *
  *   · El Marco / El Bastidor — NO se decide acá: se DERIVA de
  *     `PROFILE.projects[].published` (artifactRefs → artifact público). La
- *     curación sólo ordena e incluye; nunca mueve un proyecto de sala.
+ *     curación ordena, incluye y EXCLUYE fichas; nunca mueve un proyecto de sala.
  *   · orden de proyectos — `order.proyectos`, más reciente primero. Cambiar el
  *     orden de una tarjeta es editar SÓLO este archivo (DoD de #128).
  *   · publicaciones — las 9 del SSOT, en el orden en que la Biblioteca las
  *     publica. El renderer todavía las hardcodea (#99): el gate
  *     `render-drift.test.ts` exige que este orden y el DOM coincidan hasta que
  *     la Biblioteca consuma la proyección.
- *   · galería oculta — `salas:galeria` en `exclude`; `SALAS` deriva `hidden`
- *     de acá (la narrativa decide qué salas EXISTEN, la curación qué se
- *     presenta).
+ *   · salas — `exclude` decide qué salas se presentan (galería + galería del
+ *     stack), `order.salas` el ORDEN en que `roomsFromCuration()` las publica.
+ *     La narrativa decide qué salas EXISTEN; la curación, cuáles y en qué orden.
+ *
+ * S9 (#135) — CONTROL TOTAL: este tema dejó de ser «el mismo conjunto que el
+ * museo» y pasa a ejercer las cuatro palancas que el contrato promete:
+ * reordena salas (`order.salas`), oculta una sala visible (`salas:competencias`),
+ * excluye una ficha de contenido (`proyectos:profile-as-code`) y agrupa dos
+ * salas en UNA unidad de navegación (`groups` de la narrativa: Ciencia =
+ * Biblioteca + Compás). Todo con `reason` redactada, y todo visible en el HUD,
+ * el plano y el conteo derivado del subtítulo.
  *
  * QUÉ NO ES: hechos (SSOT), copy (pack del tema) ni clasificación por fechas
  * (el Friso ordena por `end`/`start` del SSOT). La clasificación de experiencia
@@ -23,14 +31,6 @@
  * tema `ingenieria`: el universo de cobertura y el print-CV usan la MISMA tabla, no
  * dos que puedan divergir. El print compartido la pide a la curación activa,
  * nunca a este módulo.
- *
- * PILOTO: MISMO CONJUNTO QUE `museo`
- *
- * El issue #134 pide «curación propia con el mismo conjunto»: la decisión de
- * qué se presenta y en qué orden es la misma que la del museo (8 salas
- * visibles, misma galería oculta, mismo orden de proyectos y publicaciones)
- * para validar la plomería del subpath sin cambiar el contenido. La voz y la
- * piel sí difieren (pack + skin.css del tema).
  *
  * PRESENTAR ES EL DEFAULT: sólo `exclude` oculta. `include` declara la decisión
  * (la cobertura I3 la verifica `validate.ts`) y alimenta el orden, pero un
@@ -105,9 +105,12 @@ export const EXPERIENCE_SECTIONS: Readonly<Record<string, ExperienceSectionId>> 
  * `cv/proyectos.ts`) sigue siendo la fecha que se expone en `data-recencia`;
  * este arreglo es la fuente del ORDEN. El test exige que ambos coincidan: si
  * divergen, o la fecha está mal o el orden es otro, y hay que decidirlo.
+ *
+ * S9 (#135): `profile-as-code` sale del orden porque se EXCLUYE abajo. `order`
+ * sólo nombra hechos incluidos (lo exige `validate.ts`): dejar la clave acá
+ * sería ordenar algo que el tema no presenta.
  */
 const PROYECTOS: readonly string[] = [
-  "profile-as-code",
   "Topia",
   "CLAPPS.AI",
   "Nelson Companion",
@@ -137,12 +140,22 @@ const PUBLICACIONES: readonly string[] = [
   "10.1143/PTPS.161.314"
 ];
 
-/** Salas que el tema PRESENTA, en orden DOM. La galería va en `exclude`. */
+/**
+ * Orden de las salas VISIBLES de este tema (S9 · #135). Es el ÚNICO lever del
+ * orden: `roomsFromCuration()` lo aplica y `themes:check` exige que coincida con
+ * el orden visible de `narrative.rooms` (si divergen hay dos fuentes y una
+ * miente).
+ *
+ * Por qué este orden y no el del museo: el lector de ingeniería entra por la
+ * OBRA en producción y por la trayectoria que la sostiene; el archivo de
+ * prototipos va después, como deuda declarada y no como primera impresión.
+ * `competencias` no figura: está oculta (ver `exclude`), igual que la galería,
+ * porque el orden sólo nombra lo que se presenta.
+ */
 const SALAS_VISIBLES: readonly string[] = [
   "proyectos",
-  "bastidor",
-  "competencias",
   "experiencia",
+  "bastidor",
   "fisica",
   "grafo",
   "perfil",
@@ -180,6 +193,30 @@ const ARTEFACTOS_NO_PRESENTADOS: readonly string[] = [
   "drahma-tutors"
 ];
 
+/* ── Decisiones de contenido: ítems que esta piel NO presenta (S9 · #135) ── */
+
+/**
+ * El sitio como ficha de sí mismo. La decisión es editorial: el lector de
+ * `/ingenieria/` ya está ejecutando el artefacto, así que una tarjeta que lo
+ * describe es autorreferencia, no obra. El hecho NO se borra: sigue en el SSOT,
+ * su enlace vive en cada tarjeta y su artefacto sigue excluido arriba por la
+ * misma razón (`ARTEFACTOS_NO_PRESENTADOS`).
+ */
+const SITIO_COMO_OBRA =
+  "El lector de /ingenieria/ ya está ejecutando este artefacto: una tarjeta que " +
+  "describe el sitio es autorreferencia, no obra. El hecho sigue en el SSOT y su " +
+  "enlace vive en cada tarjeta; otro tema puede presentarlo.";
+
+/**
+ * El stack como sala. Las filas de competencias se imprimen completas en el
+ * print-CV (esa superficie no cambia): lo que se oculta es la sala-índice, que
+ * en esta piel repetiría lo que la obra y la trayectoria ya demuestran.
+ */
+const STACK_COMO_SALA =
+  "El Compás presenta el stack como índice. En esta piel la capacidad se lee en la " +
+  "obra y en la trayectoria, y las filas completas se imprimen en el CV: la sala " +
+  "repite el índice. Ocultar no borra el hecho, que sigue en `include`.";
+
 /* ── La curación ────────────────────────────────────────────────────────── */
 
 export const INGENIERIA_CURATION: Curation = {
@@ -216,6 +253,9 @@ export const INGENIERIA_CURATION: Curation = {
         "publicar un marco sin obra. Ocultar no borra: el día que haya material " +
         "entra a `include`."
     },
+    // S9 (#135): las dos exclusiones que prueba esta entrega.
+    { id: factId("salas", "competencias"), reason: STACK_COMO_SALA },
+    { id: factId("proyectos", "profile-as-code"), reason: SITIO_COMO_OBRA },
     ...CREDENCIALES_NO_PRESENTADAS.map((key) => ({
       id: factId("credenciales", key),
       reason: SIN_SUPERFICIE_CREDENCIAL
@@ -227,7 +267,11 @@ export const INGENIERIA_CURATION: Curation = {
   ],
   order: {
     proyectos: PROYECTOS,
-    publicaciones: PUBLICACIONES
+    publicaciones: PUBLICACIONES,
+    // S9 (#135): orden de las salas VISIBLES (sin prefijo, como toda `order`).
+    // `roomsFromCuration()` lo aplica y `themes:check` exige que coincida con
+    // el orden visible de `narrative.rooms`.
+    salas: SALAS_VISIBLES
   },
   // El print-CV compartido pide esta tabla a la curación del tema activo
   // (`activeCuration()`): ningún renderer importa este módulo.

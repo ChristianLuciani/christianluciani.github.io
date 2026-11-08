@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { SALAS } from "../cv/salas";
+import { activateTheme } from "../themes/index";
 import { enDesarrolloDe } from "../data/proyectos";
 import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
@@ -325,5 +326,39 @@ describe("sala Perfil — una sola prosa, derivada del SSOT (#122)", () => {
     expect(roomBody(SALA_PERFIL, fixture)).toContain(
       profile.positioning.audiences.recruiters.es!
     );
+  });
+});
+
+describe("la curación del tema manda en el DOM (S9 · #135)", () => {
+  afterEach(() => {
+    activateTheme("museo");
+  });
+
+  /**
+   * El render de una sala es COMPARTIDO: si lee el default en vez de la curación
+   * del tema activo, excluir una ficha no la saca del DOM y el subtítulo
+   * derivado publica un número que la sala desmiente. `ingenieria` excluye
+   * `profile-as-code`; su El Marco tiene que reflejarlo.
+   */
+  it("excluir una ficha la saca de El Marco, no sólo del conteo", () => {
+    activateTheme("ingenieria");
+    const html = marcoHtml(profile);
+    expect(html).toContain("Kontablo");
+    expect(html).not.toContain("profile-as-code");
+    // La misma curación con museo (el default) sí la publica.
+    activateTheme("museo");
+    expect(marcoHtml(profile)).toContain("profile-as-code");
+  });
+
+  /**
+   * Hasta S9 `hidden` sólo funcionaba para la galería: el helper sabía QUITAR la
+   * clase del literal, nunca agregarla. Ocultar otra sala era decorativo.
+   */
+  it("ocultar una sala que no es la galería la deja fuera de la visita", () => {
+    activateTheme("ingenieria");
+    const html = roomsHtml();
+    expect(html).toContain('<section class="room room--hidden" id="room-competencias">');
+    expect(html).toContain('<section class="room" id="room-proyectos">');
+    expect(html).not.toContain('<div class="room-number" data-scroll="up">SALA </div>');
   });
 });

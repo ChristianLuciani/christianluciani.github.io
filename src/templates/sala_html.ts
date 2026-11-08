@@ -791,9 +791,13 @@ export function roomBody(s: RoomRef, profile: CvProfile = P): string {
 function roomHeader(s: RoomRef): string {
   const meta = ROOM_META[s.id] ?? { titleScroll: "zoom-in" };
   const num = numFor(s.id) ?? meta.legacyNum ?? "";
+  // Una sala OCULTA sin número de unidad (la que el tema decide no presentar,
+  // distinta de la galería que conserva su número histórico) no publica un
+  // rótulo «SALA » vacío: si no hay número, no hay renglón.
+  const numero = num ? `    <div class="room-number" data-scroll="up">SALA ${num}</div>
+` : "";
   return (
-    `    <div class="room-number" data-scroll="up">SALA ${num}</div>
-` +
+    numero +
     `    <h2 class="room-title"   data-scroll="${meta.titleScroll}">${s.titulo}</h2>
 ` +
     `    <p class="room-function" data-scroll="up" data-delay="1">${s.funcion}</p>

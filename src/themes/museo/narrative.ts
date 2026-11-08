@@ -6,16 +6,18 @@
  * title/og/twitter/canonical. No crea hechos ni duplica valores: cada pieza
  * tiene una sola fuente.
  *
- * `rooms` DERIVA de `SALAS` (no la copia) y aplica la VISIBILIDAD de la curación
- * de ESTE tema (`Curation.exclude`, ids `salas:<id>`): la estructura decide qué
- * salas existen; la curación del tema, cuáles se presentan. Un tema nuevo
- * declara su propio arreglo con SU curación, sin tocar `museo.ts` ni templates.
+ * `rooms` se DERIVA con la MISMA función que usa cualquier tema
+ * (`roomsFromCuration()`, SPEC §5.4): visibilidad por `exclude` (`salas:<id>`),
+ * orden por `order.salas` y conteos re-derivados de la curación. `museo` no
+ * declara ni grupos ni orden propio, así que la derivación produce exactamente
+ * `SALAS` con la galería oculta — el golden lo fija byte a byte (I1). Que el
+ * tema default use la MISMA ruta que un tema nuevo es el punto: no hay una
+ * derivación «default» y otra «de temas», que es cómo las dos terminan
+ * divergiendo.
  */
-import { SALAS } from "../../cv/salas.ts";
-import { isExcluded } from "../../content/curation/index.ts";
-import { factId } from "../../content/curation/keys.ts";
 import { MUSEO_CURATION } from "../../content/curation/museo.ts";
 import type { NarrativeManifest } from "../types.ts";
+import { roomsFromCuration } from "../rooms.ts";
 import { DEFAULT_ORIGIN } from "../site.ts";
 import { MUSEO_COPY } from "./copy.ts";
 import { MUSEO_ILLUSIONS } from "./illusions.ts";
@@ -28,9 +30,7 @@ export const museo: NarrativeManifest = {
   // overridean al construir, para migrar de dominio o de prefijo sin tocar el
   // tema.
   site: { origin: DEFAULT_ORIGIN, base: "" },
-  rooms: SALAS.map((room) =>
-    isExcluded(MUSEO_CURATION, factId("salas", room.id)) ? { ...room, hidden: true } : room
-  ),
+  rooms: roomsFromCuration(MUSEO_CURATION),
   copy: MUSEO_COPY,
   illusions: MUSEO_ILLUSIONS,
   meta: {

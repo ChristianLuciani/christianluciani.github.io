@@ -895,6 +895,10 @@ a { color:inherit; }
 /* Dos fichas: sin una tercera columna vacía (El Marco: Kontablo + profile-as-code;
    Drahma va como showcase, no como tarjeta). */
 .project-grid--pair { grid-template-columns:repeat(2, minmax(0,1fr)); }
+/* S9 (#135): la curación de este tema deja UNA tarjeta en El Marco (la otra
+   pieza publicada se presenta como showcase). Sin esta regla la grilla de tres
+   columnas dejaría la ficha en 1/3 y dos huecos. */
+.project-card:only-child { grid-column:1 / -1; }
 .project-card {
   display:flex; flex-direction:column;
   position:relative; overflow:hidden;
@@ -1692,13 +1696,11 @@ a { color:inherit; }
          data-aria-es="Salas del sistema" data-aria-en="System rooms">
       <a class="nav-dot" href="#hero" data-target="hero" data-label="Entrada" data-label-en="Entrance"><span class="n" aria-hidden="true">00</span><span class="nav-label">Entrada</span></a>
       <a class="nav-dot" href="#room-proyectos" data-target="room-proyectos" data-label="Producción" data-label-en="Production"><span class="n" aria-hidden="true">01</span><span class="nav-label">Producción</span></a>
-      <a class="nav-dot" href="#room-bastidor" data-target="room-bastidor" data-label="Prototipos" data-label-en="Prototypes"><span class="n" aria-hidden="true">02</span><span class="nav-label">Prototipos</span></a>
-      <a class="nav-dot" href="#room-competencias" data-target="room-competencias" data-label="Stack" data-label-en="Stack"><span class="n" aria-hidden="true">03</span><span class="nav-label">Stack</span></a>
-      <a class="nav-dot" href="#room-experiencia" data-target="room-experiencia" data-label="Trayectoria" data-label-en="Trajectory"><span class="n" aria-hidden="true">04</span><span class="nav-label">Trayectoria</span></a>
-      <a class="nav-dot" href="#room-fisica" data-target="room-fisica" data-label="Papers" data-label-en="Papers"><span class="n" aria-hidden="true">05</span><span class="nav-label">Papers</span></a>
-      <a class="nav-dot" href="#room-grafo" data-target="room-grafo" data-label="Dependencias" data-label-en="Dependencies"><span class="n" aria-hidden="true">06</span><span class="nav-label">Dependencias</span></a>
-      <a class="nav-dot" href="#room-perfil" data-target="room-perfil" data-label="Perfil" data-label-en="Profile"><span class="n" aria-hidden="true">07</span><span class="nav-label">Perfil</span></a>
-      <a class="nav-dot" href="#room-contacto" data-target="room-contacto" data-label="Contacto" data-label-en="Contact"><span class="n" aria-hidden="true">08</span><span class="nav-label">Contacto</span></a>
+      <a class="nav-dot" href="#room-experiencia" data-target="room-experiencia" data-label="Trayectoria" data-label-en="Trajectory"><span class="n" aria-hidden="true">02</span><span class="nav-label">Trayectoria</span></a>
+      <a class="nav-dot" href="#room-bastidor" data-target="room-bastidor" data-label="Prototipos" data-label-en="Prototypes"><span class="n" aria-hidden="true">03</span><span class="nav-label">Prototipos</span></a>
+      <a class="nav-dot" href="#room-fisica" data-target="room-fisica" data-label="Ciencia" data-label-en="Science" data-rooms="room-fisica room-grafo"><span class="n" aria-hidden="true">04</span><span class="nav-label">Ciencia</span></a>
+      <a class="nav-dot" href="#room-perfil" data-target="room-perfil" data-label="Perfil" data-label-en="Profile"><span class="n" aria-hidden="true">05</span><span class="nav-label">Perfil</span></a>
+      <a class="nav-dot" href="#room-contacto" data-target="room-contacto" data-label="Contacto" data-label-en="Contact"><span class="n" aria-hidden="true">06</span><span class="nav-label">Contacto</span></a>
 </nav>
     <div class="hud-side">
       <button id="btn-lang" type="button" aria-label="Switch language / Cambiar idioma">EN</button>
@@ -1847,47 +1849,35 @@ a { color:inherit; }
     <text class="bp-num"  x="348" y="130">01</text>
     <text class="bp-name" x="348" y="192">SISTEMAS EN PRODUCCIÓN</text>
   </a>
-  <a href="#room-bastidor" class="bp-room">
+  <a href="#room-experiencia" class="bp-room">
     <rect x="600" y="80" width="240" height="130" rx="2"/>
     <text class="bp-sala" x="618" y="100">MÓDULO</text>
     <text class="bp-num"  x="618" y="130">02</text>
-    <text class="bp-name" x="618" y="192">PROTOTIPOS EN CURSO</text>
+    <text class="bp-name" x="618" y="192">TRAYECTORIA TÉCNICA</text>
   </a>
-  <a href="#room-competencias" class="bp-room">
+  <a href="#room-bastidor" class="bp-room">
     <rect x="60" y="240" width="240" height="130" rx="2"/>
     <text class="bp-sala" x="78" y="260">MÓDULO</text>
     <text class="bp-num"  x="78" y="290">03</text>
-    <text class="bp-name" x="78" y="352">HERRAMIENTAS Y CAPACIDADES</text>
+    <text class="bp-name" x="78" y="352">PROTOTIPOS EN CURSO</text>
   </a>
-  <a href="#room-experiencia" class="bp-room">
+  <a href="#room-fisica" class="bp-room">
     <rect x="330" y="240" width="240" height="130" rx="2"/>
     <text class="bp-sala" x="348" y="260">MÓDULO</text>
     <text class="bp-num"  x="348" y="290">04</text>
-    <text class="bp-name" x="348" y="352">TRAYECTORIA TÉCNICA</text>
+    <text class="bp-name" x="348" y="352">CIENCIA</text>
   </a>
-  <a href="#room-fisica" class="bp-room">
+  <a href="#room-perfil" class="bp-room">
     <rect x="600" y="240" width="240" height="130" rx="2"/>
     <text class="bp-sala" x="618" y="260">MÓDULO</text>
     <text class="bp-num"  x="618" y="290">05</text>
-    <text class="bp-name" x="618" y="352">PUBLICACIONES CIENTÍFICAS</text>
+    <text class="bp-name" x="618" y="352">PERFIL TÉCNICO</text>
   </a>
-  <a href="#room-grafo" class="bp-room">
+  <a href="#room-contacto" class="bp-room">
     <rect x="60" y="400" width="240" height="130" rx="2"/>
     <text class="bp-sala" x="78" y="420">MÓDULO</text>
     <text class="bp-num"  x="78" y="450">06</text>
-    <text class="bp-name" x="78" y="512">MAPA DE DEPENDENCIAS</text>
-  </a>
-  <a href="#room-perfil" class="bp-room">
-    <rect x="330" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-sala" x="348" y="420">MÓDULO</text>
-    <text class="bp-num"  x="348" y="450">07</text>
-    <text class="bp-name" x="348" y="512">PERFIL TÉCNICO</text>
-  </a>
-  <a href="#room-contacto" class="bp-room">
-    <rect x="600" y="400" width="240" height="130" rx="2"/>
-    <text class="bp-sala" x="618" y="420">MÓDULO</text>
-    <text class="bp-num"  x="618" y="450">08</text>
-    <text class="bp-name" x="618" y="512">CANALES DE CONTACTO</text>
+    <text class="bp-name" x="78" y="512">CANALES DE CONTACTO</text>
   </a>
   </svg>
 </section>
@@ -1906,22 +1896,9 @@ a { color:inherit; }
     <div class="room-number" data-scroll="up">SALA 01</div>
     <h2 class="room-title"   data-scroll="zoom-in">Sistemas en <em>Producción</em></h2>
     <p class="room-function" data-scroll="up" data-delay="1">Sistemas publicados con repositorio, release o DOI: cualquiera puede abrirlos, ejecutarlos y verificar su comportamiento.</p>
-    <div class="room-subtitle" data-scroll="up" data-delay="2">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 3 PROYECTOS</div>
-<div class="project-grid project-grid--pair">
-    <div class="project-card project-card--linked" data-scroll="from-left" data-recencia="2026-08-07">
-
-      <a class="project-card-hit" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener"
-         aria-label="Abrir profile-as-code" data-aria-es="Abrir profile-as-code" data-aria-en="Open profile-as-code"></a>      <span class="project-status status-active">Publicado · MIT · v0.3.6</span>
-      <div class="project-title"><em>profile-as-code</em> — Motor de perfil spec-first</div>
-      <div class="project-tagline">Motor spec-driven que compila una sola fuente de verdad versionable en todas las superficies públicas del perfil: renderers por plataforma, salida determinista (byte-stable), hechos validados por schema y un ledger de deploy por entrada. Este mismo perfil está generado por él.</div>
-      <div class="project-note">Publicado bajo licencia MIT, con releases etiquetados.</div>
-      <div class="project-note">
-        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener">↗ Repositorio</a>
-        <a class="pub-doi" href="https://github.com/ChristianLuciani/profile-as-code/blob/main/docs/ci-cd.md" target="_blank" rel="noopener">↗ Repositorio · ci-cd.md</a>
-      </div>
-    </div>
-
-    <div class="project-card project-card--linked" data-scroll="from-left" data-delay="1" data-recencia="2026-01-27">
+    <div class="room-subtitle" data-scroll="up" data-delay="2">OBRA PUBLICADA · ARTEFACTO AUDITABLE · 2 PROYECTOS</div>
+<div class="project-grid">
+    <div class="project-card project-card--linked" data-scroll="from-left" data-recencia="2026-01-27">
 
       <a class="project-card-hit" href="https://github.com/ChristianLuciani/accounting-esperanto" target="_blank" rel="noopener"
          aria-label="Abrir Kontablo" data-aria-es="Abrir Kontablo" data-aria-en="Open Kontablo"></a>      <span class="project-status status-active">Publicado · v0.1.0 · Open-source</span>
@@ -2022,178 +1999,6 @@ a { color:inherit; }
 <div class="room-divider"></div>
 
 <!-- ════════════════════════════════════════════════════
-  SALA — El Bastidor (en desarrollo)
-  NOTA: lo que todavía no tiene artefacto público. Cada ficha
-  declara qué le falta para pasar a El Marco.
-════════════════════════════════════════════════════ -->
-<section class="room" id="room-bastidor">
-  <canvas class="room-canvas" id="c-bastidor" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
-
-  <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 02</div>
-    <h2 class="room-title"   data-scroll="zoom-in">Prototipos en <em>Curso</em></h2>
-    <p class="room-function" data-scroll="up" data-delay="1">Sistemas en construcción: prototipos, investigaciones e ideas que todavía no tienen un artefacto público.</p>
-    <div class="room-subtitle" data-scroll="up" data-delay="2">EN DESARROLLO · PROTOTIPOS E IDEAS · 8 PROYECTOS</div>
-<div class="project-grid">
-    <div class="project-card" data-scroll="from-left" data-recencia="2026-07-24">
-      <span class="project-status status-private">En diseño · Sin artefacto público</span>
-      <div class="project-title"><em>Topia</em> — Motor editorial de newsletter</div>
-      <div class="project-tagline">De la distopía a eutopías alcanzables: newsletter con rigor epistémico — un ensayo a la vez, cada claim con fuente, cada tesis falsable. Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el primer número publicado.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="1" data-recencia="2026-05-24">
-      <span class="project-status status-private">En diseño · Sin artefacto público</span>
-      <div class="project-title"><em>CLAPPS.AI</em> — Comprehensive Learning Applications</div>
-      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional. Soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo. Referente más cercano: NotebookLM, pero sin progresión estructurada de competencias.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> primer contenido real (Noesis y Noetix) y una versión navegable.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="2" data-recencia="2026-04-24">
-      <span class="project-status status-private">Activo · Sin artefacto público</span>
-      <div class="project-title"><em>Nelson Companion</em> — PWA de voz asistida</div>
-      <div class="project-tagline">PWA guiada por voz para mi padre (afasia post-ACV). Offline-first, cero telemetría.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público y licencia — el uso ya es real.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="3" data-recencia="2026-03-09">
-      <span class="project-status status-private">Experimental · Sin artefacto público</span>
-      <div class="project-title"><em>Esteléctica</em> — Epistemología del Diálogo Poli-dialéctico Destilado</div>
-      <div class="project-tagline">Propuesta filosófica y arquitectura de software sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética. Modelo Tronco/Rizoma: el rizoma explora libremente; el par humano-cognición sintética destila hacia el Tronco. Integra Noesis y Noetix.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el paper (es candidata a publicación académica); el repositorio es privado.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="4" data-recencia="2026-03-07">
-      <span class="project-status status-private">Activo · Sin artefacto público</span>
-      <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
-      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética. Resuelve la entropía dialéctica: los destellos de claridad se guardan en base de datos estructurada (Supabase). Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público con licencia y release — el schema, la ingesta y la arquitectura multi-tenant ya existen.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="2019-01-01">
-      <span class="project-status status-paused">Mantenido · Sin artefacto público</span>
-      <div class="project-title"><em>Physics Lab Book</em> — Laboratorio de física interactivo</div>
-      <div class="project-tagline">36 guías interactivas HTML5 de laboratorio de física universitaria — originalmente escritas para USFQ (ingenierías, ciencias de la salud, ciencias puras).</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público (hoy privado); las 36 guías y su uso en USFQ ya existen.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
-      <span class="project-status status-private">Experimental · Sin artefacto público</span>
-      <div class="project-title"><em>NOOS</em> — Natural Organization Operating System</div>
-      <div class="project-tagline">Reducir la entropía organizacional mediante cognición sintética distribuida y grafos de conocimiento. Las organizaciones modeladas como sistemas termodinámicos de alta/baja entropía. Destino: consultoría de alto valor para organizaciones en transición digital.</div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el marco conceptual como publicación; hoy es investigación privada.</div>
-    </div>
-
-    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
-      <span class="project-status status-private">Activo · Sin artefacto público</span>
-      <div class="project-title"><em>Upstream Open Source Contributions</em> — Contribuciones upstream</div>
-      <div class="project-tagline">Cada PR mergeado es infraestructura que pertenece a todos. Contribuciones upstream al ecosistema de IA agéntica — AionCore (agente Pi como ACP built-in), pi-acp (session/delete según spec ACP), AionUi (logos theme-aware), Ollama a agentes ACP locales.</div>
-      <div class="project-note">
-        <a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener">↗ Repositorio · 618</a>
-        <a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener">↗ Repositorio · 76</a>
-        <a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/626" target="_blank" rel="noopener">↗ Repositorio · 626</a>
-        <a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener">↗ Repositorio · 3614</a>
-      </div>
-      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> un artefacto propio declarado en artifactRefs — hoy su producción son PRs upstream, listados en la evidencia del SSOT.</div>
-    </div>
-</div>
-    <p class="room-closing" data-scroll="up">
-      Ninguna ficha de esta sala declara todavía un artefacto en el SSOT que la gradúe a El Marco — una ya enlaza material público — y cada una dice qué le falta.
-    </p>
-
-  </div><!-- /room-content -->
-</section>
-<div class="room-divider"></div>
-
-<!-- ════════════════════════════════════════════════════
-  SALA — Competencias
-════════════════════════════════════════════════════ -->
-<section class="room" id="room-competencias">
-  <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
-
-  <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 03</div>
-    <h2 class="room-title"   data-scroll="zoom-in">Herramientas y <em>Capacidades</em></h2>
-    <p class="room-function" data-scroll="up" data-delay="1">Herramientas y capacidades: ingeniería de software, sistemas, datos, infraestructura e idiomas.</p>
-    <div class="room-subtitle" data-scroll="up" data-delay="2">INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS</div>
-
-    <div class="skills-grid" data-scroll="from-center">
-      <div class="skill-block">
-        <div class="skill-label">Código Sintético · Agentes</div>
-        <ul class="skill-items">
-          <li>Orquestación de agentes y cognición sintética</li>
-          <li>Protocolos agénticos · MCP · ACP · A2A</li>
-          <li>Tutores socráticos · IA educativa (Drahma)</li>
-          <li>Ingeniería de contexto (RAG)</li>
-        </ul>
-      </div>
-      <div class="skill-block">
-        <div class="skill-label">Codificación Agéntica</div>
-        <ul class="skill-items">
-          <li>Desarrollo de software guiado por agentes</li>
-          <li>Producto desde SPEC + TDD con agentes</li>
-          <li>Mantenimiento e integración asistidos por IA</li>
-        </ul>
-      </div>
-      <div class="skill-block">
-        <div class="skill-label">Soberanía Tecnológica</div>
-        <ul class="skill-items">
-          <li>Self-hosting · infraestructura propia</li>
-          <li>Inferencia soberana (LiteLLM · Ollama · cascada $0-primero)</li>
-          <li>ERPNext self-hosted · ERP y contabilidad sin SaaS propietario</li>
-          <li>Privacidad y datos propios (multi-tenant)</li>
-          <li>Linux · macOS</li>
-        </ul>
-      </div>
-      <div class="skill-block">
-        <div class="skill-label">Open Source</div>
-        <ul class="skill-items">
-          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener noreferrer">AionCore · Agente Pi como built-in ACP ↗</a></li>
-          <li><a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener noreferrer">pi-acp · session/delete ACP lifecycle ↗</a></li>
-          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener noreferrer">AionUi · Theme-aware monochrome logos (merged) ↗</a></li>
-          <li>Publicación Kontablo · BSL 1.1 → Apache 2.0</li>
-        </ul>
-      </div>
-      <div class="skill-block">
-        <div class="skill-label">Plataformas & Ecosistema</div>
-        <ul class="skill-items">
-          <li>ERPNext · Zoho ERP</li>
-          <li>Supabase · Chatwoot</li>
-          <li>Poe</li>
-        </ul>
-      </div>
-      <div class="skill-block">
-        <div class="skill-label">Ciencias</div>
-        <ul class="skill-items">
-          <li>Sistemas complejos</li>
-          <li>Difractometría de rayos X</li>
-          <li>Seguridad radiológica</li>
-        </ul>
-      </div>
-      <div class="skill-block">
-        <div class="skill-label">Idiomas</div>
-        <ul class="skill-items">
-          <li>Español — nativo</li>
-          <li>Inglés — intermedio</li>
-          <li>Francés — B1</li>
-        </ul>
-      </div>
-    </div>
-
-<div class="room-footnote">
-      <div class="room-number">INTERESES</div>
-      <p class="interests" data-scroll="zoom-in">
-        Escalada en roca · Montañismo · Cine asiático · Neurociencias ·
-        Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·
-        <span class="hl">La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.</span>
-      </p>
-    </div>
-  </div>
-</section>
-<div class="room-divider"></div>
-
-
-<!-- ════════════════════════════════════════════════════
 
 
 
@@ -2203,7 +2008,7 @@ a { color:inherit; }
   <canvas class="room-canvas" id="c-exp" role="img" aria-label="Patrón de interferencia de doble fuente"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 04</div>
+    <div class="room-number" data-scroll="up">SALA 02</div>
     <h2 class="room-title"   data-scroll="zoom-in">Trayectoria <em>Técnica</em></h2>
     <p class="room-function" data-scroll="up" data-delay="1">Trayectoria técnica: empleo, formación y talleres aplicados a sistemas, docencia y producción.</p>
     <div class="room-subtitle" data-scroll="up" data-delay="2">TRAYECTORIA · 1998 – PRESENTE</div>
@@ -2402,13 +2207,97 @@ a { color:inherit; }
 
 
 <!-- ════════════════════════════════════════════════════
+  SALA — El Bastidor (en desarrollo)
+  NOTA: lo que todavía no tiene artefacto público. Cada ficha
+  declara qué le falta para pasar a El Marco.
+════════════════════════════════════════════════════ -->
+<section class="room" id="room-bastidor">
+  <canvas class="room-canvas" id="c-bastidor" role="img" aria-label="Campo fractal tipo Mandelbrot"></canvas>
+
+  <div class="room-content">
+    <div class="room-number" data-scroll="up">SALA 03</div>
+    <h2 class="room-title"   data-scroll="zoom-in">Prototipos en <em>Curso</em></h2>
+    <p class="room-function" data-scroll="up" data-delay="1">Sistemas en construcción: prototipos, investigaciones e ideas que todavía no tienen un artefacto público.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">EN DESARROLLO · PROTOTIPOS E IDEAS · 8 PROYECTOS</div>
+<div class="project-grid">
+    <div class="project-card" data-scroll="from-left" data-recencia="2026-07-24">
+      <span class="project-status status-private">En diseño · Sin artefacto público</span>
+      <div class="project-title"><em>Topia</em> — Motor editorial de newsletter</div>
+      <div class="project-tagline">De la distopía a eutopías alcanzables: newsletter con rigor epistémico — un ensayo a la vez, cada claim con fuente, cada tesis falsable. Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el primer número publicado.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="1" data-recencia="2026-05-24">
+      <span class="project-status status-private">En diseño · Sin artefacto público</span>
+      <div class="project-title"><em>CLAPPS.AI</em> — Comprehensive Learning Applications</div>
+      <div class="project-tagline">Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional. Soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo. Referente más cercano: NotebookLM, pero sin progresión estructurada de competencias.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> primer contenido real (Noesis y Noetix) y una versión navegable.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="2" data-recencia="2026-04-24">
+      <span class="project-status status-private">Activo · Sin artefacto público</span>
+      <div class="project-title"><em>Nelson Companion</em> — PWA de voz asistida</div>
+      <div class="project-tagline">PWA guiada por voz para mi padre (afasia post-ACV). Offline-first, cero telemetría.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público y licencia — el uso ya es real.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="3" data-recencia="2026-03-09">
+      <span class="project-status status-private">Experimental · Sin artefacto público</span>
+      <div class="project-title"><em>Esteléctica</em> — Epistemología del Diálogo Poli-dialéctico Destilado</div>
+      <div class="project-tagline">Propuesta filosófica y arquitectura de software sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética. Modelo Tronco/Rizoma: el rizoma explora libremente; el par humano-cognición sintética destila hacia el Tronco. Integra Noesis y Noetix.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el paper (es candidata a publicación académica); el repositorio es privado.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="4" data-recencia="2026-03-07">
+      <span class="project-status status-private">Activo · Sin artefacto público</span>
+      <div class="project-title"><em>ZENTROPY</em> — Zero Entropy Intelligence Station</div>
+      <div class="project-tagline">Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética. Resuelve la entropía dialéctica: los destellos de claridad se guardan en base de datos estructurada (Supabase). Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público con licencia y release — el schema, la ingesta y la arquitectura multi-tenant ya existen.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="2019-01-01">
+      <span class="project-status status-paused">Mantenido · Sin artefacto público</span>
+      <div class="project-title"><em>Physics Lab Book</em> — Laboratorio de física interactivo</div>
+      <div class="project-tagline">36 guías interactivas HTML5 de laboratorio de física universitaria — originalmente escritas para USFQ (ingenierías, ciencias de la salud, ciencias puras).</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> repositorio público (hoy privado); las 36 guías y su uso en USFQ ya existen.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
+      <span class="project-status status-private">Experimental · Sin artefacto público</span>
+      <div class="project-title"><em>NOOS</em> — Natural Organization Operating System</div>
+      <div class="project-tagline">Reducir la entropía organizacional mediante cognición sintética distribuida y grafos de conocimiento. Las organizaciones modeladas como sistemas termodinámicos de alta/baja entropía. Destino: consultoría de alto valor para organizaciones en transición digital.</div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> el marco conceptual como publicación; hoy es investigación privada.</div>
+    </div>
+
+    <div class="project-card" data-scroll="from-left" data-delay="5" data-recencia="">
+      <span class="project-status status-private">Activo · Sin artefacto público</span>
+      <div class="project-title"><em>Upstream Open Source Contributions</em> — Contribuciones upstream</div>
+      <div class="project-tagline">Cada PR mergeado es infraestructura que pertenece a todos. Contribuciones upstream al ecosistema de IA agéntica — AionCore (agente Pi como ACP built-in), pi-acp (session/delete según spec ACP), AionUi (logos theme-aware), Ollama a agentes ACP locales.</div>
+      <div class="project-note">
+        <a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener">↗ Repositorio · 618</a>
+        <a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener">↗ Repositorio · 76</a>
+        <a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/626" target="_blank" rel="noopener">↗ Repositorio · 626</a>
+        <a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener">↗ Repositorio · 3614</a>
+      </div>
+      <div class="project-falta"><span class="project-falta-label">Para publicarse</span> un artefacto propio declarado en artifactRefs — hoy su producción son PRs upstream, listados en la evidencia del SSOT.</div>
+    </div>
+</div>
+    <p class="room-closing" data-scroll="up">
+      Ninguna ficha de esta sala declara todavía un artefacto en el SSOT que la gradúe a El Marco — una ya enlaza material público — y cada una dice qué le falta.
+    </p>
+
+  </div><!-- /room-content -->
+</section>
+<div class="room-divider"></div>
+
+<!-- ════════════════════════════════════════════════════
   SALA — La Biblioteca (Publicaciones y Preprints)
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt" id="room-fisica">
   <canvas class="room-canvas" id="c-fisica" role="img" aria-label="Ilusión de serpientes rotantes"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 05</div>
+    <div class="room-number" data-scroll="up">SALA 04</div>
     <h2 class="room-title"   data-scroll="zoom-out">Publicaciones <em>Científicas</em></h2>
     <p class="room-function" data-scroll="up" data-delay="1">Publicaciones científicas y preprints, con DOI y enlace a la fuente.</p>
     <div class="room-subtitle" data-scroll="up" data-delay="2">PUBLICACIONES CIENTÍFICAS · PREPRINTS · 2006–2026</div>
@@ -2537,9 +2426,9 @@ a { color:inherit; }
 ════════════════════════════════════════════════════ -->
 <section class="room" id="room-grafo">
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 06</div>
-    <h2 class="room-title"   data-scroll="zoom-in">Mapa de <em>Dependencias</em></h2>
-    <p class="room-function" data-scroll="up" data-delay="1">Grafo de dependencias entre áreas, sistemas y publicaciones.</p>
+    <div class="room-number" data-scroll="up">SALA 04</div>
+    <h2 class="room-title"   data-scroll="zoom-in">Mapa de <em>Sistemas</em></h2>
+    <p class="room-function" data-scroll="up" data-delay="1">Grafo de dependencias entre sistemas, áreas y publicaciones.</p>
     <div class="room-subtitle" data-scroll="up" data-delay="2">RED · ÁREAS · PROYECTOS · CONEXIONES · 2026</div>
     <p class="graph-lede" data-scroll="up" data-delay="2">
       Dependencias, no sólo amplitud: qué sostiene qué en el sistema.
@@ -2560,7 +2449,7 @@ a { color:inherit; }
   <canvas class="room-canvas" id="c-necker" role="img" aria-label="Cuadrícula de cubo de Necker"></canvas>
 
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 07</div>
+    <div class="room-number" data-scroll="up">SALA 05</div>
     <h2 class="room-title"   data-scroll="zoom-in">Perfil <em>Técnico</em></h2>
     <p class="room-function" data-scroll="up" data-delay="1">Quién soy, qué construí y desde qué supuestos trabajo.</p>
     <div class="room-subtitle" data-scroll="up" data-delay="2">PERFIL PROFESIONAL · CUENCA, ECUADOR</div>
@@ -2645,7 +2534,7 @@ a { color:inherit; }
 ════════════════════════════════════════════════════ -->
 <section class="room room--alt room--contact" id="room-contacto">
   <div class="room-content">
-    <div class="room-number" data-scroll="up">SALA 08</div>
+    <div class="room-number" data-scroll="up">SALA 06</div>
     <h2 class="room-title"   data-scroll="zoom-out">Canales de <em>Contacto</em></h2>
     <p class="room-function" data-scroll="up" data-delay="1">Cómo escribirme o encontrarme en la web.</p>
     <div class="room-subtitle" data-scroll="up" data-delay="2">CONTACTO · REDES · INVESTIGACIÓN</div>
@@ -2677,6 +2566,93 @@ a { color:inherit; }
     </div>
   </div>
 </section>
+
+
+<!-- ════════════════════════════════════════════════════
+  SALA — Competencias
+════════════════════════════════════════════════════ -->
+<section class="room room--hidden" id="room-competencias">
+  <canvas class="room-canvas" id="c-comp" role="img" aria-label="Triángulo de Sierpinski"></canvas>
+
+  <div class="room-content">
+    <h2 class="room-title"   data-scroll="zoom-in">Herramientas y <em>Capacidades</em></h2>
+    <p class="room-function" data-scroll="up" data-delay="1">Herramientas y capacidades: ingeniería de software, sistemas, datos, infraestructura e idiomas.</p>
+    <div class="room-subtitle" data-scroll="up" data-delay="2">INTELIGENCIA SINTÉTICA · SOBERANÍA · OPEN SOURCE · IDIOMAS</div>
+
+    <div class="skills-grid" data-scroll="from-center">
+      <div class="skill-block">
+        <div class="skill-label">Código Sintético · Agentes</div>
+        <ul class="skill-items">
+          <li>Orquestación de agentes y cognición sintética</li>
+          <li>Protocolos agénticos · MCP · ACP · A2A</li>
+          <li>Tutores socráticos · IA educativa (Drahma)</li>
+          <li>Ingeniería de contexto (RAG)</li>
+        </ul>
+      </div>
+      <div class="skill-block">
+        <div class="skill-label">Codificación Agéntica</div>
+        <ul class="skill-items">
+          <li>Desarrollo de software guiado por agentes</li>
+          <li>Producto desde SPEC + TDD con agentes</li>
+          <li>Mantenimiento e integración asistidos por IA</li>
+        </ul>
+      </div>
+      <div class="skill-block">
+        <div class="skill-label">Soberanía Tecnológica</div>
+        <ul class="skill-items">
+          <li>Self-hosting · infraestructura propia</li>
+          <li>Inferencia soberana (LiteLLM · Ollama · cascada $0-primero)</li>
+          <li>ERPNext self-hosted · ERP y contabilidad sin SaaS propietario</li>
+          <li>Privacidad y datos propios (multi-tenant)</li>
+          <li>Linux · macOS</li>
+        </ul>
+      </div>
+      <div class="skill-block">
+        <div class="skill-label">Open Source</div>
+        <ul class="skill-items">
+          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionCore/pull/618" target="_blank" rel="noopener noreferrer">AionCore · Agente Pi como built-in ACP ↗</a></li>
+          <li><a class="pub-doi" href="https://github.com/svkozak/pi-acp/pull/76" target="_blank" rel="noopener noreferrer">pi-acp · session/delete ACP lifecycle ↗</a></li>
+          <li><a class="pub-doi" href="https://github.com/iOfficeAI/AionUi/pull/3614" target="_blank" rel="noopener noreferrer">AionUi · Theme-aware monochrome logos (merged) ↗</a></li>
+          <li>Publicación Kontablo · BSL 1.1 → Apache 2.0</li>
+        </ul>
+      </div>
+      <div class="skill-block">
+        <div class="skill-label">Plataformas & Ecosistema</div>
+        <ul class="skill-items">
+          <li>ERPNext · Zoho ERP</li>
+          <li>Supabase · Chatwoot</li>
+          <li>Poe</li>
+        </ul>
+      </div>
+      <div class="skill-block">
+        <div class="skill-label">Ciencias</div>
+        <ul class="skill-items">
+          <li>Sistemas complejos</li>
+          <li>Difractometría de rayos X</li>
+          <li>Seguridad radiológica</li>
+        </ul>
+      </div>
+      <div class="skill-block">
+        <div class="skill-label">Idiomas</div>
+        <ul class="skill-items">
+          <li>Español — nativo</li>
+          <li>Inglés — intermedio</li>
+          <li>Francés — B1</li>
+        </ul>
+      </div>
+    </div>
+
+<div class="room-footnote">
+      <div class="room-number">INTERESES</div>
+      <p class="interests" data-scroll="zoom-in">
+        Escalada en roca · Montañismo · Cine asiático · Neurociencias ·
+        Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·
+        <span class="hl">La naturaleza cognitiva de los seres orgánicos en un mundo de cognición sintética.</span>
+      </p>
+    </div>
+  </div>
+</section>
+<div class="room-divider"></div>
 
 
 <!-- ════════════════════════════════════════════════════
