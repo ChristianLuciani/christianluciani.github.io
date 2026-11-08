@@ -166,15 +166,16 @@ const proyectos = PROFILE.projects.filter(
 const proyectos = [{ name: "Kontablo", status: "Publicado", … }];
 ```
 
-El **Buzón** (sala Contacto) sigue la misma regla para la FILA y el destino: las
-filas, el `href` y el orden SALEN de `PROFILE.identity.links` (`contactLinks()` en
-`src/content/cv/contacto.ts`), con dos excepciones declaradas —`website` no es
-contacto y una plataforma repetida se muestra una vez (la cuenta de GitHub, no
-sus repos)—. El LABEL, en cambio, es copy del pack (`room.contacto.<plataforma>`,
-accesor estricto, sin fallback): el `label` del SSOT no se publica en esta sala
-(nombra las filas de repo en El Marco). Plataforma nueva en el SSOT ⇒ clave de
-copy + icono en `assets/icons/<plataforma>.svg`: si falta cualquiera de las dos,
-el build de publicación falla con la clave o el archivo exacto.
+El **Buzón** (sala Contacto) declara MEMBRESÍA y ORDEN en
+`BUZON_CONTACT_PLATFORMS` (`src/content/cv/platforms.ts`): las filas y el `href`
+salen de `PROFILE.identity.links`, resueltos contra esa lista. Lo que se muestra
+es la lista declarada ∩ SSOT, en ese orden; `website` y toda plataforma fuera de
+la lista quedan omitidas por diseño. El LABEL es copy del pack
+(`room.contacto.<plataforma>`, accesor estricto, sin fallback): el `label` del
+SSOT no se publica en esta sala (nombra las filas de repo en El Marco).
+Plataforma nueva visible ⇒ entrada en la lista + clave de copy + icono en
+`assets/icons/<plataforma>.svg`; si falta el copy o el archivo, el build falla
+con la clave o el archivo exacto.
 
 Si el tema necesita un hecho que no existe en `CvProfile`: **STOP**. Se reporta como
 hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el operador).

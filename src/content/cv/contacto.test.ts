@@ -1,8 +1,8 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
-import { contactLinks } from "./contacto";
-import { copy } from "../copy";
+import { contactIcon, contactLabel, contactLinks } from "./contacto";
+import { BUZON_CONTACT_PLATFORMS } from "./platforms";
 import { PROFILE } from "../../data/profile.generated";
 import type { CvProfile } from "../../data/profile.types";
 
@@ -11,77 +11,79 @@ const LINKS = contactLinks(profile);
 
 const platformOf = (platform: string) => LINKS.find((link) => link.platform === platform);
 
-describe("El Buzón — links derivados de identity.links", () => {
-  it("cada fila es una fila del SSOT: href y orden salen de ahí, no del template", () => {
-    const expected = profile.identity.links
-      .filter((link) => link.platform !== "website")
-      .map((link) => link.platform)
-      .filter((platform, index, all) => all.indexOf(platform) === index);
+/** Perfil con otra tabla de links, para probar los bordes sin editar el snapshot. */
+const withLinks = (links: CvProfile["identity"]["links"]): CvProfile => ({
+  ...profile,
+  identity: { ...profile.identity, links }
+});
+
+describe("El Buzón — filas desde platforms.ts + identity.links (#163)", () => {
+  it("membresía y orden: el orden declarado filtrado por el SSOT", () => {
+    const expected = BUZON_CONTACT_PLATFORMS.filter((platform) =>
+      profile.identity.links.some((link) => link.platform === platform)
+    );
     expect(LINKS.map((link) => link.platform)).toEqual(expected);
+  });
+
+  it("cada fila toma el href del SSOT: la PRIMERA coincidencia (la cuenta de GitHub)", () => {
     for (const link of LINKS) {
-      expect(profile.identity.links.some((row) => row.url === link.url)).toBe(true);
+      const row = profile.identity.links.find((candidate) => candidate.platform === link.platform);
+      expect(link.url).toBe(row?.url);
     }
+    expect(platformOf("github")?.url).toBe("https://github.com/ChristianLuciani");
   });
 
-  it("Substack entra solo desde el SSOT (#33 → #157): el template no lo declara", () => {
-    const substack = platformOf("substack");
-    expect(substack).toBeDefined();
-    expect(substack?.url).toBe("https://cluciani.substack.com");
-    expect(substack?.icon).toBe("substack");
-  });
-
-  it("una plataforma repetida se muestra una vez: la cuenta de GitHub, no sus repos", () => {
-    const github = LINKS.filter((link) => link.platform === "github");
-    expect(github).toHaveLength(1);
-    expect(github[0].url).toBe("https://github.com/ChristianLuciani");
-  });
-
-  it("todo icono derivado existe en assets/icons (una plataforma nueva sin icono no publica)", () => {
-    for (const link of LINKS) {
-      const file = resolve(process.cwd(), "assets", "icons", `${link.icon}.svg`);
-      expect(existsSync(file), `falta ${link.icon}.svg`).toBe(true);
-    }
-  });
-
-  it("el label es SIEMPRE copy del pack, también en las filas con número/identificador", () => {
-    expect(platformOf("whatsapp")?.label).toBe(copy("room.contacto.whatsapp").es);
-    expect(platformOf("orcid")?.label).toBe("ORCID 0000-0002-6955-5384");
-    expect(platformOf("substack")?.label).toBe("Substack");
-  });
-
-  it("el `label` del SSOT NO llega a El Buzón: el pack manda aunque difiera (F2 de #161)", () => {
-    const fixture: CvProfile = {
-      ...profile,
-      identity: {
-        ...profile.identity,
-        links: profile.identity.links.map((link) =>
-          link.platform === "linkedin" ? { ...link, label: "ETIQUETA DEL SSOT" } : link
-        )
+  it("una plataforma del SSOT fuera del orden declarado NO se muestra (decisión, no olvido)", () => {
+    const fixture = withLinks([
+      ...profile.identity.links,
+      {
+        platform: "mastodon",
+        label: "@cluciani@mastodon.social",
+        url: "https://mastodon.social/@cluciani"
       }
-    };
-    expect(platformOf("linkedin")?.label).toBe("LinkedIn");
+    ]);
+    expect(contactLinks(fixture).map((link) => link.platform)).not.toContain("mastodon");
+  });
+
+  it("una plataforma declarada sin fila en el SSOT no inventa la fila", () => {
+    const fixture = withLinks(profile.identity.links.filter((link) => link.platform !== "substack"));
+    expect(contactLinks(fixture).map((link) => link.platform)).not.toContain("substack");
+  });
+
+  it("Substack entra desde el SSOT (#33 → #157): fila, href e icono", () => {
+    expect(platformOf("substack")?.url).toBe("https://cluciani.substack.com");
+    expect(platformOf("substack")?.icon).toBe("substack");
+  });
+
+  it("todo icono declarado existe en assets/icons (sin archivo, el build no publica)", () => {
+    for (const platform of BUZON_CONTACT_PLATFORMS) {
+      const icon = contactIcon(platform);
+      const file = resolve(process.cwd(), "assets", "icons", `${icon}.svg`);
+      expect(existsSync(file), `falta assets/icons/${icon}.svg (${platform})`).toBe(true);
+    }
+  });
+
+  it("el icono resuelve el alias declarado (scholar → googlescholar)", () => {
+    expect(contactIcon("scholar")).toBe("googlescholar");
+    expect(contactIcon("substack")).toBe("substack");
+  });
+
+  it("el label es SIEMPRE copy del pack; una clave faltante falla con su nombre (F1 de #161)", () => {
+    expect(contactLabel("whatsapp")).toBe("WhatsApp (+593) 99 371 6335");
+    expect(contactLabel("orcid")).toBe("ORCID 0000-0002-6955-5384");
+    expect(contactLabel("substack")).toBe("Substack");
+    // Accesor estricto: no hay fallback al `label` del SSOT ni texto adivinado.
+    expect(() => contactLabel("mastodon")).toThrow(/room\.contacto\.mastodon/);
+  });
+
+  it("el `label` del SSOT no llega a El Buzón (F2 de #161)", () => {
+    const fixture = withLinks(
+      profile.identity.links.map((link) =>
+        link.platform === "linkedin" ? { ...link, label: "ETIQUETA DEL SSOT" } : link
+      )
+    );
     expect(contactLinks(fixture).find((link) => link.platform === "linkedin")?.label).toBe(
       "LinkedIn"
     );
-  });
-
-  it("una plataforma visible sin clave en el pack rompe el render (F1 de #161: sin fallback silencioso)", () => {
-    const fixture: CvProfile = {
-      ...profile,
-      identity: {
-        ...profile.identity,
-        links: [
-          ...profile.identity.links,
-          {
-            platform: "mastodon",
-            label: "@cluciani@mastodon.social",
-            url: "https://mastodon.social/@cluciani"
-          }
-        ]
-      }
-    };
-    // Contra la implementación anterior (fallback al `label` del SSOT) esto NO
-    // lanzaba: publicaba «@cluciani@mastodon.social» en silencio.
-    expect(() => contactLinks(fixture)).toThrow(/room\.contacto\.mastodon/);
   });
 });
