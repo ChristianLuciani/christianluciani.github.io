@@ -54,10 +54,11 @@
  *
  * DOS VARIANTES (#160): el print-CV se publica en ES (`#print-cv`) y EN
  * (`#print-cv-en`), y la piel muestra una u otra según `html[lang]`. Las tres
- * condiciones se miden sobre CADA variante: el texto EN es más corto y puede
- * mover los cortes de página (la condición del footer huérfano es la que se
- * rompe primero). La variante EN se imprime desde una copia del artefacto con
- * `lang="en"` — el mismo estado que deja el toggle, sin ejecutar su JS.
+ * condiciones se miden sobre CADA variante: el EN tiene otro flujo de líneas y
+ * mueve los cortes de página (la condición del footer huérfano / última página
+ * vacía es la que se rompe primero). La variante EN se imprime desde una copia
+ * del artefacto con `lang="en"` — el mismo estado que deja el toggle, sin
+ * ejecutar su JS.
  *
  * Uso: node tools/print-cv/verify-pagination.mjs [dist/index.html]
  * Exit: 0 OK · 1 drift · 2 no se pudo medir (sin Chrome, sin build o PDF raro).
@@ -500,8 +501,8 @@ function main() {
       try {
         summaries.push(measureVariant(source, variant, workDir, suffix, temps));
       } catch (err) {
-        /* Una falla de medición SIEMPRE dice de qué variante: el texto EN es
-         * más corto y es la que primero rompe los cortes de página (#160). */
+        /* Una falla de medición SIEMPRE dice de qué variante: el EN tiene otro
+         * flujo de líneas y es la que rompió los cortes al medirse (#160). */
         if (err instanceof GateError) throw new GateError(`[${variant.lang}] ${err.message}`);
         throw err;
       }

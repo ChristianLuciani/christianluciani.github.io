@@ -163,7 +163,8 @@ ya vive ahí):
   publicaciones) se imprimen iguales en ambos idiomas; el ES localiza `org` con
   `orgEs()`, el EN imprime el valor crudo.
 - `npm run print:verify` mide el PDF de las DOS variantes (A4, footer no
-  huérfano, última página no vacía): el EN es más corto y mueve los cortes.
+  huérfano, última página no vacía): el EN tiene otro flujo de líneas y mueve
+  los cortes, así que un tema no hereda el verde por medir sólo el default.
 
 ## 4. Curación: mostrar sin borrar
 

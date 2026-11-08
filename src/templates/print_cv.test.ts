@@ -24,6 +24,8 @@ import { assembleHtml } from "./index";
 import { printCvHtml } from "./print_cv_html";
 import { PRINT_LOGO_PATH, PRINT_RULE_COLOR } from "./print-tokens";
 import { SKIN_SOURCE, emitSkinCss, tokenDeclarations } from "../themes/museo/skin.ts";
+import { skinCss, skinFor } from "../themes/skin.ts";
+import { themeIds } from "../themes/index.ts";
 
 const profile = PROFILE as unknown as CvProfile;
 const HTML = printCvHtml(profile);
@@ -429,8 +431,8 @@ describe("print-CV — #160: variante EN y alternancia por idioma", () => {
   it("el ES no cambia: `#print-cv` conserva su bloque y no declara `lang` propio", () => {
     expect(HTML).toContain('<div id="print-cv" aria-hidden="true">');
     expect(HTML).not.toContain('id="print-cv-en"');
-    // La variante EN es ADITIVA: el render por defecto sigue siendo el mismo.
-    expect(printCvHtml(profile)).toBe(HTML);
+    // La variante EN es ADITIVA: el bloque ES no cambia. La byte-identidad la
+    // sostiene el golden (`tests/golden/*.html`), no una comparación consigo mismo.
   });
 
   it("el EN es un bloque hermano con id propio y `lang=\"en\"`", () => {
@@ -540,17 +542,27 @@ describe("print-CV — #160: variante EN y alternancia por idioma", () => {
     expect(EN).not.toContain("Logotipo de");
   });
 
-  it("la piel del tema alterna la variante con `html[lang]` — sin JS", () => {
-    const skin = emitSkinCss(PRINT_RULE_COLOR);
-    expect(skin).toContain('#print-cv, #print-cv-en { display:none; }');
-    expect(skin).toContain("body > *:not(#print-cv):not(#print-cv-en)");
-    expect(skin).toContain('html[lang="en"] #print-cv { display:none !important; }');
-    expect(skin).toContain('html:not([lang="en"]) #print-cv-en { display:none !important; }');
-    // La última sección del EN arranca en página propia (cola de 2 líneas que
-    // detectó `print:verify` al medir la variante EN por primera vez).
-    expect(skin).toContain(
-      'html[lang="en"] #print-cv-en .p-section.p-keep { break-before: page; }'
-    );
+  it("la piel de CADA tema alterna la variante con `html[lang]` — sin JS", () => {
+    // El contrato de piel (`docs/CREAR-TEMA.md` §3.2) es obligatorio en TODO
+    // `skin.css`: sin la alternancia el PDF imprime los dos CV apilados. Se
+    // mide el CSS EMITIDO de cada tema registrado, no el de `museo` + una
+    // promesa en prosa (F1 del pase fresco: el gate sólo cubría el default).
+    for (const id of themeIds()) {
+      const skin = skinCss(skinFor(id).source, PRINT_RULE_COLOR);
+      expect(skin, `piel de ${id}`).toContain('#print-cv, #print-cv-en { display:none; }');
+      expect(skin, `piel de ${id}`).toContain("body > *:not(#print-cv):not(#print-cv-en)");
+      expect(skin, `piel de ${id}`).toContain(
+        'html[lang="en"] #print-cv { display:none !important; }'
+      );
+      expect(skin, `piel de ${id}`).toContain(
+        'html:not([lang="en"]) #print-cv-en { display:none !important; }'
+      );
+      // La última sección del EN arranca en página propia (cola de 2 líneas que
+      // detectó `print:verify` al medir la variante EN por primera vez).
+      expect(skin, `piel de ${id}`).toContain(
+        'html[lang="en"] #print-cv-en .p-section.p-keep { break-before: page; }'
+      );
+    }
   });
 
   it("es determinista también en EN: mismo PROFILE → mismo bloque byte a byte", () => {
