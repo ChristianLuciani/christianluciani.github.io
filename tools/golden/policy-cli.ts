@@ -18,6 +18,16 @@ import {
 /** Baseline de UN tema registrado (`tests/golden/<id>.html`). */
 const BASELINE_FILE = /^tests\/golden\/[a-z0-9-]+\.html$/;
 
+/**
+ * Anotación de GitHub: una sola línea. El stderr de git es multilínea y la
+ * anotación se corta en el primer salto, así que la razón viaja colapsada
+ * (el detalle completo seguiría perdiéndose igual, pero al menos no se corta
+ * a mitad de la instrucción).
+ */
+function errorAnnotation(message: string): string {
+  return `::error::${message.replace(/\s+/g, " ").trim()}`;
+}
+
 function main(): void {
   const base = process.env.BASE_SHA;
   if (!base) {
@@ -28,7 +38,7 @@ function main(): void {
   try {
     ensureBase(base);
   } catch (error) {
-    console.error(`::error::${(error as Error).message}`);
+    console.error(errorAnnotation((error as Error).message));
     process.exit(2);
   }
 
@@ -58,13 +68,13 @@ function main(): void {
       declaration: declarationBetween(base)
     });
   } catch (error) {
-    console.error(`::error::${(error as Error).message}`);
+    console.error(errorAnnotation((error as Error).message));
     process.exit(2);
   }
 
   console.log(result.reason);
   if (!result.ok) {
-    console.error(`::error::${result.reason}`);
+    console.error(errorAnnotation(result.reason));
     process.exit(1);
   }
 }

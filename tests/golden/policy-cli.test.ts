@@ -6,7 +6,7 @@ import { describe, expect, it } from "vitest";
 import { ensureBase, hasCommit } from "../../tools/golden/base.ts";
 
 /**
- * #167 — la guarda de CI no puede MUTAR el clon que la corre.
+ * #167 — la guarda de CI no puede DEGRADAR el clon que la corre.
  *
  * `policy-cli` hacía `git fetch --depth=1 origin <base>` siempre: el comando
  * dejaba `is-shallow=true` en un clon completo, truncaba el historial y rompía
@@ -160,6 +160,12 @@ describe("golden — la base del PR no degrada el clon (#167)", () => {
 
       expect(run.status).toBe(2);
       expect(run.stderr).toContain(inexistente);
+      // El stderr de git es multilínea: la anotación `::error::` tiene que
+      // viajar en UNA línea o GitHub la corta en el primer salto y la
+      // instrucción se pierde (F2 del pase fresco del PR #169).
+      const stderr = run.stderr.trim();
+      expect(stderr.split("\n")).toHaveLength(1);
+      expect(stderr.startsWith("::error::")).toBe(true);
       expect(isShallow(work)).toBe(false);
     });
   });

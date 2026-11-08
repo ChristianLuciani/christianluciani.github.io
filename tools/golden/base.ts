@@ -6,8 +6,9 @@
  * por una razón medida (#167): la guarda corría `git fetch --depth=1 origin
  * <base>` SIEMPRE, así que correr un gate del propio repo convertía un clon
  * completo en un clon shallow, truncaba `git log` y rompía el pre-gate de
- * trabajo (que exige historial completo antes de abrir un PR). Un gate no
- * muta el clon que lo corre.
+ * trabajo (que exige historial completo antes de abrir un PR). Un gate puede
+ * necesitar la red para traer la base; lo que no puede es DEGRADAR el clon que
+ * lo corre (volverlo shallow o truncar su historial).
  */
 import { spawnSync } from "node:child_process";
 
