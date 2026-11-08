@@ -20,7 +20,7 @@
  */
 import { roomsFromCuration, type RoomVoice } from "../rooms.ts";
 import { INGENIERIA_CURATION } from "../../content/curation/ingenieria.ts";
-import type { NarrativeManifest, RoomGroup, RoomRef } from "../types.ts";
+import type { NarrativeManifest, RoomGroup } from "../types.ts";
 import { DEFAULT_ORIGIN } from "../site.ts";
 import { INGENIERIA_COPY } from "./copy.ts";
 import { INGENIERIA_ILLUSIONS } from "./illusions.ts";
