@@ -44,4 +44,10 @@ describe("render por tema — copy estructural", () => {
     expect(INGENIERIA).toContain("Sistemas cognitivos y su interacción");
     expect(MUSEO).toContain('aria-label="Salas del museo"');
   });
+
+  it("el skip-link de body_open se resuelve con el pack del tema", () => {
+    expect(INGENIERIA).toContain('class="skip-link">Ir al contenido</a>');
+    expect(MUSEO).toContain('class="skip-link">Saltar al contenido</a>');
+    expect(INGENIERIA).not.toContain('class="skip-link">Saltar al contenido</a>');
+  });
 });

@@ -161,7 +161,8 @@ export interface Curation {
   pack del tema llegue a todas las superficies. Excepciones registradas en #134.
 - **Piel por tema (S4, resuelto en #134):** `emitSkin` resuelve la piel del tema activo
   (`src/themes/skin.ts` → `skinFor(id)`) en vez de emitir siempre la de `museo`; un tema
-  sin `skin.css` hereda la del default. El gate de CI verifica que la piel declarada
+  sin `skin.css` hereda la del default sólo si lo declara (`skin: "inherit"`); sin
+  declaración, el gate falla. El gate de CI verifica que la piel declarada
   llegue al `<style>` del render (no certifica CSS muerto). La piel queda fuera del
   manifest porque éste se importa en el bundle del browser y su lectura exige `node:fs`;
   el resolver por id es el único punto que conoce el archivo.

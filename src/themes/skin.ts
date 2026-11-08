@@ -9,8 +9,10 @@
  * `museo`, y un tema no-default con `skin.css` propio publicaba otra piel que
  * la declarada). La convención es la misma que ya usaba el gate: el archivo
  * `src/themes/<id>/skin.css` del tema ACTIVO (`activeNarrative().id`, que
- * `assembleHtml({ theme })` instala durante el render). Un tema sin `skin.css`
- * propio hereda la del default y `skinFor()` lo declara.
+ * `assembleHtml({ theme })` instala durante el render). Un tema REGISTRADO sin
+ * `skin.css` propio sólo hereda si declara `skin: "inherit"` (el gate lo exige);
+ * `skinFor()` mantiene el fallback al default para manifests ad-hoc de
+ * tests/preview y lo declara en `inherited`.
  *
  * POR QUÉ NO VIVE EN EL MANIFEST: `NarrativeManifest` se importa también en el
  * bundle del browser (`src/content/copy.ts` → `themes/index.ts`). Leer el CSS
@@ -45,7 +47,8 @@ const SKIN_DIR = new URL("./", import.meta.url);
 /**
  * Piel del tema `id`, por convención de directorio. Un id no registrado (un
  * manifest ad-hoc de tests/preview) hereda la del default en vez de romper el
- * render; un tema registrado sin `skin.css` hace lo mismo y el reporte lo dice.
+ * render. Un tema registrado sin `skin.css` sólo es válido si declara
+ * `skin: "inherit"` (lo verifica `themes:check`); acá no se conoce el manifest.
  */
 export function skinFor(id: string): SkinFile {
   const own = new URL(`${id}/skin.css`, SKIN_DIR);

@@ -443,8 +443,9 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 pares texto/fondo declarados.
 
 **Resolución por tema (S4 de D11, implementado en #134).** `src/themes/skin.ts` emite la
-piel del tema ACTIVO: `skinFor(id)` resuelve `themes/<id>/skin.css` y un tema sin
-`skin.css` propio hereda la del default (el reporte lo declara). El gate no certifica la
+piel del tema ACTIVO: `skinFor(id)` resuelve `themes/<id>/skin.css`. Un tema sólo
+hereda la piel del default si lo declara en su manifest (`skin: "inherit"`); sin esa
+declaración y sin `skin.css`, `themes:check` falla (F4 del pase fresco de #159). El gate no certifica la
 fuente: extrae el `<style>` de piel del render de cada tema y lo compara con el CSS de su
 `skin.css`; si el documento publica otra piel, `themes:check` falla (el falso verde que
 cerró F4 de #158).

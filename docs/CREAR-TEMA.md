@@ -261,8 +261,9 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
   hechos con `reason` en cada exclusión y `experienceSections` clasifica todas
   las filas de `experience[]` del print-CV.
 - **piel**: `src/themes/<id>/skin.css` no tiene literales de color fuera de sus
-  bloques de tokens. Un tema sin `skin.css` propio hereda la piel del default
-  (el reporte lo declara). La piel que el emisor resuelve para el tema tiene que
+  bloques de tokens. Un tema sin `skin.css` propio hereda la piel del default sólo
+  si lo declara (`skin: "inherit"`); sin esa declaración, el gate falla. La piel que
+  el emisor resuelve para el tema tiene que
   ser la que aparece en el `<style>` de su render: el gate compara ambos y falla
   si el documento publica otra (F4 de #158).
 - **contraste**: todo `color: var(--x)` y toda combinación texto/tinte tiene par

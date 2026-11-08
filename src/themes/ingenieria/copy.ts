@@ -106,7 +106,7 @@ export const INGENIERIA_COPY: CopyPack = {
     en: "Espirángulo · Temporary Lab"
   },
   "cover.skipIntro": { es: "Saltar intro", en: "Skip intro" },
-  "cover.skipToContent": { es: "Saltar al contenido", en: "Skip to content" },
+  "cover.skipToContent": { es: "Ir al contenido", en: "Go to content" },
   "cover.skipAria": {
     es: "Saltar intro e ir directo a la página",
     en: "Skip intro and go straight to the page"
