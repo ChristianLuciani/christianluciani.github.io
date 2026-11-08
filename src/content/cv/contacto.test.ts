@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { contactLinks } from "./contacto";
+import { copy } from "../copy";
 import { PROFILE } from "../../data/profile.generated";
 import type { CvProfile } from "../../data/profile.types";
 
@@ -42,11 +43,45 @@ describe("El Buzón — links derivados de identity.links", () => {
     }
   });
 
-  it("el label del pack del tema gana; el `label` del SSOT es el fallback", () => {
-    // WhatsApp y ORCID muestran número/identificador que sólo vive en el pack.
-    expect(platformOf("whatsapp")?.label).toBe("WhatsApp (+593) 99 371 6335");
+  it("el label es SIEMPRE copy del pack, también en las filas con número/identificador", () => {
+    expect(platformOf("whatsapp")?.label).toBe(copy("room.contacto.whatsapp").es);
     expect(platformOf("orcid")?.label).toBe("ORCID 0000-0002-6955-5384");
-    // Substack no tiene clave en el pack: cae al label del SSOT, no a un literal.
     expect(platformOf("substack")?.label).toBe("Substack");
+  });
+
+  it("el `label` del SSOT NO llega a El Buzón: el pack manda aunque difiera (F2 de #161)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      identity: {
+        ...profile.identity,
+        links: profile.identity.links.map((link) =>
+          link.platform === "linkedin" ? { ...link, label: "ETIQUETA DEL SSOT" } : link
+        )
+      }
+    };
+    expect(platformOf("linkedin")?.label).toBe("LinkedIn");
+    expect(contactLinks(fixture).find((link) => link.platform === "linkedin")?.label).toBe(
+      "LinkedIn"
+    );
+  });
+
+  it("una plataforma visible sin clave en el pack rompe el render (F1 de #161: sin fallback silencioso)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      identity: {
+        ...profile.identity,
+        links: [
+          ...profile.identity.links,
+          {
+            platform: "mastodon",
+            label: "@cluciani@mastodon.social",
+            url: "https://mastodon.social/@cluciani"
+          }
+        ]
+      }
+    };
+    // Contra la implementación anterior (fallback al `label` del SSOT) esto NO
+    // lanzaba: publicaba «@cluciani@mastodon.social» en silencio.
+    expect(() => contactLinks(fixture)).toThrow(/room\.contacto\.mastodon/);
   });
 });
