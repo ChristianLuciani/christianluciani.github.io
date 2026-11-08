@@ -185,7 +185,10 @@ gate de `contacto.test.ts` con su nombre. El LABEL es copy del pack
 SSOT no se publica en esta sala (nombra las filas de repo en El Marco).
 Plataforma nueva visible ⇒ entrada en la lista + clave de copy + icono en
 `assets/icons/<plataforma>.svg`; si falta el copy o el archivo, el build falla
-con la clave o el archivo exacto.
+con la clave o el archivo exacto, y si falta la entrada, el gate de
+`contacto.test.ts` la nombra. Declarar la plataforma ANTES de que exista su fila
+en el SSOT deja la clave de copy huérfana y `themes:check` la rechaza: se da de
+alta cuando el dato exista, o se marca `runtime: true` mientras tanto.
 
 Si el tema necesita un hecho que no existe en `CvProfile`: **STOP**. Se reporta como
 hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el operador).
