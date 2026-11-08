@@ -5,6 +5,7 @@ import { SALAS } from "../cv/salas";
 import { enDesarrolloDe } from "../data/proyectos";
 import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
+import { contactLinks } from "../content/cv/contacto";
 import { PROFILE_COMMIT, PROFILE_ENGINE, provenanceHtml } from "../data/profile.provenance";
 import type { CvProfile } from "../data/profile.types";
 import {
@@ -325,5 +326,27 @@ describe("sala Perfil — una sola prosa, derivada del SSOT (#122)", () => {
     expect(roomBody(SALA_PERFIL, fixture)).toContain(
       profile.positioning.audiences.recruiters.es!
     );
+  });
+});
+
+/**
+ * El Buzón copiaba las URL a mano en el template: el link de Substack del SSOT
+ * (#33) llegó al JSON-LD pero nunca a la página (#157 no lo renderizó). La
+ * paridad 1:1 con `identity.links` cierra la clase: agregar un link al SSOT lo
+ * hace aparecer acá, y una fila literal nueva rompe este test.
+ */
+describe("El Buzón — paridad 1:1 con identity.links", () => {
+  const HTML = roomsHtml();
+  const HREFS = [...HTML.matchAll(/<a class="contact-link" href="([^"]+)"/g)].map((m) => m[1]);
+
+  it("renderiza una fila por link de contacto del SSOT, en su orden", () => {
+    // El `mailto:` es la única fila literal declarada: la proyección no expone `email`.
+    expect(HREFS[0]).toBe("mailto:cluciani@gmail.com");
+    expect(HREFS.slice(1)).toEqual(contactLinks(profile).map((link) => link.url));
+  });
+
+  it("el Substack del SSOT llega a la página, no sólo al JSON-LD", () => {
+    expect(HREFS).toContain("https://cluciani.substack.com");
+    expect(HTML).toContain('src="assets/icons/substack.svg"');
   });
 });

@@ -1,5 +1,5 @@
 import { assetAttrs } from "../ts/assets/url.ts";
-import { t, ta, th } from "../content/copy.ts";
+import { attrEscape, t, ta, th } from "../content/copy.ts";
 
 /**
  * SALAS: comentario editorial + shell de <section> + header GENERADO desde las
@@ -17,6 +17,7 @@ import {
   showcaseProject,
   type Proyecto
 } from "../data/proyectos.ts";
+import { contactLinks } from "../content/cv/contacto.ts";
 import { profileProse } from "../content/cv/profile-prose.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import type { CvProfile, ExperienceItem } from "../data/profile.types.ts";
@@ -616,37 +617,6 @@ export const ROOM_BODY: Record<string, string> = {
 <div class="room-divider"></div>
 
 `,
-  contacto: `
-    <div class="contact-grid">
-      <div class="contact-links" data-scroll="from-center" data-delay="2">
-      <a class="contact-link" href="mailto:cluciani@gmail.com"><img class="ci" src="assets/icons/gmail.svg" alt="" width="16" height="16">cluciani@gmail.com</a>
-      <a class="contact-link" href="https://wa.me/593993716335" target="_blank"><img class="ci" src="assets/icons/whatsapp.svg" alt="" width="16" height="16">${t("room.contacto.whatsapp")}</a>
-      <a class="contact-link" href="https://orcid.org/0000-0002-6955-5384" target="_blank"><img class="ci" src="assets/icons/orcid.svg" alt="" width="16" height="16">${t("room.contacto.orcid")}</a>
-      <a class="contact-link" href="https://scholar.google.com/citations?user=7GbpmSQAAAAJ&hl=en" target="_blank"><img class="ci" src="assets/icons/googlescholar.svg" alt="" width="16" height="16">${t("room.contacto.scholar")}</a>
-      <a class="contact-link" href="https://github.com/ChristianLuciani" target="_blank"><img class="ci" src="assets/icons/github.svg" alt="" width="16" height="16">${t("room.contacto.github")}</a>
-      <a class="contact-link" href="https://www.linkedin.com/in/christian-luciani" target="_blank"><img class="ci" src="assets/icons/linkedin.svg" alt="" width="16" height="16">${t("room.contacto.linkedin")}</a>
-      <a class="contact-link" href="https://www.researchgate.net/profile/Christian-Luciani" target="_blank"><img class="ci" src="assets/icons/researchgate.svg" alt="" width="16" height="16">${t("room.contacto.researchgate")}</a>
-      <a class="contact-link" href="https://x.com/cluciani_ve" target="_blank"><img class="ci" src="assets/icons/x.svg" alt="" width="16" height="16">${t("room.contacto.x")}</a>
-      <a class="contact-link" href="https://www.instagram.com/clucianitoledo" target="_blank"><img class="ci" src="assets/icons/instagram.svg" alt="" width="16" height="16">${t("room.contacto.instagram")}</a>
-      <a class="contact-link" href="https://www.patreon.com/cluciani" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/patreon.svg" alt="" width="16" height="16">${t("room.contacto.patreon")}</a>
-      </div>
-
-      <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->
-      <div class="illusion-frame koch-buzon" data-scroll="zoom-in" data-delay="3">
-        <canvas id="c-koch-buzon" class="illusion-canvas"></canvas>
-        <div class="illusion-label">${t("room.contacto.illusionLabel")}</div>
-        <a class="illusion-link" href="https://es.wikipedia.org/wiki/Copo_de_nieve_de_Koch" target="_blank" rel="noopener">↗ wikipedia</a>
-      </div>
-    </div>
-
-    <div class="contact-note" data-scroll="up" data-delay="4">
-      ${t("room.contacto.note")}
-    </div>
-  </div>
-</section>
-
-
-`,
 };
 
 /**
@@ -762,13 +732,57 @@ export function bastidorHtml(profile: CvProfile = P): string {
 }
 
 /**
- * Body de una sala: estáticas por id; Perfil (#122) y las tres de #109 se
- * derivan del SSOT.
+ * Body de El Buzón: los links de contacto SE DERIVAN de `PROFILE.identity.links`
+ * (`contactLinks()`), así que agregar un link al SSOT lo hace aparecer acá sin
+ * tocar el template. El `mailto:` es la ÚNICA fila literal y está declarada: la
+ * proyección pública no expone `email` (`profile.types.ts`), así que no hay SSOT
+ * del que derivarla — la fuga la reporta `print_cv_html.ts` desde #116.
+ *
+ * `rel="noopener noreferrer"` uniforme: la fila se genera una sola vez, no se
+ * copia por link (el patreon era el único que la traía).
+ */
+function contactoBody(profile: CvProfile): string {
+  const links = contactLinks(profile)
+    .map(
+      (link) =>
+        `      <a class="contact-link" href="${attrEscape(link.url)}" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/${link.icon}.svg" alt="" width="16" height="16">${esc(link.label)}</a>`
+    )
+    .join("\n");
+  return `
+    <div class="contact-grid">
+      <div class="contact-links" data-scroll="from-center" data-delay="2">
+      <a class="contact-link" href="mailto:cluciani@gmail.com"><img class="ci" src="assets/icons/gmail.svg" alt="" width="16" height="16">cluciani@gmail.com</a>
+${links}
+      </div>
+
+      <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->
+      <div class="illusion-frame koch-buzon" data-scroll="zoom-in" data-delay="3">
+        <canvas id="c-koch-buzon" class="illusion-canvas"></canvas>
+        <div class="illusion-label">${t("room.contacto.illusionLabel")}</div>
+        <a class="illusion-link" href="https://es.wikipedia.org/wiki/Copo_de_nieve_de_Koch" target="_blank" rel="noopener">↗ wikipedia</a>
+      </div>
+    </div>
+
+    <div class="contact-note" data-scroll="up" data-delay="4">
+      ${t("room.contacto.note")}
+    </div>
+  </div>
+</section>
+
+
+`;
+}
+
+/**
+ * Body de una sala: estáticas por id; Perfil (#122), las tres de #109 y el
+ * Buzón (links del SSOT) se derivan.
  */
 export function roomBody(s: RoomRef, profile: CvProfile = P): string {
   switch (s.id) {
     case "perfil":
       return perfilBody(profile);
+    case "contacto":
+      return contactoBody(profile);
     case "experiencia":
       return frisoHtml(profile);
     case "proyectos":

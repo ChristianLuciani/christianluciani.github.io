@@ -166,6 +166,15 @@ const proyectos = PROFILE.projects.filter(
 const proyectos = [{ name: "Kontablo", status: "Publicado", … }];
 ```
 
+El **Buzón** (sala Contacto) sigue la misma regla: sus filas SALEN de
+`PROFILE.identity.links` (`contactLinks()` en `src/content/cv/contacto.ts`), con
+dos excepciones declaradas —`website` no es contacto y una plataforma repetida
+se muestra una vez (la cuenta de GitHub, no sus repos)—. Agregar un link es
+editar profile-data: el `href`, el ORDEN y el label de fallback salen de ahí; el
+pack sólo aporta el label cuando necesita más que el `label` del SSOT (el número
+de WhatsApp, el identificador ORCID). Plataforma nueva ⇒ icono nuevo en
+`assets/icons/<plataforma>.svg`: sin archivo, el build de publicación falla.
+
 Si el tema necesita un hecho que no existe en `CvProfile`: **STOP**. Se reporta como
 hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el operador).
 

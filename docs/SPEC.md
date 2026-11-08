@@ -163,6 +163,7 @@ línea de registro (§8 FASE 5).
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
 | curación del print-CV (qué links entran al encabezado) | `src/content/cv/print.ts` (`PRINT_CV.contactPlatforms`) | curación (sin copy) |
+| links de El Buzón (sala Contacto) | `PROFILE.identity.links` — derivados por `src/content/cv/contacto.ts` (excluye la plataforma website, dedupe por plataforma) | hecho (derivado; el `mailto:` es la excepción declarada) |
 | clasificación de Trayectoria (`experience[]` → `professional`/`training`) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
