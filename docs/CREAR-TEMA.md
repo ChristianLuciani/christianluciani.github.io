@@ -29,6 +29,10 @@ src/themes/<id>/
 └── illusions.ts   # roomId → canvas id existente en src/ts/illusions
 ```
 
+Excepción declarada: una **variante de piel** (§6) no repite `copy.ts` ni `illusions.ts`
+—reusa los del tema base por referencia— y su `narrative.ts` sólo declara `id`, `path` y
+`variantOf`.
+
 `narrative.ts` declara también la dirección de publicación del tema:
 
 ```ts
@@ -215,6 +219,46 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
   CSS de su fuente; si la piel no llega al documento, el gate falla (F4/#158).
 - Prohibido `!important` para pisar otro tema: si hace falta, falta un token.
 
+### Segunda piel: variante sobre la misma narrativa (S10 · #136)
+
+Una **variante de piel** es un tema registrado que reusa la narrativa de otro en vez de
+declararla; existe para probar —y mantener— que piel y narrativa son ejes independientes
+(ADR-001 §3). Estructura mínima, sin `copy.ts` ni `illusions.ts`:
+
+```
+src/themes/<base>-<piel>/
+├── narrative.ts   # { ...base, id, path, variantOf: "<base>" } — reuso por REFERENCIA
+├── skin.css       # único contenido nuevo: paleta y/o densidad
+└── contrast.ts    # pares de texto/fondo de esta piel
+```
+
+- `narrative.ts` **reusa por referencia** (`...base`): `copy`, `rooms`, `illusions`,
+  `meta` y `site` son EL MISMO objeto del tema base. Sólo `id`, `path` y `variantOf` son
+  propios: publica en su subpath, con su `data-theme` y su golden, y editar el copy del
+  base se refleja acá sin tocar nada.
+- `CURATIONS["<id>"]` es la MISMA entrada que la del base: no se clona la curación.
+- `contrast.ts` puede reusar los pares del base cuando las reglas de CSS son las mismas
+  (los ratios se recalculan contra los tokens de esta piel); una combinación nueva se
+  agrega al contrato del base.
+- `themes:check` verifica el linaje POR IDENTIDAD: `copy`, `rooms`, `illusions`, `meta`,
+  `site` y la curación tienen que ser el mismo objeto (`no reusa … por referencia`). Una
+  copia con el mismo texto es un error, porque divergiría en silencio al editar el base. La
+  regla mira el LINAJE DECLARADO (`variantOf`): dos temas sin `variantOf` no se comparan.
+  La variante tampoco puede declarar `skin: "inherit"`: existe para CAMBIAR la piel.
+- **SEO — limitación declarada (F1/F4 de #164):** al heredar `meta`, la variante publica el
+  mismo `title`/`description` y los mismos bloques JSON-LD que su base, cada página con
+  `canonical` autorreferente; el deploy construye sin `SITE_THEME`, así que la URL de la
+  variante entra al sitemap con contenido textual idéntico y piel distinta. Es un duplicado
+  aceptado mientras la variante sea instrumental; el PR que la agrega lo declara, y la
+  salida es retirarla, darle identidad textual propia (deja de ser `variantOf`) o excluirla
+  del deploy.
+- **Piel clara bloqueada (deuda hasta tokenizar canvas/grafo):** la paleta de
+  `src/ts/illusions/*` y `src/ts/graph/grafo.ts:179-182,229` está hardcodeada para fondo
+  oscuro (labels `#ffffff`/`#d6dde8`: 1,00:1 y 1,37:1 sobre papel blanco) y ningún gate
+  mide canvas. Una variante clara hoy publicaría canvas/grafo ilegibles. Salida: tokenizar
+  esos colores desde la piel + gate de contraste de canvas; hasta entonces, la segunda piel
+  es oscura.
+
 ## 7. Metadata y SEO del tema
 
 El **documento** (`assembleHtml`) es independiente de la dirección: `narrative.meta`
@@ -306,6 +350,9 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
       nuevo con su `tests/golden/<id>.html` (`npm run golden:update`).
 - [ ] `npm run themes:check` **y** `npm run themes:assets` verdes.
 - [ ] `meta` y `site` propios: title, description, ogImage; canonical por subpath.
+      Una **variante de piel** (S10) es la excepción declarada: `meta`, `site`, `copy`,
+      `rooms`, `illusions` y la curación se reusan POR REFERENCIA del base; sólo `id`,
+      `path` y `skin.css` son propios, y `themes:check` lo verifica (`variantOf`).
 - [ ] La página publicada declara su tema (`<html data-theme>`), el runtime usa
       salas/copy/i18n/intro del tema y el golden lo fija (`themes:assets`).
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.

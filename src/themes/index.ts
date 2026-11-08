@@ -17,14 +17,23 @@
  */
 import { museo } from "./museo/narrative.ts";
 import { ingenieria } from "./ingenieria/narrative.ts";
+import { ingenieriaNocturno } from "./ingenieria-nocturno/narrative.ts";
 import { resolveThemeAddress } from "./site.ts";
 import type { NarrativeManifest, RoomRef } from "./types.ts";
 
 export type { NarrativeManifest, RoomRef } from "./types.ts";
 export type { SiteAddress } from "./site.ts";
 
-/** Registro: una entrada por tema. S8 añadió `ingenieria` con una línea. */
-const registry = { museo, ingenieria } as const satisfies Record<string, NarrativeManifest>;
+/**
+ * Registro: una entrada por tema. S8 añadió `ingenieria`; S10 (#136) agregó
+ * `ingenieria-nocturno`, la SEGUNDA PIEL sobre la misma narrativa: su manifest
+ * reusa copy/salas/ilusiones/metadata y su curación es la misma entrada, así
+ * que la línea de registro es todo lo que aporta fuera de `skin.css`.
+ */
+const registry = { museo, ingenieria, "ingenieria-nocturno": ingenieriaNocturno } as const satisfies Record<
+  string,
+  NarrativeManifest
+>;
 export const THEMES: Readonly<typeof registry> = Object.freeze(registry);
 
 /** Id de un tema registrado. */

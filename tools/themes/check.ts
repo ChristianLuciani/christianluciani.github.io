@@ -121,6 +121,13 @@ export interface CheckOptions {
   readonly root?: string;
   /** Exigir el baseline de cada tema (default: true). */
   readonly requireGolden?: boolean;
+  /**
+   * Registro de referencia para resolver `variantOf`; default: el real. Un test
+   * de linaje inyecta uno mínimo en vez de depender de los temas del repo.
+   */
+  readonly registry?: Readonly<Record<string, NarrativeManifest>>;
+  /** Curación por tema para probar el reuso por referencia; default: la real. */
+  readonly curations?: Readonly<Record<string, Curation>>;
 }
 
 export interface ThemesReport {
@@ -458,6 +465,91 @@ export function skinErrors(themeId: string, skin: SkinInput): string[] {
    MANIFEST, REGISTRO Y GOLDEN
 ────────────────────────────────────────────── */
 
+/**
+ * Errores de una VARIANTE DE PIEL (`variantOf`, S10 · #136).
+ *
+ * El invariante que el issue pide probar es «dos temas que comparten narrativa
+ * no pueden divergir en copy» —y, desde el pase fresco de #164, tampoco en el
+ * resto del manifest compartido—. Se verifica por IDENTIDAD de referencia, no
+ * por igualdad de valor: `{...base.copy}` tiene el mismo texto hoy y diverge
+ * mañana —el `toBe` que este gate exige es la diferencia entre reusar y
+ * duplicar—. Por eso `copy`, `rooms`, `illusions`, `meta`, `site` y la curación
+ * tienen que ser EL MISMO objeto del tema base; sólo la piel (`skin.css` +
+ * `contrast.ts`) y la identidad publicable (`id`, `path`) son propias.
+ *
+ * ALCANCE DECLARADO (F3 de #164): la regla actúa sobre el LINAJE DECLARADO
+ * (`variantOf`), no sobre cualquier par de temas. Dos temas sin `variantOf` que
+ * compartieran un pack no se comparan: el gate no puede distinguir un pack
+ * compartido a propósito de uno copiado. La variante existe para declarar esa
+ * relación; sin declaración, no hay invariante que medir.
+ */
+export function lineageErrors(
+  theme: NarrativeManifest,
+  registry: Readonly<Record<string, NarrativeManifest>>,
+  curations: Readonly<Record<string, Curation>>
+): string[] {
+  const baseId = theme.variantOf;
+  if (baseId === undefined) return [];
+  const errors: string[] = [];
+  if (baseId === theme.id) {
+    errors.push(
+      `linaje: "${theme.id}" declara variantOf de sí mismo; una variante reusa a OTRO tema`
+    );
+    return errors;
+  }
+  const base = Object.hasOwn(registry, baseId) ? registry[baseId] : undefined;
+  if (!base) {
+    errors.push(
+      `linaje: "${theme.id}" declara variantOf="${baseId}", que no está registrado. ` +
+        `Temas: ${Object.keys(registry).join(", ")}`
+    );
+    return errors;
+  }
+
+  const shared: [field: string, label: string, own: unknown, reference: unknown][] = [
+    ["copy", "el copy", theme.copy, base.copy],
+    ["rooms", "las salas", theme.rooms, base.rooms],
+    ["illusions", "las ilusiones", theme.illusions, base.illusions],
+    ["meta", "la metadata", theme.meta, base.meta],
+    // F2 del pase fresco de #164: `site` es la dirección de publicación y la
+    // variante hereda la del base (mismo artefacto, misma raíz de assets); una
+    // copia divergiría el día que el base cambie de origen o prefijo.
+    ["site", "la dirección de publicación", theme.site, base.site]
+  ];
+  for (const [field, label, own, reference] of shared) {
+    if (own !== reference) {
+      errors.push(
+        `linaje: "${theme.id}" no reusa ${label} (\`${field}\`) de "${baseId}" por ` +
+          `referencia (import, nunca copia): editar el tema base tiene que reflejarse acá`
+      );
+    }
+  }
+
+  // La curación vive en su registro (por id), no en el manifest: la identidad
+  // del objeto es la única prueba de que no se clonaron las decisiones.
+  const ownCuration = curations[theme.id];
+  const baseCuration = curations[baseId];
+  if (ownCuration === undefined || baseCuration === undefined) {
+    errors.push(
+      `linaje: "${theme.id}" y "${baseId}" necesitan entrada en CURATIONS ` +
+        "para verificar que la curación se reusa por referencia"
+    );
+  } else if (ownCuration !== baseCuration) {
+    errors.push(
+      `linaje: la curación de "${theme.id}" no es la misma referencia que la de ` +
+        `"${baseId}" (por referencia, no una copia de las decisiones)`
+    );
+  }
+
+  if (theme.skin === "inherit") {
+    errors.push(
+      `piel: "${theme.id}" es variante de "${baseId}" para CAMBIAR la piel; ` +
+        'declarar skin: "inherit" la deja idéntica al base'
+    );
+  }
+  return errors;
+}
+
 /** Errores propios del manifest: id, metadata y dirección publicable. */
 function manifestErrors(narrative: NarrativeManifest): string[] {
   const errors: string[] = [];
@@ -575,9 +667,16 @@ export function checkTheme(
 export function checkThemes(options: CheckOptions): ThemesReport {
   const root = options.root ?? ROOT;
   const errors: string[] = [];
-  const themes = options.themes.map((theme) =>
-    checkTheme(theme, { facts: options.facts, experience: options.experience })
-  );
+  const registry = options.registry ?? THEMES;
+  const curations = options.curations ?? CURATIONS;
+  const themes = options.themes.map((theme) => {
+    const report = checkTheme(theme, { facts: options.facts, experience: options.experience });
+    // El linaje necesita el registro completo (el base puede no estar en el
+    // subconjunto que este build publica), así que se resuelve acá y no en
+    // `checkTheme`, que sólo mira un tema.
+    const lineage = lineageErrors(theme.narrative, registry, curations);
+    return lineage.length === 0 ? report : { ...report, errors: [...report.errors, ...lineage] };
+  });
 
   // Un artefacto publica una página por path: dos temas en el mismo subpath se
   // pisan en silencio y el sitemap lista una sola URL.
@@ -730,10 +829,12 @@ async function main(): Promise<number> {
     const inherited = themes.filter(
       (theme) => theme.skin === undefined && theme.skinError === undefined
     ).length;
+    const variants = themes.filter((theme) => theme.narrative.variantOf !== undefined).length;
     console.log(
       `✅ themes:check — ${report.themes.length} tema(s), copy ES/EN, curación, ` +
         `piel y contraste verdes · piel: ${own} propia(s)` +
-        `${inherited > 0 ? `, ${inherited} heredada(s)` : ""} · ${goldens} golden(s)`
+        `${inherited > 0 ? `, ${inherited} heredada(s)` : ""}` +
+        `${variants > 0 ? `, ${variants} variante(s) de piel` : ""} · ${goldens} golden(s)`
     );
     return 0;
   }

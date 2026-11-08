@@ -218,9 +218,28 @@ mismo PR y se documenta en ADR-001 (no se parchea lateralmente).
 
 ## S10 — Segunda piel sobre el mismo tema (opcional)
 
+**Estado: ENTREGADO en #136 (PR #164)** como `themes/ingenieria-nocturno/` — **no** como
+`ingenieria-claro` ni `skinAlt` (ver «Por qué nocturna»).
+
 **Objetivo:** probar que piel y narrativa son ejes independientes.
 
-**Entregable:** `themes/ingenieria-claro/` o `skinAlt` dentro de `ingenieria`, con la misma
-narrativa y otra paleta/densidad.
+**Entregable:** un tema registrado VARIANTE de `ingenieria` (`variantOf`) que reusa copy,
+salas, ilusiones, metadata, dirección y curación **por referencia**, con su propia paleta y
+densidad. Publica en su subpath con `data-theme`, canónica y golden propios.
 
 **DoD:** sólo cambia `skin.css` (+ registro); copy y curación se reusan sin duplicar.
+`themes:check` lo verifica por IDENTIDAD: clonar `copy`/`rooms`/`illusions`/`meta`/`site` o
+la curación es error (F2 del pase fresco de #164).
+
+**Por qué nocturna y no clara (verificado en el pase fresco de #164).** La paleta oscura
+está hardcodeada FUERA de `skin.css`: `src/ts/illusions/*.ts` (p. ej. `rotatingSnakes.ts`,
+`penrose.ts`, `heroCubes.ts`) y `src/ts/graph/grafo.ts:179-182,229` fijan
+`#00c9c0`/`#c9a84c`/`#8892a0` y los labels del grafo `#ffffff`/`#d6dde8`. Sobre papel
+blanco esos labels miden **1,00:1** y **1,37:1** y ningún gate mide contraste de canvas: una
+piel clara publicaría canvas y grafo ilegibles en silencio.
+
+**Deuda declarada y condición de salida (F4 de #164).** Para que una piel clara sea
+publicable: tokenizar los colores de canvas/grafo desde los tokens de la piel (o un puente
+a `getComputedStyle`) y agregar un gate que mida el contraste de canvas/grafo contra el
+fondo de su sala. Hasta entonces, la segunda piel es oscura. Deuda registrada en ADR-001
+§Consecuencias («Deuda declarada — la piel clara está bloqueada») y SPEC FASE 5.9.

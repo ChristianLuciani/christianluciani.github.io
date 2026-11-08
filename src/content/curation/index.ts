@@ -22,7 +22,11 @@ import type { CollectionId, Curation } from "./types.ts";
 
 export const CURATIONS: Readonly<Record<string, Curation>> = Object.freeze({
   museo: MUSEO_CURATION,
-  ingenieria: INGENIERIA_CURATION
+  ingenieria: INGENIERIA_CURATION,
+  // S10 (#136): la segunda piel de `ingenieria` NO tiene curación propia. Es la
+  // MISMA entrada, por referencia: `themes:check` falla si alguien la clona,
+  // porque una decisión duplicada es una decisión que va a divergir.
+  "ingenieria-nocturno": INGENIERIA_CURATION
 });
 
 /** Curación del tema default (hoy: `museo`; `ingenieria` está registrada aparte). */
