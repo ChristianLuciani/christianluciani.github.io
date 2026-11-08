@@ -629,6 +629,7 @@ export const ROOM_BODY: Record<string, string> = {
       <a class="contact-link" href="https://x.com/cluciani_ve" target="_blank"><img class="ci" src="assets/icons/x.svg" alt="" width="16" height="16">${t("room.contacto.x")}</a>
       <a class="contact-link" href="https://www.instagram.com/clucianitoledo" target="_blank"><img class="ci" src="assets/icons/instagram.svg" alt="" width="16" height="16">${t("room.contacto.instagram")}</a>
       <a class="contact-link" href="https://www.patreon.com/cluciani" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/patreon.svg" alt="" width="16" height="16">${t("room.contacto.patreon")}</a>
+      <a class="contact-link" href="https://cluciani.substack.com" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/substack.svg" alt="" width="16" height="16">${t("room.contacto.substack")}</a>
       </div>
 
       <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->
