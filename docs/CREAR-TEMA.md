@@ -222,10 +222,24 @@ src/themes/<base>-<piel>/
 - `contrast.ts` puede reusar los pares del base cuando las reglas de CSS son las mismas
   (los ratios se recalculan contra los tokens de esta piel); una combinación nueva se
   agrega al contrato del base.
-- `themes:check` verifica el linaje POR IDENTIDAD: `copy`, `rooms`, `illusions`, `meta` y
-  la curación tienen que ser el mismo objeto (`no reusa … por referencia`). Una copia con
-  el mismo texto es un error, porque divergiría en silencio al editar el base. La
-  variante tampoco puede declarar `skin: "inherit"`: existe para CAMBIAR la piel.
+- `themes:check` verifica el linaje POR IDENTIDAD: `copy`, `rooms`, `illusions`, `meta`,
+  `site` y la curación tienen que ser el mismo objeto (`no reusa … por referencia`). Una
+  copia con el mismo texto es un error, porque divergiría en silencio al editar el base. La
+  regla mira el LINAJE DECLARADO (`variantOf`): dos temas sin `variantOf` no se comparan.
+  La variante tampoco puede declarar `skin: "inherit"`: existe para CAMBIAR la piel.
+- **SEO — limitación declarada (F1/F4 de #164):** al heredar `meta`, la variante publica el
+  mismo `title`/`description` y los mismos bloques JSON-LD que su base, cada página con
+  `canonical` autorreferente; el deploy construye sin `SITE_THEME`, así que la URL de la
+  variante entra al sitemap con contenido textual idéntico y piel distinta. Es un duplicado
+  aceptado mientras la variante sea instrumental; el PR que la agrega lo declara, y la
+  salida es retirarla, darle identidad textual propia (deja de ser `variantOf`) o excluirla
+  del deploy.
+- **Piel clara bloqueada (deuda hasta tokenizar canvas/grafo):** la paleta de
+  `src/ts/illusions/*` y `src/ts/graph/grafo.ts:179-182,229` está hardcodeada para fondo
+  oscuro (labels `#ffffff`/`#d6dde8`: 1,00:1 y 1,37:1 sobre papel blanco) y ningún gate
+  mide canvas. Una variante clara hoy publicaría canvas/grafo ilegibles. Salida: tokenizar
+  esos colores desde la piel + gate de contraste de canvas; hasta entonces, la segunda piel
+  es oscura.
 
 ## 7. Metadata y SEO del tema
 

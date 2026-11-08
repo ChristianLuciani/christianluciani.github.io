@@ -605,10 +605,27 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
   `rooms`, `illusions`, `meta` y `site`, y `CURATIONS` apunta a la MISMA entrada del base;
   la variante sólo aporta `skin.css` (paleta y densidad) + `contrast.ts` + la línea de
   registro. Publica en `/ingenieria-nocturno/` con `data-theme` y golden propios, y la
-  canónica/sitemap salen del `path` del tema. **Invariante instrumentado**: dos temas que
-  comparten narrativa no pueden divergir en copy — `themes:check` lo verifica por
+  canónica/sitemap salen del `path` del tema. **Invariante instrumentado (linaje
+  declarado)**: un tema que declara `variantOf` no puede divergir de su base en `copy`,
+  `rooms`, `illusions`, `meta`, `site` ni en la curación — `themes:check` lo verifica por
   IDENTIDAD de referencia (una copia con el mismo texto es un error). Editar el copy o la
-  curación del base se refleja en la variante sin tocar la variante.
+  curación del base se refleja en la variante sin tocar la variante. El gate **no** compara
+  pares de temas sin `variantOf`: no puede distinguir un pack compartido a propósito de uno
+  copiado (alcance declarado — F3 del pase fresco de #164).
+  **SEO de la variante — limitación declarada (F1 de #164):** al heredar `meta` por
+  identidad, `/ingenieria/` y `/ingenieria-nocturno/` publican el mismo `title`,
+  `description` y los mismos 3 bloques JSON-LD, cada uno con `canonical` autorreferente; el
+  deploy construye sin `SITE_THEME`, así que la variante entra al sitemap con contenido
+  textual idéntico y piel distinta (duplicado aceptado mientras la variante sea
+  instrumental). Salida: retirar la variante, darle identidad textual propia (deja de ser
+  `variantOf`) o excluirla del deploy; el PR que agregue una variante lo declara.
+  **Deuda declarada — la piel clara está bloqueada (F4 de #164):** la paleta de canvas y
+  grafo está hardcodeada fuera de `skin.css` (`src/ts/illusions/*.ts`;
+  `src/ts/graph/grafo.ts:179-182,229` fija `#00c9c0`/`#c9a84c`/`#8892a0` y labels
+  `#ffffff`/`#d6dde8`). Sobre papel blanco esos labels miden 1,00:1 y 1,37:1, y ningún gate
+  mide canvas: una piel clara publicaría canvas/grafo ilegibles. **Salida:** tokenizar los
+  colores de canvas/grafo desde la piel (o un puente a `getComputedStyle`) + un gate que
+  mida su contraste contra el fondo de su sala; hasta entonces la segunda piel es nocturna.
 
 **DoD de la fase:** `SITE_THEME=ingenieria npm run build` produce `/ingenieria/` sin tocar
 `src/data`, `src/content/curation/museo.ts` ni el tema `museo`; el golden de `museo` (y
@@ -651,6 +668,7 @@ para resolver copy/piel en el render: la salida del default queda byte-idéntica
 | El refactor cambia el render del default | Golden por tema (I1), bloqueante por PR; nunca se "actualiza el golden" en el mismo PR que refactoriza |
 | Assets 404 en un subpath | `SITE_BASE` centralizado + smoke por tema (I6) |
 | i18n se vuelve a desincronizar con N narrativas | Claves semánticas + test de completitud ES/EN (I4), sin walker por string exacto |
+| Una piel clara publica canvas/grafo ilegibles (paleta hardcodeada en `src/ts/**`, fuera del gate de contraste) | Deuda declarada en FASE 5.9: tokenizar canvas/grafo desde la piel + gate de contraste; hasta entonces la segunda piel es oscura (F4 de #164) |
 
 ---
 

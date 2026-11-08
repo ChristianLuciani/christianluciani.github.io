@@ -469,12 +469,19 @@ export function skinErrors(themeId: string, skin: SkinInput): string[] {
  * Errores de una VARIANTE DE PIEL (`variantOf`, S10 · #136).
  *
  * El invariante que el issue pide probar es «dos temas que comparten narrativa
- * no pueden divergir en copy». Se verifica por IDENTIDAD de referencia, no por
- * igualdad de valor: `{...base.copy}` tiene el mismo texto hoy y diverge mañana
- * —el `toBe` que este gate exige es la diferencia entre reusar y duplicar—.
- * Por eso el eje `copy`, las `rooms`, las `illusions`, la `meta` y la curación
- * tienen que ser EL MISMO objeto del tema base; sólo la piel (el `skin.css`) y
- * la identidad publicable (`id`, `path`) son propias.
+ * no pueden divergir en copy» —y, desde el pase fresco de #164, tampoco en el
+ * resto del manifest compartido—. Se verifica por IDENTIDAD de referencia, no
+ * por igualdad de valor: `{...base.copy}` tiene el mismo texto hoy y diverge
+ * mañana —el `toBe` que este gate exige es la diferencia entre reusar y
+ * duplicar—. Por eso `copy`, `rooms`, `illusions`, `meta`, `site` y la curación
+ * tienen que ser EL MISMO objeto del tema base; sólo la piel (`skin.css` +
+ * `contrast.ts`) y la identidad publicable (`id`, `path`) son propias.
+ *
+ * ALCANCE DECLARADO (F3 de #164): la regla actúa sobre el LINAJE DECLARADO
+ * (`variantOf`), no sobre cualquier par de temas. Dos temas sin `variantOf` que
+ * compartieran un pack no se comparan: el gate no puede distinguir un pack
+ * compartido a propósito de uno copiado. La variante existe para declarar esa
+ * relación; sin declaración, no hay invariante que medir.
  */
 export function lineageErrors(
   theme: NarrativeManifest,
@@ -503,7 +510,11 @@ export function lineageErrors(
     ["copy", "el copy", theme.copy, base.copy],
     ["rooms", "las salas", theme.rooms, base.rooms],
     ["illusions", "las ilusiones", theme.illusions, base.illusions],
-    ["meta", "la metadata", theme.meta, base.meta]
+    ["meta", "la metadata", theme.meta, base.meta],
+    // F2 del pase fresco de #164: `site` es la dirección de publicación y la
+    // variante hereda la del base (mismo artefacto, misma raíz de assets); una
+    // copia divergiría el día que el base cambie de origen o prefijo.
+    ["site", "la dirección de publicación", theme.site, base.site]
   ];
   for (const [field, label, own, reference] of shared) {
     if (own !== reference) {

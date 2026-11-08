@@ -439,6 +439,12 @@ describe("themes/check — variantes de piel (S10 · #136)", () => {
     expect(errorsOf(variant({ meta: { ...museo.meta } }))).toContain("meta");
   });
 
+  it("la dirección de publicación (`site`) también se reusa por referencia (F2 de #164)", () => {
+    // El doc prometía `site` y el gate no lo miraba: una variante podía declarar
+    // su propio `site` sin que nada lo notara.
+    expect(errorsOf(variant({ site: { ...museo.site } }))).toContain("site");
+  });
+
   it("una curación clonada es divergencia aunque hoy tenga las mismas decisiones", () => {
     const errors = lineageErrors(variant(), registry(), {
       museo: MUSEO_CURATION,
