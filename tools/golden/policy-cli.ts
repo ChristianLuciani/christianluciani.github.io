@@ -4,7 +4,7 @@
  * Separado de `policy.ts`: el entrypoint siempre corre, y su nombre es el que
  * invoca `package.json`. La decisión es una función pura testeada.
  */
-import { execFileSync } from "node:child_process";
+import { ensureBase } from "./base.ts";
 import { COMPARATOR_PATH, DATA_PATHS } from "./paths.ts";
 import {
   changedSince,
@@ -26,9 +26,9 @@ function main(): void {
   }
 
   try {
-    execFileSync("git", ["fetch", "--depth=1", "origin", base], { stdio: "inherit" });
-  } catch {
-    console.error(`::error::no se pudo traer la base ${base}; la guarda no puede decidir`);
+    ensureBase(base);
+  } catch (error) {
+    console.error(`::error::${(error as Error).message}`);
     process.exit(2);
   }
 
