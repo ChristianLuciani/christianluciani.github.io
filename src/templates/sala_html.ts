@@ -17,7 +17,7 @@ import {
   showcaseProject,
   type Proyecto
 } from "../data/proyectos.ts";
-import { contactLinks } from "../content/cv/contacto.ts";
+import { contactEmail, contactLinks } from "../content/cv/contacto.ts";
 import { profileProse } from "../content/cv/profile-prose.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import type { CvProfile, ExperienceItem } from "../data/profile.types.ts";
@@ -744,25 +744,31 @@ export function bastidorHtml(profile: CvProfile = P): string {
  * nombrando la plataforma si el snapshot trae una sin decisión (declararla o
  * justificarla en `OMITTED_CONTACT_PLATFORMS`).
  *
- * El `mailto:` es la ÚNICA fila literal y está declarada: la proyección pública
- * no expone `email` (`profile.types.ts`), así que no hay SSOT del que
- * derivarla — la fuga la reporta `print_cv_html.ts` desde #116.
+ * El email NO es una fila literal: `contactEmail()` lo lee de `ENTITY` (nodo
+ * `Person`), la misma fuente que el JSON-LD, así que la sala y el JSON-LD no
+ * pueden divergir. `CvProfile` no lo expone (la proyección pública lo excluye
+ * desde #107), pero el sitio sí lo publica. Sin dato no hay fila.
  *
  * `rel="noopener noreferrer"` uniforme: la fila se genera una sola vez, no se
  * copia por link (el patreon era el único que la traía).
  */
 function contactoBody(profile: CvProfile): string {
-  const links = contactLinks(profile)
-    .map(
+  const email = contactEmail();
+  const rows = [
+    ...(email
+      ? [
+          `      <a class="contact-link" href="mailto:${attrEscape(email)}"><img class="ci" src="assets/icons/gmail.svg" alt="" width="16" height="16">${esc(email)}</a>`
+        ]
+      : []),
+    ...contactLinks(profile).map(
       (link) =>
         `      <a class="contact-link" href="${attrEscape(link.url)}" target="_blank" rel="noopener noreferrer"><img class="ci" src="assets/icons/${link.icon}.svg" alt="" width="16" height="16">${esc(link.label)}</a>`
     )
-    .join("\n");
+  ];
   return `
     <div class="contact-grid">
       <div class="contact-links" data-scroll="from-center" data-delay="2">
-      <a class="contact-link" href="mailto:cluciani@gmail.com"><img class="ci" src="assets/icons/gmail.svg" alt="" width="16" height="16">cluciani@gmail.com</a>
-${links}
+${rows.join("\n")}
       </div>
 
       <!-- El Koch vuelve como pieza visual del Buzón (no es el loader) -->

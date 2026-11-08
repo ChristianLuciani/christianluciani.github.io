@@ -5,7 +5,8 @@ import { SALAS } from "../cv/salas";
 import { enDesarrolloDe } from "../data/proyectos";
 import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
-import { contactLinks } from "../content/cv/contacto";
+import { contactEmail, contactLinks } from "../content/cv/contacto";
+import { ENTITY } from "../data/entity.generated";
 import { PROFILE_COMMIT, PROFILE_ENGINE, provenanceHtml } from "../data/profile.provenance";
 import type { CvProfile } from "../data/profile.types";
 import {
@@ -340,9 +341,18 @@ describe("El Buzón — paridad 1:1 con identity.links", () => {
   const HREFS = [...HTML.matchAll(/<a class="contact-link" href="([^"]+)"/g)].map((m) => m[1]);
 
   it("renderiza una fila por link de contacto del SSOT, en su orden", () => {
-    // El `mailto:` es la única fila literal declarada: la proyección no expone `email`.
-    expect(HREFS[0]).toBe("mailto:cluciani@gmail.com");
     expect(HREFS.slice(1)).toEqual(contactLinks(profile).map((link) => link.url));
+  });
+
+  it("el mailto es el email del JSON-LD (ENTITY), no un literal que puede divergir", () => {
+    // La sala y el `<script type="application/ld+json">` leen el MISMO `ENTITY`
+    // (`contactEmail()`): si profile-data cambia `Person.email`, cambian los dos.
+    const person = ENTITY.nodes.find((node) => node["@type"] === "Person") as
+      | { email?: string }
+      | undefined;
+    expect(contactEmail()).toBe(person?.email);
+    expect(HREFS[0]).toBe(`mailto:${person!.email}`);
+    expect(HTML).toContain(`>${person!.email}</a>`);
   });
 
   it("el Substack del SSOT llega a la página, no sólo al JSON-LD", () => {

@@ -180,7 +180,9 @@ salen de `PROFILE.identity.links`, resueltos contra esa lista. Lo que se muestra
 es la lista declarada ∩ SSOT, en ese orden. Toda plataforma del snapshot tiene
 decisión: se muestra (lista) o se justifica en `OMITTED_CONTACT_PLATFORMS`
 (`website` es el único caso hoy); una plataforma nueva sin decisión rompe el
-gate de `contacto.test.ts` con su nombre. El LABEL es copy del pack
+gate de `contacto.test.ts` con su nombre. La fila del EMAIL no es de esta
+lista: sale de `ENTITY` (nodo `Person`), la misma fuente que el JSON-LD. El
+LABEL es copy del pack
 (`room.contacto.<plataforma>`, accesor estricto, sin fallback): el `label` del
 SSOT no se publica en esta sala (nombra las filas de repo en El Marco).
 Plataforma nueva visible ⇒ entrada en la lista + clave de copy + icono en

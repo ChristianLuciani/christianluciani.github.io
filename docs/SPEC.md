@@ -163,7 +163,7 @@ línea de registro (§8 FASE 5).
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
 | curación del print-CV (qué links entran al encabezado) | membresía y orden en `src/content/cv/platforms.ts` (`PRINT_CONTACT_PLATFORMS`), resuelta por `src/content/cv/print.ts` (`printCvCuration`) | curación (sin copy) |
-| links de El Buzón (sala Contacto) | membresía y orden en `src/content/cv/platforms.ts` (`BUZON_CONTACT_PLATFORMS`); el href sale de `PROFILE.identity.links` y el label del pack (`room.contacto.*`) | curación + hecho (derivado) + copy (pack del tema) |
+| links de El Buzón (sala Contacto) | membresía y orden en `src/content/cv/platforms.ts` (`BUZON_CONTACT_PLATFORMS`); el href sale de `PROFILE.identity.links`, el email de `src/data/entity.generated.ts` (`ENTITY`, misma fuente que el JSON-LD) y el label del pack (`room.contacto.*`) | curación + hecho (derivado) + copy (pack del tema) |
 | clasificación de Trayectoria (`experience[]` → `professional`/`training`) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |

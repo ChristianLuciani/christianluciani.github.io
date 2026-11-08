@@ -30,6 +30,7 @@
  */
 import { copy } from "../copy.ts";
 import { BUZON_CONTACT_PLATFORMS } from "./platforms.ts";
+import { ENTITY } from "../../data/entity.generated.ts";
 import type { CvProfile } from "../../data/profile.types.ts";
 
 export interface ContactLink {
@@ -77,4 +78,21 @@ export function contactLinks(profile: CvProfile): ContactLink[] {
     });
   }
   return links;
+}
+
+/**
+ * Email de contacto, derivado de `ENTITY` (nodo `Person`): la MISMA fuente que
+ * publica el JSON-LD (`head_html.ts`) y que gatea `sync:check`. `CvProfile` no
+ * lo expone (la proyección pública lo excluye desde #107), pero el sitio SÍ lo
+ * publica; tenerlo como literal en la sala permitía que la fila y el JSON-LD
+ * divergieran sin que nada lo viera (F1 del 3.er pase de #161).
+ *
+ * Sin dato no hay fila: no se rellena con un literal ni con otro campo.
+ */
+export function contactEmail(): string | undefined {
+  const person = ENTITY.nodes.find((node) => node["@type"] === "Person") as
+    | { email?: string }
+    | undefined;
+  const email = person?.email?.trim();
+  return email ? email : undefined;
 }
