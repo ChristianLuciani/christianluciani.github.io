@@ -80,7 +80,12 @@ function publishTheme(
   icons: ReadonlyMap<string, string>,
   outDir: string
 ): void {
-  const published = publishPage(injectEntry(assembleHtml({ theme }), entry), address, icons);
+  const published = publishPage(
+    injectEntry(assembleHtml({ theme }), entry),
+    address,
+    icons,
+    theme.id
+  );
   if (published.missing.length > 0) {
     throw new Error(`build: icono sin archivo en assets/icons: ${published.missing.join(", ")}`);
   }

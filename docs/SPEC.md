@@ -17,7 +17,7 @@ Ese refactor parametrizó la **estructura** (salas, nav, numeración, i18n estru
 
 | Archivo | Contenido factual hoy |
 |---|---|
-| `src/templates/sala_html.ts` (`ROOM_BODY`) | perfil, proyectos, experiencia, publicaciones, competencias — mezclado con `data-scroll`, estilos inline, canvases |
+| `src/templates/sala_html.ts` (`roomBodies`) | perfil, proyectos, experiencia, publicaciones, competencias — mezclado con `data-scroll`, estilos inline, canvases |
 | `src/cv/i18n.ts` | diccionario ES→EN de **182 claves** escrito a mano |
 | `src/templates/print_cv_html.ts` | CV imprimible: **duplica** perfil, experiencia, formación, publicaciones, competencias |
 | `src/templates/head_html.ts` | persona/links (JSON-LD Person) — **derivado del SSOT desde #140**; publicaciones (JSON-LD ScholarlyArticle) siguen **a mano** |
@@ -162,13 +162,13 @@ línea de registro (§8 FASE 5).
 | curación de El Marco / El Bastidor (subtítulo, `falta`, fecha de recencia, labels de link, nota) | `src/content/cv/proyectos.ts` | curación de presentación (el ORDEN vive en la curación del tema) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
-| curación del print-CV (qué links entran al encabezado) | membresía y orden en `src/content/cv/platforms.ts` (`PRINT_CONTACT_PLATFORMS`), resuelta por `src/content/cv/print.ts` (`PRINT_CV`) | curación (sin copy) |
+| curación del print-CV (qué links entran al encabezado) | membresía y orden en `src/content/cv/platforms.ts` (`PRINT_CONTACT_PLATFORMS`), resuelta por `src/content/cv/print.ts` (`printCvCuration`) | curación (sin copy) |
 | links de El Buzón (sala Contacto) | membresía y orden en `src/content/cv/platforms.ts` (`BUZON_CONTACT_PLATFORMS`); el href sale de `PROFILE.identity.links` y el label del pack (`room.contacto.*`) | curación + hecho (derivado) + copy (pack del tema) |
 | clasificación de Trayectoria (`experience[]` → `professional`/`training`) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
-| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
-| galería placeholders | roadmap — la sala se oculta desde la curación del tema (`salas:galeria` en `exclude`), aplicada al construir las salas del manifest en `src/themes/museo/narrative.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
+| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`roomBodies`) | curación (ref. `projects` SSOT) |
+| galería placeholders | roadmap — la sala se oculta desde la curación del tema (`salas:galeria` en `exclude`), aplicada al construir las salas del manifest en `src/themes/museo/narrative.ts`; shell en `src/templates/sala_html.ts` (`roomBodies`) | curación |
 | CSS: tokens, tipografía, densidad | `src/themes/museo/skin.css` (el head la emite) | presentación (FASE 5 · #130) |
 | ilusiones, animaciones, canvas | `src/ts/` | presentación (no editable por temas) |
 
@@ -443,6 +443,14 @@ y reglas que los consumen. Prohibido: literales de color fuera del bloque de tok
 `!important` para pisar otro tema, fuentes web. Gate I5: 0 literales + contraste AA en los
 pares texto/fondo declarados.
 
+**Resolución por tema (S4 de D11, implementado en #134).** `src/themes/skin.ts` emite la
+piel del tema ACTIVO: `skinFor(id)` resuelve `themes/<id>/skin.css`. Un tema sólo
+hereda la piel del default si lo declara en su manifest (`skin: "inherit"`); sin esa
+declaración y sin `skin.css`, `themes:check` falla (F4 del pase fresco de #159). El gate no certifica la
+fuente: extrae el `<style>` de piel del render de cada tema y lo compara con el CSS de su
+`skin.css`; si el documento publica otra piel, `themes:check` falla (el falso verde que
+cerró F4 de #158).
+
 **Excepción declarada — clasificación de `experience[]` en el print-CV (D2, F1 de #119).**
 `Curation.experienceSections` (la tabla del tema `museo` vive en `src/content/curation/museo.ts`) reparte cada fila de `experience[]` en
 `professional`/`training` mediante una clave **derivada de hechos**
@@ -562,23 +570,42 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
 - **5.3 — Registro de narrativas.** `themes/index.ts`, `NarrativeManifest`, `SITE_THEME`;
   `museo` reproduce el HTML actual.
 - **5.4 — Piel extraída.** Tokens a `themes/museo/skin.css`; 74 literales de color → tokens
-  (I5); contraste AA verificado.
+  (I5); contraste AA verificado. La emisión por tema (S4 de D11) se resolvió en #134:
+  `emitSkin` usa la piel del tema activo y `themes:check` verifica que llegue al render
+  (§5.6).
 - **5.5 — Selector + subpath.** `SITE_THEME=<id> npm run build`; raíz default; `/<path>/`
   por tema; dirección **por tema** (`narrative.site`, overrides `SITE_ORIGIN`/`SITE_BASE`)
   sobre un solo bundle y una sola raíz de assets; `canonical`, `og:url`, `og:image`,
   `sitemap.xml`; smoke de assets por tema (I6).
 - **5.6 — Gates de CI.** Golden por tema + completitud copy ES/EN + cobertura de curación +
   contraste + build de todos los temas.
-- **5.7 — Piloto mínimo (S8).** `themes/ingenieria/` con **las mismas 8 salas**: sólo voz,
-  piel, ilusiones y metadata. Valida la plomería; si exige tocar código compartido, el
-  contrato falló.
+- **5.7 — Piloto mínimo (S8).** `themes/ingenieria/` con **las mismas 8 salas**: voz,
+  piel, ilusiones y metadata. Valida la plomería.
+  Implementado en #134 y reconciliado con el pase fresco del PR #159:
+  - la página publica su **identidad de tema** en `<html data-theme="<id>">` (la inyecta
+    `publishPage`; el render fuente y su golden no llevan atributo) y el runtime la
+    resuelve al arrancar (`src/ts/app/theme.ts` → `activateTheme`), de modo que HUD,
+    salas, diccionario i18n e intro usan el tema de la página y no el default;
+  - los renderers **no capturan `t()` al importar**: `cover_html.ts`, `plano_html.ts`,
+    `content/cv/print.ts` y `sala_html.ts` resuelven copy en el render. El pack del tema
+    llega a todas las superficies (0 claves muertas; lo miden `themes:check` y
+    `src/templates/theme-copy.test.ts`). El render de `museo` queda byte-idéntico.
+  **Excepciones autorizadas por el operador (2026-11-07) — traza en #134.** El piloto
+  exigió tocar código compartido y el operador lo autorizó en dos actos:
+  (a) **S4 de D11** — piel por tema: `src/themes/skin.ts` + regla del gate (PR #158/#134);
+  (b) **identidad de tema en el runtime + resolución de copy al render**, a raíz del pase
+  fresco del PR #159 (FAIL F1/F2; comentario de review del 2026-11-07). La frase «si exige
+  tocar código compartido, el contrato falló» describe el diagnóstico, no el veredicto:
+  las excepciones quedan registradas acá y en el issue, y la FASE 5.8 debe absorberlas en
+  el contrato.
 - **5.8 — Control total (S9).** Segundo PR del piloto: reordena/agrupa/oculta salas y cura
   ítems. **Prueba de aceptación del contrato**: cualquier cambio necesario fuera de
   `themes/<id>/` + registro se corrige en el contrato, no con un parche lateral.
 
 **DoD de la fase:** `SITE_THEME=ingenieria npm run build` produce `/ingenieria/` sin tocar
-`src/data`, `src/content/curation/museo.ts`, renderers genéricos ni el tema `museo`; el
-golden de `museo` no cambia en ningún PR de la fase.
+`src/data`, `src/content/curation/museo.ts` ni el tema `museo`; el golden de `museo` (y
+`index.html`) no cambia en ningún PR de la fase. Los renderers compartidos sólo cambian
+para resolver copy/piel en el render: la salida del default queda byte-idéntica.
 
 ### Fuera de alcance (roadmap futuro)
 - Renderer `web`/`print` promovido a profile-as-code (M5+).

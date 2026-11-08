@@ -42,7 +42,8 @@ export const ROOM_META: Record<string, { titleScroll: string; legacyNum?: string
 };
 
 /** Comentario editorial + apertura de <section> + canvas + <div class="room-content">. */
-export const ROOM_SHELL: Record<string, string> = {
+export function roomShells(): Record<string, string> {
+  return {
   perfil: `<!-- ════════════════════════════════════════════════════
   SALA — Perfil y Formación
 ════════════════════════════════════════════════════ -->
@@ -122,7 +123,8 @@ export const ROOM_SHELL: Record<string, string> = {
 <section class="room room--alt room--contact" id="room-contacto">
   <div class="room-content">
 `,
-};
+  };
+}
 
 /** Contenido de la sala (tras el header) hasta </section> + divider. */
 /** Cierre común de sala (una tarjeta/CIERRE termina el <section>). */
@@ -338,7 +340,8 @@ ${hit}${p.html ?? ""}${falta}
   return `<div class="project-grid${pairing}">${cards}</div>`;
 }
 
-export const ROOM_BODY: Record<string, string> = {
+export function roomBodies(): Record<string, string> {
+  return {
   galeria: `
     <!-- Sub-galería: Drahma y campo amazónico -->
     <div data-scroll="up" data-delay="1">
@@ -617,7 +620,8 @@ export const ROOM_BODY: Record<string, string> = {
 <div class="room-divider"></div>
 
 `,
-};
+  };
+}
 
 /**
  * Body de la sala Perfil.
@@ -790,7 +794,7 @@ export function roomBody(s: RoomRef, profile: CvProfile = P): string {
     case "bastidor":
       return bastidorHtml(profile);
     default:
-      return ROOM_BODY[s.id] ?? "";
+      return roomBodies()[s.id] ?? "";
   }
 }
 
@@ -816,7 +820,7 @@ function roomHeader(s: RoomRef): string {
  * galería sigue oculta); un tema que la presente no hereda una sala invisible.
  */
 function shellFor(s: RoomRef): string {
-  const shell = ROOM_SHELL[s.id] ?? "";
+  const shell = roomShells()[s.id] ?? "";
   return s.hidden ? shell : shell.replace('class="room room--hidden"', 'class="room"');
 }
 

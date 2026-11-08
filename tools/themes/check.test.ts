@@ -7,7 +7,9 @@ import { factUniverse } from "../../src/content/curation/facts.ts";
 import { PROFILE } from "../../src/data/profile.generated.ts";
 import type { CvProfile } from "../../src/data/profile.types.ts";
 import { assembleHtml } from "../../src/templates/index.ts";
+import { PRINT_RULE_COLOR } from "../../src/templates/print-tokens.ts";
 import { museo } from "../../src/themes/museo/narrative.ts";
+import { SKIN_SOURCE, emitSkinCss } from "../../src/themes/museo/skin.ts";
 import type { ContrastDebt, ContrastPair } from "../../src/themes/museo/contrast.ts";
 import type { NarrativeManifest } from "../../src/themes/types.ts";
 import {
@@ -54,7 +56,9 @@ const PAIRS_OK: readonly ContrastPair[] = [
 ];
 
 function skin(overrides: Partial<SkinInput> = {}): SkinInput {
-  return { source: SKIN_OK, contrastPairs: PAIRS_OK, debt: [], ...overrides };
+  // `emitted` es la evidencia de F4/S4: el CSS que el render publicó. Con una
+  // fuente sin bloque derivado la emisión es la fuente misma.
+  return { source: SKIN_OK, contrastPairs: PAIRS_OK, debt: [], emitted: SKIN_OK, ...overrides };
 }
 
 function narrative(overrides: Partial<NarrativeManifest> = {}): NarrativeManifest {
@@ -289,7 +293,23 @@ describe("themes/check — registro, metadata y golden", () => {
     expect(report.ok).toBe(true);
   });
 
-  it("un tema no-default sin piel propia hereda la del default y lo declara", () => {
+  it("un tema no-default hereda la piel del default sólo si lo DECLARA", () => {
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria", skin: "inherit" }),
+          skin: undefined
+        })
+      ],
+      requireGolden: false
+    });
+    expect(report.themes[0]!.notes.join("\n")).toContain("hereda");
+    expect(report.themes[0]!.errors).toEqual([]);
+  });
+
+  it("sin skin.css y sin declarar `inherit`, el tema no puede quedar verde (F4)", () => {
+    // El caso del pase fresco: borrar el skin.css de un tema registrado no puede
+    // leerse como "hereda" — el gate tiene que distinguir diseño de regresión.
     const report = checkThemes({
       themes: [
         themeInput({
@@ -299,8 +319,22 @@ describe("themes/check — registro, metadata y golden", () => {
       ],
       requireGolden: false
     });
-    expect(report.themes[0]!.notes.join("\n")).toContain("hereda");
-    expect(report.themes[0]!.errors).toEqual([]);
+    expect(report.themes[0]!.errors.join("\n")).toContain("skin: \"inherit\"");
+    expect(report.ok).toBe(false);
+  });
+
+  it("declarar `inherit` con skin.css propio es una contradicción", () => {
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria", skin: "inherit" }),
+          skin: skin()
+        })
+      ],
+      requireGolden: false
+    });
+    expect(report.themes[0]!.errors.join("\n")).toContain("inherit");
+    expect(report.ok).toBe(false);
   });
 
   it("el tema DEFAULT sin skin.css es un error: no hay piel que emitir (F4)", () => {
@@ -311,7 +345,25 @@ describe("themes/check — registro, metadata y golden", () => {
     expect(report.themes[0]!.errors.join("\n")).toContain("no tiene src/themes/museo/skin.css");
   });
 
-  it("la piel propia de un tema no-default no se puede certificar: el emisor sólo conoce museo (F4)", () => {
+  it("la piel propia de un tema no-default que NO llega al render es roja (F4/S4)", () => {
+    // El emisor resolviera museo: el documento publica la piel del default y no
+    // la del tema. Certificar el skin.css declarado sería el falso verde de F4.
+    const museoEmitted = emitSkinCss(PRINT_RULE_COLOR, SKIN_SOURCE);
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria" }),
+          skin: skin({ emitted: museoEmitted })
+        })
+      ],
+      requireGolden: false
+    });
+    const errors = report.themes[0]!.errors.join("\n");
+    expect(errors).toContain("no publica la piel de su skin.css");
+    expect(report.ok).toBe(false);
+  });
+
+  it("la piel propia de un tema no-default que SÍ llega al render se certifica (S4)", () => {
     const report = checkThemes({
       themes: [
         themeInput({
@@ -321,8 +373,21 @@ describe("themes/check — registro, metadata y golden", () => {
       ],
       requireGolden: false
     });
-    const errors = report.themes[0]!.errors.join("\n");
-    expect(errors).toContain("sólo emite la piel");
+    expect(report.themes[0]!.errors).toEqual([]);
+    expect(report.ok).toBe(true);
+  });
+
+  it("sin evidencia de emisión el gate no puede certificar la piel declarada (F4)", () => {
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria" }),
+          skin: skin({ emitted: undefined })
+        })
+      ],
+      requireGolden: false
+    });
+    expect(report.themes[0]!.errors.join("\n")).toContain("no hay evidencia");
     expect(report.ok).toBe(false);
   });
 });

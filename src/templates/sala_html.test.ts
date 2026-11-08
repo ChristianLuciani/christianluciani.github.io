@@ -111,7 +111,7 @@ describe("El Friso — hechos desde PROFILE.experience (#109)", () => {
     // Sólo el bloque de El Friso: el resto de las salas conserva sus hechos
     // hasta el resto de #99 (no-goal explícito de este issue).
     const from = source.indexOf("function compararExperiencia");
-    const to = source.indexOf("export const ROOM_BODY");
+    const to = source.indexOf("export function roomBodies");
     expect(from).toBeGreaterThan(-1);
     expect(to).toBeGreaterThan(from);
     const frisoSource = source.slice(from, to);

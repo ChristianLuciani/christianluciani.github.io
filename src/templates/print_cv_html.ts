@@ -1,5 +1,6 @@
 /**
- * PRINT_CV: CV imprimible A4 (oculto en pantalla).
+ * PRINT-CV: CV imprimible A4 (oculto en pantalla); el copy lo resuelve
+ * `printCvCuration()` en cada render con el tema activo.
  *
  * Renderer determinista: recibe `PROFILE` (CvProfile) y no contiene hechos.
  * Los textos de este museo viven en `src/content/cv/print.ts` (curación D2);
@@ -21,7 +22,7 @@ import type {
 } from "../data/profile.types.ts";
 import {
   EXPERIENCE_SECTION_ORDER,
-  PRINT_CV,
+  printCvCuration,
   experienceKey,
   experienceSectionOf
 } from "../content/cv/print.ts";
@@ -73,7 +74,7 @@ function sortByRecency<T extends { start: string; end?: string }>(items: readonl
 function period(start: string, end?: string): string {
   if (!end) return year(start);
   const from = year(start);
-  const to = end === "present" ? PRINT_CV.labels.present : year(end);
+  const to = end === "present" ? printCvCuration().labels.present : year(end);
   return from === to ? from : `${from} – ${to}`;
 }
 
@@ -84,11 +85,11 @@ function displayUrl(url: string): string {
 
 function levelLabel(level: string | undefined): string {
   if (!level) return "";
-  return PRINT_CV.levelLabels[level] ?? level;
+  return printCvCuration().levelLabels[level] ?? level;
 }
 
 function languageName(code: string): string {
-  return PRINT_CV.languageNames[code] ?? code.toUpperCase();
+  return printCvCuration().languageNames[code] ?? code.toUpperCase();
 }
 
 function websiteLink(profile: CvProfile): string {
@@ -97,7 +98,7 @@ function websiteLink(profile: CvProfile): string {
 
 /**
  * Contacto del print: SÓLO las plataformas de `identity.links` que cura
- * `PRINT_CV.contactPlatforms`.
+ * `printCvCuration().contactPlatforms`.
  *
  * El email queda afuera porque NO ESTÁ EN `PROFILE` (la proyección pública lo
  * excluye desde #107), no por una decisión editorial de esta superficie: no se
@@ -106,7 +107,7 @@ function websiteLink(profile: CvProfile): string {
  * y se REPORTA en #116 (F3); no se arregla en este diff.
  */
 function contactHtml(profile: CvProfile): string {
-  return PRINT_CV.contactPlatforms
+  return printCvCuration().contactPlatforms
     .map((platform) => profile.identity.links.find((link) => link.platform === platform))
     .filter((link) => link != null)
     .map((link) => `<a href="${esc(link.url)}">${esc(displayUrl(link.url))}</a>`)
@@ -141,8 +142,8 @@ function experienceHtml(item: ExperienceItem): string {
 /** Subsección curada de `experience[]`; el título es curación D2, no un hecho. */
 function experienceSectionTitle(id: ExperienceSectionId): string {
   return id === "professional"
-    ? PRINT_CV.sections.professional
-    : PRINT_CV.sections.training;
+    ? printCvCuration().sections.professional
+    : printCvCuration().sections.training;
 }
 
 /**
@@ -209,7 +210,7 @@ function skillsHtml(profile: CvProfile): string {
     )
     .join("\n");
   return [
-    `      <li class="p-lang"><strong>${PRINT_CV.labels.languages}:</strong> ${languages}</li>`,
+    `      <li class="p-lang"><strong>${printCvCuration().labels.languages}:</strong> ${languages}</li>`,
     skills
   ].join("\n");
 }
@@ -220,10 +221,10 @@ export function printCvHtml(profile: CvProfile): string {
   const logo = assetAttrsFor("src", PRINT_LOGO_PATH);
   const contact = contactHtml(profile);
   const experience = experienceSectionsHtml(profile.experience);
-  const trajectoryNote = `${esText(PRINT_CV.sections.experienceNote)} · ${trajectoryStart(profile)} – ${PRINT_CV.labels.present}`;
+  const trajectoryNote = `${esText(printCvCuration().sections.experienceNote)} · ${trajectoryStart(profile)} – ${printCvCuration().labels.present}`;
   const education = sortByRecency(profile.education).map(educationHtml).join("\n");
   const publications = profile.publications.map(publicationHtml).join("\n");
-  const footerDate = profile.source.commitDate ?? PRINT_CV.labels.footerNoDate;
+  const footerDate = profile.source.commitDate ?? printCvCuration().labels.footerNoDate;
 
   return `<!-- ── CV PLANO PARA IMPRESIÓN / PDF (oculto en pantalla, visible al imprimir) ── -->
 <div id="print-cv" aria-hidden="true">
@@ -262,36 +263,36 @@ export function printCvHtml(profile: CvProfile): string {
   </div>
 
   <div class="p-section">
-    <h2>${PRINT_CV.sections.profile}</h2>
+    <h2>${printCvCuration().sections.profile}</h2>
     <p>${esc(prose)}</p>
   </div>
 
   <div class="p-section">
-    <h2>${esc(esText(PRINT_CV.sections.experience))}</h2>
+    <h2>${esc(esText(printCvCuration().sections.experience))}</h2>
     <div class="p-meta">${esc(trajectoryNote)}</div>
 ${experience}
   </div>
 
   <div class="p-section">
-    <h2>${PRINT_CV.sections.education}</h2>
+    <h2>${printCvCuration().sections.education}</h2>
 ${education}
   </div>
 
   <div class="p-section">
-    <h2>${PRINT_CV.sections.publications}</h2>
+    <h2>${printCvCuration().sections.publications}</h2>
     <ul>
 ${publications}
     </ul>
   </div>
 
   <div class="p-section p-keep">
-    <h2>${PRINT_CV.sections.skills}</h2>
+    <h2>${printCvCuration().sections.skills}</h2>
     <ul>
 ${skillsHtml(profile)}
     </ul>
   </div>
 
-  <div class="p-footer">${PRINT_CV.labels.footer} ${esc(profile.source.commit)} · ${esc(footerDate)}</div>
+  <div class="p-footer">${printCvCuration().labels.footer} ${esc(profile.source.commit)} · ${esc(footerDate)}</div>
 </div>
 `;
 }

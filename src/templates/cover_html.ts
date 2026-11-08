@@ -8,7 +8,8 @@
 import { navDotsHtml } from "../cv/render.ts";
 import { t, ta, tae } from "../content/copy.ts";
 
-const COVER_TOP = `<header class="hud">
+function coverTop(): string {
+  return `<header class="hud">
   <div class="hud-inner">
     <a class="brand" href="#hero" aria-label="${ta("cover.brandAria")}"
        data-aria-es="${ta("cover.brandAria")}"
@@ -20,8 +21,10 @@ const COVER_TOP = `<header class="hud">
     <nav id="nav" class="hud-nav" aria-label="${ta("cover.navAria")}"
          data-aria-es="${ta("cover.navAria")}" data-aria-en="${tae("cover.navAria")}">
 `;
+}
 
-const COVER_TAIL = `</nav>
+function coverTail(): string {
+  return `</nav>
     <div class="hud-side">
       <button id="btn-lang" type="button" aria-label="${ta("cover.langAria")}">EN</button>
       <button id="btn-sound" type="button" aria-pressed="true" aria-label="${ta("cover.soundAria")}" title="${ta("cover.soundTitle")}">
@@ -67,6 +70,7 @@ const COVER_TAIL = `</nav>
   </button>
 </div>
 `;
+}
 
 /** HUD + nav generado desde SALAS (hero + salas visibles). */
 export function coverHtml(): string {
@@ -74,5 +78,5 @@ export function coverHtml(): string {
     .split("\n")
     .map((line) => `      ${line}`)
     .join("\n");
-  return COVER_TOP + dots + "\n" + COVER_TAIL;
+  return coverTop() + dots + "\n" + coverTail();
 }

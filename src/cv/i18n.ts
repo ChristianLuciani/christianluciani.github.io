@@ -44,8 +44,6 @@ export function i18nDictionary(): Record<string, string> {
   };
 }
 
-const MAP: Record<string, string> = i18nDictionary();
-
 function norm(s: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
@@ -55,6 +53,10 @@ const SKIP: Record<string, number> = { SCRIPT: 1, STYLE: 1, TITLE: 1 };
 /** Monta el diccionario y el toggle ES/EN. Idempotente. */
 export function initI18n(): void {
   if (typeof document === "undefined") return;
+
+  // Se arma ACÁ (no al importar): el pack depende del tema activo del
+  // runtime, que `src/ts/app/theme.ts` instala antes de este init (F1/#159).
+  const MAP: Record<string, string> = i18nDictionary();
 
   // Claves de sala desde SALAS (idempotente) + pares ES/EN del SSOT (#109):
   // roles, highlights, descripciones y org entran traducidos sin diccionario manual.

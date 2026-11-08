@@ -5,6 +5,9 @@
  * scripts inline — todo llega bundleado.
  */
 
+// PRIMER import a propósito: instala la narrativa del tema que declara la
+// página (`<html data-theme>`) antes de que i18n/intro/render lean copy/salas.
+import "./ts/app/theme.ts";
 import { initI18n } from "./cv/i18n";
 import { initIntro } from "./cv/intro";
 import { mountSalas } from "./cv/render";

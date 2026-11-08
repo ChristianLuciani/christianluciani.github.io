@@ -1,8 +1,9 @@
 # Crear un tema (narrativa + piel) — instructivo para agentes
 
-> Contrato operativo. Un tema nuevo = **un PR** que crea `src/themes/<id>/` y añade
-> **una línea** al registro. Si necesitás tocar cualquier otro archivo, el contrato
-> falló: pará y reportá (ADR-001, `docs/SPEC.md` §5.4–§5.6).
+> Contrato operativo. Un tema nuevo = **un PR** que crea `src/themes/<id>/`, declara su
+> curación y suma **una línea** en cada registro (`THEMES` y `CURATIONS`). Si necesitás
+> tocar el renderer, el SSOT o el tema de otro, el contrato falló: pará y reportá
+> (ADR-001, `docs/SPEC.md` §5.4–§5.6).
 >
 > **Alcance:** `Cubre: crear o modificar un tema del sitio · No cubre: hechos del perfil (profile-data), ilusiones (src/ts/illusions), deploy · as_of: 2026-11-07`
 
@@ -35,13 +36,18 @@ site: { origin: "https://christianluciani.github.io", base: "" }   // base = pre
 path: "ingenieria"                                                 // "" = raíz del artefacto
 ```
 
-Registro (única línea permitida fuera del directorio):
+Registro (las dos únicas líneas permitidas fuera de los directorios del tema y de su
+curación; la piel NO se registra: se resuelve por convención de directorio):
 
 ```ts
 // src/themes/index.ts
 import { ingenieria } from "./ingenieria/narrative.ts";
 export const THEMES = { museo, ingenieria } as const;
 export const DEFAULT_THEME = "museo";
+
+// src/content/curation/index.ts
+import { INGENIERIA_CURATION } from "./ingenieria.ts";
+export const CURATIONS = { museo: MUSEO_CURATION, ingenieria: INGENIERIA_CURATION };
 ```
 
 Cada `narrative.ts` declara `id`, `path` y `site { origin, base }` (obligatorios en el
@@ -94,7 +100,9 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   puntuación no cuentan. Si falla, mové la frase al pack y pedila con
   `t()`/`th()`/`ta()`.
 - El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
-  no hay ninguna clave escrita a mano en el MAP. Ojo con dos definiciones
+  no hay ninguna clave escrita a mano en el MAP. Se arma en `initI18n` (no al importar)
+  con el pack del tema que la página declara en `<html data-theme>`; el runtime lo
+  instala antes de i18n/intro/render (`src/ts/app/theme.ts`). Ojo con dos definiciones
   distintas, que el gate separa a propósito:
   - **Pack → HTML** (lo que mide `no-literal-copy.test.ts`): toda clave no
     `runtime` aparece en el render, como texto o como atributo. Es el gate que
@@ -190,11 +198,14 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
   congelamiento de I1 (#130). Publicarlos es un cambio de render declarado.
 - Todo par texto/fondo declara contraste y **pasa AA** (4,5:1 normal, 3:1 grande);
   el umbral no es autodeclarable: `contrast.ts` sólo admite 3 o 4,5.
-- **Límite vigente (ADR-001 §D11, S4 pendiente):** `src/themes/skin.ts` emite la piel de
-  `museo` y sólo de `museo`. Un tema no-default con `skin.css` propio **no publica esa
-  piel**: `themes:check` lo falla en vez de certificar CSS que no llega al render. Hasta
-  que S4/#136 haga que `emitSkin` resuelva la piel del tema activo, un tema nuevo sin
-  `skin.css` hereda la del default (y el reporte lo declara).
+- **Piel por tema (S4 de ADR-001 §D11, resuelto en #134):** `emitSkin` resuelve
+  `src/themes/<id>/skin.css` del tema ACTIVO (el que `assembleHtml({ theme })` instala
+  durante el render). Un tema con `skin.css` propio **publica esa piel**. Un tema que
+  quiera heredar la del default lo declara **explícitamente** (`skin: "inherit"` en el
+  manifest); sin esa declaración, un tema registrado sin `skin.css` es un error (borrar
+  el archivo no se lee como herencia — F4 del pase fresco de #159). `themes:check` no
+  confía en el emisor: extrae el `<style>` del render de cada tema y lo compara con el
+  CSS de su fuente; si la piel no llega al documento, el gate falla (F4/#158).
 - Prohibido `!important` para pisar otro tema: si hace falta, falta un token.
 
 ## 7. Metadata y SEO del tema
@@ -261,8 +272,11 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
   hechos con `reason` en cada exclusión y `experienceSections` clasifica todas
   las filas de `experience[]` del print-CV.
 - **piel**: `src/themes/<id>/skin.css` no tiene literales de color fuera de sus
-  bloques de tokens. Un tema sin `skin.css` propio hereda la piel del default
-  (el reporte lo declara).
+  bloques de tokens. Un tema sin `skin.css` propio hereda la piel del default sólo
+  si lo declara (`skin: "inherit"`); sin esa declaración, el gate falla. La piel que
+  el emisor resuelve para el tema tiene que
+  ser la que aparece en el `<style>` de su render: el gate compara ambos y falla
+  si el documento publica otra (F4 de #158).
 - **contraste**: todo `color: var(--x)` y toda combinación texto/tinte tiene par
   declarado en `contrast.ts` y pasa AA; las deudas (`AA_DEBT`) se auto-eliminan
   cuando el par empieza a cumplir.
@@ -271,17 +285,22 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
 
 ## 9. Checklist de aceptación (el PR no se abre sin esto)
 
-- [ ] `src/themes/<id>/` completo; **0** cambios fuera de ahí salvo la línea de registro.
+- [ ] `src/themes/<id>/` completo; fuera de ahí sólo las líneas de registro
+      (`src/themes/index.ts` y `src/content/curation/index.ts`) y su curación.
 - [ ] Copy 100% ES+EN; 0 claves huérfanas; 0 strings visibles en templates.
 - [ ] `curation` declara include/exclude; toda exclusión con `reason`; el
       reporte cubre el 100% de los hechos (`npm run curation:report` verde) y
       `curation.experienceSections` cubre las filas de `experience[]` del print-CV.
-- [ ] `skin.css` sin literales de color; contraste AA verificado.
+- [ ] `skin.css` sin literales de color; contraste AA verificado; la piel del
+      tema llega al `<style>` de su render (`themes:check`). Si el tema hereda la
+      piel del default, lo declara con `skin: "inherit"`.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto** y el tema
       nuevo con su `tests/golden/<id>.html` (`npm run golden:update`).
 - [ ] `npm run themes:check` **y** `npm run themes:assets` verdes.
 - [ ] `meta` y `site` propios: title, description, ogImage; canonical por subpath.
+- [ ] La página publicada declara su tema (`<html data-theme>`), el runtime usa
+      salas/copy/i18n/intro del tema y el golden lo fija (`themes:assets`).
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.
 
 ## 10. Anti-patterns (rechazo directo en review)

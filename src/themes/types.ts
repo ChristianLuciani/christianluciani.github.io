@@ -80,6 +80,13 @@ export interface NarrativeManifest {
   };
   /** Salas incluidas, en orden DOM (incluye las ocultas). */
   readonly rooms: readonly RoomRef[];
+  /**
+   * Declaración de piel (F4 del pase fresco de #159). Omitido/`"own"` ⇒ el tema
+   * debe traer `skin.css` propio y el gate lo certifica; `"inherit"` ⇒ hereda
+   * explícitamente la piel del default (y no puede tener `skin.css` propio).
+   * Existe para que borrar un `skin.css` no se lea como herencia por diseño.
+   */
+  readonly skin?: "own" | "inherit";
   /** Pack de copy 100% ES/EN (I4). */
   readonly copy: CopyPack;
   /** roomId → id de canvas existente (ADR-001 §7). */
