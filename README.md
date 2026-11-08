@@ -2,6 +2,8 @@
 
 CV interactivo diseñado como recorrido museográfico, con ilusiones ópticas animadas y scroll cinematográfico. Repositorio y sitio de GitHub Pages.
 
+El mismo contenido factual (SSOT) se publica en **tres versiones**: el museo (default), una mirada de ingeniería y su variante nocturna. Cambia la narrativa y la piel, nunca los hechos ni la curación de otro tema.
+
 El mark animado del sitio se llama **Espirángulo** (espiral + triángulo).
 
 El mark **estático** es canónico en
@@ -10,31 +12,90 @@ El mark **estático** es canónico en
 `brand-kit.lock.json` y verificado con `npm run brand:verify`. La animación
 runtime y el clock viven en este repo.
 
-**[→ Ver en vivo](https://christianluciani.github.io/)**
+## Versiones publicadas
+
+| Versión | URL | Narrativa | Piel |
+|---|---|---|---|
+| **Museo** (default) | https://christianluciani.github.io/ | `museo` — recorrido museográfico de 8 salas | `src/themes/museo/skin.css` |
+| **Ingeniería** | https://christianluciani.github.io/ingenieria/ | `ingenieria` — reordenada, «Ciencia» agrupa Física+Grafo, competencias oculta, `profile-as-code` excluido | `src/themes/ingenieria/skin.css` |
+| **Ingeniería nocturna** | https://christianluciani.github.io/ingenieria-nocturno/ | la MISMA de ingeniería, por referencia (`variantOf`) | `src/themes/ingenieria-nocturno/skin.css` |
+
+El «switch» es la **URL**: no hay conmutador de tema en runtime en producción (ADR-001 §8). `SITE_THEME=<id>` aísla un tema en un build propio; sin selector, `npm run build` publica todo el registro.
 
 ## Estructura
 
 ```
 christianluciani.github.io/
-├── index.html            ← Archivo principal (desplegado por GitHub Pages)
-├── build.sh              ← Ensamblador opcional de src/
-├── ESTADO.md             ← Estado actual y próximos pasos
-├── vite.config.ts        ← Build con Vite (base "/")
-├── public/               ← Recursos servidos tal cual (audio, thumbs de papers, OG, QR,
-│                            robots.txt/llms.txt/AI-POLICY.md generados por sync:ai-policy)
-├── src/ts/               ← Fractales/ilusiones en TypeScript (Koch, canvas)
-├── assets/               ← Iconos inline + espejo vendored de marca (brand kit v1.2.0)
+├── index.html              ← render FUENTE del tema default (commiteado; baseline del golden)
+├── build.ts                ← render del documento + publicación del artefacto (dist/<path>/)
+├── vite.config.ts          ← bundle único (base "/") + manifest hasheado
+├── src/
+│   ├── themes/             ← NARRATIVAS y PIELES: <id>/{narrative,copy,illusions,contrast}.ts + skin.css
+│   │   ├── index.ts        ← registro id → narrative + resolución de SITE_THEME
+│   │   ├── types.ts        ← contrato (NarrativeManifest, RoomRef, RoomGroup)
+│   │   ├── rooms.ts        ← roomsFromCuration(): visibilidad + orden + conteos + voz
+│   │   └── skin.ts         ← resuelve qué skin.css emite cada tema
+│   ├── content/
+│   │   ├── curation/       ← CURACIÓN: qué se presenta, orden y exclusiones con `reason`, por tema
+│   │   └── copy.ts         ← resolución de copy del tema activo (t(), ta())
+│   ├── templates/          ← renderers genéricos (salas, plano, hero, cover, print-CV, head)
+│   ├── cv/                 ← derivaciones de estructura (SALAS, numeración, nav, i18n, render)
+│   ├── data/               ← snapshots generados del SSOT (profile, entity, now, provenance)
+│   ├── artifact/           ← publicación por página (canónica, sitemap, entry hasheado)
+│   ├── ts/                 ← runtime del browser (illusions/, graph/, fractals/, app/theme.ts)
+│   └── main.ts             ← entrada del bundle
+├── tools/
+│   ├── themes/             ← gates: check.ts (copy/curación/piel/contraste/linaje/golden) y assets.ts
+│   ├── golden/             ← baseline por tema + política de cambios de golden
+│   ├── curation.ts         ← reporte de cobertura de curación por tema
+│   └── sync-*.ts           ← proyecciones del SSOT (profile, entity, ai-policy, now, check)
+├── tests/
+│   └── golden/             ← un snapshot HTML por tema (museo, ingenieria, ingenieria-nocturno)
+├── public/                 ← servido tal cual (audio, thumbs, OG, QR, robots/llms/AI-POLICY)
+├── assets/                 ← iconos inline + espejo vendored de marca (brand kit v1.2.0)
 ├── docs/
-│   ├── CONTRIBUTING.md   ← Flujo de trabajo Git
-│   ├── STYLE_GUIDE.md    ← Sistema de diseño completo
-│   ├── cdn-decision.md   ← ADR: CDN de assets (jsDelivr) y pipeline
-└── tools/                ← Generadores (og-image.svg)
+│   ├── SPEC.md             ← SPEC del sitio (§5 contenido/curación, §8 FASE 5 temas)
+│   ├── CREAR-TEMA.md       ← receta operativa para crear/ajustar un tema
+│   ├── adr/                ← ADR-001 (hechos · curación · narrativa · piel)
+│   ├── epics/              ← epic y sub-issues de la FASE 5
+│   ├── CONTRIBUTING.md     ← flujo de trabajo Git
+│   ├── STYLE_GUIDE.md      ← sistema de diseño
+│   └── cdn-decision.md     ← ADR: CDN de assets y pipeline
+├── .github/workflows/      ← ci.yml · deploy.yml · refresh-now.yml
+└── ESTADO.md               ← estado actual y próximos pasos
 ```
 
 ## Stack
 
-HTML · CSS · Canvas API · Vanilla JS · TypeScript (Vite) · Google Fonts
-Sin frameworks ni dependencias de UI. La web publicada es un único `index.html`.
+HTML · CSS · Canvas API · Vanilla JS · TypeScript (Vite) · Google Fonts.
+Sin frameworks ni dependencias de UI. **Un** bundle y **una** raíz de assets para **N** páginas: `build.ts` escribe `dist/<path>/index.html` por tema (hoy `/`, `/ingenieria/`, `/ingenieria-nocturno/`) y un `sitemap.xml` con todas las URLs.
+
+## Temas: cuatro dimensiones
+
+El sitio modela el contenido en cuatro capas (ADR-001):
+
+| Dimensión | Dónde vive | Qué decide |
+|---|---|---|
+| **Hechos** | `src/data/profile.generated.ts` (SSOT en `profile-data`) | qué es verdad; ningún tema lo muta |
+| **Curación** | `src/content/curation/<id>.ts` | qué se presenta, en qué orden y por qué (`exclude` exige `reason`) |
+| **Narrativa** | `src/themes/<id>/narrative.ts` + `copy.ts` | salas (orden, agrupación, visibilidad), voz, metáforas, ilusiones, metadata |
+| **Piel** | `src/themes/<id>/skin.css` | tokens, tipografía, densidad |
+
+- **Agrupar salas** es una unidad de **navegación**, no una fusión de contenido: `NarrativeManifest.groups` le da a dos salas un número, una entrada de HUD y una celda del plano, y cada una conserva su `<section>`.
+- `order.salas` es el **único** lever del orden de salas y, cuando se declara, es **completo** (nombra todas las visibles). Ocultar una sala es `salas:<id>` en `exclude` **y** sacarla de `include`/`order.salas`.
+- Una **variante de piel** declara `variantOf` y reusa copy/salas/ilusiones/metadata/curación **por referencia**; el gate exige identidad, no una copia.
+- El publicador inyecta `<html data-theme="<id>">` y `src/ts/app/theme.ts` instala esa narrativa al arrancar (antes de i18n, intro y render).
+
+Gates del contrato (CI):
+
+```bash
+npm run themes:check    # copy ES/EN sin huérfanas, curación con reason, 0 literales de color,
+                        # AA, skin own|inherit, linaje variantOf, golden y layout por tema
+npm run themes:assets   # data-theme correcto y assets de cada página publicada
+npm run curation:report # cobertura de curación (100% por tema)
+npm run golden:update   # regenera tests/golden/<id>.html (el PR declara Golden-Cambio: render)
+npm test                # suite completa (incluye los gates anteriores como tests)
+```
 
 ## Datos del CV (SSOT)
 
@@ -80,10 +141,9 @@ deba ser citable por un motor de respuestas se promueve a `content/` en
 
 ## Despliegue
 
-Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.io/`
-(`vite.config.ts` usa `base: "/"`; GitHub Actions compila `dist/` y lo despliega en cada push a `main`).
+Publicado en GitHub Pages con **una página por tema** dentro de un solo artefacto: `https://christianluciani.github.io/` (museo, raíz), `/ingenieria/` y `/ingenieria-nocturno/`. `vite.config.ts` usa `base: "/"`; GitHub Actions compila `dist/` y lo despliega en cada push a `main`. La canónica, `og:url` y `og:image` salen de la dirección declarada por cada tema (`narrative.site` + `path`), overrideable con `SITE_ORIGIN`/`SITE_BASE`.
 
-## Salas y sus ilusiones
+## Salas — tema `museo` (default)
 
 | Sala | Contenido | Ilusión óptica |
 |------|-----------|----------------|
@@ -98,9 +158,12 @@ Publicado en la **raíz** de GitHub Pages → `https://christianluciani.github.i
 | 08 · El Buzón | Redes y contacto | Copo de Koch |
 | ~~El Archivo~~ | ~~Galería~~ — *oculta, pendiente de llenar* | — |
 
+**El layout lo decide cada tema, no este README.** El tema `ingenieria` demuestra el contrato completo: reordena (Producción → Trayectoria → Prototipos → Ciencia → Perfil → Contacto), **agrupa** Física y Grafo en la unidad «Ciencia», **oculta** competencias, excluye `profile-as-code` con `reason` y deriva su plano (7 celdas). `ingenieria-nocturno` publica la misma narrativa con otra piel.
+
 **La división de salas no se decide a mano.** `src/data/proyectos.ts` declara la `etapa`
 de cada proyecto y los subtítulos derivan su conteo de ahí (nunca un "6 PROYECTOS"
-hardcodeado, que miente en cuanto entra o sale una ficha):
+hardcodeado, que miente en cuanto entra o sale una ficha). Un tema que excluye una
+ficha ve el conteo re-derivado de **su** curación:
 
 - **publicado** = existe un artefacto que un tercero puede inspeccionar sin pedir permiso
   (repositorio público con licencia y release, DOI o URL viva). Es el mismo criterio que el
@@ -111,19 +174,19 @@ hardcodeado, que miente en cuanto entra o sale una ficha):
 ## Flujo de trabajo
 
 ```bash
-# Editar en rama dedicada (nunca en main)
-git checkout -b aionui/pi/descripcion-del-cambio
+# Editar en rama dedicada (nunca en main). Prefijo por harness: dsh/, pi/, claude/…
+git checkout -b dsh/docs/descripcion-del-cambio
 
-# Editar index.html (buscar "SALA 0X" para navegar)
-# Los cambios de texto afectan a ES y al diccionario EN (MAP) al final del archivo
+# Un cambio de tema vive en src/themes/<id>/** + src/content/curation/<id>.ts
+npm run themes:check && npm test
 
 git add .
-git commit -m "feat: descripcion"
-git push origin aionui/pi/descripcion-del-cambio
+git commit -m "docs(themes): descripcion"
+git push origin dsh/docs/descripcion-del-cambio
 # → abrir PR → Christian revisa y mergea → GitHub Pages actualiza (~1 min)
 ```
 
-Ver `docs/CONTRIBUTING.md` para detalles y `docs/STYLE_GUIDE.md` para el sistema de diseño.
+Ver `docs/CONTRIBUTING.md` para el flujo Git, `docs/CREAR-TEMA.md` para crear o ajustar un tema, `docs/SPEC.md` §5/§8 para el contrato y `docs/adr/ADR-001-temas-y-narrativas.md` para las decisiones.
 
 ## Contacto
 
