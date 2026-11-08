@@ -550,6 +550,95 @@ export function lineageErrors(
   return errors;
 }
 
+/**
+ * Errores del LAYOUT DE SALAS de un tema (S9 · #135): el orden declarado en la
+ * curación y los grupos de navegación.
+ *
+ * `order.salas` es el ÚNICO lever del orden (`roomsFromCuration()` lo aplica).
+ * Si el orden visible de `rooms` no coincide con el declarado hay dos fuentes y
+ * una miente: el HUD, el plano y la numeración salen de una, la sala de la otra.
+ *
+ * Un grupo declara que dos o más salas se presentan como UNA unidad de
+ * navegación (número, entrada del HUD y celda del plano compartidos). Por eso:
+ * sus salas tienen que existir, estar VISIBLES (agrupar una sala oculta sería
+ * declarar una unidad que el lector no puede visitar), ser ≥2, no repetirse, no
+ * pertenecer a otro grupo (una sala no puede estar en dos unidades) y ser
+ * CONTIGUAS en el orden visible (si no, la unidad numerada quedaría partida por
+ * una sala suelta y su número mentiría sobre la posición).
+ */
+export function roomLayoutErrors(
+  narrative: NarrativeManifest,
+  curation: Curation | undefined
+): string[] {
+  const errors: string[] = [];
+  const roomIds = new Set(narrative.rooms.map((room) => room.id));
+  const visible = narrative.rooms.filter((room) => !room.hidden).map((room) => room.id);
+  const visibleIds = new Set(visible);
+
+  const declared = curation?.order?.salas;
+  if (declared) {
+    const declaredVisible = declared.filter((id) => visibleIds.has(id));
+    if (declaredVisible.join("|") !== visible.join("|")) {
+      errors.push(
+        `salas: el orden visible de "rooms" no coincide con order.salas de la curación ` +
+          `(rooms: ${visible.join(", ")} · order.salas: ${declared.join(", ")}); ` +
+          "el orden tiene UNA fuente y `roomsFromCuration()` la aplica"
+      );
+    }
+  }
+
+  const groups = narrative.groups ?? [];
+  const groupIds = new Set<string>();
+  const claimed = new Map<string, string>();
+  for (const group of groups) {
+    const where = `grupo "${group.id}"`;
+    if (groupIds.has(group.id)) errors.push(`grupos: id duplicado — "${group.id}"`);
+    groupIds.add(group.id);
+    if (!/^[a-z0-9-]+$/.test(group.id)) {
+      errors.push(`grupos: ${where} no es un slug [a-z0-9-]`);
+    }
+    if (group.label.trim().length === 0) errors.push(`grupos: ${where} sin label (ES)`);
+    if (group.labelEn.trim().length === 0) {
+      errors.push(`grupos: ${where} sin labelEn (el rótulo del HUD también se traduce)`);
+    }
+    if (group.rooms.length < 2) {
+      errors.push(`grupos: ${where} agrupa ${group.rooms.length} sala(s); un grupo son ≥2`);
+    }
+    if (new Set(group.rooms).size !== group.rooms.length) {
+      errors.push(`grupos: ${where} repite una sala`);
+    }
+    for (const id of group.rooms) {
+      const owner = claimed.get(id);
+      if (owner) {
+        errors.push(`grupos: la sala "${id}" está en "${owner}" y en "${group.id}"`);
+      } else {
+        claimed.set(id, group.id);
+      }
+      if (!roomIds.has(id)) {
+        errors.push(`grupos: ${where} nombra una sala inexistente — "${id}"`);
+      } else if (!visibleIds.has(id)) {
+        errors.push(
+          `grupos: ${where} agrupa la sala OCULTA "${id}"; un grupo sólo presenta salas visibles`
+        );
+      }
+    }
+    const positions = group.rooms
+      .map((id) => visible.indexOf(id))
+      .filter((index) => index >= 0)
+      .sort((a, b) => a - b);
+    if (positions.length === group.rooms.length && positions.length > 0) {
+      const span = positions[positions.length - 1]! - positions[0]! + 1;
+      if (span !== positions.length) {
+        errors.push(
+          `grupos: ${where} no es contiguo en el orden visible (${group.rooms.join(", ")}); ` +
+            "una unidad de navegación no puede quedar partida por una sala suelta"
+        );
+      }
+    }
+  }
+  return errors;
+}
+
 /** Errores propios del manifest: id, metadata y dirección publicable. */
 function manifestErrors(narrative: NarrativeManifest): string[] {
   const errors: string[] = [];
@@ -602,6 +691,7 @@ export function checkTheme(
   }
 
   errors.push(...copyErrors(theme.narrative, theme.html));
+  errors.push(...roomLayoutErrors(theme.narrative, theme.curation));
   errors.push(
     ...curationErrors(
       id,

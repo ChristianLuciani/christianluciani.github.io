@@ -400,11 +400,21 @@ consuma `publicacionesDe()`.
 export interface NarrativeManifest {
   id: string;                       // slug [a-z0-9-], único en THEMES
   path: string;                     // subpath de publicación ("" = raíz)
+  variantOf?: string;               // S10: variante de piel; reusa el resto POR REFERENCIA
   rooms: RoomRef[];                 // ids, orden y metáfora; subconjunto o reordenamiento
+  groups?: RoomGroup[];             // S9: unidades de navegación (≥2 salas visibles y contiguas)
   copy: CopyPack;                   // claves semánticas ES/EN, 100% completas (I4)
   illusions: Record<string, string>;// roomId → canvas id existente en src/ts/illusions
   meta: { title: string; description: string; ogImage: string };
   site: { origin: string; base: string }; // dirección de publicación (origen + prefijo)
+}
+
+// S9: una unidad que el lector visita como UN destino
+export interface RoomGroup {
+  id: string;                       // slug [a-z0-9-], único en el tema
+  label: string;                    // rótulo de la unidad (HUD y plano, ES)
+  labelEn: string;                  // traducción obligatoria (el HUD se traduce)
+  rooms: readonly string[];         // ids de sala; ≥2, visibles y CONTIGUOS en el orden visible
 }
 ```
 
@@ -416,6 +426,16 @@ registro de temas; `meta` alimenta `<title>`, `og:*` y `twitter:*`; `site` + `pa
 La narrativa declara las salas que EXISTEN y su `hidden` se resuelve con la curación de
 ESE tema (`salas:<id>` en `exclude`): la visibilidad no se hereda de otro tema ni se fija
 en la estructura compartida.
+**Layout (S9 · #135):** el tema no repite derivaciones — `roomsFromCuration()`
+(`src/themes/rooms.ts`) aplica visibilidad (`exclude`), ORDEN (`order.salas` de su curación)
+y re-deriva los conteos de los subtítulos; `groups` declara qué salas son UNA unidad de
+navegación y `navUnits()` (`src/cv/render.ts`) es la derivación única que consumen HUD,
+plano, numeración y diccionario i18n. Agrupar no fusiona contenido: cada sala conserva su
+`<section>`, su cuerpo y su lugar en el DOM. `hidden` funciona para CUALQUIER sala (no sólo
+la galería) y la curación del tema es vinculante en el DOM (El Marco — tarjetas y showcase — y El
+Bastidor filtran con `activeCuration()`), así que excluir una ficha la saca de la página y del conteo a la vez.
+`themes:check` (`roomLayoutErrors`) exige `order.salas` == orden visible y grupos válidos
+(existentes, visibles, ≥2, sin solape y contiguos).
 
 ### 5.5 Curación — `curation.ts` por tema
 
@@ -601,6 +621,23 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
 - **5.8 — Control total (S9).** Segundo PR del piloto: reordena/agrupa/oculta salas y cura
   ítems. **Prueba de aceptación del contrato**: cualquier cambio necesario fuera de
   `themes/<id>/` + registro se corrige en el contrato, no con un parche lateral.
+  **Implementado en #135** sobre `ingenieria`, que deja de ser «el mismo conjunto que el
+  museo»: el orden de salas sale de `order.salas` (Producción → Trayectoria → Prototipos →
+  Ciencia → Perfil → Contacto), la sala del stack se oculta (`salas:competencias`), una
+  ficha se excluye con razón (`proyectos:profile-as-code`) y Biblioteca + Compás se agrupan
+  en la unidad «Ciencia» (`groups`), que en el HUD y el plano ocupa UNA entrada y UN número
+  (04) compartido, mientras cada sala conserva su `<section>` y su cuerpo. El subtítulo de
+  El Marco se re-deriva de la curación («2 PROYECTOS»), y la variante
+  `ingenieria-nocturno` hereda el layout por identidad sin copiarlo.
+  La prueba encontró CUATRO agujeros de contrato, corregidos acá y en ADR-001 (no en el
+  tema): `hidden` sólo funcionaba para la galería; `order.salas` no tenía consumidor; no
+  había forma de declarar una unidad de navegación; y El Marco/El Bastidor leían la
+  curación default en vez de la del tema. Las derivaciones quedaron únicas
+  (`roomsFromCuration`, `navUnits`, `subtitulosCurados`) y `themes:check` gana
+  `roomLayoutErrors` (order.salas == orden visible; grupos existentes, visibles, ≥2, sin
+  solape y contiguos). Los bodies compartidos ahora resuelven la curación en el render; el
+  golden de `museo` (e `index.html`) sigue byte-idéntico — es el invariante que hace
+  aceptable tocar código compartido.
 - **5.9 — Segunda piel sobre la misma narrativa (S10 · #136).** `themes/ingenieria-nocturno/`
   es una VARIANTE de `ingenieria`: su manifest (`variantOf`) reusa por referencia `copy`,
   `rooms`, `illusions`, `meta` y `site`, y `CURATIONS` apunta a la MISMA entrada del base;

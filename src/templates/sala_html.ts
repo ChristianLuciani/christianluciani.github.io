@@ -7,6 +7,10 @@ import { attrEscape, t, ta, th } from "../content/copy.ts";
  */
 import type { RoomRef } from "../themes/types.ts";
 import { activeRooms } from "../themes/index.ts";
+import { activeCuration } from "../content/curation/active.ts";
+import { isExcluded } from "../content/curation/index.ts";
+import { factId } from "../content/curation/keys.ts";
+import type { Curation } from "../content/curation/types.ts";
 import { numFor } from "../cv/render.ts";
 import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
@@ -158,10 +162,15 @@ function hostOf(url: string): string {
  * descripción base, link y fecha verificable salen del SSOT; las celdas de
  * interpretación (diseño, pedagogía, campo) son curación de `src/content/cv/`.
  */
-export function drahmaShowcase(profile: CvProfile): string {
+export function drahmaShowcase(profile: CvProfile, curation: Curation = activeCuration()): string {
   const project = showcaseProject(profile);
   if (!project) return "";
   const key = projectKey(project.name);
+  // La ficha del showcase es una superficie MÁS: si la curación del tema
+  // excluye el proyecto, no se publica. Sin esto, excluir `proyectos:Drahma`
+  // sacaba la tarjeta (que no existe) y dejaba el showcase entero — la
+  // decisión se cumplía sólo en apariencia. En `museo` no cambia nada.
+  if (isExcluded(curation, factId("proyectos", key))) return "";
   const verified = project.evidence.find((e) => e.verified)?.verified;
   const date = formatMonthYear(verified);
   // El status del SSOT decide sala y clase; la píldora curada (licencia/fecha/
@@ -726,13 +735,17 @@ export function perfilProseHtml(profile: CvProfile = P): string {
 
 /** El Marco: obra publicada (derivada de `published`) + showcase de Drahma. */
 export function marcoHtml(profile: CvProfile = P): string {
-  const cards = tarjetas(publicadosDe(profile).filter((p) => !p.sinTarjeta));
-  return `${cards}${drahmaShowcase(profile)}`;
+  // La curación es la del TEMA ACTIVO (no el default): excluir una ficha en
+  // `curation/<tema>.ts` tiene que sacarla del DOM y del conteo derivado del
+  // subtítulo a la vez. En `museo` la activa ES el default: el byte no cambia.
+  const curation = activeCuration();
+  const cards = tarjetas(publicadosDe(profile, curation).filter((p) => !p.sinTarjeta));
+  return `${cards}${drahmaShowcase(profile, curation)}`;
 }
 
 /** El Bastidor: sin artefacto público; cada ficha declara su `falta` curada. */
 export function bastidorHtml(profile: CvProfile = P): string {
-  return `${tarjetas(enDesarrolloDe(profile))}${cierreBastidor(profile)}`;
+  return `${tarjetas(enDesarrolloDe(profile, activeCuration()))}${cierreBastidor(profile)}`;
 }
 
 /**
@@ -813,9 +826,13 @@ export function roomBody(s: RoomRef, profile: CvProfile = P): string {
 function roomHeader(s: RoomRef): string {
   const meta = ROOM_META[s.id] ?? { titleScroll: "zoom-in" };
   const num = numFor(s.id) ?? meta.legacyNum ?? "";
+  // Una sala OCULTA sin número de unidad (la que el tema decide no presentar,
+  // distinta de la galería que conserva su número histórico) no publica un
+  // rótulo «SALA » vacío: si no hay número, no hay renglón.
+  const numero = num ? `    <div class="room-number" data-scroll="up">SALA ${num}</div>
+` : "";
   return (
-    `    <div class="room-number" data-scroll="up">SALA ${num}</div>
-` +
+    numero +
     `    <h2 class="room-title"   data-scroll="${meta.titleScroll}">${s.titulo}</h2>
 ` +
     `    <p class="room-function" data-scroll="up" data-delay="1">${s.funcion}</p>
@@ -829,11 +846,25 @@ function roomHeader(s: RoomRef): string {
  * Shell de la sala con la clase `room--hidden` coherente con la NARRATIVA: el
  * literal del shell es el default de la galería, pero la visibilidad la decide
  * la curación del tema (`RoomRef.hidden`). Para `museo` el byte no cambia (la
- * galería sigue oculta); un tema que la presente no hereda una sala invisible.
+ * galería sigue oculta y las visibles no traen la clase).
+ *
+ * La clase se NORMALIZA sobre el atributo completo del `<section>`: los shells
+ * no son todos `class="room"` — perfil/experiencia/fisica son `room room--alt` y
+ * contacto `room room--alt room--contact`. Comparar contra el literal exacto
+ * dejaba a esas salas visibles aunque la curación las excluyera (F1 del pase
+ * fresco de #165). Se agrega/quita el token `room--hidden` UNA sola vez y se
+ * conserva el orden de las demás clases.
  */
 function shellFor(s: RoomRef): string {
   const shell = roomShells()[s.id] ?? "";
-  return s.hidden ? shell : shell.replace('class="room room--hidden"', 'class="room"');
+  return shell.replace(/<section class="([^"]*)"/, (_match, classes: string) => {
+    const tokens = classes
+      .split(/\s+/)
+      .filter(Boolean)
+      .filter((token) => token !== "room--hidden");
+    if (s.hidden) tokens.push("room--hidden");
+    return `<section class="${tokens.join(" ")}"`;
+  });
 }
 
 /** Sala completa: comentario + shell + header(narrativa) + body. */

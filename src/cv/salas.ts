@@ -26,8 +26,10 @@
  *   para el museo 3D (reutilizaría SALAS sin re-definir la estructura).
  */
 
-import { enDesarrollo, publicados } from "../data/proyectos.ts";
+import { enDesarrollo, enDesarrolloDe, publicados, publicadosDe } from "../data/proyectos.ts";
 import { PROFILE } from "../data/profile.generated.ts";
+import type { CvProfile } from "../data/profile.types.ts";
+import type { Curation } from "../content/curation/types.ts";
 
 /**
  * Primer año del SSOT (eventos formativos incluidos). El SSOT NO distingue
@@ -75,6 +77,20 @@ export const HERO_NAV = {
 } as const;
 
 /**
+ * Plantillas de los DOS subtítulos con conteo derivado. La plantilla es la
+ * fuente única: el default de SALAS y el subtítulo de un tema con otra
+ * curación usan la MISMA, así el número nunca se escribe a mano (S9 · #135).
+ */
+const SUBTITULO_PROYECTOS = (n: number): string =>
+  `OBRA PUBLICADA · ARTEFACTO AUDITABLE · ${n} PROYECTOS`;
+const SUBTITULO_PROYECTOS_EN = (n: number): string =>
+  `PUBLISHED WORK · AUDITABLE ARTIFACT · ${n} PROJECTS`;
+const SUBTITULO_BASTIDOR = (n: number): string =>
+  `EN DESARROLLO · PROTOTIPOS E IDEAS · ${n} PROYECTOS`;
+const SUBTITULO_BASTIDOR_EN = (n: number): string =>
+  `IN DEVELOPMENT · PROTOTYPES AND IDEAS · ${n} PROJECTS`;
+
+/**
  * Orden = orden real de los `<section class="room">` en el DOM (el i18n ROOM_EN es
  * posicional sobre ese orden, incluida la galería oculta).
  */
@@ -83,8 +99,8 @@ export const SALAS: SalaDef[] = [
     id: "proyectos",
     titulo: "El <em>Marco</em>",
     tituloEn: "The <em>Frame</em>",
-    subtitulo: `OBRA PUBLICADA · ARTEFACTO AUDITABLE · ${publicados.length} PROYECTOS`,
-    subtituloEn: `PUBLISHED WORK · AUDITABLE ARTIFACT · ${publicados.length} PROJECTS`,
+    subtitulo: SUBTITULO_PROYECTOS(publicados.length),
+    subtituloEn: SUBTITULO_PROYECTOS_EN(publicados.length),
     funcion:
       "Proyectos publicados con repositorio, release o DOI que cualquiera puede abrir y verificar.",
     funcionEn:
@@ -97,8 +113,8 @@ export const SALAS: SalaDef[] = [
     id: "bastidor",
     titulo: "El <em>Bastidor</em>",
     tituloEn: "The <em>Stretcher</em>",
-    subtitulo: `EN DESARROLLO · PROTOTIPOS E IDEAS · ${enDesarrollo.length} PROYECTOS`,
-    subtituloEn: `IN DEVELOPMENT · PROTOTYPES AND IDEAS · ${enDesarrollo.length} PROJECTS`,
+    subtitulo: SUBTITULO_BASTIDOR(enDesarrollo.length),
+    subtituloEn: SUBTITULO_BASTIDOR_EN(enDesarrollo.length),
     funcion:
       "Proyectos en desarrollo: prototipos, investigaciones e ideas que todavía no tienen un artefacto público.",
     funcionEn:
@@ -198,3 +214,32 @@ export const SALAS: SalaDef[] = [
     navLabelEn: "Archive"
   }
 ];
+
+/**
+ * SUBTÍTULOS CON CONTEO DERIVADO DE LA CURACIÓN DEL TEMA (S9 · #135).
+ *
+ * `SALAS` es estructura COMPARTIDA: sus conteos se derivan de la curación
+ * default. Un tema con OTRA curación (p. ej. `ingenieria`, que excluye una
+ * ficha) publicaría el conteo del default y mentiría sobre su propia página.
+ * Las dos salas cuyo subtítulo cuenta fichas declaran acá el número derivado
+ * de la curación RECIBIDA; el resto devuelve `undefined` (su subtítulo es
+ * factual y no depende de la curación).
+ *
+ * El subtítulo NO se escribe a mano: usa la misma plantilla que `SALAS`, así
+ * el default de `museo` sigue byte-idéntico y el número no puede divergir.
+ */
+export function subtitulosCurados(
+  roomId: string,
+  curation: Curation
+): { es: string; en: string } | undefined {
+  const profile = PROFILE as unknown as CvProfile;
+  if (roomId === "proyectos") {
+    const n = publicadosDe(profile, curation).length;
+    return { es: SUBTITULO_PROYECTOS(n), en: SUBTITULO_PROYECTOS_EN(n) };
+  }
+  if (roomId === "bastidor") {
+    const n = enDesarrolloDe(profile, curation).length;
+    return { es: SUBTITULO_BASTIDOR(n), en: SUBTITULO_BASTIDOR_EN(n) };
+  }
+  return undefined;
+}

@@ -23,7 +23,7 @@ tema. Si un valor debe cambiar en dos archivos para seguir coherente, es un bug.
 
 ```
 src/themes/<id>/
-├── narrative.ts   # ThemeNarrative: rooms, copy (tipado), illusions, meta, site
+├── narrative.ts   # ThemeNarrative: rooms, groups (opcional), copy (tipado), illusions, meta, site
 ├── copy.ts        # claves semánticas → { es, en } — 100% obligatorio
 ├── skin.css       # tokens + reglas del tema; cero literales de color fuera de tokens
 └── illusions.ts   # roomId → canvas id existente en src/ts/illusions
@@ -156,6 +156,46 @@ export const CURATION: Curation = {
   compartido la pide al tema activo, no al módulo de un tema.
 - `npm run curation:report` (o `tsx tools/curation.ts --report`) sale 1 con un
   hecho sin decisión, un id inexistente o un `exclude` sin razón (gate I3).
+
+### Reordenar, ocultar y agrupar salas (S9 · #135)
+
+El layout de la visita se declara en DOS lugares y no se reimplementa:
+
+```ts
+// src/content/curation/<id>.ts — el ORDEN y la VISIBILIDAD de las salas
+const SALAS_VISIBLES = ["proyectos", "experiencia", "bastidor", "fisica", "grafo", "perfil", "contacto"];
+export const CURATION: Curation = {
+  // ...
+  exclude: [{ id: "salas:competencias", reason: "…" }],  // ocultar: la sala queda en el DOM, invisible
+  order: { salas: SALAS_VISIBLES }                        // ordenar: único lever del orden
+};
+
+// src/themes/<id>/narrative.ts — la VOZ y las UNIDADES de navegación
+rooms: roomsFromCuration(CURATION, VOICE),               // deriva visibilidad + orden + conteos
+groups: [{ id: "ciencia", label: "Ciencia", labelEn: "Science", rooms: ["fisica", "grafo"] }]
+```
+
+- **Ordenar:** `order.salas` (claves sin prefijo). Cuando se declara es **COMPLETO**:
+  nombra TODAS las salas visibles, porque `validateCuration` exige que `order` cubra
+  todo hecho incluido — un orden parcial es una curación inválida. No toques `rooms` a
+  mano ni reordenes `SALAS`: `roomsFromCuration()` aplica el orden y `themes:check`
+  falla si `rooms` y `order.salas` discrepan.
+- **Ocultar:** `salas:<id>` en `exclude`, con `reason`, **y** sacá el hecho de
+  `include` y de `order.salas`: `include`/`exclude` son excluyentes (`validateCuration`
+  rechaza un hecho incluido y excluido a la vez) y `order` sólo nombra incluidos. Vale
+  para CUALQUIER sala (no sólo la galería): la sala sigue en el DOM con `room--hidden`,
+  sale del HUD/plano y no cuenta en la numeración de unidades. La galería conserva su
+  «SALA 05» histórico (`legacyNum`, paridad byte a byte); una sala oculta sin número
+  heredado no publica renglón de número. Ocultar no borra el hecho.
+- **Agrupar:** `groups` con ≥2 salas VISIBLES y CONTIGUAS. La unidad comparte
+  número, entrada del HUD y celda del plano (`navUnits()`); cada sala conserva su
+  `<section>` y su cuerpo. No inventes una sala ni fusiones contenido.
+- **Contar:** si el subtítulo de la sala cuenta fichas (`proyectos`, `bastidor`),
+  se re-deriva de TU curación (`subtitulosCurados()`): no escribas el número.
+- **Excluir contenido:** `exclude` con `reason` es vinculante en el DOM (El Marco y
+  El Bastidor filtran con `activeCuration()`): la tarjeta desaparece y el conteo
+  del subtítulo cambia con ella. Si el ítem vive en un renderer todavía hardcodeado
+  (#99), excluirlo sería una decisión sin efecto: no lo hagas.
 
 ## 5. Hechos: referencia, jamás copia
 
@@ -348,6 +388,8 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto** y el tema
       nuevo con su `tests/golden/<id>.html` (`npm run golden:update`).
+- [ ] Si reordena/oculta/agrupa salas: `order.salas` == orden visible de `rooms` y
+      `groups` válidos (visibles, ≥2, contiguos); `npm run themes:check` lo exige.
 - [ ] `npm run themes:check` **y** `npm run themes:assets` verdes.
 - [ ] `meta` y `site` propios: title, description, ogImage; canonical por subpath.
       Una **variante de piel** (S10) es la excepción declarada: `meta`, `site`, `copy`,

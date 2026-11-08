@@ -660,6 +660,10 @@ a { color:inherit; }
 /* Dos fichas: sin una tercera columna vacía (El Marco: Kontablo + profile-as-code;
    Drahma va como showcase, no como tarjeta). */
 .project-grid--pair { grid-template-columns:repeat(2, minmax(0,1fr)); }
+/* S9 (#135): la curación de este tema deja UNA tarjeta en El Marco (la otra
+   pieza publicada se presenta como showcase). Sin esta regla la grilla de tres
+   columnas dejaría la ficha en 1/3 y dos huecos. */
+.project-card:only-child { grid-column:1 / -1; }
 .project-card {
   display:flex; flex-direction:column;
   position:relative; overflow:hidden;

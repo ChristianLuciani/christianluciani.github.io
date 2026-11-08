@@ -4,8 +4,7 @@
  * (x = 60 + col·270, y = 80 + row·160) — añadir/quitar sala reposiciona solo.
  */
 import { HERO_NAV } from "../cv/salas.ts";
-import { numFor, sectionId, visibleSalas } from "../cv/render.ts";
-import { activeRooms } from "../themes/index.ts";
+import { navUnits, sectionId } from "../cv/render.ts";
 import { t, ta } from "../content/copy.ts";
 
 function planoTop(): string {
@@ -45,7 +44,7 @@ const PLANO_BOTTOM = `  </svg>
 
 `;
 
-/** Una celda del plano (entrada o sala). */
+/** Una celda del plano (entrada o UNIDAD de navegación). */
 interface PlanoCell {
   href: string;
   /** Etiqueta de categoría sobre el número (SALA en ES, ROOM en EN). */
@@ -54,19 +53,40 @@ interface PlanoCell {
   label: string;
 }
 
-function planoCells(): PlanoCell[] {
-  const cells: PlanoCell[] = [
-    { href: `#${HERO_NAV.id}`, sala: t("plano.sala"), num: "00", label: t("plano.entry") }
+/** Texto del plano: la unidad rotula con su rótulo, en mayúsculas y sin markup. */
+function planoLabel(title: string): string {
+  return title.replace(/<[^>]*>/g, "").toUpperCase();
+}
+
+/**
+ * METADATOS de las celdas del plano, en orden de navegación.
+ *
+ * Una celda por UNIDAD (`navUnits()`): un grupo de salas ocupa UNA celda y
+ * comparte el número de sus salas. El tema default no declara grupos, así que
+ * produce exactamente la misma lista que antes (hero + una celda por sala).
+ */
+export function planoCellMeta(): { id: string; sala: string; num: string; label: string }[] {
+  const cells: { id: string; sala: string; num: string; label: string }[] = [
+    { id: HERO_NAV.id, sala: t("plano.sala"), num: "00", label: t("plano.entry") }
   ];
-  for (const s of visibleSalas()) {
+  for (const unit of navUnits()) {
     cells.push({
-      href: `#${sectionId(s.id)}`,
+      id: unit.id,
       sala: t("plano.sala"),
-      num: numFor(s.id) ?? "",
-      label: s.titulo.replace(/<[^>]*>/g, "").toUpperCase()
+      num: unit.num,
+      label: planoLabel(unit.title)
     });
   }
   return cells;
+}
+
+function planoCells(): PlanoCell[] {
+  return planoCellMeta().map((cell) => ({
+    href: cell.id === HERO_NAV.id ? `#${HERO_NAV.id}` : `#${sectionId(cell.id)}`,
+    sala: cell.sala,
+    num: cell.num,
+    label: cell.label
+  }));
 }
 
 /** Celda sobre grilla 3×2 (orden de nav: hero + salas visibles). */
@@ -89,13 +109,3 @@ export function planoHtml(): string {
   return planoTop() + planoCells().map(renderCell).join("") + PLANO_BOTTOM;
 }
 
-/** Test helper: metadatos de celda por sala visible (orden nav). */
-export function planoCellMeta(): { id: string; sala: string; num: string; label: string }[] {
-  const ids = [HERO_NAV.id, ...visibleSalas().map((s) => s.id)];
-  return ids.map((id) => {
-    const s = activeRooms().find((x) => x.id === id);
-    const label = s ? s.titulo.replace(/<[^>]*>/g, "").toUpperCase() : t("plano.entry");
-    const num = id === HERO_NAV.id ? "00" : (numFor(id) ?? "");
-    return { id, sala: t("plano.sala"), num, label };
-  });
-}

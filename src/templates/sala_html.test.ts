@@ -1,7 +1,11 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { SALAS } from "../cv/salas";
+import { activateTheme } from "../themes/index";
+import { MUSEO_CURATION } from "../content/curation/museo";
+import { factId } from "../content/curation/keys";
+import type { Curation } from "../content/curation/types";
 import { enDesarrolloDe } from "../data/proyectos";
 import { profileProse } from "../content/cv/profile-prose";
 import { PROFILE } from "../data/profile.generated";
@@ -15,9 +19,12 @@ import {
   frisoHtml,
   marcoHtml,
   primerArtefacto,
+  renderRoom,
   roomBody,
-  roomsHtml
+  roomsHtml,
+  roomShells
 } from "./sala_html";
+import { museo } from "../themes/museo/narrative";
 
 const profile = PROFILE as unknown as CvProfile;
 const FRISO = frisoHtml(profile);
@@ -327,6 +334,83 @@ describe("sala Perfil — una sola prosa, derivada del SSOT (#122)", () => {
     expect(roomBody(SALA_PERFIL, fixture)).toContain(
       profile.positioning.audiences.recruiters.es!
     );
+  });
+});
+
+describe("la curación del tema manda en el DOM (S9 · #135)", () => {
+  afterEach(() => {
+    activateTheme("museo");
+  });
+
+  /**
+   * El render de una sala es COMPARTIDO: si lee el default en vez de la curación
+   * del tema activo, excluir una ficha no la saca del DOM y el subtítulo
+   * derivado publica un número que la sala desmiente. `ingenieria` excluye
+   * `profile-as-code`; su El Marco tiene que reflejarlo.
+   */
+  it("excluir una ficha la saca de El Marco, no sólo del conteo", () => {
+    activateTheme("ingenieria");
+    const html = marcoHtml(profile);
+    expect(html).toContain("Kontablo");
+    expect(html).not.toContain("profile-as-code");
+    // La misma curación con museo (el default) sí la publica.
+    activateTheme("museo");
+    expect(marcoHtml(profile)).toContain("profile-as-code");
+  });
+
+  /**
+   * Hasta S9 `hidden` sólo funcionaba para la galería: el helper sabía QUITAR la
+   * clase del literal, nunca agregarla. Ocultar otra sala era decorativo.
+   */
+  it("ocultar una sala que no es la galería la deja fuera de la visita", () => {
+    activateTheme("ingenieria");
+    const html = roomsHtml();
+    expect(html).toContain('<section class="room room--hidden" id="room-competencias">');
+    expect(html).toContain('<section class="room" id="room-proyectos">');
+    expect(html).not.toContain('<div class="room-number" data-scroll="up">SALA </div>');
+  });
+
+
+  /**
+   * F1 del pase fresco de #165: los shells NO son todos `class="room"` (perfil,
+   * experiencia y fisica traen `room--alt`; contacto suma `room--contact`).
+   * Normalizar por literal exacto dejaba a esas salas visibles y sin número
+   * aunque la curación las excluyera.
+   */
+  it("ocultar CUALQUIER sala normaliza la clase de su shell, con sus clases extra", () => {
+    activateTheme("museo");
+    for (const id of Object.keys(roomShells())) {
+      const room = museo.rooms.find((candidate) => candidate.id === id);
+      expect(room, `sala ${id} en la narrativa`).toBeDefined();
+      const hidden = /<section class="([^"]*)"/.exec(renderRoom({ ...room!, hidden: true }))![1]!;
+      const hiddenTokens = hidden.split(" ");
+      expect(hiddenTokens, `oculta ${id}`).toContain("room--hidden");
+      expect(hiddenTokens.filter((token) => token === "room--hidden"), `duplicada ${id}`).toHaveLength(1);
+      const shown = /<section class="([^"]*)"/.exec(renderRoom({ ...room!, hidden: false }))![1]!;
+      expect(shown.split(" "), `visible ${id}`).not.toContain("room--hidden");
+    }
+    // El orden de las clases propias se conserva: el token entra al final.
+    const contacto = museo.rooms.find((candidate) => candidate.id === "contacto")!;
+    expect(/<section class="([^"]*)"/.exec(renderRoom({ ...contacto, hidden: true }))![1]).toBe(
+      "room room--alt room--contact room--hidden"
+    );
+  });
+
+  /**
+   * El showcase de Drahma es una superficie del mismo contrato: si la curación
+   * del tema excluye el proyecto, la ficha completa tampoco se publica. Excluir
+   * `proyectos:Drahma` sacaba la tarjeta (que no existe) y dejaba el showcase.
+   */
+  it("la ficha del showcase obedece a la curación, no sólo la tarjeta", () => {
+    const excluyeDrahma: Curation = {
+      ...MUSEO_CURATION,
+      exclude: [
+        ...MUSEO_CURATION.exclude,
+        { id: factId("proyectos", "Drahma"), reason: "prueba: la ficha completa no se publica" }
+      ]
+    };
+    expect(drahmaShowcase(profile, MUSEO_CURATION)).not.toBe("");
+    expect(drahmaShowcase(profile, excluyeDrahma)).toBe("");
   });
 });
 

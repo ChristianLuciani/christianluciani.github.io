@@ -13,7 +13,7 @@
  */
 
 import { HERO_NAV } from "./salas.ts";
-import { activeRooms, type RoomRef } from "../themes/index.ts";
+import { activeNarrative, activeRooms, type RoomRef } from "../themes/index.ts";
 
 /** id de <section> a partir del id de sala: 'perfil' → 'room-perfil' */
 export function sectionId(id: string): string {
@@ -33,21 +33,102 @@ export function navTargets(): string[] {
   return [HERO_NAV.id, ...visibleSalas().map((s) => sectionId(s.id))];
 }
 
-/** Una entrada del HUD: número + label siempre visibles (número decorativo). */
-function navLink(target: string, label: string, labelEn: string, num: string): string {
+/**
+ * UNA UNIDAD DE NAVEGACIÓN (S9 · #135): una sala o un grupo de salas.
+ *
+ * Es el tipo que colapsa el contrato de grupos (`NarrativeManifest.groups`):
+ * las salas agrupadas comparten número, entrada del HUD y celda del plano,
+ * pero conservan su `<section>` en el DOM. `rooms` son las salas visibles que
+ * la unidad presenta; `id` es la PRIMERA (destino de la entrada).
+ */
+export interface NavUnit {
+  readonly id: string;
+  readonly rooms: readonly string[];
+  readonly num: string;
+  readonly label: string;
+  readonly labelEn: string;
+  /** Rótulo de la unidad para el plano (ES, puede traer `<em>` si es un título). */
+  readonly title: string;
+  /** Rótulo EN del plano; sólo lo usa el diccionario i18n (`mapExtra`). */
+  readonly titleEn: string;
+}
+
+/**
+ * Unidades de navegación en orden de las salas VISIBLES: cada grupo se emite
+ * una sola vez, en la posición de su primera sala; el resto de las salas es su
+ * propia unidad. Un grupo con salas no contiguas NO se reordena acá (el gate
+ * lo rechaza): la unidad se ubica donde aparece su primera sala.
+ */
+export function navUnits(): NavUnit[] {
+  const visible = visibleSalas();
+  const visibleIds = new Set(visible.map((s) => s.id));
+  const groups = activeNarrative().groups ?? [];
+  const groupOf = new Map<string, (typeof groups)[number]>();
+  for (const group of groups) {
+    for (const roomId of group.rooms) {
+      if (visibleIds.has(roomId)) groupOf.set(roomId, group);
+    }
+  }
+  const units: NavUnit[] = [];
+  const emitted = new Set<string>();
+  for (const room of visible) {
+    const group = groupOf.get(room.id);
+    const key = group ? `group:${group.id}` : `room:${room.id}`;
+    if (emitted.has(key)) continue;
+    emitted.add(key);
+    const rooms = group
+      ? visible.filter((s) => groupOf.get(s.id) === group).map((s) => s.id)
+      : [room.id];
+    units.push({
+      id: room.id,
+      rooms,
+      num: String(units.length + 1).padStart(2, "0"),
+      label: group ? group.label : room.navLabel,
+      labelEn: group ? group.labelEn : room.navLabelEn,
+      title: group ? group.label : room.titulo,
+      titleEn: group ? group.labelEn : room.tituloEn
+    });
+  }
+  return units;
+}
+
+/**
+ * Una entrada del HUD: número + label siempre visibles (número decorativo).
+ * `rooms` (ids de <section>) permite que el observer marque la unidad cuando
+ * cualquiera de sus salas cruza la banda activa.
+ */
+function navLink(
+  target: string,
+  label: string,
+  labelEn: string,
+  num: string,
+  rooms: readonly string[] = [target]
+): string {
+  // `data-rooms` SÓLO cuando la unidad presenta más de una sala: una entrada
+  // de una sola sala ya se identifica por `data-target`, y emitir el atributo
+  // siempre cambiaría el HTML del tema default (su golden es intocable).
+  const group = rooms.length > 1 ? ` data-rooms="${rooms.join(" ")}"` : "";
   return (
     `<a class="nav-dot" href="#${target}" data-target="${target}"` +
-    ` data-label="${label}" data-label-en="${labelEn}">` +
+    ` data-label="${label}" data-label-en="${labelEn}"${group}>` +
     `<span class="n" aria-hidden="true">${num}</span>` +
     `<span class="nav-label">${label}</span></a>`
   );
 }
 
-/** HTML del HUD (hero + salas visibles), desde la narrativa activa. */
+/** HTML del HUD (hero + unidades visibles), desde la narrativa activa. */
 export function navDotsHtml(): string {
-  const rows = [navLink(HERO_NAV.id, HERO_NAV.navLabel, HERO_NAV.navLabelEn, "00")];
-  for (const s of visibleSalas()) {
-    rows.push(navLink(sectionId(s.id), s.navLabel, s.navLabelEn, numFor(s.id) ?? ""));
+  const rows = [navLink(HERO_NAV.id, HERO_NAV.navLabel, HERO_NAV.navLabelEn, "00", [HERO_NAV.id])];
+  for (const unit of navUnits()) {
+    rows.push(
+      navLink(
+        sectionId(unit.id),
+        unit.label,
+        unit.labelEn,
+        unit.num,
+        unit.rooms.map(sectionId)
+      )
+    );
   }
   return rows.join("\n");
 }
@@ -76,14 +157,13 @@ export function syncNavLang(): void {
 }
 
 /**
- * Número de sala (01..N) según el orden de las salas VISIBLES. `null` para salas
- * ocultas (la galería no se numera: su numeración actual "SALA 05" es stale y queda
- * fuera de la fuente de verdad por estar oculta).
+ * Número de la UNIDAD que presenta la sala (01..N) según el orden de las
+ * unidades visibles. Las salas de un grupo COMPARTEN número (son un módulo);
+ * `null` para salas ocultas o inexistentes (no se numeran).
  */
 export function numFor(id: string): string | null {
-  const idx = visibleSalas().findIndex((s) => s.id === id);
-  if (idx === -1) return null;
-  return String(idx + 1).padStart(2, "0");
+  const unit = navUnits().find((candidate) => candidate.rooms.includes(id));
+  return unit ? unit.num : null;
 }
 
 /**
@@ -112,12 +192,14 @@ export function mapExtra(): Record<string, string> {
     extra[s.subtitulo] = s.subtituloEn;
     extra[s.funcion] = s.funcionEn;
   }
-  // Sólo las salas VISIBLES: el plano es el único consumidor de la variante en
-  // mayúsculas y no numera/rotula la galería oculta. Derivar la clave de una
+  // Sólo las UNIDADES VISIBLES: el plano es el único consumidor de la variante
+  // en mayúsculas y no numera/rotula la galería oculta. Derivar la clave de una
   // sala oculta fabricaba un par que el walker nunca consulta (falso huérfano).
+  // La unidad agrupada rotula con el rótulo del GRUPO, no con los títulos de sus
+  // salas: ésos ya viajan por ROOM_EN (posicional sobre las `.room-title`).
   const plain = (html: string) => html.replace(/<[^>]*>/g, "").toUpperCase();
-  for (const s of visibleSalas()) {
-    extra[plain(s.titulo)] = plain(s.tituloEn);
+  for (const unit of navUnits()) {
+    extra[plain(unit.title)] = plain(unit.titleEn);
   }
   extra["SALA"] = "ROOM";
   return extra;
@@ -156,7 +238,11 @@ function setNavActive(activeId: string): void {
   const links = Array.from(document.querySelectorAll<HTMLElement>(".nav-dot"));
   let active: HTMLElement | null = null;
   for (const link of links) {
-    const on = link.dataset.target === activeId;
+    // Una unidad agrupada se activa cuando CUALQUIERA de sus salas cruza la
+    // banda activa: el HUD muestra un módulo, no una sala suelta. Sin
+    // `data-rooms` (unidad de una sala) manda `data-target`, como siempre.
+    const unitRooms = link.dataset.rooms ? link.dataset.rooms.split(" ").filter(Boolean) : null;
+    const on = unitRooms ? unitRooms.includes(activeId) : link.dataset.target === activeId;
     link.classList.toggle("active", on);
     if (on) {
       link.setAttribute("aria-current", "true");

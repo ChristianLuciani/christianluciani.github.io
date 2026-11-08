@@ -58,6 +58,30 @@ export interface RoomRef {
 }
 
 /**
+ * GRUPO DE NAVEGACIÓN (S9 · #135 · SPEC §5.4).
+ *
+ * Dos o más salas que se presentan como UNA unidad de navegación: comparten
+ * número, una sola entrada en el HUD y una sola celda en el plano. Cada sala
+ * conserva su `<section>`, su cuerpo y su lugar en el DOM — agrupar NO fusiona
+ * contenido ni inventa una sala: cambia cómo se entra y cómo se numera.
+ *
+ * Existe porque `RoomRef` describe UNA sala y no había forma de declarar que
+ * dos destinos son el mismo módulo sin tocar templates. La derivación canónica
+ * (`navUnits()` en `src/cv/render.ts`) lo consume; `themes:check` valida que
+ * los grupos nombren salas visibles, contiguas, sin solaparse y con rótulo ES/EN.
+ */
+export interface RoomGroup {
+  /** slug estable dentro del tema (`[a-z0-9-]+`). */
+  readonly id: string;
+  /** Rótulo de la unidad en el HUD y el plano (ES, texto plano). */
+  readonly label: string;
+  /** Traducción EN del rótulo (el gate exige las dos). */
+  readonly labelEn: string;
+  /** ids de sala agrupados, en orden DOM; ≥2 y contiguos en las salas visibles. */
+  readonly rooms: readonly string[];
+}
+
+/**
  * NARRATIVA DE UN TEMA (SPEC §5.4 · ADR-001 §2).
  *
  * Datos, no código: estructura (salas), voz (copy), ilusiones y metadata. El
@@ -92,6 +116,13 @@ export interface NarrativeManifest {
   readonly variantOf?: string;
   /** Salas incluidas, en orden DOM (incluye las ocultas). */
   readonly rooms: readonly RoomRef[];
+  /**
+   * Grupos de navegación (S9 · #135): salas que comparten número, entrada del
+   * HUD y celda del plano. Opcional; sin grupos cada sala visible es su propia
+   * unidad. La variante de piel lo reusa por referencia como el resto del
+   * manifest.
+   */
+  readonly groups?: readonly RoomGroup[];
   /**
    * Declaración de piel (F4 del pase fresco de #159). Omitido/`"own"` ⇒ el tema
    * debe traer `skin.css` propio y el gate lo certifica; `"inherit"` ⇒ hereda
