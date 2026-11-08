@@ -64,10 +64,17 @@ PIEL        themes/<id>/skin.css       (tokens + reglas)
 
 1. **Un tema = un directorio.** `src/themes/<id>/` con `narrative.ts`, `copy.ts`,
    `skin.css`, `illusions.ts`, más una línea de registro en `src/themes/index.ts`.
+   Una **variante de piel** (S10 · #136) declara `variantOf` y omite `copy.ts`/
+   `illusions.ts`: reusa por referencia el manifest del base y la MISMA entrada de
+   `CURATIONS`; sólo aportan `skin.css` + `contrast.ts`.
 2. **Selector único de build:** `SITE_THEME`; default `museo`, que publica en la raíz.
    Ningún template conoce el id del tema; prohibido hardcodearlo fuera del registro.
 3. **Narrativa ≠ piel.** La narrativa posee estructura, voz y curación; la piel posee
-   tokens, tipografía y densidad. Un tema puede cambiar una sin la otra.
+   tokens, tipografía y densidad. Un tema puede cambiar una sin la otra, y la variante de
+   piel lo instrumenta: el gate exige IDENTIDAD de referencia en copy/salas/ilusiones/
+   metadata/dirección (`site`)/curación, no igualdad de valor (una copia divergiría en
+   silencio). La regla actúa sobre el linaje DECLARADO (`variantOf`), no sobre cualquier
+   par de temas (alcance declarado, F3 de #164).
 4. **Topología: subpath** (`/ingenieria/`, `/museo/`), un solo sitio Pages y un solo
    artefacto de deploy con **una página por tema** (un bundle y una raíz de assets). Se
    rechaza el subdominio (ver alternativas); un tema que necesite otro `base` se publica en
@@ -98,6 +105,7 @@ export interface Theme {
 export interface NarrativeManifest {
   id: string;                    // slug estable [a-z0-9-], clave del registro
   path: string;                  // subpath de publicación ("" = raíz)
+  variantOf?: string;            // S10: variante de piel; reusa copy/rooms/illusions/meta y curación POR REFERENCIA
   rooms: RoomRef[];              // orden, ids y metáfora; pueden reusar o subconjunto de SALAS
   copy: CopyPack;                // claves semánticas ES/EN (todas obligatorias)
   illusions: Record<string, string>;  // roomId → canvas id de src/ts/illusions
@@ -148,9 +156,19 @@ export interface Curation {
   (`SITE_THEME=<id>`). El tema default no cambia de URL.
 - **CI:** paridad por tema + smoke de assets + completitud i18n + contraste. El gate deja
   de comparar "el" `index.html` y pasa a comparar "el golden de cada tema".
-- **SEO:** mismo origen ⇒ autoridad compartida. Cada tema declara `title`, `description` y
-  JSON-LD propios; el publicador produce `canonical`, `og:url` y `og:image` desde `site` +
-  `path`, y `sitemap.xml` lista todas las URLs.
+- **SEO:** mismo origen ⇒ autoridad compartida. Un tema PROPIO declara `title`,
+  `description` y JSON-LD propios; una variante de piel los hereda de su base (siguiente
+  punto). El publicador produce `canonical`, `og:url` y `og:image` desde `site` + `path`, y
+  `sitemap.xml` lista todas las URLs.
+- **SEO de una VARIANTE DE PIEL — limitación declarada (F1 del pase fresco de #164):** una
+  variante (`variantOf`) hereda `meta` por IDENTIDAD —el gate lo **exige**—, así que publica
+  el MISMO `title`, `description` y los mismos 3 bloques JSON-LD que su tema base, cada
+  página con `canonical` autorreferente; `deploy.yml` construye sin `SITE_THEME`, de modo
+  que la URL de la variante entra al `sitemap.xml` con contenido textual idéntico y piel
+  distinta. Es un duplicado SEO **aceptado** mientras la variante sea instrumental (probar
+  el eje piel), no una audiencia nueva. **Condición de salida:** retirar la variante del
+  registro, darle identidad textual propia (deja de ser `variantOf` y pasa a ser un tema con
+  su pack), o excluirla del deploy; el PR que agregue una variante declara el duplicado.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
 - **Identidad del tema en el runtime (resuelto en #134, autorizado por el operador
@@ -166,6 +184,14 @@ export interface Curation {
   llegue al `<style>` del render (no certifica CSS muerto). La piel queda fuera del
   manifest porque éste se importa en el bundle del browser y su lectura exige `node:fs`;
   el resolver por id es el único punto que conoce el archivo.
+- **Deuda declarada — la piel clara está bloqueada (F4 del pase fresco de #164):** la
+  paleta de canvas y grafo está hardcodeada FUERA de `skin.css`, en `src/ts/illusions/*.ts`
+  y `src/ts/graph/grafo.ts:179-182,229` (`#00c9c0`/`#c9a84c`/`#8892a0`; labels
+  `#ffffff`/`#d6dde8`), y ningún gate mide contraste de canvas. Sobre papel blanco esos
+  labels miden 1,00:1 y 1,37:1: una piel clara publicaría superficies ilegibles. **Salida:**
+  tokenizar canvas/grafo desde la piel (o un puente a `getComputedStyle`) + gate de
+  contraste de canvas; hasta entonces la segunda piel es oscura — S10 se entregó como
+  `ingenieria-nocturno`, no como `ingenieria-claro`.
 - **Migración futura a subdominio:** es configuración (`site.origin` del tema +
   `SITE_ORIGIN`) + infraestructura, **no** un refactor del modelo.
 - **Riesgo aceptado:** el bundle y `public/` se publican **una vez** en la raíz del

@@ -78,6 +78,18 @@ export interface NarrativeManifest {
     readonly origin: string;
     readonly base: string;
   };
+  /**
+   * VARIANTE DE PIEL (S10 · #136). Id de un tema registrado cuya narrativa y
+   * curación esta entrada REUSA por referencia (import, nunca copia): sólo su
+   * `skin.css` difiere. Existe porque piel y narrativa son ejes independientes
+   * (ADR-001 §3) y copiar el copy para "cambiar colores" lo demuestra al revés.
+   * `themes:check` exige identidad de `copy`/`rooms`/`illusions`/`meta`/`site` y
+   * de la curación con el base: editar el copy del tema base se refleja acá sin
+   * tocar nada, y una copia con el mismo texto es un error, no un equivalente.
+   * La regla actúa sobre el linaje declarado: sin `variantOf` no hay invariante
+   * que medir (F3 del pase fresco de #164).
+   */
+  readonly variantOf?: string;
   /** Salas incluidas, en orden DOM (incluye las ocultas). */
   readonly rooms: readonly RoomRef[];
   /**
