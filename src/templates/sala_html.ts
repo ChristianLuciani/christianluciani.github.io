@@ -7,6 +7,7 @@ import { t, ta, th } from "../content/copy.ts";
  */
 import type { RoomRef } from "../themes/types.ts";
 import { activeRooms } from "../themes/index.ts";
+import { activeCuration } from "../content/curation/active.ts";
 import { numFor } from "../cv/render.ts";
 import { DRAHMA, MARCO, formatMonthYear, formatPeriod, orgEs, statusClass, statusLabel } from "../content/cv/museo.ts";
 import { PROJECT_CURATION, projectKey } from "../content/cv/proyectos.ts";
@@ -756,13 +757,16 @@ export function perfilProseHtml(profile: CvProfile = P): string {
 
 /** El Marco: obra publicada (derivada de `published`) + showcase de Drahma. */
 export function marcoHtml(profile: CvProfile = P): string {
-  const cards = tarjetas(publicadosDe(profile).filter((p) => !p.sinTarjeta));
+  // La curación es la del TEMA ACTIVO (no el default): excluir una ficha en
+  // `curation/<tema>.ts` tiene que sacarla del DOM y del conteo derivado del
+  // subtítulo a la vez. En `museo` la activa ES el default: el byte no cambia.
+  const cards = tarjetas(publicadosDe(profile, activeCuration()).filter((p) => !p.sinTarjeta));
   return `${cards}${drahmaShowcase(profile)}`;
 }
 
 /** El Bastidor: sin artefacto público; cada ficha declara su `falta` curada. */
 export function bastidorHtml(profile: CvProfile = P): string {
-  return `${tarjetas(enDesarrolloDe(profile))}${cierreBastidor(profile)}`;
+  return `${tarjetas(enDesarrolloDe(profile, activeCuration()))}${cierreBastidor(profile)}`;
 }
 
 /**
@@ -803,11 +807,21 @@ function roomHeader(s: RoomRef): string {
  * Shell de la sala con la clase `room--hidden` coherente con la NARRATIVA: el
  * literal del shell es el default de la galería, pero la visibilidad la decide
  * la curación del tema (`RoomRef.hidden`). Para `museo` el byte no cambia (la
- * galería sigue oculta); un tema que la presente no hereda una sala invisible.
+ * galería sigue oculta).
+ *
+ * Ocultar una sala DISTINTA de la galería tiene que funcionar: hasta S9 este
+ * helper sólo sabía QUITAR la clase del literal (la galería), así que un tema
+ * que excluía otra sala la seguía publicando — `hidden` era decorativo fuera de
+ * la galería. Ahora la clase se AGREGA cuando falta y se quita cuando sobra, en
+ * los dos sentidos.
  */
 function shellFor(s: RoomRef): string {
   const shell = roomShells()[s.id] ?? "";
-  return s.hidden ? shell : shell.replace('class="room room--hidden"', 'class="room"');
+  if (s.hidden) {
+    if (shell.includes('class="room room--hidden"')) return shell;
+    return shell.replace('class="room"', 'class="room room--hidden"');
+  }
+  return shell.replace('class="room room--hidden"', 'class="room"');
 }
 
 /** Sala completa: comentario + shell + header(narrativa) + body. */
