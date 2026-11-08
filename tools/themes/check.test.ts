@@ -293,7 +293,23 @@ describe("themes/check — registro, metadata y golden", () => {
     expect(report.ok).toBe(true);
   });
 
-  it("un tema no-default sin piel propia hereda la del default y lo declara", () => {
+  it("un tema no-default hereda la piel del default sólo si lo DECLARA", () => {
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria", skin: "inherit" }),
+          skin: undefined
+        })
+      ],
+      requireGolden: false
+    });
+    expect(report.themes[0]!.notes.join("\n")).toContain("hereda");
+    expect(report.themes[0]!.errors).toEqual([]);
+  });
+
+  it("sin skin.css y sin declarar `inherit`, el tema no puede quedar verde (F4)", () => {
+    // El caso del pase fresco: borrar el skin.css de un tema registrado no puede
+    // leerse como "hereda" — el gate tiene que distinguir diseño de regresión.
     const report = checkThemes({
       themes: [
         themeInput({
@@ -303,8 +319,22 @@ describe("themes/check — registro, metadata y golden", () => {
       ],
       requireGolden: false
     });
-    expect(report.themes[0]!.notes.join("\n")).toContain("hereda");
-    expect(report.themes[0]!.errors).toEqual([]);
+    expect(report.themes[0]!.errors.join("\n")).toContain("skin: \"inherit\"");
+    expect(report.ok).toBe(false);
+  });
+
+  it("declarar `inherit` con skin.css propio es una contradicción", () => {
+    const report = checkThemes({
+      themes: [
+        themeInput({
+          narrative: narrative({ id: "ingenieria", path: "ingenieria", skin: "inherit" }),
+          skin: skin()
+        })
+      ],
+      requireGolden: false
+    });
+    expect(report.themes[0]!.errors.join("\n")).toContain("inherit");
+    expect(report.ok).toBe(false);
   });
 
   it("el tema DEFAULT sin skin.css es un error: no hay piel que emitir (F4)", () => {

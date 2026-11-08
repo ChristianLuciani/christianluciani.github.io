@@ -153,6 +153,12 @@ export interface Curation {
   `path`, y `sitemap.xml` lista todas las URLs.
 - **Mantenimiento:** un repo, un pipeline, un set de tests. Cada tema nuevo es un
   directorio + una línea de registro.
+- **Identidad del tema en el runtime (resuelto en #134, autorizado por el operador
+  el 2026-11-07 tras el pase fresco del PR #159):** el bundle es único (D12) y no
+  puede inferir la página; el publicador inyecta `<html data-theme="<id>">` y
+  `src/ts/app/theme.ts` instala esa narrativa al arrancar, antes de i18n, intro y
+  render. Los renderers resuelven `t()` en el render (no al importar) para que el
+  pack del tema llegue a todas las superficies. Excepciones registradas en #134.
 - **Piel por tema (S4, resuelto en #134):** `emitSkin` resuelve la piel del tema activo
   (`src/themes/skin.ts` → `skinFor(id)`) en vez de emitir siempre la de `museo`; un tema
   sin `skin.css` hereda la del default. El gate de CI verifica que la piel declarada

@@ -19,8 +19,14 @@
 
 import { t } from "../content/copy.ts";
 
-/** Frases del intro: copy del pack del tema (ES; el intro no tiene toggle). */
-const FRASES = [t("intro.phrase1"), t("intro.phrase2"), t("intro.phrase3")];
+/**
+ * Frases del intro: copy del pack del tema ACTIVO (ES; el intro no tiene toggle).
+ * Función y no constante: una constante se evaluaría al importar, con el tema
+ * default activo, y `/ingenieria/` mostraría el intro de museo (F1 de #159).
+ */
+export function introPhrases(): string[] {
+  return [t("intro.phrase1"), t("intro.phrase2"), t("intro.phrase3")];
+}
 
 const FADE_OUT = 1100; // ms
 const STEP = 350; // espera entre transiciones
@@ -169,6 +175,7 @@ function releaseHeroName(heroName: HTMLElement): void {
 }
 
 export function initIntro(): void {
+  const FRASES = introPhrases();
   if (typeof document === "undefined") return;
 
   const skipBtn = document.getElementById("btn-skip-intro");

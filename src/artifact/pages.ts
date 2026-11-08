@@ -108,10 +108,35 @@ function absoluteAsset(url: string, address: SiteAddress): string {
 }
 
 /**
- * Publica el documento renderizado en la dirección de un tema: agrega
- * `canonical`, reescribe `og:url`/`og:image`/`twitter:image` al origen y prefijo
- * del tema, y hace raíz-absolutas (con `base`) las rutas de assets.
+ * Identidad del tema en el documento publicado (F1 del pase fresco de #159).
  *
+ * El bundle es compartido: el runtime no puede saber en qué página corre si la
+ * página no lo declara. Se inyecta `<html data-theme="<id>">` SÓLO al publicar
+ * (el render fuente y su golden no llevan atributo) y `src/ts/app/theme.ts` lo
+ * lee como primer efecto del bundle.
+ */
+export function withThemeIdentity(html: string, themeId: string): string {
+  if (!/^[a-z0-9-]+$/.test(themeId)) {
+    throw new Error(`build: id de tema inválido para data-theme: "${themeId}"`);
+  }
+  const tag = /<html\b[^>]*>/i.exec(html);
+  if (!tag) {
+    throw new Error("build: el documento publicado no tiene <html>; no se puede declarar data-theme");
+  }
+  if (/\bdata-theme\s*=/.test(tag[0])) {
+    throw new Error(`build: el documento ya declara data-theme (${tag[0]}); no se duplica`);
+  }
+  return html.replace(tag[0], tag[0].replace(/>$/, ` data-theme="${themeId}">`));
+}
+
+/**
+ * Publica el documento renderizado en la dirección de un tema: declara la
+ * identidad del tema (`data-theme`), agrega `canonical`, reescribe
+ * `og:url`/`og:image`/`twitter:image` al origen y prefijo del tema, y hace
+ * raíz-absolutas (con `base`) las rutas de assets.
+ *
+ * `themeId` es obligatorio en el build: sin identidad el runtime no puede
+ * resolver salas, copy ni i18n del tema (lo verifica `themes:assets`).
  * `icons` mapea `<ruta servida sin base>` → `data:` URI: los iconos de contacto
  * se inlinean sólo en el artefacto (0 requests, `docs/cdn-decision.md`), porque
  * el render los emite relativos y en un subpath no resolverían.
@@ -121,10 +146,11 @@ function absoluteAsset(url: string, address: SiteAddress): string {
 export function publishPage(
   html: string,
   address: SiteAddress,
-  icons: ReadonlyMap<string, string> = new Map()
+  icons: ReadonlyMap<string, string> = new Map(),
+  themeId?: string
 ): { html: string; missing: readonly string[] } {
   const canonical = pageUrl(address);
-  let output = html;
+  let output = themeId === undefined ? html : withThemeIdentity(html, themeId);
 
   // Canonical = URL de ESTA página, justo después del og:url del documento.
   output = output.replace(

@@ -519,9 +519,17 @@ export function checkTheme(
     )
   );
 
+  const declaresInherit = theme.narrative.skin === "inherit";
+
   if (theme.skinError) {
     errors.push(`piel: ${theme.skinError}`);
   } else if (theme.skin) {
+    if (declaresInherit) {
+      errors.push(
+        `piel: "${id}" declara skin: "inherit" pero tiene ${theme.skin.file ?? `src/themes/${id}/skin.css`}; ` +
+          "la declaración y el archivo se contradicen (elegí uno)"
+      );
+    }
     // F4/S4: la piel del tema tiene que LLEGAR al render. No alcanza con que el
     // archivo exista ni con que el emisor "diga" que la resuelve: se compara el
     // `<style>` del documento con el CSS que corresponde a su fuente. Si un
@@ -546,8 +554,15 @@ export function checkTheme(
       `piel: el tema default "${id}" no tiene src/themes/${id}/skin.css; ` +
         "sin piel no hay nada que emitir (¿la movieron?)"
     );
+  } else if (declaresInherit) {
+    notes.push(`piel: hereda la del tema default por declaración explícita (skin: "inherit")`);
   } else {
-    notes.push(`piel: el tema no tiene skin.css propio; hereda la del tema default`);
+    // F4 del pase fresco de #159: borrar el skin.css de un tema registrado no
+    // puede leerse como herencia. La herencia es una DECISIÓN declarada.
+    errors.push(
+      `piel: el tema "${id}" no tiene src/themes/${id}/skin.css y no declara ` +
+        `skin: "inherit"; un tema registrado nace con piel propia (o declara la herencia)`
+    );
   }
 
   return { id, errors, notes };

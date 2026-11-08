@@ -83,7 +83,7 @@ export const INGENIERIA_COPY: CopyPack = {
     es: "Christian Luciani — ir a la entrada",
     en: "Christian Luciani — go to the entrance"
   },
-  "cover.navAria": { es: "Salas del museo", en: "Museum rooms" },
+  "cover.navAria": { es: "Salas del sistema", en: "System rooms" },
   "cover.langAria": {
     es: "Switch language / Cambiar idioma",
     en: "Switch language / Cambiar idioma"
@@ -111,7 +111,7 @@ export const INGENIERIA_COPY: CopyPack = {
     es: "Saltar intro e ir directo a la página",
     en: "Skip intro and go straight to the page"
   },
-  "cover.introPlaceholder": { es: "Arte Ciencias Filosofía", en: "Art Science Philosophy" },
+  "cover.introPlaceholder": { es: "Diseño Sistemas Ontologías", en: "Design Systems Ontologies" },
 
   /* ── INTRO · frases montadas por `src/cv/intro.ts` ──────────── */
   "intro.phrase1": { es: "Diseño de Sistemas", en: "Systems Design", runtime: true },
@@ -126,10 +126,10 @@ export const INGENIERIA_COPY: CopyPack = {
   "plano.title.word": { es: "Mapa", en: "System" },
   "plano.title.rest": { es: "del Sistema", en: "Map" },
   "plano.hint": {
-    es: "PLANO DEL MUSEO · ÍNDICE — HAZ CLIC EN UN ESPACIO PARA ENTRAR",
-    en: "MUSEUM FLOOR PLAN · INDEX — CLICK A SPACE TO ENTER"
+    es: "MAPA DEL SISTEMA · ÍNDICE — HAZ CLIC EN UN MÓDULO PARA ENTRAR",
+    en: "SYSTEM MAP · INDEX — CLICK A MODULE TO ENTER"
   },
-  "plano.aria": { es: "Plano del museo", en: "Museum floor plan" },
+  "plano.aria": { es: "Mapa del sistema", en: "System map" },
   "plano.sala": { es: "MÓDULO", en: "MODULE" },
   "plano.entry": { es: "ENTRADA", en: "ENTRANCE" },
 
@@ -184,8 +184,8 @@ export const INGENIERIA_COPY: CopyPack = {
 
   /* ── SALA GRAFO (El Compás) ─────────────────────────────────── */
   "room.grafo.lede": {
-    es: "No solo amplitud: la conexión entre áreas, trabajos y proyectos.",
-    en: "Not just breadth: the connection between areas, work and projects."
+    es: "Dependencias, no sólo amplitud: qué sostiene qué en el sistema.",
+    en: "Dependencies, not just breadth: what holds what in the system."
   },
   "room.grafo.teal": { es: "Teal", en: "Teal" },
   "room.grafo.published": { es: ", publicado · ", en: ", published · " },
@@ -218,8 +218,8 @@ export const INGENIERIA_COPY: CopyPack = {
   /* ── SALA CONTACTO (El Buzón) ───────────────────────────────── */
   "room.contacto.illusionLabel": { es: "COPO DE KOCH · 1904", en: "KOCH SNOWFLAKE · 1904" },
   "room.contacto.note": {
-    es: "La naturaleza de los seres cognitivos y su interacción · emergencia de la inteligencia universal",
-    en: "The nature of cognitive beings and their interaction · emergence of universal intelligence"
+    es: "Sistemas cognitivos y su interacción · emergencia de la inteligencia universal",
+    en: "Cognitive systems and their interaction · emergence of universal intelligence"
   },
 
   /* ── SALA PROYECTOS · ilusión del showcase de Drahma ───────── */

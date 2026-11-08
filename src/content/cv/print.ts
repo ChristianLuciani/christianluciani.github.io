@@ -114,7 +114,8 @@ export function experienceSectionOf(item: {
   return sectionOf(activeCuration(), item);
 }
 
-export const PRINT_CV: PrintCvCuration = {
+export function printCvCuration(): PrintCvCuration {
+  return {
   // #122: el dato vive en `PROFILE.positioning`; acá sólo se declara el campo.
   profile: PROFILE_PROSE,
   // El copy del print vive en el pack del tema (#127): este módulo declara la
@@ -155,4 +156,5 @@ export const PRINT_CV: PrintCvCuration = {
     intermediate: t("print.level.intermediate"),
     basic: t("print.level.basic")
   }
-};
+  };
+}

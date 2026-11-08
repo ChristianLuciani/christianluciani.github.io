@@ -25,7 +25,7 @@ export const CURATIONS: Readonly<Record<string, Curation>> = Object.freeze({
   ingenieria: INGENIERIA_CURATION
 });
 
-/** Curación del tema default (hoy, la única). */
+/** Curación del tema default (hoy: `museo`; `ingenieria` está registrada aparte). */
 export const DEFAULT_CURATION: Curation = MUSEO_CURATION;
 
 /** Curación de un tema registrado; un id desconocido lista los válidos. */

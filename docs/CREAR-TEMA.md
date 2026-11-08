@@ -100,7 +100,9 @@ src/templates/**            piden claves; 0 copy literal > 2 palabras
   puntuación no cuentan. Si falla, mové la frase al pack y pedila con
   `t()`/`th()`/`ta()`.
 - El diccionario i18n (`src/cv/i18n.ts`) se **deriva** del pack + `SALAS` + SSOT:
-  no hay ninguna clave escrita a mano en el MAP. Ojo con dos definiciones
+  no hay ninguna clave escrita a mano en el MAP. Se arma en `initI18n` (no al importar)
+  con el pack del tema que la página declara en `<html data-theme>`; el runtime lo
+  instala antes de i18n/intro/render (`src/ts/app/theme.ts`). Ojo con dos definiciones
   distintas, que el gate separa a propósito:
   - **Pack → HTML** (lo que mide `no-literal-copy.test.ts`): toda clave no
     `runtime` aparece en el render, como texto o como atributo. Es el gate que
@@ -187,10 +189,12 @@ hallazgo; no se inventa ni se escribe a mano (ADR-025: el issue lo decide el ope
   el umbral no es autodeclarable: `contrast.ts` sólo admite 3 o 4,5.
 - **Piel por tema (S4 de ADR-001 §D11, resuelto en #134):** `emitSkin` resuelve
   `src/themes/<id>/skin.css` del tema ACTIVO (el que `assembleHtml({ theme })` instala
-  durante el render). Un tema con `skin.css` propio **publica esa piel**; uno sin
-  `skin.css` hereda la del default (y el reporte lo declara). `themes:check` no confía
-  en el emisor: extrae el `<style>` del render de cada tema y lo compara con el CSS de
-  su fuente; si la piel no llega al documento, el gate falla (F4/#158).
+  durante el render). Un tema con `skin.css` propio **publica esa piel**. Un tema que
+  quiera heredar la del default lo declara **explícitamente** (`skin: "inherit"` en el
+  manifest); sin esa declaración, un tema registrado sin `skin.css` es un error (borrar
+  el archivo no se lee como herencia — F4 del pase fresco de #159). `themes:check` no
+  confía en el emisor: extrae el `<style>` del render de cada tema y lo compara con el
+  CSS de su fuente; si la piel no llega al documento, el gate falla (F4/#158).
 - Prohibido `!important` para pisar otro tema: si hace falta, falta un token.
 
 ## 7. Metadata y SEO del tema
@@ -276,12 +280,15 @@ SITE_THEME=<id> npm run build     # publica SÓLO la página de ese tema; va al 
       reporte cubre el 100% de los hechos (`npm run curation:report` verde) y
       `curation.experienceSections` cubre las filas de `experience[]` del print-CV.
 - [ ] `skin.css` sin literales de color; contraste AA verificado; la piel del
-      tema llega al `<style>` de su render (`themes:check`).
+      tema llega al `<style>` de su render (`themes:check`). Si el tema hereda la
+      piel del default, lo declara con `skin: "inherit"`.
 - [ ] Ilusiones: sólo ids existentes; ninguna modificación en `src/ts/illusions/**`.
 - [ ] `npm run build:all` verde; golden del tema `museo` **intacto** y el tema
       nuevo con su `tests/golden/<id>.html` (`npm run golden:update`).
 - [ ] `npm run themes:check` **y** `npm run themes:assets` verdes.
 - [ ] `meta` y `site` propios: title, description, ogImage; canonical por subpath.
+- [ ] La página publicada declara su tema (`<html data-theme>`), el runtime usa
+      salas/copy/i18n/intro del tema y el golden lo fija (`themes:assets`).
 - [ ] Body del PR: qué narrativa, para qué audiencia, qué se excluye y por qué.
 
 ## 10. Anti-patterns (rechazo directo en review)

@@ -8,7 +8,8 @@ import { numFor, sectionId, visibleSalas } from "../cv/render.ts";
 import { activeRooms } from "../themes/index.ts";
 import { t, ta } from "../content/copy.ts";
 
-const PLANO_TOP = `<!-- ════════════════════════════════════════════════════
+function planoTop(): string {
+  return `<!-- ════════════════════════════════════════════════════
   PLANO / ÍNDICE — blueprint navegable del museo
 ════════════════════════════════════════════════════ -->
 <section id="room-plano">
@@ -36,6 +37,7 @@ const PLANO_TOP = `<!-- ══════════════════�
     <rect class="bp-frame" x="36" y="46" width="828" height="478"/>
 <polyline class="bp-path" points="180,145 450,145 720,145 720,305 450,305 180,305 180,465 450,465 720,465"/>
 `;
+}
 
 const PLANO_BOTTOM = `  </svg>
 </section>
@@ -84,7 +86,7 @@ function renderCell(c: PlanoCell, i: number): string {
 }
 
 export function planoHtml(): string {
-  return PLANO_TOP + planoCells().map(renderCell).join("") + PLANO_BOTTOM;
+  return planoTop() + planoCells().map(renderCell).join("") + PLANO_BOTTOM;
 }
 
 /** Test helper: metadatos de celda por sala visible (orden nav). */

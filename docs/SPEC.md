@@ -17,7 +17,7 @@ Ese refactor parametrizó la **estructura** (salas, nav, numeración, i18n estru
 
 | Archivo | Contenido factual hoy |
 |---|---|
-| `src/templates/sala_html.ts` (`ROOM_BODY`) | perfil, proyectos, experiencia, publicaciones, competencias — mezclado con `data-scroll`, estilos inline, canvases |
+| `src/templates/sala_html.ts` (`roomBodies`) | perfil, proyectos, experiencia, publicaciones, competencias — mezclado con `data-scroll`, estilos inline, canvases |
 | `src/cv/i18n.ts` | diccionario ES→EN de **182 claves** escrito a mano |
 | `src/templates/print_cv_html.ts` | CV imprimible: **duplica** perfil, experiencia, formación, publicaciones, competencias |
 | `src/templates/head_html.ts` | persona/links (JSON-LD Person) — **derivado del SSOT desde #140**; publicaciones (JSON-LD ScholarlyArticle) siguen **a mano** |
@@ -162,12 +162,12 @@ línea de registro (§8 FASE 5).
 | curación de El Marco / El Bastidor (subtítulo, `falta`, fecha de recencia, labels de link, nota) | `src/content/cv/proyectos.ts` | curación de presentación (el ORDEN vive en la curación del tema) |
 | frases del intro | `src/content/cv/museo.ts` | copy (hoy) |
 | copy del print-CV (títulos de sección, labels y nombres de idioma/nivel) | `src/themes/museo/copy.ts` (`print.*`, #127) | copy (pack del tema) |
-| curación del print-CV (qué links entran al encabezado) | `src/content/cv/print.ts` (`PRINT_CV.contactPlatforms`) | curación (sin copy) |
+| curación del print-CV (qué links entran al encabezado) | `src/content/cv/print.ts` (`printCvCuration().contactPlatforms`) | curación (sin copy) |
 | clasificación de Trayectoria (`experience[]` → `professional`/`training`) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
-| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación (ref. `projects` SSOT) |
-| galería placeholders | roadmap — la sala se oculta desde la curación del tema (`salas:galeria` en `exclude`), aplicada al construir las salas del manifest en `src/themes/museo/narrative.ts`; shell en `src/templates/sala_html.ts` (`ROOM_BODY`) | curación |
+| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 16 nodos y las 24 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`roomBodies`) | curación (ref. `projects` SSOT) |
+| galería placeholders | roadmap — la sala se oculta desde la curación del tema (`salas:galeria` en `exclude`), aplicada al construir las salas del manifest en `src/themes/museo/narrative.ts`; shell en `src/templates/sala_html.ts` (`roomBodies`) | curación |
 | CSS: tokens, tipografía, densidad | `src/themes/museo/skin.css` (el head la emite) | presentación (FASE 5 · #130) |
 | ilusiones, animaciones, canvas | `src/ts/` | presentación (no editable por temas) |
 
@@ -577,23 +577,33 @@ publicando byte-idéntico en cada paso. Sub-fases (cada una: PR propio, tests ve
   `sitemap.xml`; smoke de assets por tema (I6).
 - **5.6 — Gates de CI.** Golden por tema + completitud copy ES/EN + cobertura de curación +
   contraste + build de todos los temas.
-- **5.7 — Piloto mínimo (S8).** `themes/ingenieria/` con **las mismas 8 salas**: sólo voz,
-  piel, ilusiones y metadata. Valida la plomería; si exige tocar código compartido, el
-  contrato falló.
-  Implementado en #134: la voz cubre hero, metadata, títulos/funciones de sala y el copy
-  que los templates evalúan en render. **Brecha declarada:** `cover_html.ts`,
-  `plano_html.ts` y `sala_html.ts` capturan `t()` en constantes de módulo, que se evalúan
-  al importar (con el tema default activo); el copy de esos bloques no puede cambiar por
-  tema sin refactor de renderer. #134 NO tocó renderers (fuera de su alcance): el pack de
-  `ingenieria` conserva el texto del default en esas claves y el gate sigue exigiendo que
-  cada clave aparezca en el render. Cerrar la brecha es trabajo de contrato (FASE 5.8/S9).
+- **5.7 — Piloto mínimo (S8).** `themes/ingenieria/` con **las mismas 8 salas**: voz,
+  piel, ilusiones y metadata. Valida la plomería.
+  Implementado en #134 y reconciliado con el pase fresco del PR #159:
+  - la página publica su **identidad de tema** en `<html data-theme="<id>">` (la inyecta
+    `publishPage`; el render fuente y su golden no llevan atributo) y el runtime la
+    resuelve al arrancar (`src/ts/app/theme.ts` → `activateTheme`), de modo que HUD,
+    salas, diccionario i18n e intro usan el tema de la página y no el default;
+  - los renderers **no capturan `t()` al importar**: `cover_html.ts`, `plano_html.ts`,
+    `content/cv/print.ts` y `sala_html.ts` resuelven copy en el render. El pack del tema
+    llega a todas las superficies (0 claves muertas; lo miden `themes:check` y
+    `src/templates/theme-copy.test.ts`). El render de `museo` queda byte-idéntico.
+  **Excepciones autorizadas por el operador (2026-11-07) — traza en #134.** El piloto
+  exigió tocar código compartido y el operador lo autorizó en dos actos:
+  (a) **S4 de D11** — piel por tema: `src/themes/skin.ts` + regla del gate (PR #158/#134);
+  (b) **identidad de tema en el runtime + resolución de copy al render**, a raíz del pase
+  fresco del PR #159 (FAIL F1/F2; comentario de review del 2026-11-07). La frase «si exige
+  tocar código compartido, el contrato falló» describe el diagnóstico, no el veredicto:
+  las excepciones quedan registradas acá y en el issue, y la FASE 5.8 debe absorberlas en
+  el contrato.
 - **5.8 — Control total (S9).** Segundo PR del piloto: reordena/agrupa/oculta salas y cura
   ítems. **Prueba de aceptación del contrato**: cualquier cambio necesario fuera de
   `themes/<id>/` + registro se corrige en el contrato, no con un parche lateral.
 
 **DoD de la fase:** `SITE_THEME=ingenieria npm run build` produce `/ingenieria/` sin tocar
-`src/data`, `src/content/curation/museo.ts`, renderers genéricos ni el tema `museo`; el
-golden de `museo` no cambia en ningún PR de la fase.
+`src/data`, `src/content/curation/museo.ts` ni el tema `museo`; el golden de `museo` (y
+`index.html`) no cambia en ningún PR de la fase. Los renderers compartidos sólo cambian
+para resolver copy/piel en el render: la salida del default queda byte-idéntica.
 
 ### Fuera de alcance (roadmap futuro)
 - Renderer `web`/`print` promovido a profile-as-code (M5+).

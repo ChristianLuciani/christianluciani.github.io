@@ -110,12 +110,24 @@ export function resolveTheme(raw?: string | null): NarrativeManifest {
  * lo instala de forma SÍNCRONA y lo restaura en `finally`, de modo que un error
  * de render no deja el proceso con otra narrativa.
  *
- * En el browser el default es `museo` (no hay selector de runtime: ADR-001 §8).
+ * En el browser la identidad la publica la página (`<html data-theme>`, la
+ * inyecta `publishPage`); `src/ts/app/theme.ts` llama a `activateTheme()` en el
+ * primer import del bundle, ANTES de i18n/intro/render. Sin atributo, default.
  */
 let active: NarrativeManifest = THEMES[DEFAULT_THEME];
 
 /** Narrativa vigente durante el render. */
 export function activeNarrative(): NarrativeManifest {
+  return active;
+}
+
+/**
+ * Instala la narrativa del tema y la DEJA activa (a diferencia de
+ * `withNarrative`, que la restaura). Es el arranque del browser: el bundle es
+ * compartido y la página publica su identidad en `data-theme`.
+ */
+export function activateTheme(raw?: string | null): NarrativeManifest {
+  active = resolveTheme(raw);
   return active;
 }
 
