@@ -102,9 +102,8 @@ function websiteLink(profile: CvProfile): string {
  *
  * El email queda afuera porque NO ESTÁ EN `PROFILE` (la proyección pública lo
  * excluye desde #107), no por una decisión editorial de esta superficie: no se
- * reintroduce hardcodeado. La fuga preexistente de `index.html`
- * (`mailto:cluciani@gmail.com` emitido por `sala_html.ts`) es de otra superficie
- * y se REPORTA en #116 (F3); no se arregla en este diff.
+ * reintroduce hardcodeado. La sala Contacto sí lo publica, pero derivado de
+ * `ENTITY` (nodo `Person`, `contactEmail()`): la misma fuente que el JSON-LD.
  */
 function contactHtml(profile: CvProfile): string {
   return printCvCuration().contactPlatforms

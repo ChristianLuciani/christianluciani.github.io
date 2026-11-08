@@ -509,6 +509,7 @@ export const INGENIERIA_COPY: CopyPack = {
   "room.contacto.x": { es: "X @cluciani_ve", en: "X @cluciani_ve" },
   "room.contacto.instagram": { es: "Instagram", en: "Instagram" },
   "room.contacto.patreon": { es: "Patreon", en: "Patreon" },
+  "room.contacto.substack": { es: "Substack", en: "Substack" },
 
   /* ── SALA GALERÍA · grupos, pies y placeholders ─────────────── */
   "gallery.action.photo": { es: "Añadir fotografía", en: "Add photograph" },

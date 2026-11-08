@@ -41,6 +41,7 @@ import {
 import type { ExperienceSectionId } from "../curation/types.ts";
 import { PROFILE_PROSE, type ProfileProseSelection } from "./profile-prose.ts";
 import { t, te } from "../copy.ts";
+import { PRINT_CONTACT_PLATFORMS } from "./platforms.ts";
 
 /*
  * Las piezas NEUTRAS de la clasificación (`experienceKey`, el tipo de sección y
@@ -93,7 +94,11 @@ export interface PrintCvCuration {
     /** Fallback cuando `source.commitDate` no se pudo resolver. */
     footerNoDate: string;
   };
-  /** Plataformas de `identity.links` que el encabezado imprime, en orden. */
+  /**
+   * Plataformas de `identity.links` que el encabezado imprime, en orden. La
+   * lista vive en `content/cv/platforms.ts` (`PRINT_CONTACT_PLATFORMS`): mismo
+   * contrato que El Buzón, membresía declarada.
+   */
   contactPlatforms: string[];
   /** Nombres de idioma por `code` del SSOT (presentación, no hecho). */
   languageNames: Record<string, string>;
@@ -142,7 +147,7 @@ export function printCvCuration(): PrintCvCuration {
     footer: t("print.labels.footer"),
     footerNoDate: t("print.labels.footerNoDate")
   },
-  contactPlatforms: ["website", "whatsapp", "orcid", "github"],
+  contactPlatforms: [...PRINT_CONTACT_PLATFORMS],
   languageNames: {
     es: t("print.language.es"),
     en: t("print.language.en"),
