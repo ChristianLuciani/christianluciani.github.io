@@ -1,20 +1,27 @@
 {
   "schema": "now/v1",
-  "asOf": "2026-11-08T21:09:48Z",
+  "asOf": "2026-11-09T07:57:56Z",
   "items": [
     {
       "kind": "pr",
-      "title": "fix(themes): cierra los 2 nit del pase fresco de #165",
-      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/166",
-      "date": "2026-11-08",
+      "title": "chore(now): refresh snapshot to v1.0.3 (Ahora deja de mostrar 2026-11-05)",
+      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/173",
+      "date": "2026-11-09",
       "source": "github:ChristianLuciani/christianluciani.github.io"
     },
     {
       "kind": "pr",
-      "title": "docs(readme): refleja la estructura real y las tres versiones publicadas",
-      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/168",
-      "date": "2026-11-08",
+      "title": "ci(now): publicar el refresh por PR (main exige build-test)",
+      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/174",
+      "date": "2026-11-09",
       "source": "github:ChristianLuciani/christianluciani.github.io"
+    },
+    {
+      "kind": "release",
+      "title": "cluciani-brand-kit v1.3.0",
+      "url": "https://github.com/ChristianLuciani/cluciani-brand-kit/releases/tag/v1.3.0",
+      "date": "2026-11-09",
+      "source": "github:ChristianLuciani/cluciani-brand-kit"
     },
     {
       "kind": "release",
@@ -22,13 +29,6 @@
       "url": "https://github.com/ChristianLuciani/profile-as-code/releases/tag/v0.5.0",
       "date": "2026-11-07",
       "source": "github:ChristianLuciani/profile-as-code"
-    },
-    {
-      "kind": "release",
-      "title": "cluciani-brand-kit v1.2.0",
-      "url": "https://github.com/ChristianLuciani/cluciani-brand-kit/releases/tag/v1.2.0",
-      "date": "2026-11-03",
-      "source": "github:ChristianLuciani/cluciani-brand-kit"
     },
     {
       "kind": "release",
