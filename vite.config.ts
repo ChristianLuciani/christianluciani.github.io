@@ -66,7 +66,14 @@ export default defineConfig({
     // ruta del bundle inyectada. Vite sólo produce el JS + el manifest; así
     // ninguna URL del render la reescribe el bundler (las genera `site.ts`).
     manifest: true,
-    rollupOptions: { input: resolve(ROOT, "src/main.ts") }
+    rollupOptions: {
+      input: {
+        main: resolve(ROOT, "src/main.ts"),
+        // Entry aparte de las páginas /clients/<slug>/ (#145): el lab tiene su
+        // propio bundle; build-clients.ts lo inyecta con entryPath(manifest, "src/client/main.ts").
+        lab: resolve(ROOT, "src/client/main.ts")
+      }
+    }
   },
   test: {
     globals: true,
@@ -77,6 +84,13 @@ export default defineConfig({
     // mismo código en otra rama: si entran al discovery, la suite local corre
     // el test de cada worktree contra el árbol del checkout y falla por drift
     // entre ramas (no por un defecto del código).
-    exclude: ["**/node_modules/**", "**/dist/**", ".worktrees/**"]
+    exclude: [
+      "**/node_modules/**",
+      "**/dist/**",
+      ".worktrees/**",
+      // Tests de agentes corren con node --test (npm run test:agents), no con vitest
+      "mcp/**",
+      "workers/**"
+    ]
   }
 });

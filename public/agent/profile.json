@@ -1,0 +1,1229 @@
+{
+  "name": "Christian Luciani",
+  "givenName": "Christian",
+  "familyName": "Luciani",
+  "location": "Cuenca, Ecuador",
+  "positioning": {
+    "statement": {
+      "en": "Independent physicist. In an agentic economy, I build infrastructure for people and organisations: complex systems, educational innovation and sovereign open source.",
+      "es": "Físico independiente. En una economía agéntica construyo infraestructura para personas y organizaciones: sistemas complejos, innovación educativa y open source soberano."
+    },
+    "audiences": {
+      "recruiters": {
+        "en": "Proven across research, university teaching and production systems: X-ray diffractometry operator with 8 co-authored papers in total (5 peer-reviewed), 800+ students per year, 36 original lab guides, and a field-tested educational-AI flagship (Drahma, Aug 2024).",
+        "es": "Trayectoria comprobable en investigación, docencia universitaria y sistemas productivos: operador de difractometría de rayos X con 8 publicaciones co-autoradas en total (5 arbitradas), 800+ estudiantes anuales, 36 guías de laboratorio originales y un flagship de IA educativa probado en campo (Drahma, ago 2024)."
+      },
+      "clients": {
+        "en": "Strategic systems consulting with a sovereign-first approach: BI platforms, ERP (Zoho/ERPNext), cash-audit systems and SaaS architecture — you keep the code and the data.",
+        "es": "Consultoría estratégica de sistemas con enfoque soberano: plataformas BI, ERP (Zoho/ERPNext), sistemas de auditoría de efectivo y arquitectura SaaS — el código y los datos son tuyos."
+      },
+      "peers": {
+        "en": "Synthetic-intelligence epistemology: poly-dialectical dialogue, Trunk/Rhizome distillation, and why sovereign, local-first infrastructure is the citability anchor of the agentic economy.",
+        "es": "Epistemología de la cognición sintética: diálogo poli-dialéctico, destilación Tronco/Rizoma, y por qué la infraestructura soberana local-first es el ancla de citabilidad de la economía agéntica."
+      }
+    },
+    "geo": {
+      "semanticAssociations": [
+        "sistemas complejos",
+        "cognición sintética",
+        "soberanía tecnológica",
+        "innovación educativa",
+        "open source"
+      ],
+      "citationsGoal": {
+        "en": "Be cited as an authority on synthetic-intelligence education, technological sovereignty and the agentic economy.",
+        "es": "Ser citado como autoridad en cognición sintética educativa, soberanía tecnológica y economía agéntica."
+      }
+    }
+  },
+  "links": [
+    {
+      "platform": "website",
+      "label": "CV — christianluciani.github.io",
+      "url": "https://christianluciani.github.io"
+    },
+    {
+      "platform": "whatsapp",
+      "label": "WhatsApp",
+      "url": "https://wa.me/593993716335"
+    },
+    {
+      "platform": "orcid",
+      "label": "ORCID",
+      "url": "https://orcid.org/0000-0002-6955-5384"
+    },
+    {
+      "platform": "scholar",
+      "label": "Google Scholar",
+      "url": "https://scholar.google.com/citations?user=7GbpmSQAAAAJ"
+    },
+    {
+      "platform": "github",
+      "label": "GitHub",
+      "url": "https://github.com/ChristianLuciani"
+    },
+    {
+      "platform": "linkedin",
+      "label": "LinkedIn",
+      "url": "https://www.linkedin.com/in/christian-luciani"
+    },
+    {
+      "platform": "researchgate",
+      "label": "ResearchGate",
+      "url": "https://www.researchgate.net/profile/Christian-Luciani"
+    },
+    {
+      "platform": "x",
+      "label": "X",
+      "url": "https://x.com/cluciani_ve"
+    },
+    {
+      "platform": "instagram",
+      "label": "Instagram",
+      "url": "https://www.instagram.com/clucianitoledo"
+    },
+    {
+      "platform": "patreon",
+      "label": "Patreon",
+      "url": "https://www.patreon.com/cluciani"
+    },
+    {
+      "platform": "substack",
+      "label": "Substack",
+      "url": "https://cluciani.substack.com"
+    },
+    {
+      "platform": "github",
+      "label": "Kontablo — accounting-esperanto",
+      "url": "https://github.com/ChristianLuciani/accounting-esperanto"
+    },
+    {
+      "platform": "github",
+      "label": "Drahma — DRAHMAN-ORG",
+      "url": "https://github.com/DRAHMAN-ORG/drahman-org"
+    },
+    {
+      "platform": "github",
+      "label": "profile-as-code — pasco",
+      "url": "https://github.com/ChristianLuciani/profile-as-code"
+    }
+  ],
+  "experience": [
+    {
+      "role": {
+        "en": "Auditor & Consultant",
+        "es": "Auditor y Consultor"
+      },
+      "org": "Grupo Angel — Panamá",
+      "start": "2025-08-01",
+      "end": "2026-01-01",
+      "highlights": {
+        "en": [
+          "Second period — audit and consulting on the vault recording system"
+        ],
+        "es": [
+          "Segundo período — auditoría y consultoría del sistema de registro de bóveda"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Strategic Systems Consultant",
+        "es": "Consultor Estratégico de Sistemas"
+      },
+      "org": "Independent — Panama / Ecuador",
+      "start": "2025-01-01",
+      "end": "present",
+      "highlights": {
+        "en": [
+          "BI platforms and digital infrastructure · Zoho ERP",
+          "Cash audit and recording system for a Type C casino (Salsa-Casino)"
+        ],
+        "es": [
+          "Plataformas BI e infraestructura digital · Zoho ERP",
+          "Sistema de auditoría y registro de efectivo para casino tipo C (Salsa-Casino)"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Physics Laboratory Coordinator",
+        "es": "Coordinador de Laboratorios de Física"
+      },
+      "org": "Universidad San Francisco de Quito (USFQ) — Quito, Ecuador",
+      "start": "2019-01-01",
+      "end": "2024-12-01",
+      "highlights": {
+        "en": [
+          "800+ students per year · 36 original laboratory guides",
+          "USFQ Open House: development of experiments for the general public · department petty cash",
+          "X-ray diffractometer technician-operator · co-author of 3 refereed papers, 2 preprints and 1 conference abstract (2022–2025)",
+          "Institutional Radiological Safety Officer"
+        ],
+        "es": [
+          "800+ estudiantes anuales · 36 guías de laboratorio originales",
+          "Casa Abierta USFQ: desarrollo de experimentos para público general · caja chica del departamento",
+          "Técnico-operador del difractómetro de rayos X · co-autor de 3 arbitradas, 2 preprints y 1 abstract de congreso (2022–2025)",
+          "Responsable de Seguridad Radiológica institucional"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Lighting Technician (freelance)",
+        "es": "Luminotécnico (freelance)"
+      },
+      "org": "Fluge-Panamá",
+      "start": "2017-11-01",
+      "end": "2018-05-01",
+      "highlights": {
+        "en": [
+          "Freelance lighting technician for corporate and entertainment events"
+        ],
+        "es": [
+          "Luminotécnico freelance para eventos corporativos y de entretenimiento"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Vault Officer — Recording & Audit System Designer",
+        "es": "Oficial de Bóveda — Diseño del Sistema de Registro y Auditoría"
+      },
+      "org": "Grupo Angel — Panamá",
+      "start": "2016-10-01",
+      "end": "2018-05-01",
+      "highlights": {
+        "en": [
+          "Registration of all vault transactions · cash income and expenses · supplier payments · cash counts",
+          "Designed and optimized the operation's database and audit procedures",
+          "Organization, classification and storage of documents"
+        ],
+        "es": [
+          "Registro de todas las transacciones de la bóveda · ingresos y egresos · pagos a proveedores · conteos de efectivo",
+          "Diseño y optimización de la base de datos de la operación y de los procedimientos de auditoría",
+          "Organización, clasificación y almacenamiento de documentos"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Producer & Account Executive — BTL Logistics",
+        "es": "Productor y Ejecutivo de Cuentas — Logística BTL"
+      },
+      "org": "Magic Dreams Productions — Panamá",
+      "start": "2011-11-01",
+      "end": "2014-07-01",
+      "highlights": {
+        "en": [
+          "Logistics and setup of BTL activations at large-scale events, per project",
+          "Clients: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic, HSBC, +Móvil, TVXC, Canada Dry, Nissan/Panamotors, Elmor, Alcaldía de Panamá",
+          "Coordination of the Panama Christmas Parade 2013",
+          "Event production · Herbalife Extravaganza 2012",
+          "Featured in: Cirque du Soleil (Dralion), Aerosmith, Shakira, Juan Luis Guerra, Juanes, Jennifer Lopez, Franco de Vita, Prince Royce, Natalia Jiménez, Daddy Yankee, Yanni, 2011 Baseball World Cup"
+        ],
+        "es": [
+          "Logística y montaje de activaciones BTL en eventos masivos, según proyecto",
+          "Clientes: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic, HSBC, +Móvil, TVXC, Canada Dry, Nissan/Panamotors, Elmor, Alcaldía de Panamá",
+          "Coordinación del Desfile de Navidad Panamá 2013",
+          "Producción evento Extravaganza Herbalife 2012",
+          "Participación en: Cirque du Soleil (Dralion), Aerosmith, Shakira, Juan Luis Guerra, Juanes, Jennifer Lopez, Franco de Vita, Prince Royce, Natalia Jiménez, Daddy Yankee, Yanni, Copa Mundial de Béisbol 2011"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Video-to-Film Transfer Internship",
+        "es": "Pasantía en Transferencia de Video a Cine"
+      },
+      "org": "Produrama — Caracas",
+      "start": "2008-01-01",
+      "end": "2008-12-01"
+    },
+    {
+      "role": {
+        "en": "TV Studio Technician — Teaching Assistant",
+        "es": "Técnico del Estudio de TV — Asistente Docente"
+      },
+      "org": "Universidad Santa María — Caracas",
+      "start": "2007-01-01",
+      "end": "2008-06-01",
+      "highlights": {
+        "en": [
+          "Equipment maintenance · student supervision · inventory · technical lighting"
+        ],
+        "es": [
+          "Mantenimiento de equipos · supervisión de estudiantes · inventario · iluminación técnica"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Still Photography Assistant",
+        "es": "Asistente de Fotografía Fija"
+      },
+      "org": "Frank Martínez & Alberto Hernández — Caracas",
+      "start": "2007-01-01",
+      "end": "2010-12-01"
+    },
+    {
+      "role": {
+        "en": "Editing & Montage Instructor · Post-production Coordinator",
+        "es": "Docente de Edición y Montaje · Coordinador de Post-producción"
+      },
+      "org": "Escuela de Cine y TV — Caracas",
+      "start": "2009-01-01",
+      "end": "2010-07-01",
+      "highlights": {
+        "en": [
+          "Editing and montage instructor (2009–2010)",
+          "Post-production coordinator, series Creadores Visuales de Venezuela (2010)"
+        ],
+        "es": [
+          "Docente de edición y montaje (2009–2010)",
+          "Coordinador de post-producción, serie Creadores Visuales de Venezuela (2010)"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Camera · Editing · Direction of Photography (freelance)",
+        "es": "Cámara · Edición · Dirección de Fotografía (freelance)"
+      },
+      "org": "Independent — Caracas",
+      "start": "2006-01-01",
+      "end": "2010-12-01",
+      "highlights": {
+        "en": [
+          "Documentaries Pura Belleza, Una Sola Jugadera, Caminos Verdes and the series Caracas Múltiple — camera and editor (2008)",
+          "La Escalera de Patty — Prix du Public, FECOVEN 2008 · 9 Arepas — ESPN selection 2008",
+          "14 micros on HIV — direction of photography and colorization, Positrón/Artgnosis (2009)"
+        ],
+        "es": [
+          "Documentales Pura Belleza, Una Sola Jugadera, Caminos Verdes y la serie Caracas Múltiple — cámara y edición (2008)",
+          "La Escalera de Patty — prix du public, FECOVEN 2008 · 9 Arepas — selección ESPN 2008",
+          "14 micros sobre VIH — dirección de fotografía y colorización, Positrón/Artgnosis (2009)"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Research Trainee — Physics and Nuclear Reactor Center",
+        "es": "Profesional en Entrenamiento — Centro de Física y Reactor Nuclear"
+      },
+      "org": "Instituto Venezolano de Investigaciones Científicas (IVIC) — Caracas",
+      "start": "2003-01-01",
+      "end": "2006-12-01"
+    },
+    {
+      "role": {
+        "en": "Physics Professor",
+        "es": "Profesor de Física"
+      },
+      "org": "Universidad Simón Bolívar — Caracas",
+      "start": "2003-01-01",
+      "end": "2006-12-01",
+      "highlights": {
+        "en": [
+          "Labs I, II and III for engineering and sciences (2nd and 3rd year)",
+          "Physics I teaching assistant (Apr–Jul 2003)",
+          "Doctoral research in complex systems · first publications"
+        ],
+        "es": [
+          "Laboratorios I, II y III para ingenierías y ciencias (2º y 3er año)",
+          "Preparador de Física I (abr–jul 2003)",
+          "Investigación doctoral en sistemas complejos · primeras publicaciones"
+        ]
+      }
+    },
+    {
+      "role": {
+        "en": "Fashion Photography Workshop — Alberto Hernández",
+        "es": "Taller de Fotografía de Moda — Alberto Hernández"
+      },
+      "org": "AVECOFAN — Caracas",
+      "start": "2010-01-01",
+      "end": "2010-12-01"
+    },
+    {
+      "role": {
+        "en": "Audiovisual Project Development Workshop",
+        "es": "Taller de Formulación de Proyectos Audiovisuales"
+      },
+      "org": "MEDIAX — Caracas",
+      "start": "2009-01-01",
+      "end": "2009-12-01"
+    },
+    {
+      "role": {
+        "en": "Electronic Cinematography Direction Workshop — Daniel Mendoza",
+        "es": "Taller de Dirección de Fotografía Electrónica — Daniel Mendoza"
+      },
+      "org": "VIART — Caracas",
+      "start": "2007-01-01",
+      "end": "2007-12-01"
+    },
+    {
+      "role": {
+        "en": "Passport to Electronic Cinematography (Cinealta) — Jesús «Chuchi» Rivero",
+        "es": "Taller Pasaporte a Cinematografía Electrónica Cinealta — Jesús «Chuchi» Rivero"
+      },
+      "org": "ANAC — Caracas",
+      "start": "2006-01-01",
+      "end": "2006-12-01"
+    },
+    {
+      "role": {
+        "en": "Documentary Photography Course",
+        "es": "Curso de Fotografía Documental"
+      },
+      "org": "Universidad Central de Venezuela — Caracas",
+      "start": "2006-01-01",
+      "end": "2006-12-01"
+    },
+    {
+      "role": {
+        "en": "I Andean Workshop on Chaos and Complexity",
+        "es": "I Taller Andino de Caos y Complejidad"
+      },
+      "org": "UNET — San Cristóbal, Venezuela",
+      "start": "2004-01-01",
+      "end": "2004-12-01"
+    },
+    {
+      "role": {
+        "en": "II Latin American School of High Energy Physics",
+        "es": "II Latin American School of High Energy Physics"
+      },
+      "org": "CERN — San Miguel Regla, Mexico (scholarship)",
+      "start": "2003-01-01",
+      "end": "2003-12-01"
+    },
+    {
+      "role": {
+        "en": "V, VI & VII School of Relativity, Fields and Astrophysics",
+        "es": "V, VI y VII Escuela de Relatividad, Campos y Astrofísica"
+      },
+      "org": "Universidad de Los Andes (ULA) — Mérida, Venezuela",
+      "start": "2000-01-01",
+      "end": "2002-12-01"
+    },
+    {
+      "role": {
+        "en": "I Latin American School of Astrobiology",
+        "es": "I Escuela Latinoamericana de Astrobiología"
+      },
+      "org": "UNESCO-ICTP — Caracas",
+      "start": "1999-01-01",
+      "end": "1999-12-01"
+    },
+    {
+      "role": {
+        "en": "Postgraduate Course in Instrumentation",
+        "es": "Postgrado de Instrumentación"
+      },
+      "org": "Universidad Central de Venezuela — Caracas",
+      "start": "1998-01-01",
+      "end": "1998-12-01"
+    }
+  ],
+  "education": [
+    {
+      "id": "exp-specialization-audiovisual",
+      "degree": {
+        "en": "Specialization in Audiovisual Media",
+        "es": "Especialización en Audiovisuales"
+      },
+      "institution": "Escuela de Cine y TV — Caracas · Prix du Public FECOVEN 2008",
+      "field": {
+        "en": "Film and audiovisual media",
+        "es": "Cine y medios audiovisuales"
+      },
+      "start": "2006-01-01",
+      "end": "2008-12-01",
+      "note": {
+        "en": "Postgraduate specialization in film and audiovisual media.",
+        "es": "Especialización de posgrado en cine y medios audiovisuales."
+      }
+    },
+    {
+      "id": "exp-doctoral-candidacy-usb",
+      "degree": {
+        "en": "Doctoral Candidacy — Complex Systems (ABD)",
+        "es": "Candidatura Doctoral — Sistemas Complejos (ABD)"
+      },
+      "institution": "Universidad Simón Bolívar — Venezuela",
+      "field": {
+        "en": "Complex systems",
+        "es": "Sistemas complejos"
+      },
+      "start": "2003-01-01",
+      "end": "2006-12-01",
+      "note": {
+        "en": "All-but-dissertation (ABD) — thesis not completed.",
+        "es": "Candidatura doctoral (ABD) — tesis no completada."
+      }
+    },
+    {
+      "id": "exp-bsc-physics-ucv",
+      "degree": {
+        "en": "B.Sc. in Physics",
+        "es": "Licenciatura en Física"
+      },
+      "institution": "Universidad Central de Venezuela · Thesis: Cosmological Models in D-Branes (N-dimensional)",
+      "field": {
+        "en": "Physics",
+        "es": "Física"
+      },
+      "start": "1997-01-01",
+      "end": "2003-12-01",
+      "note": {
+        "en": "Undergraduate thesis: Cosmological Models in D-Branes (N-dimensional). SENESCYT registration on file (not published).",
+        "es": "Tesis de licenciatura: Modelos Cosmológicos en D-Branas (N-dimensionales). Registro SENESCYT en archivo (no publicado)."
+      }
+    },
+    {
+      "id": "exp-high-school-sciences",
+      "degree": {
+        "en": "High School Diploma in Sciences",
+        "es": "Bachiller en Ciencias"
+      },
+      "institution": "Instituto Católico El Carmen — Caracas",
+      "field": {
+        "en": "Sciences",
+        "es": "Ciencias"
+      },
+      "start": "1990-01-01",
+      "end": "1996-12-01"
+    }
+  ],
+  "projects": [
+    {
+      "name": "Kontablo — Universal Accounting Ontology",
+      "status": "active",
+      "description": {
+        "en": "An Esperanto for accounting: graph-based ontology mapping the 195 sovereign jurisdictions to IFRS/XBRL and to the agentic economy (MCP · A2A · AP2). One immutable UUID per universal accounting concept; deterministic three-tier resolution.",
+        "es": "Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2). Un UUID inamovible por concepto; resolución determinista en tres niveles."
+      },
+      "published": true,
+      "links": [
+        "https://github.com/ChristianLuciani/accounting-esperanto"
+      ],
+      "keywords": [
+        "contabilidad",
+        "accounting",
+        "ontología",
+        "ontology",
+        "grafos",
+        "graph database",
+        "IFRS/XBRL",
+        "economía agéntica",
+        "agentic economy",
+        "MCP",
+        "A2A",
+        "AP2"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "195 sovereign jurisdictions mapped; 60 statutory chart-of-accounts overlays (56 exercised against primary sources)",
+            "es": "195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)"
+          },
+          "source": "https://github.com/ChristianLuciani/accounting-esperanto",
+          "verified": "2026-06-30"
+        },
+        {
+          "claim": {
+            "en": "Published June 2026 under Business Source License 1.1 (converts to Apache 2.0 in 2030); preprint deposited on Zenodo and SSRN",
+            "es": "Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030); preprint depositado en Zenodo y SSRN"
+          },
+          "source": "https://doi.org/10.5281/zenodo.20738795",
+          "verified": "2026-06-30"
+        }
+      ]
+    },
+    {
+      "name": "Drahma — Educational Synthetic Intelligence",
+      "status": "active",
+      "description": {
+        "en": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (Aug 2024) — roughly two months before Khanmigo went public. Built without external funding; model-agnostic via Poe; guardrails for minors.",
+        "es": "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (ago 2024) — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo. Desarrollado sin financiamiento externo; agnóstico del modelo vía Poe; guardrails para menores."
+      },
+      "published": true,
+      "links": [
+        "https://github.com/DRAHMAN-ORG/drahman-org"
+      ],
+      "keywords": [
+        "tutores socráticos",
+        "Socratic tutors",
+        "IA educativa",
+        "educational AI",
+        "currículo ecuatoriano",
+        "Ecuadorian curriculum",
+        "comunidades amazónicas",
+        "Amazon communities",
+        "Poe",
+        "Khanmigo"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested with Amazonian indigenous communities (Aug 2024)",
+            "es": "36 tutores virtuales socráticos para el currículo ecuatoriano, probados con comunidades indígenas amazónicas (ago 2024)"
+          },
+          "source": "https://github.com/DRAHMAN-ORG/drahman-org",
+          "verified": "2024-08-31"
+        }
+      ]
+    },
+    {
+      "name": "ZENTROPY — Zero Entropy Intelligence Station",
+      "status": "active",
+      "description": {
+        "en": "Personal cognitive operating system — captures, distills and organizes synthetic-cognition conversations. Solves dialectical entropy: flashes of clarity that vanish get stored in a structured database (Supabase). Universal ingestion: Claude JSON/ZIP, ChatGPT, Markdown.",
+        "es": "Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética. Resuelve la entropía dialéctica: los destellos de claridad se guardan en base de datos estructurada (Supabase). Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "cognición sintética",
+        "synthetic cognition",
+        "entropía dialéctica",
+        "dialectical entropy",
+        "Supabase",
+        "multi-tenant",
+        "Open WebUI"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Esteléctica — Epistemology of Distilled Poly-dialectical Dialogue",
+      "status": "experimental",
+      "description": {
+        "en": "Philosophical proposal and software architecture about the nature of collective knowledge in the age of synthetic cognition. Trunk/Rhizome model: the rhizome explores freely; the human–synthetic-cognition pair periodically distills toward the Trunk. Integrates Noesis and Noetix.",
+        "es": "Propuesta filosófica y arquitectura de software sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética. Modelo Tronco/Rizoma: el rizoma explora libremente; el par humano-cognición sintética destila hacia el Tronco. Integra Noesis y Noetix."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "epistemología",
+        "epistemology",
+        "diálogo poli-dialéctico",
+        "poly-dialectical dialogue",
+        "tronco/rizoma",
+        "trunk/rhizome",
+        "Noesis",
+        "Noetix",
+        "cognición sintética",
+        "synthetic cognition"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "CLAPPS.AI — Comprehensive Learning Applications",
+      "status": "planning",
+      "description": {
+        "en": "Self-taught human-development platform — a counterpoint to the traditional LMS model. Structured, dynamic support for long-term skill development. Closest current reference: NotebookLM, but without structured competency progression.",
+        "es": "Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional. Soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo. Referente más cercano: NotebookLM, pero sin progresión estructurada de competencias."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "LMS",
+        "aprendizaje autodidacta",
+        "self-taught learning",
+        "competencias",
+        "competencies",
+        "NotebookLM",
+        "educación",
+        "education"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "NOOS — Natural Organization Operating System",
+      "status": "experimental",
+      "description": {
+        "en": "Reduce organizational entropy through distributed synthetic cognition and knowledge graphs. Organizations modeled as thermodynamic systems with high/low-entropy states. Destination: high-value consulting for organizations in digital transition.",
+        "es": "Reducir la entropía organizacional mediante cognición sintética distribuida y grafos de conocimiento. Las organizaciones modeladas como sistemas termodinámicos de alta/baja entropía. Destino: consultoría de alto valor para organizaciones en transición digital."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "entropía organizacional",
+        "organizational entropy",
+        "grafos de conocimiento",
+        "knowledge graphs",
+        "sistemas complejos",
+        "complex systems",
+        "consultoría",
+        "consulting"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Topia — Newsletter Editorial Engine",
+      "status": "planning",
+      "description": {
+        "en": "From dystopia to achievable eutopias: a newsletter with epistemic rigor — one essay at a time, every claim traced, every thesis falsifiable. Maps the path to technological sovereignty, collective cognition and regenerative economies.",
+        "es": "De la distopía a eutopías alcanzables: newsletter con rigor epistémico — un ensayo a la vez, cada claim con fuente, cada tesis falsable. Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "newsletter",
+        "epistemología",
+        "epistemology",
+        "rigor epistémico",
+        "epistemic rigor",
+        "eutopías",
+        "eutopias"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Nelson Companion",
+      "status": "active",
+      "description": {
+        "en": "Voice-guided PWA for my father (post-stroke aphasia). Offline-first, zero telemetry.",
+        "es": "PWA guiada por voz para mi padre (afasia post-ACV). Offline-first, cero telemetría."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "PWA",
+        "accesibilidad",
+        "accessibility",
+        "voz",
+        "voice",
+        "salud",
+        "health",
+        "offline-first"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Physics Lab Book",
+      "status": "maintained",
+      "description": {
+        "en": "36 interactive HTML5 laboratory manuals for university physics — originally written for USFQ (engineering, health sciences, pure sciences).",
+        "es": "36 guías interactivas HTML5 de laboratorio de física universitaria — originalmente escritas para USFQ (ingenierías, ciencias de la salud, ciencias puras)."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "física",
+        "physics",
+        "laboratorio",
+        "laboratory",
+        "HTML5",
+        "educación",
+        "education"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Upstream Open Source Contributions",
+      "status": "active",
+      "description": {
+        "en": "Every merged PR is infrastructure that belongs to everyone. Upstream contributions to the agentic-AI ecosystem — AionCore (Pi agent as built-in ACP), pi-acp (session/delete per ACP spec), AionUi (theme-aware logos), Ollama to local ACP agents.",
+        "es": "Cada PR mergeado es infraestructura que pertenece a todos. Contribuciones upstream al ecosistema de IA agéntica — AionCore (agente Pi como ACP built-in), pi-acp (session/delete según spec ACP), AionUi (logos theme-aware), Ollama a agentes ACP locales."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "upstream contributions",
+        "open source",
+        "AionCore",
+        "pi-acp",
+        "AionUi",
+        "MCP",
+        "ACP",
+        "soberanía tecnológica",
+        "technological sovereignty"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "AionCore #618 — Pi agent as built-in ACP (merged)",
+            "es": "AionCore #618 — Agente Pi como ACP built-in (mergeado)"
+          },
+          "source": "https://github.com/iOfficeAI/AionCore/pull/618"
+        },
+        {
+          "claim": {
+            "en": "pi-acp #76 — session/delete per ACP spec (merged)",
+            "es": "pi-acp #76 — session/delete según spec ACP (mergeado)"
+          },
+          "source": "https://github.com/svkozak/pi-acp/pull/76"
+        },
+        {
+          "claim": {
+            "en": "AionCore #626 — Ollama to local ACP agents (closed without merge)",
+            "es": "AionCore #626 — Ollama a agentes ACP locales (cerrado sin merge)"
+          },
+          "source": "https://github.com/iOfficeAI/AionCore/pull/626"
+        },
+        {
+          "claim": {
+            "en": "AionUi #3614 — theme-aware logos (merged)",
+            "es": "AionUi #3614 — logos theme-aware (mergeado)"
+          },
+          "source": "https://github.com/iOfficeAI/AionUi/pull/3614"
+        }
+      ]
+    },
+    {
+      "name": "profile-as-code — pasco",
+      "status": "active",
+      "description": {
+        "en": "Spec-driven engine that compiles one versionable source of truth into every public profile surface: per-platform renderers, deterministic (byte-stable) output, schema-validated facts and a per-entry deploy ledger. This very profile is generated by it.",
+        "es": "Motor spec-driven que compila una sola fuente de verdad versionable en todas las superficies públicas del perfil: renderers por plataforma, salida determinista (byte-stable), hechos validados por schema y un ledger de deploy por entrada. Este mismo perfil está generado por él."
+      },
+      "published": true,
+      "links": [
+        "https://github.com/ChristianLuciani/profile-as-code"
+      ],
+      "keywords": [
+        "TypeScript",
+        "CLI",
+        "JSON Schema",
+        "SSOT",
+        "profile as code",
+        "GEO",
+        "SEO",
+        "agent-guided development",
+        "SPEC + TDD with agents",
+        "monorepo",
+        "pnpm"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "Open source (MIT), spec-first contract (docs/SPEC.md, D1–D22) with CI gates on schema, package inventory, doc links and the project site; the README you are reading is its dogfood output",
+            "es": "Open source (MIT), contrato spec-first (docs/SPEC.md, D1–D22) con gates de CI sobre schema, inventario de paquetes, links de docs y el sitio del proyecto; el README que estás leyendo es su salida de dogfood"
+          },
+          "source": "https://github.com/ChristianLuciani/profile-as-code",
+          "verified": "2026-10-20"
+        },
+        {
+          "claim": {
+            "en": "Renders are deterministic and gated: every artifact is a pure function of the SSOT, and drift is a warning while a schema violation fails the build",
+            "es": "Los renders son deterministas y tienen gate: cada artefacto es función pura del SSOT, y el drift es warning mientras que una violación de schema falla el build"
+          },
+          "source": "https://github.com/ChristianLuciani/profile-as-code/blob/main/docs/ci-cd.md",
+          "verified": "2026-10-20"
+        }
+      ]
+    }
+  ],
+  "publications": [
+    {
+      "title": "Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy",
+      "venue": "Preprint — Zenodo & SSRN (not yet peer-reviewed)",
+      "year": 2026,
+      "doi": "10.5281/zenodo.20738795",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.5281/zenodo.20738795"
+    },
+    {
+      "title": "Highly efficient caffeine-based PVA composite film for UV shielding",
+      "venue": "Carbon Trends",
+      "year": 2025,
+      "doi": "10.1016/j.cartre.2025.100502",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.1016/j.cartre.2025.100502"
+    },
+    {
+      "title": "Tunable Dielectric Carbon Materials from Hydrothermally Nanostructured Organic Carbon Sources",
+      "venue": "ChemPhysChem",
+      "year": 2025,
+      "doi": "10.1002/cphc.202400711",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.1002/cphc.202400711"
+    },
+    {
+      "title": "Optimization of microfibrillated cellulose isolation from cocoa pod husk via mild oxalic acid hydrolysis",
+      "venue": "Heliyon",
+      "year": 2023,
+      "doi": "10.1016/j.heliyon.2023.e17258",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.1016/j.heliyon.2023.e17258"
+    },
+    {
+      "title": "Hydrochars from Lignocellulosic Residues for Green Electronics, Environmental Remediation, Energy and Agricultural Applications",
+      "venue": "ResearchGate preprint",
+      "year": 2023,
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://www.researchgate.net/publication/383276828"
+    },
+    {
+      "title": "Optimization of Microcrystalline Cellulose Isolation from Cocoa Pod Husk via Mild Oxalic Acid Hydrolysis",
+      "venue": "SSRN Electronic Journal",
+      "year": 2022,
+      "doi": "10.2139/ssrn.4307097",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.2139/ssrn.4307097"
+    },
+    {
+      "title": "Ivory Nut (Phytelephas equatorialis) Residues: Chemical Composition for Applications in Health Care, Industry and Environmental Remediation — Towards Sustainability",
+      "venue": "2022 AIChE Annual Meeting (abstract)",
+      "year": 2022,
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://aiche.confex.com/aiche/2022/meetingapp.cgi/Paper/649030"
+    },
+    {
+      "title": "Neural control on multiple time scales: Insights from human stick balancing",
+      "venue": "Condensed Matter Physics",
+      "year": 2006,
+      "doi": "10.5488/CMP.9.2.373",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.5488/CMP.9.2.373"
+    },
+    {
+      "title": "Balancing with Noise and Delay",
+      "venue": "Progress of Theoretical Physics Supplement",
+      "year": 2006,
+      "doi": "10.1143/PTPS.161.314",
+      "orcidId": "0000-0002-6955-5384",
+      "url": "https://doi.org/10.1143/PTPS.161.314"
+    }
+  ],
+  "skills": [
+    {
+      "name": "Synthetic Cognition / Agents",
+      "level": "advanced",
+      "keywords": [
+        "agent orchestration",
+        "synthetic cognition",
+        "MCP",
+        "ACP",
+        "A2A",
+        "Socratic tutors",
+        "RAG context engineering"
+      ],
+      "geoKeywords": [
+        "cognición sintética",
+        "synthetic cognition",
+        "agentic AI"
+      ],
+      "platformWeights": {
+        "github-readme": 0.9,
+        "linkedin": 0.9,
+        "upwork": 0.8,
+        "x": 0.8
+      }
+    },
+    {
+      "name": "Agentic Coding",
+      "level": "advanced",
+      "keywords": [
+        "agent-guided development",
+        "SPEC + TDD with agents",
+        "AI-assisted maintenance"
+      ],
+      "platformWeights": {
+        "github-readme": 1,
+        "upwork": 0.8,
+        "x": 0.6
+      }
+    },
+    {
+      "name": "Technological Sovereignty",
+      "level": "expert",
+      "keywords": [
+        "self-hosting",
+        "LiteLLM / Ollama",
+        "ERPNext",
+        "privacy and data ownership",
+        "Linux / macOS"
+      ],
+      "geoKeywords": [
+        "soberanía tecnológica",
+        "inferencia soberana"
+      ],
+      "platformWeights": {
+        "github-readme": 0.9,
+        "x": 0.7,
+        "linkedin": 0.6
+      }
+    },
+    {
+      "name": "Open Source",
+      "level": "advanced",
+      "keywords": [
+        "upstream contributions",
+        "AionCore (Pi as built-in ACP)",
+        "pi-acp (session/delete)",
+        "BSL 1.1 → Apache 2.0"
+      ],
+      "platformWeights": {
+        "github-readme": 1,
+        "linkedin": 0.5
+      }
+    },
+    {
+      "name": "Platforms & Ecosystem",
+      "level": "intermediate",
+      "keywords": [
+        "ERPNext",
+        "Zoho ERP",
+        "Supabase",
+        "Chatwoot",
+        "Poe"
+      ],
+      "platformWeights": {
+        "upwork": 0.7,
+        "github-readme": 0.4
+      }
+    },
+    {
+      "name": "Sciences — Physics",
+      "level": "expert",
+      "keywords": [
+        "sistemas complejos",
+        "X-ray diffractometry",
+        "radiological safety",
+        "experimental physics"
+      ],
+      "geoKeywords": [
+        "sistemas complejos",
+        "difractometría de rayos X"
+      ],
+      "platformWeights": {
+        "researchgate": 1,
+        "linkedin": 0.7,
+        "github-readme": 0.5
+      }
+    },
+    {
+      "name": "Programming & Data",
+      "level": "advanced",
+      "keywords": [
+        "C",
+        "C++",
+        "Java",
+        "Python",
+        "SQL",
+        "Git / GitHub",
+        "data processing",
+        "LaTeX",
+        "Airtable",
+        "Appsheet"
+      ],
+      "geoKeywords": [
+        "programación",
+        "procesamiento de datos"
+      ],
+      "platformWeights": {
+        "github-readme": 1,
+        "upwork": 0.9,
+        "linkedin": 0.8,
+        "x": 0.5
+      }
+    },
+    {
+      "name": "Audiovisual Production",
+      "level": "advanced",
+      "keywords": [
+        "Final Cut Studio 3",
+        "Aperture",
+        "Adobe Creative Suite",
+        "direction of photography",
+        "video editing",
+        "colorization"
+      ],
+      "geoKeywords": [
+        "dirección de fotografía",
+        "producción audiovisual"
+      ],
+      "platformWeights": {
+        "github-readme": 0.2,
+        "linkedin": 0.4,
+        "upwork": 0.5
+      }
+    }
+  ],
+  "languages": [
+    {
+      "code": "es",
+      "level": "native"
+    },
+    {
+      "code": "en",
+      "level": "intermediate"
+    },
+    {
+      "code": "fr",
+      "level": "intermediate"
+    }
+  ],
+  "credentials": [
+    {
+      "id": "bsc-physics-ucv",
+      "kind": "title",
+      "title": "B.Sc. in Physics",
+      "issuer": "Universidad Central de Venezuela",
+      "issued": "2003-12-01"
+    },
+    {
+      "id": "radiological-protection-xrays",
+      "kind": "certificate",
+      "title": "Course in Radiological Protection in X-Rays",
+      "issuer": "Subsecretaría de Control y Aplicaciones Nucleares (SCAN) — Ministerio de Energía y Recursos Naturales No Renovables, Quito",
+      "issued": "2018-01-01"
+    },
+    {
+      "id": "french-b1-pau",
+      "kind": "certificate",
+      "title": "French Language — Level B1",
+      "issuer": "Université de Pau et des Pays de l'Adour",
+      "issued": "2014-01-01"
+    },
+    {
+      "id": "scholarship-cern-2003",
+      "kind": "award",
+      "title": "Scholarship — II Latin American School of High Energy Physics",
+      "issuer": "CERN",
+      "issued": "2003-01-01"
+    },
+    {
+      "id": "scholarship-ula-relativity",
+      "kind": "award",
+      "title": "Scholarship — V, VI and VII School of Relativity, Fields and Astrophysics",
+      "issuer": "Universidad de Los Andes (ULA)",
+      "issued": "2000-01-01"
+    },
+    {
+      "id": "scholarship-ucv-sciences",
+      "kind": "award",
+      "title": "Study Scholarship — Faculty of Sciences",
+      "issuer": "Universidad Central de Venezuela",
+      "issued": "1999-01-01"
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "profile-as-code",
+      "kind": "code",
+      "title": "profile-as-code — pasco",
+      "description": {
+        "en": "Spec-driven engine and CLI (`pasco`) that compiles one profile-data workspace into byte-stable, per-platform public artifacts.",
+        "es": "Motor y CLI spec-driven (`pasco`) que compila un workspace `profile-data` en artefactos públicos byte-stables por plataforma."
+      },
+      "locator": {
+        "url": "https://github.com/ChristianLuciani/profile-as-code"
+      },
+      "tags": [
+        "developer-tools",
+        "GEO",
+        "profile"
+      ]
+    },
+    {
+      "id": "kontablo-accounting-esperanto",
+      "kind": "code",
+      "title": "accounting-esperanto — Kontablo",
+      "description": {
+        "en": "Graph-based universal accounting ontology: the 195 sovereign jurisdictions mapped to IFRS/XBRL and to the agentic economy. BSL-1.1 (converts to Apache 2.0 in 2030).",
+        "es": "Ontología contable universal basada en grafos: las 195 jurisdicciones soberanas mapeadas a IFRS/XBRL y a la economía agéntica. BSL-1.1 (convierte a Apache 2.0 en 2030)."
+      },
+      "locator": {
+        "url": "https://github.com/ChristianLuciani/accounting-esperanto"
+      },
+      "license": "BSL-1.1",
+      "tags": [
+        "accounting",
+        "ontology",
+        "graph"
+      ]
+    },
+    {
+      "id": "drahma-tutors",
+      "kind": "code",
+      "title": "drahman-org — Drahma",
+      "description": {
+        "en": "36 Socratic virtual tutors for the Ecuadorian curriculum (Aug 2024), field-tested with Amazonian communities.",
+        "es": "36 tutores virtuales socráticos para el currículo ecuatoriano (ago 2024), probados en campo con comunidades amazónicas."
+      },
+      "locator": {
+        "url": "https://github.com/DRAHMAN-ORG/drahman-org"
+      },
+      "tags": [
+        "education",
+        "tutoring",
+        "synthetic-intelligence"
+      ]
+    }
+  ],
+  "keywords": {
+    "seo": {
+      "github": [
+        "sovereign AI infrastructure",
+        "agentic coding",
+        "universal accounting ontology",
+        "educational synthetic cognition",
+        "open source"
+      ],
+      "linkedin": [
+        "physicist complex systems",
+        "synthetic cognition education",
+        "educational AI Ecuador",
+        "open source sovereign"
+      ],
+      "upwork": [
+        "strategic systems consultant",
+        "BI platforms ERP",
+        "cash audit systems",
+        "SaaS architecture",
+        "sovereign AI infrastructure"
+      ],
+      "x": [
+        "física sistemas complejos",
+        "cognición sintética",
+        "IA educativa",
+        "soberanía tecnológica"
+      ],
+      "researchgate": [
+        "complex systems",
+        "X-ray diffractometry",
+        "cellulose nanocrystals",
+        "universal accounting ontology"
+      ],
+      "substack": [
+        "sovereign AI",
+        "agentic economy",
+        "epistemology of synthetic cognition",
+        "epistemic rigor"
+      ]
+    },
+    "geo": {
+      "associations": [
+        "sistemas complejos",
+        "cognición sintética",
+        "soberanía tecnológica",
+        "innovación educativa",
+        "open source",
+        "economía agéntica",
+        "IA educativa"
+      ],
+      "claims": [
+        "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (ago 2024)",
+        "800+ estudiantes anuales y 36 guías de laboratorio originales (USFQ, 2019–2024)",
+        "195 jurisdicciones soberanas mapeadas (Kontablo)",
+        "9 publicaciones/preprints 2006–2026, 7 con DOI resoluble",
+        "3 artículos arbitrados co-autorados (2022–2025): Carbon Trends, ChemPhysChem, Heliyon",
+        "2 preprints co-autorados (2022–2023)",
+        "1 abstract co-autorado (2022): AIChE Annual Meeting",
+        "8 publicaciones co-autoradas (2006–2025; 5 arbitradas)",
+        "4 upstream PRs (2 merged): AionCore #618 (Pi como ACP built-in), pi-acp #76 (session/delete), AionCore #626 (Ollama → ACP local), AionUi #3614 (logos theme-aware)"
+      ]
+    }
+  },
+  "source": {
+    "repo": "https://github.com/ChristianLuciani/profile-data.git",
+    "commit": "32a3a6999cd3b06ff26c3ee99065d37c9faec095",
+    "commitDate": "2026-11-07",
+    "generatedAt": null
+  }
+}

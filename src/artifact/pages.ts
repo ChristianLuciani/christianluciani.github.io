@@ -26,11 +26,16 @@ interface ManifestChunk {
 }
 
 /** Ruta del entry del bundle (raíz del artefacto), desde el manifest de Vite. */
-export function entryPath(manifest: Record<string, ManifestChunk>): string {
-  const entry = Object.entries(manifest).find(([, chunk]) => chunk.isEntry);
+export function entryPath(
+  manifest: Record<string, ManifestChunk>,
+  match = "src/main.ts"
+): string {
+  const entry = Object.entries(manifest).find(
+    ([key, chunk]) => chunk.isEntry && key.includes(match)
+  );
   if (!entry) {
     throw new Error(
-      "build: el manifest de Vite no declara un entry; corré `vite build --manifest` antes de `build.ts --dist`"
+      `build: el manifest de Vite no declara un entry que contenga "${match}"; corré \`vite build --manifest\` antes de \`build.ts --dist\``
     );
   }
   return `/${entry[1].file.replace(/^\/+/, "")}`;

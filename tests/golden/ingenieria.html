@@ -1448,6 +1448,11 @@ a { color:inherit; }
 .brand-mark { color: var(--gold); }
 .project-card { border-radius: var(--radius); }
 .skill-block, .entry, .timeline-note { border-radius: var(--radius); }
+
+/* Footer del sitio (#145): link discreto a /clients/ — vars del tema, sin literales de color. */
+.site-footer { display:flex; justify-content:center; padding:28px 16px 36px; }
+.site-footer-link { color:var(--ink-meta); font-size:11px; letter-spacing:.14em; text-transform:uppercase; text-decoration:none; }
+.site-footer-link:hover, .site-footer-link:focus-visible { color:var(--teal); }
 </style>
   <script type="module" crossorigin src="/src/main.ts"></script>
 </head>
@@ -2989,5 +2994,8 @@ a { color:inherit; }
 <div class="room-divider"></div>
 
 
+<footer class="site-footer">
+  <a class="site-footer-link" href="/clients/">Client labs</a>
+</footer>
 </body>
 </html>

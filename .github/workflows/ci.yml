@@ -47,6 +47,9 @@ jobs:
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test
+      # Tests de agentes (#145): protocolo MCP (node --test) y Worker de chat
+      # con provider mockeado. No son vitest: corren aparte.
+      - run: npm run test:agents
       # Gates multi-tema (#133): copy ES/EN completo (sin claves huérfanas),
       # curación 100% decidida con `reason` y `experienceSections` completa,
       # 0 literales de color en la piel y contraste AA declarado — por CADA tema
@@ -114,6 +117,17 @@ jobs:
           for file in robots.txt llms.txt AI-POLICY.md ; do
             test -f "dist/$file" || { echo "falta dist/$file"; exit 1; }
             cmp "dist/$file" "public/$file" || { echo "dist/$file ≠ public/$file"; exit 1; }
+          done
+          # Client labs (#145): una página por slug del registro, noindex, con el
+          # bundle del lab inyectado; y los JSON de agentes servidos desde la raíz.
+          for slug in blacksmith example ; do
+            test -f "dist/clients/$slug/index.html" || { echo "falta dist/clients/$slug/index.html"; exit 1; }
+            grep -q 'name="robots" content="noindex' "dist/clients/$slug/index.html" || { echo "clients/$slug sin noindex"; exit 1; }
+            grep -q 'src="/assets/lab-' "dist/clients/$slug/index.html" || { echo "clients/$slug sin bundle lab"; exit 1; }
+          done
+          for file in manifest.json profile.json projects.json publications.json chat-context.json ; do
+            test -f "dist/agent/$file" || { echo "falta dist/agent/$file"; exit 1; }
+            cmp "dist/agent/$file" "public/agent/$file" || { echo "dist/agent/$file ≠ public/agent/$file"; exit 1; }
           done
           # el JSON-LD de la entidad se DERIVA (#140): se parsea el HTML servido
           # y se exige UN Person de primer nivel con @id y UN FAQPage con preguntas

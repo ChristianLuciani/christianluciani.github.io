@@ -1,0 +1,71 @@
+{
+  "publications": [
+    {
+      "title": "Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy",
+      "venue": "Preprint — Zenodo & SSRN (not yet peer-reviewed)",
+      "year": 2026,
+      "doi": "10.5281/zenodo.20738795",
+      "url": "https://doi.org/10.5281/zenodo.20738795"
+    },
+    {
+      "title": "Highly efficient caffeine-based PVA composite film for UV shielding",
+      "venue": "Carbon Trends",
+      "year": 2025,
+      "doi": "10.1016/j.cartre.2025.100502",
+      "url": "https://doi.org/10.1016/j.cartre.2025.100502"
+    },
+    {
+      "title": "Tunable Dielectric Carbon Materials from Hydrothermally Nanostructured Organic Carbon Sources",
+      "venue": "ChemPhysChem",
+      "year": 2025,
+      "doi": "10.1002/cphc.202400711",
+      "url": "https://doi.org/10.1002/cphc.202400711"
+    },
+    {
+      "title": "Optimization of microfibrillated cellulose isolation from cocoa pod husk via mild oxalic acid hydrolysis",
+      "venue": "Heliyon",
+      "year": 2023,
+      "doi": "10.1016/j.heliyon.2023.e17258",
+      "url": "https://doi.org/10.1016/j.heliyon.2023.e17258"
+    },
+    {
+      "title": "Hydrochars from Lignocellulosic Residues for Green Electronics, Environmental Remediation, Energy and Agricultural Applications",
+      "venue": "ResearchGate preprint",
+      "year": 2023,
+      "url": "https://www.researchgate.net/publication/383276828"
+    },
+    {
+      "title": "Optimization of Microcrystalline Cellulose Isolation from Cocoa Pod Husk via Mild Oxalic Acid Hydrolysis",
+      "venue": "SSRN Electronic Journal",
+      "year": 2022,
+      "doi": "10.2139/ssrn.4307097",
+      "url": "https://doi.org/10.2139/ssrn.4307097"
+    },
+    {
+      "title": "Ivory Nut (Phytelephas equatorialis) Residues: Chemical Composition for Applications in Health Care, Industry and Environmental Remediation — Towards Sustainability",
+      "venue": "2022 AIChE Annual Meeting (abstract)",
+      "year": 2022,
+      "url": "https://aiche.confex.com/aiche/2022/meetingapp.cgi/Paper/649030"
+    },
+    {
+      "title": "Neural control on multiple time scales: Insights from human stick balancing",
+      "venue": "Condensed Matter Physics",
+      "year": 2006,
+      "doi": "10.5488/CMP.9.2.373",
+      "url": "https://doi.org/10.5488/CMP.9.2.373"
+    },
+    {
+      "title": "Balancing with Noise and Delay",
+      "venue": "Progress of Theoretical Physics Supplement",
+      "year": 2006,
+      "doi": "10.1143/PTPS.161.314",
+      "url": "https://doi.org/10.1143/PTPS.161.314"
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/ChristianLuciani/profile-data.git",
+    "commit": "32a3a6999cd3b06ff26c3ee99065d37c9faec095",
+    "commitDate": "2026-11-07",
+    "generatedAt": null
+  }
+}

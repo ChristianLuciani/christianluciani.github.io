@@ -1,0 +1,328 @@
+{
+  "projects": [
+    {
+      "name": "Kontablo — Universal Accounting Ontology",
+      "status": "active",
+      "description": {
+        "en": "An Esperanto for accounting: graph-based ontology mapping the 195 sovereign jurisdictions to IFRS/XBRL and to the agentic economy (MCP · A2A · AP2). One immutable UUID per universal accounting concept; deterministic three-tier resolution.",
+        "es": "Un Esperanto para la contabilidad: ontología basada en grafos que mapea las 195 jurisdicciones soberanas a IFRS/XBRL y a la economía agéntica (MCP · A2A · AP2). Un UUID inamovible por concepto; resolución determinista en tres niveles."
+      },
+      "published": true,
+      "links": [
+        "https://github.com/ChristianLuciani/accounting-esperanto"
+      ],
+      "keywords": [
+        "contabilidad",
+        "accounting",
+        "ontología",
+        "ontology",
+        "grafos",
+        "graph database",
+        "IFRS/XBRL",
+        "economía agéntica",
+        "agentic economy",
+        "MCP",
+        "A2A",
+        "AP2"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "195 sovereign jurisdictions mapped; 60 statutory chart-of-accounts overlays (56 exercised against primary sources)",
+            "es": "195 jurisdicciones soberanas mapeadas; 60 overlays de planes de cuentas estatutarios (56 ejercidos contra fuentes primarias)"
+          },
+          "source": "https://github.com/ChristianLuciani/accounting-esperanto",
+          "verified": "2026-06-30"
+        },
+        {
+          "claim": {
+            "en": "Published June 2026 under Business Source License 1.1 (converts to Apache 2.0 in 2030); preprint deposited on Zenodo and SSRN",
+            "es": "Publicado en junio 2026 bajo Business Source License 1.1 (convierte a Apache 2.0 en 2030); preprint depositado en Zenodo y SSRN"
+          },
+          "source": "https://doi.org/10.5281/zenodo.20738795",
+          "verified": "2026-06-30"
+        }
+      ]
+    },
+    {
+      "name": "Drahma — Educational Synthetic Intelligence",
+      "status": "active",
+      "description": {
+        "en": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested in the Amazon (Aug 2024) — roughly two months before Khanmigo went public. Built without external funding; model-agnostic via Poe; guardrails for minors.",
+        "es": "36 tutores virtuales socráticos para el currículo ecuatoriano, probados en campo amazónico (ago 2024) — aproximadamente dos meses antes de la disponibilidad pública de Khanmigo. Desarrollado sin financiamiento externo; agnóstico del modelo vía Poe; guardrails para menores."
+      },
+      "published": true,
+      "links": [
+        "https://github.com/DRAHMAN-ORG/drahman-org"
+      ],
+      "keywords": [
+        "tutores socráticos",
+        "Socratic tutors",
+        "IA educativa",
+        "educational AI",
+        "currículo ecuatoriano",
+        "Ecuadorian curriculum",
+        "comunidades amazónicas",
+        "Amazon communities",
+        "Poe",
+        "Khanmigo"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "36 Socratic virtual tutors for the Ecuadorian curriculum, field-tested with Amazonian indigenous communities (Aug 2024)",
+            "es": "36 tutores virtuales socráticos para el currículo ecuatoriano, probados con comunidades indígenas amazónicas (ago 2024)"
+          },
+          "source": "https://github.com/DRAHMAN-ORG/drahman-org",
+          "verified": "2024-08-31"
+        }
+      ]
+    },
+    {
+      "name": "ZENTROPY — Zero Entropy Intelligence Station",
+      "status": "active",
+      "description": {
+        "en": "Personal cognitive operating system — captures, distills and organizes synthetic-cognition conversations. Solves dialectical entropy: flashes of clarity that vanish get stored in a structured database (Supabase). Universal ingestion: Claude JSON/ZIP, ChatGPT, Markdown.",
+        "es": "Sistema operativo cognitivo personal — captura, destila y organiza conversaciones con cognición sintética. Resuelve la entropía dialéctica: los destellos de claridad se guardan en base de datos estructurada (Supabase). Ingesta universal: Claude JSON/ZIP, ChatGPT, Markdown."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "cognición sintética",
+        "synthetic cognition",
+        "entropía dialéctica",
+        "dialectical entropy",
+        "Supabase",
+        "multi-tenant",
+        "Open WebUI"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Esteléctica — Epistemology of Distilled Poly-dialectical Dialogue",
+      "status": "experimental",
+      "description": {
+        "en": "Philosophical proposal and software architecture about the nature of collective knowledge in the age of synthetic cognition. Trunk/Rhizome model: the rhizome explores freely; the human–synthetic-cognition pair periodically distills toward the Trunk. Integrates Noesis and Noetix.",
+        "es": "Propuesta filosófica y arquitectura de software sobre la naturaleza del conocimiento colectivo en la era de la cognición sintética. Modelo Tronco/Rizoma: el rizoma explora libremente; el par humano-cognición sintética destila hacia el Tronco. Integra Noesis y Noetix."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "epistemología",
+        "epistemology",
+        "diálogo poli-dialéctico",
+        "poly-dialectical dialogue",
+        "tronco/rizoma",
+        "trunk/rhizome",
+        "Noesis",
+        "Noetix",
+        "cognición sintética",
+        "synthetic cognition"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "CLAPPS.AI — Comprehensive Learning Applications",
+      "status": "planning",
+      "description": {
+        "en": "Self-taught human-development platform — a counterpoint to the traditional LMS model. Structured, dynamic support for long-term skill development. Closest current reference: NotebookLM, but without structured competency progression.",
+        "es": "Plataforma de desarrollo humano autodidacta — contrapunto al modelo LMS tradicional. Soporte estructurado y dinámico para el desarrollo de habilidades a largo plazo. Referente más cercano: NotebookLM, pero sin progresión estructurada de competencias."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "LMS",
+        "aprendizaje autodidacta",
+        "self-taught learning",
+        "competencias",
+        "competencies",
+        "NotebookLM",
+        "educación",
+        "education"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "NOOS — Natural Organization Operating System",
+      "status": "experimental",
+      "description": {
+        "en": "Reduce organizational entropy through distributed synthetic cognition and knowledge graphs. Organizations modeled as thermodynamic systems with high/low-entropy states. Destination: high-value consulting for organizations in digital transition.",
+        "es": "Reducir la entropía organizacional mediante cognición sintética distribuida y grafos de conocimiento. Las organizaciones modeladas como sistemas termodinámicos de alta/baja entropía. Destino: consultoría de alto valor para organizaciones en transición digital."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "entropía organizacional",
+        "organizational entropy",
+        "grafos de conocimiento",
+        "knowledge graphs",
+        "sistemas complejos",
+        "complex systems",
+        "consultoría",
+        "consulting"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Topia — Newsletter Editorial Engine",
+      "status": "planning",
+      "description": {
+        "en": "From dystopia to achievable eutopias: a newsletter with epistemic rigor — one essay at a time, every claim traced, every thesis falsifiable. Maps the path to technological sovereignty, collective cognition and regenerative economies.",
+        "es": "De la distopía a eutopías alcanzables: newsletter con rigor epistémico — un ensayo a la vez, cada claim con fuente, cada tesis falsable. Mapea el camino a la soberanía tecnológica, la cognición colectiva y las economías regenerativas."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "newsletter",
+        "epistemología",
+        "epistemology",
+        "rigor epistémico",
+        "epistemic rigor",
+        "eutopías",
+        "eutopias"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Nelson Companion",
+      "status": "active",
+      "description": {
+        "en": "Voice-guided PWA for my father (post-stroke aphasia). Offline-first, zero telemetry.",
+        "es": "PWA guiada por voz para mi padre (afasia post-ACV). Offline-first, cero telemetría."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "PWA",
+        "accesibilidad",
+        "accessibility",
+        "voz",
+        "voice",
+        "salud",
+        "health",
+        "offline-first"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Physics Lab Book",
+      "status": "maintained",
+      "description": {
+        "en": "36 interactive HTML5 laboratory manuals for university physics — originally written for USFQ (engineering, health sciences, pure sciences).",
+        "es": "36 guías interactivas HTML5 de laboratorio de física universitaria — originalmente escritas para USFQ (ingenierías, ciencias de la salud, ciencias puras)."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "física",
+        "physics",
+        "laboratorio",
+        "laboratory",
+        "HTML5",
+        "educación",
+        "education"
+      ],
+      "evidence": []
+    },
+    {
+      "name": "Upstream Open Source Contributions",
+      "status": "active",
+      "description": {
+        "en": "Every merged PR is infrastructure that belongs to everyone. Upstream contributions to the agentic-AI ecosystem — AionCore (Pi agent as built-in ACP), pi-acp (session/delete per ACP spec), AionUi (theme-aware logos), Ollama to local ACP agents.",
+        "es": "Cada PR mergeado es infraestructura que pertenece a todos. Contribuciones upstream al ecosistema de IA agéntica — AionCore (agente Pi como ACP built-in), pi-acp (session/delete según spec ACP), AionUi (logos theme-aware), Ollama a agentes ACP locales."
+      },
+      "published": false,
+      "links": [],
+      "keywords": [
+        "upstream contributions",
+        "open source",
+        "AionCore",
+        "pi-acp",
+        "AionUi",
+        "MCP",
+        "ACP",
+        "soberanía tecnológica",
+        "technological sovereignty"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "AionCore #618 — Pi agent as built-in ACP (merged)",
+            "es": "AionCore #618 — Agente Pi como ACP built-in (mergeado)"
+          },
+          "source": "https://github.com/iOfficeAI/AionCore/pull/618"
+        },
+        {
+          "claim": {
+            "en": "pi-acp #76 — session/delete per ACP spec (merged)",
+            "es": "pi-acp #76 — session/delete según spec ACP (mergeado)"
+          },
+          "source": "https://github.com/svkozak/pi-acp/pull/76"
+        },
+        {
+          "claim": {
+            "en": "AionCore #626 — Ollama to local ACP agents (closed without merge)",
+            "es": "AionCore #626 — Ollama a agentes ACP locales (cerrado sin merge)"
+          },
+          "source": "https://github.com/iOfficeAI/AionCore/pull/626"
+        },
+        {
+          "claim": {
+            "en": "AionUi #3614 — theme-aware logos (merged)",
+            "es": "AionUi #3614 — logos theme-aware (mergeado)"
+          },
+          "source": "https://github.com/iOfficeAI/AionUi/pull/3614"
+        }
+      ]
+    },
+    {
+      "name": "profile-as-code — pasco",
+      "status": "active",
+      "description": {
+        "en": "Spec-driven engine that compiles one versionable source of truth into every public profile surface: per-platform renderers, deterministic (byte-stable) output, schema-validated facts and a per-entry deploy ledger. This very profile is generated by it.",
+        "es": "Motor spec-driven que compila una sola fuente de verdad versionable en todas las superficies públicas del perfil: renderers por plataforma, salida determinista (byte-stable), hechos validados por schema y un ledger de deploy por entrada. Este mismo perfil está generado por él."
+      },
+      "published": true,
+      "links": [
+        "https://github.com/ChristianLuciani/profile-as-code"
+      ],
+      "keywords": [
+        "TypeScript",
+        "CLI",
+        "JSON Schema",
+        "SSOT",
+        "profile as code",
+        "GEO",
+        "SEO",
+        "agent-guided development",
+        "SPEC + TDD with agents",
+        "monorepo",
+        "pnpm"
+      ],
+      "evidence": [
+        {
+          "claim": {
+            "en": "Open source (MIT), spec-first contract (docs/SPEC.md, D1–D22) with CI gates on schema, package inventory, doc links and the project site; the README you are reading is its dogfood output",
+            "es": "Open source (MIT), contrato spec-first (docs/SPEC.md, D1–D22) con gates de CI sobre schema, inventario de paquetes, links de docs y el sitio del proyecto; el README que estás leyendo es su salida de dogfood"
+          },
+          "source": "https://github.com/ChristianLuciani/profile-as-code",
+          "verified": "2026-10-20"
+        },
+        {
+          "claim": {
+            "en": "Renders are deterministic and gated: every artifact is a pure function of the SSOT, and drift is a warning while a schema violation fails the build",
+            "es": "Los renders son deterministas y tienen gate: cada artefacto es función pura del SSOT, y el drift es warning mientras que una violación de schema falla el build"
+          },
+          "source": "https://github.com/ChristianLuciani/profile-as-code/blob/main/docs/ci-cd.md",
+          "verified": "2026-10-20"
+        }
+      ]
+    }
+  ],
+  "source": {
+    "repo": "https://github.com/ChristianLuciani/profile-data.git",
+    "commit": "32a3a6999cd3b06ff26c3ee99065d37c9faec095",
+    "commitDate": "2026-11-07",
+    "generatedAt": null
+  }
+}
