@@ -113,7 +113,11 @@ jobs:
             exit 1
           }
 
-          git push --quiet --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+          # `--force`, no `--force-with-lease`: el checkout del runner sólo trae
+          # `main` (fetch-depth 1), así que la ref de la rama no existe local y el
+          # lease falla con "stale info". La rama es del bot y descartable: se
+          # reescribe en cada refresh.
+          git push --quiet --force origin "HEAD:refs/heads/$BRANCH"
 
           PR="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
           if [ -z "$PR" ]; then
@@ -137,7 +141,7 @@ jobs:
             echo "merge de #$PR rechazado; rebase sobre main y reintento"
             git fetch --quiet origin main
             git rebase --quiet origin/main
-            git push --quiet --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+            git push --quiet --force origin "HEAD:refs/heads/$BRANCH"
             wait_build_test
             gh pr merge "$PR" --squash --delete-branch
           fi
