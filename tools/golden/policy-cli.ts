@@ -4,7 +4,7 @@
  * Separado de `policy.ts`: el entrypoint siempre corre, y su nombre es el que
  * invoca `package.json`. La decisión es una función pura testeada.
  */
-import { execFileSync } from "node:child_process";
+import { ensureBase } from "./base.ts";
 import { COMPARATOR_PATH, DATA_PATHS } from "./paths.ts";
 import {
   changedSince,
@@ -18,6 +18,16 @@ import {
 /** Baseline de UN tema registrado (`tests/golden/<id>.html`). */
 const BASELINE_FILE = /^tests\/golden\/[a-z0-9-]+\.html$/;
 
+/**
+ * Anotación de GitHub: una sola línea. El stderr de git es multilínea y la
+ * anotación se corta en el primer salto, así que la razón viaja colapsada
+ * (el detalle completo seguiría perdiéndose igual, pero al menos no se corta
+ * a mitad de la instrucción).
+ */
+function errorAnnotation(message: string): string {
+  return `::error::${message.replace(/\s+/g, " ").trim()}`;
+}
+
 function main(): void {
   const base = process.env.BASE_SHA;
   if (!base) {
@@ -26,9 +36,9 @@ function main(): void {
   }
 
   try {
-    execFileSync("git", ["fetch", "--depth=1", "origin", base], { stdio: "inherit" });
-  } catch {
-    console.error(`::error::no se pudo traer la base ${base}; la guarda no puede decidir`);
+    ensureBase(base);
+  } catch (error) {
+    console.error(errorAnnotation((error as Error).message));
     process.exit(2);
   }
 
@@ -58,13 +68,13 @@ function main(): void {
       declaration: declarationBetween(base)
     });
   } catch (error) {
-    console.error(`::error::${(error as Error).message}`);
+    console.error(errorAnnotation((error as Error).message));
     process.exit(2);
   }
 
   console.log(result.reason);
   if (!result.ok) {
-    console.error(`::error::${result.reason}`);
+    console.error(errorAnnotation(result.reason));
     process.exit(1);
   }
 }
