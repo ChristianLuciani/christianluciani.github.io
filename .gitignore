@@ -29,3 +29,6 @@ ROADMAP.md
 
 # Worktrees: node_modules compartido por symlink desde el repo madre
 node_modules
+
+# build local con SITE_BASE de prueba
+dist-base/
