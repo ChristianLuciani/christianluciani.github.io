@@ -47,6 +47,10 @@ interface Concept {
 // programming" y mostraba la línea de idiomas como evidencia; "2+ years" no
 // nombra stack. Sacarlos es el fix; los tests de abajo fijan cada exclusión.
 const CONCEPTS: Concept[] = [
+  // Proveedor como concepto propio: sólo da evidencia cuando el JD nombra al
+  // proveedor SIN ninguna capacidad (p. ej. "OpenAI API"). Si también hay una
+  // capacidad matcheada, el proveedor pasa a ser filtro (AND), no evidencia.
+  { id: "llm-provider", req: ["openai", "anthropic"], ev: ["openai", "anthropic", "claude", "chatgpt", "gpt"] },
   { id: "agentic-workflows", req: ["agentic", "agent workflow", "agentes"], ev: ["agent", "orchestr", "socratic", "tutor"] },
   { id: "mcp", req: ["mcp", "model context protocol"], ev: ["mcp"] },
   { id: "acp-a2a", req: ["acp", "a2a", "agent-to-agent", "agent protocol"], ev: ["acp", "a2a"] },
@@ -202,31 +206,37 @@ export function matchRequirement(
   if (declaredGap(requirement)) {
     return { text: requirement, status: "gap", evidence: [] };
   }
-  const evidence: FitEvidence[] = [];
-  const seen = new Set<string>();
+  // REGLA DECLARADA (#178, pase 9): si el JD nombra un proveedor, el claim de
+  // evidencia debe nombrar TAMBIÉN ese proveedor (AND con el concepto), salvo
+  // que ningún concepto de capacidad haya matcheado — ahí el proveedor solo
+  // es evidencia legítima (concepto llm-provider).
   const namedProviders = n.match(/openai|anthropic/g);
   const providerEv = namedProviders
-    ? [...new Set(namedProviders.flatMap((p) => PROVIDER_TERMS[p] ?? []))]
+    ? [...new Set(namedProviders.flatMap((pv) => PROVIDER_TERMS[pv] ?? []))]
     : null;
-  outer: for (const concept of concepts) {
-    const matchedReq = concept.req.filter((term) => termMatches(n, term));
-    if (matchedReq.length === 0) continue;
-    // evFromReq: la evidencia DEBE nombrar el término pedido (p. ej. "C++"
-    // no vale un claim de agent orchestration). Sin el flag, ev es la lista
-    // curada de sinónimos del concepto.
+  const matched = concepts
+    .map((c) => ({ c, matchedReq: c.req.filter((t) => termMatches(n, t)) }))
+    .filter((x) => x.matchedReq.length > 0);
+  const capabilities = matched.filter((x) => x.c.id !== "llm-provider");
+  const pool = providerEv && capabilities.length > 0 ? capabilities : matched;
+  const evidence: FitEvidence[] = [];
+  const seen = new Set<string>();
+  for (const { c, matchedReq } of pool) {
     // evFromReq: si un término largo también matcheó, los de 1 char no cuentan
-    // ("C" no debe prestar evidencia a "C++").
     const reqTerms = matchedReq.some((t) => t.length >= 2) ? matchedReq.filter((t) => t.length >= 2) : matchedReq;
-    const evTerms = providerEv ?? (concept.evFromReq ? reqTerms : concept.ev);
+    const evTerms = c.evFromReq ? reqTerms : c.ev;
     for (const item of corpus) {
       const itemNorm = norm(item.text);
-      if (!evTerms.some((term) => termMatches(itemNorm, term))) continue;
+      if (!evTerms.some((t) => termMatches(itemNorm, t))) continue;
+      // composición proveedor AND concepto: el claim también nombra al proveedor pedido
+      if (providerEv && c.id !== "llm-provider" && !providerEv.some((t) => termMatches(itemNorm, t))) continue;
       const key = `${item.text}|${item.url ?? ""}`;
       if (seen.has(key)) continue;
       seen.add(key);
       evidence.push({ claim: truncate(item.text), url: item.url, source: item.source });
-      if (evidence.length >= MAX_EVIDENCE_PER_REQUIREMENT) break outer;
+      if (evidence.length >= MAX_EVIDENCE_PER_REQUIREMENT) break;
     }
+    if (evidence.length >= MAX_EVIDENCE_PER_REQUIREMENT) break;
   }
   return {
     text: requirement,

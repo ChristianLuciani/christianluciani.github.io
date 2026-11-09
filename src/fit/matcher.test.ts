@@ -19,14 +19,26 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     expect(extractRequirements(blacksmith.jd).length).toBe(result.summary.total);
   });
 
-  it("MCP, agentic workflows, tool use, internal tools, Python/Node y English matchean con evidencia", () => {
+  it("MCP, agentic workflows, internal tools, Python/Node y English matchean con evidencia", () => {
     const byText = new Map(result.requirements.map((r) => [r.text.toLowerCase(), r]));
-    for (const needle of ["mcp server", "agentic workflows", "tool use", "internal tools", "python/node", "english"]) {
+    for (const needle of ["mcp server", "agentic workflows", "internal tools", "python/node", "english"]) {
       const req = [...byText.entries()].find(([text]) => text.includes(needle));
       expect(req, `requisito con "${needle}"`).toBeTruthy();
       expect(req![1].status, `"${req![0]}" con evidencia`).toBe("evidence");
       expect(req![1].evidence.length).toBeGreaterThan(0);
     }
+  });
+
+  it("regla compuesta proveedor AND concepto (#178, pase 9): 'OpenAI/Anthropic tool use' es gap honesto (ZENTROPY ingiere exports, no demuestra tool use)", () => {
+    const byText = new Map(result.requirements.map((r) => [r.text.toLowerCase(), r]));
+    const toolUseProvider = [...byText.entries()].find(([text]) => text.includes("tool use"))!;
+    expect(toolUseProvider[1].status).toBe("gap");
+    expect(toolUseProvider[1].evidence).toEqual([]);
+    // sin proveedor nombrado, "tool use" sí matchea (ACP/agentes del SSOT)
+    expect(matchJd("tool use", P).requirements[0].status).toBe("evidence");
+    // y "2+ years Python … OpenAI API" tampoco: ningún claim nombra ambos
+    const composed = matchJd("2+ years Python experience building with the OpenAI API", P).requirements[0];
+    expect(composed.status).toBe("gap");
   });
 
   it("la evidencia linkea a proyectos/PRs reales del perfil (o es claim del SSOT)", () => {
@@ -40,14 +52,14 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     expect(mcp.evidence.some((e) => e.claim.toLowerCase().includes("mcp"))).toBe(true);
   });
 
-  it("honestidad: un requisito con proveedor exige evidencia del proveedor (lista cerrada, sin 'llm'/'LiteLLM')", () => {
-    const toolUse = result.requirements.find((r) => r.text.toLowerCase().includes("tool use"))!;
-    expect(toolUse.status).toBe("evidence");
-    // La evidencia (source verbatim, sin truncar) nombra el proveedor: Claude/ChatGPT (ZENTROPY).
-    for (const ev of toolUse.evidence) {
-      expect(ev.source.toLowerCase()).toMatch(/openai|anthropic|claude|chatgpt|gpt/);
-      expect(ev.source.toLowerCase()).not.toMatch(/llm|litellm|ollama/);
+  it("honestidad: proveedor solo da evidencia del proveedor (concepto llm-provider); LiteLLM/Ollama no cuentan", () => {
+    // "OpenAI" solo → evidence vía ZENTROPY (nombra ChatGPT/Claude), sin llm genérico
+    const alone = matchTerm("OpenAI", P);
+    expect(alone.status).toBe("evidence");
+    for (const ev of alone.evidence) {
+      expect(norm(ev.source)).toMatch(/openai|anthropic|claude|chatgpt|gpt/);
     }
+    expect(matchTerm("Anthropic", P).status).toBe("evidence");
   });
 
   it("lista cerrada: 'LiteLLM / Ollama' o 'LLM orchestration' solos NO son evidencia de OpenAI/Anthropic", () => {
@@ -151,8 +163,20 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     } as unknown as CvProfile;
     expect(matchJd("OpenAI tool use", onlyClaude).requirements[0].status).toBe("gap");
     expect(matchJd("Anthropic tool use", onlyClaude).requirements[0].status).toBe("evidence");
-    // con el perfil real (ZENTROPY nombra ChatGPT y Claude) ambos matchean
-    expect(matchJd("OpenAI/Anthropic tool use", P).requirements[0].status).toBe("evidence");
+    // con el perfil real, proveedor + capacidad matcheados exigen claim con AMBOS → gap honesto
+    expect(matchJd("OpenAI/Anthropic tool use", P).requirements[0].status).toBe("gap");
+  });
+
+  it("sweep compuesto (#178): keyword + 'via the OpenAI API' — toda evidencia nombra keyword Y proveedor", () => {
+    const keywords = P.skills.flatMap((s) => [...(s.keywords ?? []), ...(s.geoKeywords ?? [])]);
+    for (const keyword of keywords) {
+      const r = matchTerm(`${keyword} via the OpenAI API`, P);
+      for (const ev of r.evidence) {
+        const src = norm(ev.source);
+        expect(termMatches(src, keyword), `evidencia de "${keyword}" debe nombrarlo: ${ev.claim.slice(0, 50)}`).toBe(true);
+        expect(/openai|chatgpt|gpt/.test(src), `evidencia de "${keyword}" debe nombrar al proveedor: ${ev.claim.slice(0, 50)}`).toBe(true);
+      }
+    }
   });
 
   it("LangChain/LangGraph es gap declarado", () => {
