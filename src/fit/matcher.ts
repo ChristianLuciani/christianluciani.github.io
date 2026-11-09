@@ -82,11 +82,19 @@ function escapeRegExp(text: string): string {
  * Coincidencia por FRONTERA DE PALABRA: "node" no matchea "anode", "c++" sí
  * matchea "c++". (Clase 2, 4.a reaparición: antes era substring plano.)
  */
+/**
+ * Coincidencia por TOKEN, no por substring: el charset de token es
+ * [a-z0-9_#+-] (letra, dígito, _, +, #, -). Así "C" NO matchea "C#", "C++" ni
+ * "Objective-C", pero "c++" sí matchea "c++", "node" sí matchea "node.js"
+ * y "python/node" (el . y la / son frontera). El plural s? aplica sólo si el
+ * término termina en alfanumérico. (Clase 2, tracking #178.)
+ */
+const TOKEN_CHARS = "a-z0-9_#+-";
 export function termMatches(haystack: string, term: string): boolean {
   const t = norm(term);
   if (!t) return false;
-  // s? = tolerancia a plural simple ("internal tool" matchea "internal tools")
-  return new RegExp("(?<![a-z0-9])" + escapeRegExp(t) + "s?(?![a-z0-9])").test(haystack);
+  const plural = /[a-z0-9]$/.test(t) ? "s?" : "";
+  return new RegExp("(?<![" + TOKEN_CHARS + "])" + escapeRegExp(t) + plural + "(?![" + TOKEN_CHARS + "])").test(haystack);
 }
 
 

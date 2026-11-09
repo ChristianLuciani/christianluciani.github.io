@@ -180,3 +180,11 @@ jobs:
       - run: npm run intro:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+      # Mismo gate de links sobre un build con SITE_BASE: va al FINAL del job
+      # porque reescribe dist/ con el prefijo (los assets de vite ya están en dist/).
+      - name: links bajo SITE_BASE
+        run: |
+          npx vite build --manifest >/dev/null
+          SITE_BASE=/demo npx tsx build.ts --dist --manifest dist/.vite/manifest.json >/dev/null
+          node tools/check-artifact-links.mjs --base /demo
+          rm -rf dist/.vite

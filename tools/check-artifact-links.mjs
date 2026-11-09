@@ -2,16 +2,29 @@
 /**
  * check-artifact-links — gate sobre el artefacto: TODA URL raíz-absoluta que
  * cualquier página de dist/ referencia en href/src (anchors incluidos) debe
- * existir dentro de dist/. Cierra la clase de "el footer apunta a /clients/
- * y bajo SITE_BASE eso 404ea" (#145, F3 del review del pase 6).
+ * existir dentro de dist/. Base-aware: con --base /demo (o SITE_BASE) se
+ * pela el prefijo antes de resolver, así el gate también cubre el build bajo
+ * SITE_BASE (#145, F3 del review del pase 6, F2 del pase 7).
  *
  * Uso: npm run build && npm run links:check
+ *      node tools/check-artifact-links.mjs --dist dist-base --base /demo
  * Exit 0 OK · 1 hay rutas rotas · 2 falta dist/.
  */
-import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 
-const DIST = resolve(process.cwd(), "dist");
+function parseArgs(argv) {
+  const out = { dist: resolve(process.cwd(), "dist"), base: process.env.SITE_BASE ?? "" };
+  for (let i = 0; i < argv.length; i += 1) {
+    if (argv[i] === "--dist") out.dist = resolve(process.cwd(), argv[++i]);
+    else if (argv[i] === "--base") out.base = argv[++i];
+    else throw new Error(`argumento desconocido: ${argv[i]}`);
+  }
+  out.base = out.base.replace(/\/+$/, "");
+  return out;
+}
+
+const { dist: DIST, base: BASE } = parseArgs(process.argv.slice(2));
 
 function htmlFiles(dir) {
   const out = [];
@@ -25,7 +38,9 @@ function htmlFiles(dir) {
 
 /** `/clients/` → dist/clients/index.html · `/assets/x.js` → dist/assets/x.js · `/` → dist/index.html */
 function targetExists(dist, urlPath) {
-  const clean = urlPath.split(/[?#]/)[0];
+  // Bajo SITE_BASE las URLs llevan el prefijo: se pela antes de resolver.
+  let clean = urlPath.split(/[?#]/)[0];
+  if (BASE && (clean === BASE || clean.startsWith(`${BASE}/`))) clean = clean.slice(BASE.length) || "/";
   if (clean.endsWith("/")) return existsSync(join(dist, clean, "index.html"));
   return existsSync(join(dist, clean));
 }

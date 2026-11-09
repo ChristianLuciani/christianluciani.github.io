@@ -88,11 +88,18 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     }
   });
 
-  it("frontera de palabra: 'node' no matchea 'anode'; 'c++' sí matchea 'c++'", () => {
-    expect(termMatches("anode maintenance", "node")).toBe(false);
+  it("frontera de TOKEN (#178): 'C' no matchea C#/C++/Objective-C; 'c++' sí matchea 'c++'; 'node' sí matchea 'node.js' y 'python/node'", () => {
+    expect(termMatches("c++", "c")).toBe(false);
+    expect(termMatches("c#", "c")).toBe(false);
+    expect(termMatches("objective-c", "c")).toBe(false);
     expect(termMatches("c++", "c++")).toBe(true);
     expect(termMatches("node.js and beyond", "node")).toBe(true);
+    expect(termMatches("python/node", "node")).toBe(true);
+    expect(termMatches("anode maintenance", "node")).toBe(false);
+    expect(matchTerm("C#", P).status).toBe("gap");
+    expect(matchTerm("Objective-C", P).status).toBe("gap");
     expect(matchTerm("Anode maintenance", P).status).toBe("gap");
+    expect(matchTerm("C", P).status).toBe("evidence");
     expect(matchTerm("C++", P).status).toBe("evidence");
     expect(matchTerm("Java", P).status).toBe("evidence");
     expect(matchTerm("SQL", P).status).toBe("evidence");
