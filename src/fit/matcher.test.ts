@@ -40,6 +40,35 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     expect(mcp.evidence.some((e) => e.claim.toLowerCase().includes("mcp"))).toBe(true);
   });
 
+  it("honestidad: un requisito con proveedor exige evidencia del proveedor (no 'agent' genérico)", () => {
+    const toolUse = result.requirements.find((r) => r.text.toLowerCase().includes("tool use"))!;
+    expect(toolUse.status).toBe("evidence");
+    // La evidencia (source verbatim, sin truncar) cita Claude/ChatGPT (ZENTROPY) o Poe (Drahma).
+    for (const ev of toolUse.evidence) {
+      expect(ev.source.toLowerCase()).toMatch(/openai|anthropic|claude|chatgpt|gpt|poe|llm/);
+    }
+  });
+
+  it("honestidad: 'internal tools' matchea por CLI/pasco/internal, no por 'engineering'", () => {
+    const internal = result.requirements.find((r) => r.text.toLowerCase().includes("internal tool"))!;
+    expect(internal.status).toBe("evidence");
+    for (const ev of internal.evidence) {
+      expect(ev.source.toLowerCase()).toMatch(/internal|cli|pasco/);
+    }
+  });
+
+  it("si el SSOT no nombrara al proveedor, el requisito sería gap (regla provider)", () => {
+    const fakeProfile = {
+      skills: [{ name: "Physics", keywords: ["x-ray"] }],
+      projects: [],
+      artifacts: [],
+      experience: [],
+      languages: []
+    } as unknown as CvProfile;
+    const r = matchJd("OpenAI/Anthropic tool use", fakeProfile);
+    expect(r.requirements[0].status).toBe("gap");
+  });
+
   it("LangChain/LangGraph es gap declarado", () => {
     const langchain = result.requirements.find((r) => r.text.toLowerCase().includes("langchain"))!;
     expect(langchain.status).toBe("gap");

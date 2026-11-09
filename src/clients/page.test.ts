@@ -96,11 +96,16 @@ describe("client page — contrato del documento", () => {
     expect(clientSlugs().some((s) => CLIENTS[s].locale === "es")).toBe(true);
   });
 
-  it("/clients/ indexa los labs registrados, también noindex", () => {
+  it("/clients/ indexa sólo los labs públicos (unlisted fuera), también noindex", () => {
     const index = clientsIndexHtml();
     expect(index).toContain('<meta name="robots" content="noindex, nofollow">');
     for (const slug of clientSlugs()) {
-      expect(index).toContain(`/clients/${slug}/`);
+      const listed = !CLIENTS[slug].unlisted;
+      if (listed) expect(index).toContain(`/clients/${slug}/`);
+      else expect(index).not.toContain(`/clients/${slug}/`);
     }
+    // el cliente real sí está listado; el de prueba (unlisted) no
+    expect(index).toContain("/clients/blacksmith/");
+    expect(CLIENTS.example.unlisted).toBe(true);
   });
 });

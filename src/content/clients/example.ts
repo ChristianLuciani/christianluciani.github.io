@@ -10,6 +10,8 @@ export const example: ClientLab = {
   brand: "Example Co",
   role: "Plataforma de demo",
   locale: "es",
+  // Cliente de prueba: se genera y sirve por URL directa, pero no se lista en /clients/.
+  unlisted: true,
   entry: {
     eyebrow: {
       en: "Client lab · example client",

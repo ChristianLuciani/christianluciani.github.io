@@ -37,16 +37,27 @@ interface Concept {
   ev: string[];
 }
 
+// Orden: lo específico primero (internal-tools antes que el tool-use genérico).
 const CONCEPTS: Concept[] = [
   { id: "agentic-workflows", req: ["agentic", "agent workflow", "agentes"], ev: ["agent", "orchestr", "socratic", "tutor"] },
   { id: "mcp", req: ["mcp", "model context protocol"], ev: ["mcp"] },
   { id: "acp-a2a", req: ["acp", "a2a", "agent-to-agent", "agent protocol"], ev: ["acp", "a2a"] },
-  { id: "tool-use", req: ["tool use", "tool-use", "tool calling", "function calling", "tools"], ev: ["tool", "acp", "agent", "function"] },
-  { id: "internal-tools", req: ["internal tool"], ev: ["internal", "cli", "pasco", "engine"] },
+  // Ojo: "engine" matcheaba "RAG context engineering" — sacado a propósito.
+  { id: "internal-tools", req: ["internal tool"], ev: ["internal", "cli", "pasco"] },
+  { id: "tool-use", req: ["tool use", "tool-use", "tool calling", "function calling", "tools"], ev: ["tool", "acp", "function"] },
   { id: "rest-webhooks", req: ["rest", "webhook", "http api", "api"], ev: ["rest", "webhook", "api", "http", "endpoint"] },
   { id: "python-node", req: ["python", "node", "nodejs", "typescript", "javascript", "2+ years"], ev: ["python", "node", "typescript", "javascript", "c++", "java", "sql"] },
   { id: "async-english", req: ["english", "ingl", "async"], ev: ["english", "spanish", "french", "native", "intermediate"] }
 ];
+
+/**
+ * Si el requisito nombra un proveedor (OpenAI/Anthropic), la evidencia debe
+ * nombrar un proveedor real — no vale "agent" genérico: el SSOT menciona
+ * Claude/ChatGPT (ZENTROPY) y Poe (Drahma), así que hay evidencia honesta; si
+ * no la hubiera, el requisito sale como gap.
+ */
+const PROVIDER_REQ = /(openai|anthropic)/;
+const PROVIDER_EV = ["openai", "anthropic", "claude", "chatgpt", "gpt", "poe", "llm"];
 
 /** Librerías/SDKs que el perfil NO declara: un requisito que las nombre es gap. */
 const KNOWN_GAPS = ["langchain", "langgraph", "anthropic sdk", "openai sdk", "llamaindex"];
@@ -131,11 +142,13 @@ export function matchRequirement(requirement: string, corpus: readonly CorpusIte
   }
   const evidence: FitEvidence[] = [];
   const seen = new Set<string>();
+  const providerReq = PROVIDER_REQ.test(n);
   outer: for (const concept of CONCEPTS) {
     if (!concept.req.some((term) => n.includes(term))) continue;
+    const evTerms = providerReq ? PROVIDER_EV : concept.ev;
     for (const item of corpus) {
       const itemNorm = norm(item.text);
-      if (!concept.ev.some((term) => itemNorm.includes(term))) continue;
+      if (!evTerms.some((term) => itemNorm.includes(term))) continue;
       const key = `${item.text}|${item.url ?? ""}`;
       if (seen.has(key)) continue;
       seen.add(key);

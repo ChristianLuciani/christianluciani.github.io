@@ -39,9 +39,10 @@ const DEFAULTS = {
   BUDGET_STOP: "0.95",
   STREAM_TIMEOUT_MS: "30000",
   CONTEXT_URL: `${SITE_ORIGIN}/agent/chat-context.json`,
-  // Allowlist configurable por env; free-first. No hardcodear un modelo que
-  // pueda desaparecer: ajustá MODEL_ALLOWLIST en el deploy.
-  MODEL_ALLOWLIST: "google/gemini-2.0-flash-exp:free,meta-llama/llama-3.3-70b-instruct:free"
+  // Allowlist configurable por env; free-first + fallback pago barato (429/402/5xx
+  // del free). El pago DEBE tener precio en PRICES_JSON (fail closed). No
+  // hardcodear un modelo que pueda desaparecer: ajustá en el deploy.
+  MODEL_ALLOWLIST: "google/gemini-2.0-flash-exp:free,meta-llama/llama-3.3-70b-instruct:free,openai/gpt-4o-mini"
 };
 
 const SYSTEM_PROMPT = `You are the assistant for Christian Luciani's public profile.

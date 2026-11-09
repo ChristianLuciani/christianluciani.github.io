@@ -9,16 +9,14 @@
  * bundle hasheado que deja `vite build --manifest`.
  */
 import { CLIENTS, clientSlugs, type ClientLab } from "../content/clients/index.ts";
-import { agentManifest } from "../agent/export.ts";
+import { siteManifest, SITE_PROFILE } from "../agent/site.ts";
 import { currentRoleEn } from "../agent/verify.ts";
-import { PROFILE } from "../data/profile.generated.ts";
-import type { CvProfile } from "../data/profile.types.ts";
 import { PROFILE_COMMIT, PROFILE_ENGINE, ENGINE_URL } from "../data/profile.provenance.ts";
 import { labT, type LabLocale } from "../client/i18n.ts";
 
 export const CLIENT_SOURCE_ENTRY = `<script type="module" crossorigin src="/src/client/main.ts"></script>`;
 
-const PROFILE_DATA = PROFILE as unknown as CvProfile;
+const PROFILE_DATA = SITE_PROFILE;
 
 function escapeHtml(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -81,7 +79,7 @@ function provenanceBadge(locale: LabLocale): string {
 
 function agentModuleHtml(client: ClientLab): string {
   const locale = client.locale;
-  const tools = agentManifest().tools
+  const tools = siteManifest().tools
     .map((tool) => {
       const example =
         tool.name === "get_project"
@@ -123,7 +121,7 @@ function mcpModuleHtml(client: ClientLab): string {
     null,
     2
   );
-  const toolNames = agentManifest().tools.map((t) => t.name).join(", ");
+  const toolNames = siteManifest().tools.map((t) => t.name).join(", ");
   return `  <section class="lab-module" data-module="mcp" aria-labelledby="mod-mcp-title">
     <h3 id="mod-mcp-title" data-i18n="mod.mcp.title">${escapeHtml(labT(locale, "mod.mcp.title"))}</h3>
     <p data-i18n="mod.mcp.desc">${escapeHtml(labT(locale, "mod.mcp.desc"))}</p>
@@ -314,9 +312,10 @@ ${modules}
 `;
 }
 
-/** `/clients/` — índice discreto de laboratorios (también noindex). */
+/** `/clients/` — índice discreto de laboratorios públicos (también noindex). Los `unlisted` no se listan. */
 export function clientsIndexHtml(): string {
   const items = clientSlugs()
+    .filter((slug) => !CLIENTS[slug].unlisted)
     .map((slug) => {
       const client = CLIENTS[slug];
       return `    <li><a href="/clients/${escapeAttr(slug)}/">${escapeHtml(client.brand)}</a> — ${escapeHtml(client.role)}</li>`;

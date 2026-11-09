@@ -27,11 +27,14 @@ aplica a un Worker (es DNS dinámico/tunnel, no un host de Worker).
 
 ## Modelo free y fallback
 
-`MODEL_ALLOWLIST` (var de `wrangler.toml`) es la cascada, free-first: si un
-modelo `:free` devuelve 429/402/5xx se intenta el siguiente. No hardcodear un
-modelo que pueda desaparecer: verificar los `:free` vigentes de OpenRouter al
-deploy y ajustar la allowlist. El fallback pago existe para que la demo no se
-caiga; el techo duro es el budget.
+`MODEL_ALLOWLIST` (var de `wrangler.toml`) es la cascada, free-first:
+`google/gemini-2.0-flash-exp:free` → `meta-llama/llama-3.3-70b-instruct:free` →
+`openai/gpt-4o-mini` (fallback pago barato; si un `:free` devuelve 429/402/5xx
+se intenta el siguiente). El fallback pago figura con su precio en
+`PRICES_JSON` (0.15/0.60 USD/M tokens) porque el budget es **fail closed**: un
+modelo pago sin precio declarado cuenta como hard stop inmediato. No hardcodear
+un modelo que pueda desaparecer: verificar los `:free` vigentes de OpenRouter
+al deploy y ajustar allowlist + precios. El techo duro es el budget (USD 1).
 
 ## Seguridad / costo / límites
 

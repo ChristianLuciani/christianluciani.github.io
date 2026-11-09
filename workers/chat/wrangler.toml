@@ -13,15 +13,16 @@ CHAT_ENABLED = "true"
 BUDGET_USD = "1"
 BUDGET_ALERT = "0.75"
 BUDGET_STOP = "0.95"
-# Allowlist free-first; fallback pago barato si el free devuelve 429/402/5xx.
-# Ajustar al deploy según los :free vigentes de OpenRouter.
-MODEL_ALLOWLIST = "google/gemini-2.0-flash-exp:free,meta-llama/llama-3.3-70b-instruct:free"
+# Allowlist free-first; fallback pago barato (openai/gpt-4o-mini) si el free
+# devuelve 429/402/5xx. Ajustar al deploy según los :free vigentes de OpenRouter;
+# el fallback pago DEBE figurar con precio en PRICES_JSON (fail closed).
+MODEL_ALLOWLIST = "google/gemini-2.0-flash-exp:free,meta-llama/llama-3.3-70b-instruct:free,openai/gpt-4o-mini"
 # Contexto servido por el sitio público (sólo perfil público, ≤ 6k tokens)
 CONTEXT_URL = "https://christianluciani.github.io/agent/chat-context.json"
 # Precios USD por millón de tokens, por modelo (para el budget); los :free son 0.
 # FAIL CLOSED: un modelo pago sin precio acá (o sin chunk de usage) cuenta como
 # hard stop inmediato — agregar un fallback pago exige cargar su precio.
-PRICES_JSON = "{}"
+PRICES_JSON = "{\"openai/gpt-4o-mini\":{\"input\":0.15,\"output\":0.6}}"
 # Límites: 5/min/IP · 15/h/IP · 40/día/IP · 100/día global · 300/mes · 1 concurrente/IP · 2 globales · 4 turnos · 300 chars · 250 tokens out
 RATE_MIN_IP = "5"
 RATE_HOUR_IP = "15"

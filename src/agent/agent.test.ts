@@ -7,15 +7,13 @@ import { existsSync, readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
-  agentFiles,
-  agentManifest,
-  chatContext,
   estimateTokens,
   CHAT_CONTEXT_TOKEN_BUDGET,
   profileJson,
   projectsJson,
   publicationsJson
 } from "./export.ts";
+import { siteAgentFiles, siteChatContext, siteManifest, SITE_PROVENANCE } from "./site.ts";
 import { validateInput } from "./schema.ts";
 import { runTool, ToolError } from "./execute.ts";
 import { checkFacts, currentRoleEn, recencyKey } from "./verify.ts";
@@ -27,7 +25,7 @@ import type { CvProfile } from "../data/profile.types.ts";
 const P = PROFILE as unknown as CvProfile;
 
 describe("agent manifest — 4 tools con JSON Schema y endpoint", () => {
-  const manifest = agentManifest();
+  const manifest = siteManifest();
 
   it("declara exactamente los 4 tools con endpoint estático", () => {
     expect(manifest.tools.map((t) => t.name).sort()).toEqual([
@@ -55,6 +53,7 @@ describe("agent manifest — 4 tools con JSON Schema y endpoint", () => {
 
   it("el manifiesto declara provenance con el sha real", () => {
     expect(manifest.provenance.commit).toBe(PROFILE_COMMIT);
+    expect(manifest.provenance).toEqual(SITE_PROVENANCE);
   });
 });
 
@@ -81,7 +80,7 @@ describe("shapes de salida desde PROFILE", () => {
 });
 
 describe("chat-context.json — sólo perfil público, ≤ 6k tokens, secciones con sources", () => {
-  const ctx = chatContext(P);
+  const ctx = siteChatContext();
 
   it("cada sección tiene id, text y sources (array)", () => {
     for (const section of ctx.sections) {
@@ -89,7 +88,20 @@ describe("chat-context.json — sólo perfil público, ≤ 6k tokens, secciones 
       expect(section.text.length).toBeGreaterThan(0);
       expect(Array.isArray(section.sources)).toBe(true);
     }
-    expect(ctx.sections.map((s) => s.id)).toContain("faq");
+  });
+
+  it("cubre TODO lo público que el issue §2.5 nombra: educación, idiomas, credenciales, artifacts, FAQ", () => {
+    const ids = ctx.sections.map((s) => s.id);
+    for (const id of ["identity", "experience", "education", "projects", "skills", "languages", "credentials", "artifacts", "publications", "faq", "links"]) {
+      expect(ids).toContain(id);
+    }
+    // El chat no debe negar hechos públicos: nivel de inglés y título de física están.
+    const languages = ctx.sections.find((s) => s.id === "languages")!;
+    expect(languages.text).toMatch(/English \(intermediate\)/);
+    const education = ctx.sections.find((s) => s.id === "education")!;
+    expect(education.text).toMatch(/B\.Sc\. in Physics/);
+    const credentials = ctx.sections.find((s) => s.id === "credentials")!;
+    expect(credentials.text).toMatch(/Radiological Protection/);
   });
 
   it("cabe en el budget de 6k tokens", () => {
@@ -105,7 +117,7 @@ describe("chat-context.json — sólo perfil público, ≤ 6k tokens, secciones 
 });
 
 describe("drift — public/agent/ commiteado == regenerado del SSOT", () => {
-  const files = agentFiles();
+  const files = siteAgentFiles();
   for (const [relative, bytes] of Object.entries(files)) {
     it(`${relative} sin drift`, () => {
       const file = resolve(process.cwd(), relative);
@@ -116,9 +128,9 @@ describe("drift — public/agent/ commiteado == regenerado del SSOT", () => {
 });
 
 describe("ejecución determinista de tools (loader inyectado)", () => {
-  const files = agentFiles();
+  const files = siteAgentFiles();
   const loader = async (url: string) => JSON.parse(files[`public${url}`]);
-  const manifest = agentManifest();
+  const manifest = siteManifest();
 
   it("las 4 tools ejecutan y devuelven JSON real", async () => {
     const profile = (await runTool(manifest.tools[0], {}, loader)) as { name: string };

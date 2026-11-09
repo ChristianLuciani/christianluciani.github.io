@@ -15,6 +15,8 @@
 import { createInterface } from "node:readline";
 import { readFileSync, realpathSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+// Núcleo compartido con la consola del lab: misma validación y mismo dispatch.
+import { applyTool, ToolError, validateInput } from "../src/agent/tool-core.mjs";
 
 const AGENT_DIR = new URL("../public/agent/", import.meta.url);
 
@@ -28,35 +30,6 @@ const DATA = {
 const PROTOCOL_VERSION = "2024-11-05";
 const SERVER_INFO = { name: manifest.name, version: manifest.version };
 
-function norm(text) {
-  return String(text).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-}
-
-function validateInput(schema, input) {
-  const errors = [];
-  if (typeof input !== "object" || input === null || Array.isArray(input)) {
-    return ["arguments debe ser un objeto"];
-  }
-  const props = schema.properties ?? {};
-  for (const key of schema.required ?? []) {
-    if (!(key in input)) errors.push(`falta el campo requerido "${key}"`);
-  }
-  if (schema.additionalProperties === false) {
-    for (const key of Object.keys(input)) {
-      if (!(key in props)) errors.push(`campo desconocido "${key}"`);
-    }
-  }
-  for (const [key, value] of Object.entries(input)) {
-    const prop = props[key];
-    if (!prop) continue;
-    if (prop.type === "string" && (typeof value !== "string" || (prop.minLength && value.length < prop.minLength))) {
-      errors.push(`"${key}" debe ser string${prop.minLength ? ` (mín ${prop.minLength})` : ""}`);
-    }
-    if (prop.type === "boolean" && typeof value !== "boolean") errors.push(`"${key}" debe ser boolean`);
-  }
-  return errors;
-}
-
 function callTool(name, args) {
   const tool = manifest.tools.find((t) => t.name === name);
   if (!tool) return { isError: true, content: [{ type: "text", text: `tool desconocido "${name}"` }] };
@@ -64,33 +37,12 @@ function callTool(name, args) {
   if (errors.length > 0) {
     return { isError: true, content: [{ type: "text", text: `input inválido: ${errors.join("; ")}` }] };
   }
-  const data = DATA[tool.endpoint]();
-  let result;
-  switch (name) {
-    case "get_profile":
-      result = data;
-      break;
-    case "list_projects": {
-      const projects = data.projects ?? [];
-      result = typeof args.published === "boolean" ? projects.filter((p) => p.published === args.published) : projects;
-      break;
-    }
-    case "get_project": {
-      const needle = norm(args.name);
-      const found = (data.projects ?? []).find((p) => norm(p.name).includes(needle));
-      if (!found) return { isError: true, content: [{ type: "text", text: `no hay proyecto que contenga "${args.name}"` }] };
-      result = found;
-      break;
-    }
-    case "search_publications": {
-      const needle = norm(args.query);
-      result = (data.publications ?? []).filter((p) => norm(p.title).includes(needle) || norm(p.venue).includes(needle));
-      break;
-    }
-    default:
-      return { isError: true, content: [{ type: "text", text: `tool no implementado "${name}"` }] };
+  try {
+    const result = applyTool(tool, args ?? {}, DATA[tool.endpoint]());
+    return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
+  } catch (error) {
+    return { isError: true, content: [{ type: "text", text: error instanceof ToolError ? error.message : String(error) }] };
   }
-  return { content: [{ type: "text", text: JSON.stringify(result, null, 2) }] };
 }
 
 function handleMessage(message) {

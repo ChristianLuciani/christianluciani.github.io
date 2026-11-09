@@ -45,6 +45,11 @@ export interface ClientLab {
   jd: string;
   modules: readonly ClientModuleId[];
   chat: ClientChat;
+  /**
+   * `true` → la página se genera y es alcanzable por URL directa, pero NO se
+   * lista en `/clients/` (cliente de prueba / no público en el índice).
+   */
+  unlisted?: boolean;
 }
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -79,6 +84,9 @@ export function validateClient(client: ClientLab): string[] {
   }
   if (client.chat.enabled && client.chat.suggested.length === 0) {
     problems.push("chat.enabled con suggested vacío");
+  }
+  if (client.unlisted !== undefined && typeof client.unlisted !== "boolean") {
+    problems.push("unlisted debe ser boolean");
   }
   return problems;
 }

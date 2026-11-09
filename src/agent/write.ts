@@ -6,10 +6,10 @@
  */
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
-import { agentFiles } from "./export.ts";
+import { siteAgentFiles } from "./site.ts";
 
 export function writeAgentFiles(root = process.cwd()): string[] {
-  const files = agentFiles();
+  const files = siteAgentFiles();
   const written: string[] = [];
   for (const [relative, bytes] of Object.entries(files)) {
     const file = resolve(root, relative);
@@ -21,7 +21,7 @@ export function writeAgentFiles(root = process.cwd()): string[] {
 }
 
 export function checkAgentFiles(root = process.cwd()): string[] {
-  const files = agentFiles();
+  const files = siteAgentFiles();
   const drifted: string[] = [];
   for (const [relative, bytes] of Object.entries(files)) {
     const file = resolve(root, relative);

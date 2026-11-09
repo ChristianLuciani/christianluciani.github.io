@@ -108,12 +108,14 @@ los fetch de `/agent/*`.
 ## Agregar un cliente
 
 1. Crear `src/content/clients/acme.ts` con un `ClientLab` (slug `[a-z0-9-]+`,
-   entry EN+ES, accent `#rrggbb`, `jd`, `modules`, `chat.suggested`).
+   entry EN+ES, accent `#rrggbb`, `jd`, `modules`, `chat.suggested`, y
+   `unlisted: true` si no debe aparecer en el índice `/clients/`).
 2. Registrarlo en `src/content/clients/index.ts`.
 3. `npm run build:clients` (commitea `clients/acme/index.html`).
 
-No se toca ningún template. `clients/example` existe para que CI pruebe
-exactamente eso.
+No se toca ningún template ni el gate de CI (los slugs se derivan del
+registro). `clients/example` (`unlisted`) existe para que CI pruebe
+exactamente eso: se genera y sirve por URL directa, pero no se lista.
 
 ## Tests
 

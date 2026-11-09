@@ -1,9 +1,14 @@
 /**
  * Export del perfil público a superficies consumibles por agentes (#145).
  *
- * TODO sale de `PROFILE` (la proyección pública ya filtrada por
- * `tools/sync-profile.ts` — `visibility=public`): acá no se re-filtra nada
- * privado, sólo se proyecta a los contratos de `public/agent/`:
+ * PURO: ninguna función de acá lee el filesystem ni importa módulos de Node —
+ * el bundle del lab (src/client/*) puede importar esto sin arrastrar
+ * `node:fs`. Los valores del SSOT entran por parámetro; el lado Node los
+ * inyecta desde `src/agent/site.ts` (que sí lee PROFILE + provenance).
+ *
+ * TODO sale de `profile` (la proyección pública ya filtrada por
+ * `tools/sync-profile.ts` — `visibility=public`): acá sólo se proyecta a los
+ * contratos de `public/agent/`:
  *
  *   · manifest.json       — 4 tools con JSON Schema + endpoint estático
  *   · profile.json        — identidad, posicionamiento, experiencia, skills…
@@ -11,16 +16,21 @@
  *   · publications.json   — registry de publicaciones
  *   · chat-context.json   — contexto del chat (secciones con id + sources)
  *
- * Determinismo: mismo PROFILE → mismos bytes (JSON.stringify con 2 espacios
- * y claves en orden de inserción fija). El drift se vigila con un test que
- * compara estos bytes con los archivos commiteados de `public/agent/`.
+ * Determinismo: mismo input → mismos bytes (JSON.stringify con 2 espacios).
+ * El drift se vigila con un test que compara estos bytes con los archivos
+ * commiteados de `public/agent/`.
  */
 import type { CvProfile } from "../data/profile.types.ts";
-import { PROFILE } from "../data/profile.generated.ts";
-import { PROFILE_COMMIT, PROFILE_ENGINE } from "../data/profile.provenance.ts";
-import { ENTITY } from "../data/entity.generated.ts";
+import type { EntityJsonLd } from "./entity.ts";
 
 export const AGENT_DIR = "public/agent";
+
+/** Procedencia del snapshot (inyectada por el lado Node; ver site.ts). */
+export interface AgentProvenance {
+  commit: string;
+  engine: string | null;
+  schema: string | null;
+}
 
 export interface AgentTool {
   name: string;
@@ -34,7 +44,7 @@ export interface AgentManifest {
   name: string;
   version: string;
   description: string;
-  provenance: { commit: string; engine: string | null; schema: string | null };
+  provenance: AgentProvenance;
   tools: AgentTool[];
 }
 
@@ -45,17 +55,13 @@ const TOOL_ENDPOINTS = {
   search_publications: "/agent/publications.json"
 } as const;
 
-export function agentManifest(): AgentManifest {
+export function agentManifest(prov: AgentProvenance): AgentManifest {
   return {
     name: "christianluciani-profile",
     version: "1.0.0",
     description:
       "Deterministic, read-only tools over Christian Luciani's public profile. Static JSON endpoints — no model call, no API key.",
-    provenance: {
-      commit: PROFILE_COMMIT,
-      engine: PROFILE_ENGINE.version,
-      schema: PROFILE_ENGINE.schema
-    },
+    provenance: prov,
     tools: [
       {
         name: "get_profile",
@@ -100,7 +106,7 @@ export function agentManifest(): AgentManifest {
 }
 
 /** profile.json — la proyección pública tal cual (ya filtrada aguas arriba). */
-export function profileJson(profile: CvProfile = PROFILE as unknown as CvProfile): Record<string, unknown> {
+export function profileJson(profile: CvProfile): Record<string, unknown> {
   return {
     name: profile.identity.name,
     givenName: profile.identity.givenName,
@@ -121,7 +127,7 @@ export function profileJson(profile: CvProfile = PROFILE as unknown as CvProfile
   };
 }
 
-export function projectsJson(profile: CvProfile = PROFILE as unknown as CvProfile): Record<string, unknown> {
+export function projectsJson(profile: CvProfile): Record<string, unknown> {
   return {
     projects: profile.projects.map((p) => ({
       name: p.name,
@@ -136,7 +142,7 @@ export function projectsJson(profile: CvProfile = PROFILE as unknown as CvProfil
   };
 }
 
-export function publicationsJson(profile: CvProfile = PROFILE as unknown as CvProfile): Record<string, unknown> {
+export function publicationsJson(profile: CvProfile): Record<string, unknown> {
   return {
     publications: profile.publications.map((p) => ({
       title: p.title,
@@ -158,7 +164,7 @@ export interface ChatContextSection {
 }
 
 export interface ChatContext {
-  generatedFrom: { commit: string; engine: string | null; schema: string | null };
+  generatedFrom: AgentProvenance;
   sections: ChatContextSection[];
 }
 
@@ -166,22 +172,16 @@ function lang(text: { en: string; es?: string }, locale: "en" | "es" = "en"): st
   return locale === "es" ? text.es ?? text.en : text.en;
 }
 
-/** FAQ pública desde el JSON-LD de la entidad (pasco entity, #140). */
-function faqSection(): ChatContextSection {
-  const faq = ENTITY.nodes.find((node) => node["@type"] === "FAQPage");
-  const entities = (faq?.mainEntity ?? []) as { name: string; acceptedAnswer: { text: string; citation?: string } }[];
-  const text = entities
-    .map((q) => `Q: ${q.name}\nA: ${q.acceptedAnswer.text}`)
-    .join("\n\n");
-  const sources = entities.map((q) => q.acceptedAnswer.citation).filter((c): c is string => Boolean(c));
-  return { id: "faq", text, sources };
-}
+const LANGUAGE_NAMES: Record<string, string> = { es: "Spanish", en: "English", fr: "French" };
 
 /**
  * chat-context.json — contexto del chat grounded (≤ 6k tokens aprox). Solo
- * perfil público; cada sección declara sus sources para citar.
+ * perfil público; cada sección declara sus sources para citar. Cubre TODO lo
+ * público que el issue §2.5 nombra: identidad, posicionamiento, experiencia,
+ * educación, proyectos, skills, idiomas, credenciales, artifacts, publicaciones,
+ * FAQ y links.
  */
-export function chatContext(profile: CvProfile = PROFILE as unknown as CvProfile): ChatContext {
+export function chatContext(profile: CvProfile, prov: AgentProvenance, entity: EntityJsonLd): ChatContext {
   const sections: ChatContextSection[] = [
     {
       id: "identity",
@@ -196,6 +196,13 @@ export function chatContext(profile: CvProfile = PROFILE as unknown as CvProfile
           return `${lang(e.role)} — ${e.org} (${e.start} → ${e.end})${highlights ? `\n${highlights}` : ""}`;
         })
         .join("\n\n"),
+      sources: []
+    },
+    {
+      id: "education",
+      text: profile.education
+        .map((e) => `${lang(e.degree)} — ${e.institution} (${e.start}${e.end ? ` → ${e.end}` : ""})${e.field ? ` · ${lang(e.field)}` : ""}${e.note ? ` — ${lang(e.note)}` : ""}`)
+        .join("\n"),
       sources: []
     },
     {
@@ -216,21 +223,46 @@ export function chatContext(profile: CvProfile = PROFILE as unknown as CvProfile
       sources: []
     },
     {
+      id: "languages",
+      text: `Languages: ${profile.languages.map((l) => `${LANGUAGE_NAMES[l.code] ?? l.code} (${l.level})`).join(", ")}.`,
+      sources: []
+    },
+    {
+      id: "credentials",
+      text: profile.credentials
+        .map((c) => `${c.title} — ${c.issuer}${c.issued ? ` (${c.issued})` : ""}${c.verifyUrl ? ` · ${c.verifyUrl}` : ""}`)
+        .join("\n"),
+      sources: profile.credentials.map((c) => c.verifyUrl).filter((u): u is string => Boolean(u))
+    },
+    {
+      id: "artifacts",
+      text: (profile.artifacts ?? [])
+        .map((a) => `${a.title} — ${lang(a.description ?? { en: "" })}${a.locator.url ? ` · ${a.locator.url}` : ""}`)
+        .join("\n"),
+      sources: (profile.artifacts ?? []).map((a) => a.locator.url).filter((u): u is string => Boolean(u))
+    },
+    {
       id: "publications",
       text: profile.publications.map((p) => `${p.title} — ${p.venue} (${p.year}). ${p.url}`).join("\n"),
       sources: profile.publications.map((p) => p.url).filter(Boolean)
     },
-    faqSection(),
+    faqSection(entity),
     {
       id: "links",
       text: profile.identity.links.map((l) => `${l.label}: ${l.url}`).join("\n"),
       sources: profile.identity.links.map((l) => l.url)
     }
   ];
-  return {
-    generatedFrom: { commit: PROFILE_COMMIT, engine: PROFILE_ENGINE.version, schema: PROFILE_ENGINE.schema },
-    sections
-  };
+  return { generatedFrom: prov, sections };
+}
+
+/** FAQ pública desde el JSON-LD de la entidad (pasco entity, #140). */
+function faqSection(entity: EntityJsonLd): ChatContextSection {
+  const faq = entity.nodes.find((node) => node["@type"] === "FAQPage");
+  const entities = (faq?.mainEntity ?? []) as { name: string; acceptedAnswer: { text: string; citation?: string } }[];
+  const text = entities.map((q) => `Q: ${q.name}\nA: ${q.acceptedAnswer.text}`).join("\n\n");
+  const sources = entities.map((q) => q.acceptedAnswer.citation).filter((c): c is string => Boolean(c));
+  return { id: "faq", text, sources };
 }
 
 /** Estimación burda de tokens (≈4 chars/token) para vigilar el tope de 6k. */
@@ -247,12 +279,12 @@ export function toJson(value: unknown): string {
 }
 
 /** Todos los artefactos de public/agent/ como { rutaRelativa: bytes }. */
-export function agentFiles(): Record<string, string> {
+export function agentFiles(profile: CvProfile, prov: AgentProvenance, entity: EntityJsonLd): Record<string, string> {
   return {
-    [`${AGENT_DIR}/manifest.json`]: toJson(agentManifest()),
-    [`${AGENT_DIR}/profile.json`]: toJson(profileJson()),
-    [`${AGENT_DIR}/projects.json`]: toJson(projectsJson()),
-    [`${AGENT_DIR}/publications.json`]: toJson(publicationsJson()),
-    [`${AGENT_DIR}/chat-context.json`]: toJson(chatContext())
+    [`${AGENT_DIR}/manifest.json`]: toJson(agentManifest(prov)),
+    [`${AGENT_DIR}/profile.json`]: toJson(profileJson(profile)),
+    [`${AGENT_DIR}/projects.json`]: toJson(projectsJson(profile)),
+    [`${AGENT_DIR}/publications.json`]: toJson(publicationsJson(profile)),
+    [`${AGENT_DIR}/chat-context.json`]: toJson(chatContext(profile, prov, entity))
   };
 }
