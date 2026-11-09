@@ -167,6 +167,22 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     expect(matchJd("OpenAI/Anthropic tool use", P).requirements[0].status).toBe("gap");
   });
 
+  it("trigger de proveedor derivado de la MISMA lista cerrada (#178, pase 10): Claude/ChatGPT/GPT disparan la regla", () => {
+    // proveedor nombrado por alias (claude/chatgpt/gpt) + capacidad → gap si ningún claim nombra ambos
+    for (const t of ["Claude tool use", "ChatGPT tool use", "GPT-4 function calling"]) {
+      const r = matchTerm(t, P);
+      expect(r.status, `${t} sin claim que nombre proveedor+capacidad debe ser gap`).toBe("gap");
+      expect(r.evidence).toEqual([]);
+    }
+    // proveedor solo → evidence que lo nombra (el SSOT sí nombra Claude vía ZENTROPY)
+    const claude = matchTerm("Claude", P);
+    expect(claude.status).toBe("evidence");
+    expect(claude.evidence.some((ev) => termMatches(norm(ev.source), "claude"))).toBe(true);
+    // y el fix del pase 9 se sostiene
+    expect(matchTerm("OpenAI/Anthropic tool use", P).status).toBe("gap");
+    expect(matchTerm("tool use", P).status).toBe("evidence");
+  });
+
   it("sweep compuesto (#178): keyword + 'via the OpenAI API' — toda evidencia nombra keyword Y proveedor", () => {
     const keywords = P.skills.flatMap((s) => [...(s.keywords ?? []), ...(s.geoKeywords ?? [])]);
     for (const keyword of keywords) {

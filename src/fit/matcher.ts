@@ -46,11 +46,22 @@ interface Concept {
 // son FRASES, no tokens genéricos sueltos. "async" solo matcheaba "async
 // programming" y mostraba la línea de idiomas como evidencia; "2+ years" no
 // nombra stack. Sacarlos es el fix; los tests de abajo fijan cada exclusión.
+// Lista cerrada de proveedores (#178): OpenAI → openai/chatgpt/gpt;
+// Anthropic → anthropic/claude. El trigger del requisito, el req de
+// llm-provider y la evidencia se derivan TODOS de esta misma lista.
+const PROVIDER_TERMS: Record<string, string[]> = {
+  openai: ["openai", "chatgpt", "gpt"],
+  anthropic: ["anthropic", "claude"]
+};
+const TERM_TO_PROVIDER: Record<string, string> = Object.fromEntries(
+  Object.entries(PROVIDER_TERMS).flatMap(([provider, terms]) => terms.map((t) => [t, provider]))
+);
+const PROVIDER_REQ_TERMS = Object.keys(TERM_TO_PROVIDER);
 const CONCEPTS: Concept[] = [
   // Proveedor como concepto propio: sólo da evidencia cuando el JD nombra al
   // proveedor SIN ninguna capacidad (p. ej. "OpenAI API"). Si también hay una
   // capacidad matcheada, el proveedor pasa a ser filtro (AND), no evidencia.
-  { id: "llm-provider", req: ["openai", "anthropic"], ev: ["openai", "anthropic", "claude", "chatgpt", "gpt"] },
+  { id: "llm-provider", req: PROVIDER_REQ_TERMS, ev: PROVIDER_REQ_TERMS },
   { id: "agentic-workflows", req: ["agentic", "agent workflow", "agentes"], ev: ["agent", "orchestr", "socratic", "tutor"] },
   { id: "mcp", req: ["mcp", "model context protocol"], ev: ["mcp"] },
   { id: "acp-a2a", req: ["acp", "a2a", "agent-to-agent", "agent protocol"], ev: ["acp", "a2a"] },
@@ -69,13 +80,7 @@ const CONCEPTS: Concept[] = [
  * aviso). En el SSOT real hay evidencia honesta: ZENTROPY ingiere Claude
  * JSON/ZIP y ChatGPT. Si no la hubiera, el requisito sale como gap.
  */
-// El requisito nombra proveedor(s); la evidencia debe nombrar ESE proveedor
-// (lista cerrada por proveedor, #178): OpenAI → openai/chatgpt/gpt;
-// Anthropic → anthropic/claude.
-const PROVIDER_TERMS: Record<string, string[]> = {
-  openai: ["openai", "chatgpt", "gpt"],
-  anthropic: ["anthropic", "claude"]
-};
+
 
 /** Librerías/SDKs que el perfil NO declara: un requisito que las nombre es gap. */
 const KNOWN_GAPS = ["langchain", "langgraph", "anthropic sdk", "openai sdk", "llamaindex"];
@@ -210,8 +215,12 @@ export function matchRequirement(
   // evidencia debe nombrar TAMBIÉN ese proveedor (AND con el concepto), salvo
   // que ningún concepto de capacidad haya matcheado — ahí el proveedor solo
   // es evidencia legítima (concepto llm-provider).
-  const namedProviders = n.match(/openai|anthropic/g);
-  const providerEv = namedProviders
+  // trigger derivado de la MISMA lista cerrada: cualquier término de proveedor
+  // nombrado en el JD (por token) cuenta; la evidencia usa los términos de ESE proveedor.
+  const namedProviders = [...new Set(
+    PROVIDER_REQ_TERMS.filter((t) => termMatches(n, t)).map((t) => TERM_TO_PROVIDER[t])
+  )];
+  const providerEv = namedProviders.length > 0
     ? [...new Set(namedProviders.flatMap((pv) => PROVIDER_TERMS[pv] ?? []))]
     : null;
   const matched = concepts
