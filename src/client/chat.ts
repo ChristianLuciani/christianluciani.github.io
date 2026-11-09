@@ -7,10 +7,10 @@
 import { extractCitations } from "../agent/citations.ts";
 import { publicUrl } from "../agent/urls.ts";
 import { LAB_I18N, type LabLocale } from "./i18n.ts";
+import { beginSend, createChatGate, endSend, sendDecision } from "./chat-state.ts";
 import type { LabConfig } from "./lab.ts";
 
 const MAX_INPUT_CHARS = 300;
-const MAX_USER_TURNS = 4;
 
 interface ChatTurn {
   role: "user" | "assistant";
@@ -128,22 +128,24 @@ export async function mountChat(
     return;
   }
 
-  let sending = false; // guard anti in-flight: Enter durante un request no dispara llamadas concurrentes
+  // Guard anti in-flight vía máquina de estados pura (chat-state.ts): ningún
+  // early-return puede dejar `sending` trabado.
+  const gate = createChatGate();
   const sendMessage = async (): Promise<void> => {
-    if (sending) return;
-    const text = input.value.trim();
-    if (!text || text.length > MAX_INPUT_CHARS) return;
-    sending = true;
-    if (history.filter((m) => m.role === "user").length >= MAX_USER_TURNS) {
-      bubble(messagesEl, "system", dict()["mod.chat.rateLimited"]);
+    const decision = sendDecision(gate, input.value, MAX_INPUT_CHARS);
+    if (decision !== "send") {
+      if (decision === "max-turns") bubble(messagesEl, "system", dict()["mod.chat.rateLimited"]);
       return;
     }
+    beginSend(gate);
+    const text = input.value.trim();
     input.value = "";
     send.disabled = true;
     bubble(messagesEl, "user", text);
     const assistantEl = bubble(messagesEl, "assistant", dict()["mod.chat.loading"]);
     const turns: ChatTurn[] = [...history, { role: "user", content: text }];
     let assembled = "";
+    let turnCompleted = false;
     try {
       const result = await postChat(endpoint, turns, streaming, (delta) => {
         if (assembled === "") assistantEl.textContent = "";
@@ -163,11 +165,12 @@ export async function mountChat(
       }
       addCitations(assistantEl, assembled, sectionIds);
       history.push({ role: "user", content: text }, { role: "assistant", content: assembled });
+      turnCompleted = true;
     } catch {
       assistantEl.className = "chat-msg system";
       assistantEl.textContent = dict()["mod.chat.unavailable"];
     } finally {
-      sending = false;
+      endSend(gate, turnCompleted);
       send.disabled = false;
       input.focus();
     }

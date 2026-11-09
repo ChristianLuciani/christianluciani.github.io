@@ -38,6 +38,11 @@ interface Concept {
 }
 
 // Orden: lo específico primero (internal-tools antes que el tool-use genérico).
+//
+// REGLA ESTRUCTURAL (clase 2, reaparición #2 del review): los términos de `req`
+// son FRASES, no tokens genéricos sueltos. "async" solo matcheaba "async
+// programming" y mostraba la línea de idiomas como evidencia; "2+ years" no
+// nombra stack. Sacarlos es el fix; los tests de abajo fijan cada exclusión.
 const CONCEPTS: Concept[] = [
   { id: "agentic-workflows", req: ["agentic", "agent workflow", "agentes"], ev: ["agent", "orchestr", "socratic", "tutor"] },
   { id: "mcp", req: ["mcp", "model context protocol"], ev: ["mcp"] },
@@ -46,8 +51,8 @@ const CONCEPTS: Concept[] = [
   { id: "internal-tools", req: ["internal tool"], ev: ["internal", "cli", "pasco"] },
   { id: "tool-use", req: ["tool use", "tool-use", "tool calling", "function calling", "tools"], ev: ["tool", "acp", "function"] },
   { id: "rest-webhooks", req: ["rest", "webhook", "http api", "api"], ev: ["rest", "webhook", "api", "http", "endpoint"] },
-  { id: "python-node", req: ["python", "node", "nodejs", "typescript", "javascript", "2+ years"], ev: ["python", "node", "typescript", "javascript", "c++", "java", "sql"] },
-  { id: "async-english", req: ["english", "ingl", "async"], ev: ["english", "spanish", "french", "native", "intermediate"] }
+  { id: "python-node", req: ["python", "node", "nodejs", "typescript", "javascript"], ev: ["python", "node", "typescript", "javascript", "c++", "java", "sql"] },
+  { id: "async-english", req: ["english", "ingl"], ev: ["english", "spanish", "french", "native", "intermediate"] }
 ];
 
 /**

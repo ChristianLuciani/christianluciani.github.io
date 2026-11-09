@@ -259,12 +259,19 @@ function prices(env) {
 function usageCost(usage, model, env) {
   // Los :free cuestan 0 aunque no llegue chunk de usage.
   if (model.endsWith(":free")) return 0;
-  // FAIL CLOSED: un modelo pago sin precio declarado en PRICES_JSON, o sin
-  // usage recibido, cuenta como hard stop (costo = budget) — el control de
-  // costo nunca falla abierto.
+  // FAIL CLOSED ESTRICTO: modelo pago con precio ausente/vacío/no numérico,
+  // o usage ausente/no numérico, cuenta como hard stop (costo = budget).
+  // El control de costo nunca falla abierto (clase 5, reaparición #2).
   const price = prices(env)[model];
-  if (!price || !usage) return Number.POSITIVE_INFINITY;
-  return ((usage.prompt_tokens ?? 0) * (price.input ?? 0) + (usage.completion_tokens ?? 0) * (price.output ?? 0)) / 1e6;
+  const priceOk =
+    price &&
+    Number.isFinite(price.input) &&
+    Number.isFinite(price.output) &&
+    (price.input > 0 || price.output > 0);
+  const usageOk =
+    usage && Number.isFinite(usage.prompt_tokens) && Number.isFinite(usage.completion_tokens);
+  if (!priceOk || !usageOk) return Number.POSITIVE_INFINITY;
+  return (usage.prompt_tokens * price.input + usage.completion_tokens * price.output) / 1e6;
 }
 
 async function limitsCall(env, path, body) {

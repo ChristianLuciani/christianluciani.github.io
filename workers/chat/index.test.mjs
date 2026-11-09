@@ -315,6 +315,34 @@ test("budget fail-closed: modelo pago sin precio en PRICES_JSON → hard stop v�
   assert.equal(providerCalls.length, 2); // el segundo request ni llegó al provider
 });
 
+test("budget fail-closed estricto: precio vacío {}, usage vacío {} o no numérico → hard stop", async () => {
+  const cases = [
+    { prices: JSON.stringify({ "paid-b": {} }), usage: { prompt_tokens: 100, completion_tokens: 10 } },
+    { prices: JSON.stringify({ "paid-b": { input: 0.15, output: 0.6 } }), usage: {} },
+    { prices: JSON.stringify({ "paid-b": { input: 0.15, output: 0.6 } }), usage: { prompt_tokens: "x", completion_tokens: 10 } },
+    { prices: JSON.stringify({ "paid-b": { input: "0.15", output: 0.6 } }), usage: { prompt_tokens: 100, completion_tokens: 10 } }
+  ];
+  for (const [index, cfg] of cases.entries()) {
+    providerQueue.push({ status: 429, text: "rl" });
+    providerQueue.push({
+      status: 200,
+      body: sseBody([
+        providerChunk("pago"),
+        `data: ${JSON.stringify({ usage: cfg.usage })}\n\n`,
+        "data: [DONE]\n\n"
+      ])
+    });
+    const env = makeEnv({ PRICES_JSON: cfg.prices });
+    const first = await chatRequest(env);
+    assert.equal(first.status, 200, `caso ${index}: primera respuesta OK`);
+    await first.text();
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    const second = await chatRequest(env);
+    assert.equal(second.status, 503, `caso ${index}: hard stop armado`);
+    assert.equal((await second.json()).error, "budget_exceeded");
+  }
+});
+
 test("budget con precio declarado: costo finito y sin hard stop", async () => {
   providerQueue.push({ status: 429, text: "rl" });
   providerQueue.push({

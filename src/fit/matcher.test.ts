@@ -71,6 +71,17 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     }
   });
 
+  it("regla estructural clase 2: tokens genéricos sueltos no son requisito — 'async programming' es gap, no evidencia de idiomas", () => {
+    const r = matchJd("async programming", P);
+    expect(r.requirements).toHaveLength(1);
+    expect(r.requirements[0].text).toBe("async programming");
+    expect(r.requirements[0].status).toBe("gap");
+    expect(r.requirements[0].evidence).toEqual([]);
+    // y la JD real sigue matcheando English por la frase "async English"
+    const english = result.requirements.find((q) => q.text.toLowerCase().includes("english"))!;
+    expect(english.status).toBe("evidence");
+  });
+
   it("si el SSOT no nombrara al proveedor, el requisito sería gap (regla provider)", () => {
     const fakeProfile = {
       skills: [{ name: "Physics", keywords: ["x-ray"] }],
