@@ -4,7 +4,7 @@
  * gaps declarados. Sin LLM, sin score opaco, sin evidencia inventada.
  */
 import { describe, expect, it } from "vitest";
-import { extractRequirements, matchJd } from "./matcher.ts";
+import { extractRequirements, matchJd, matchTerm, termMatches } from "./matcher.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import type { CvProfile } from "../data/profile.types.ts";
 import { blacksmith } from "../content/clients/blacksmith.ts";
@@ -69,6 +69,28 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     for (const ev of internal.evidence) {
       expect(ev.source.toLowerCase()).toMatch(/internal|cli|pasco/);
     }
+  });
+
+  it("sweep de cobertura derivable: TODO keyword de skills[] del SSOT pedido como requisito da evidencia", () => {
+    // El instrumento que termina con la clase 2: la cobertura se deriva del
+    // SSOT, no de una tabla a mano (antes C++/Java/SQL estaban sólo en ev).
+    const keywords = P.skills.flatMap((s) => [...(s.keywords ?? []), ...(s.geoKeywords ?? [])]);
+    expect(keywords.length).toBeGreaterThan(10);
+    for (const keyword of keywords) {
+      const r = matchTerm(keyword, P);
+      expect(r.status, `keyword "${keyword}" debe ser evidencia`).toBe("evidence");
+      expect(r.evidence.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("frontera de palabra: 'node' no matchea 'anode'; 'c++' sí matchea 'c++'", () => {
+    expect(termMatches("anode maintenance", "node")).toBe(false);
+    expect(termMatches("c++", "c++")).toBe(true);
+    expect(termMatches("node.js and beyond", "node")).toBe(true);
+    expect(matchTerm("Anode maintenance", P).status).toBe("gap");
+    expect(matchTerm("C++", P).status).toBe("evidence");
+    expect(matchTerm("Java", P).status).toBe("evidence");
+    expect(matchTerm("SQL", P).status).toBe("evidence");
   });
 
   it("regla estructural clase 2: tokens genéricos sueltos no son requisito — 'async programming' es gap, no evidencia de idiomas", () => {

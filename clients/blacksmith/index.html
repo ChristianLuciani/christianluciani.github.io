@@ -71,7 +71,7 @@ button.primary { background:var(--lab-accent, #00c9c0); border-color:transparent
 <script type="module" crossorigin src="/src/client/main.ts"></script>
 </head>
 <body>
-<script type="application/json" id="lab-config">{"slug":"blacksmith","brand":"Blacksmith Agency","role":"AI Automation Engineer","locale":"en","jd":"Agentic workflows · LangChain/LangGraph or equivalent · MCP server integrations ·\nOpenAI/Anthropic tool use · internal tools · REST/webhooks · 2+ years Python/Node · async English","modules":["agent","mcp","fit","provenance","chat"],"chat":{"enabled":true,"endpoint":"","suggested":["Do you have experience with MCP?","What did you build at USFQ?","Where are your gaps for this role?","Show me a project with tool use."]},"accent":"#ff7a1a"}</script>
+<script type="application/json" id="lab-config">{"slug":"blacksmith","brand":"Blacksmith Agency","role":"AI Automation Engineer","locale":"en","jd":"Agentic workflows · LangChain/LangGraph or equivalent · MCP server integrations ·\nOpenAI/Anthropic tool use · internal tools · REST/webhooks · 2+ years Python/Node · async English","modules":["agent","mcp","fit","provenance","chat"],"chat":{"enabled":true,"endpoint":"","suggested":[{"en":"Do you have experience with MCP?","es":"¿Tienes experiencia con MCP?"},{"en":"What did you build at USFQ?","es":"¿Qué construiste en la USFQ?"},{"en":"Where are your gaps for this role?","es":"¿Dónde están tus brechas para este rol?"},{"en":"Show me a project with tool use.","es":"Mostrame un proyecto con tool use."}]},"accent":"#ff7a1a"}</script>
 
 <section id="lab-gate" aria-labelledby="gate-title">
   <p class="gate-eyebrow" data-es="Laboratorio de cliente · preparado para Blacksmith" data-en="Client lab · prepared for Blacksmith">Client lab · prepared for Blacksmith</p>
@@ -229,10 +229,10 @@ button.primary { background:var(--lab-accent, #00c9c0); border-color:transparent
     <p class="lab-note" data-i18n="mod.chat.disclaimer">Demo: answers come from the public profile; do not share personal data. Free-tier models may log prompts.</p>
     <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
     <div id="chat-suggested" class="chat-suggested">
-      <button type="button" class="chat-suggested">Do you have experience with MCP?</button>
-      <button type="button" class="chat-suggested">What did you build at USFQ?</button>
-      <button type="button" class="chat-suggested">Where are your gaps for this role?</button>
-      <button type="button" class="chat-suggested">Show me a project with tool use.</button>
+      <button type="button" class="chat-suggested" data-es="¿Tienes experiencia con MCP?" data-en="Do you have experience with MCP?">Do you have experience with MCP?</button>
+      <button type="button" class="chat-suggested" data-es="¿Qué construiste en la USFQ?" data-en="What did you build at USFQ?">What did you build at USFQ?</button>
+      <button type="button" class="chat-suggested" data-es="¿Dónde están tus brechas para este rol?" data-en="Where are your gaps for this role?">Where are your gaps for this role?</button>
+      <button type="button" class="chat-suggested" data-es="Mostrame un proyecto con tool use." data-en="Show me a project with tool use.">Show me a project with tool use.</button>
     </div>
     <div class="chat-input-row">
       <input id="chat-input" type="text" maxlength="300" data-i18n-ph="mod.chat.placeholder" placeholder="Ask about the public profile… (max 300 chars)">

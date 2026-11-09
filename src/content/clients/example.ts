@@ -36,9 +36,9 @@ export const example: ClientLab = {
   chat: {
     enabled: true,
     suggested: [
-      "¿Tienes experiencia con MCP?",
-      "¿Qué construiste en la USFQ?",
-      "¿Dónde están tus brechas para este rol?"
+      { en: "Do you have experience with MCP?", es: "¿Tienes experiencia con MCP?" },
+      { en: "What did you build at USFQ?", es: "¿Qué construiste en la USFQ?" },
+      { en: "Where are your gaps for this role?", es: "¿Dónde están tus brechas para este rol?" }
     ]
   }
 };

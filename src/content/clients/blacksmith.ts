@@ -39,10 +39,10 @@ OpenAI/Anthropic tool use · internal tools · REST/webhooks · 2+ years Python/
   chat: {
     enabled: true,
     suggested: [
-      "Do you have experience with MCP?",
-      "What did you build at USFQ?",
-      "Where are your gaps for this role?",
-      "Show me a project with tool use."
+      { en: "Do you have experience with MCP?", es: "¿Tienes experiencia con MCP?" },
+      { en: "What did you build at USFQ?", es: "¿Qué construiste en la USFQ?" },
+      { en: "Where are your gaps for this role?", es: "¿Dónde están tus brechas para este rol?" },
+      { en: "Show me a project with tool use.", es: "Mostrame un proyecto con tool use." }
     ]
   }
 };

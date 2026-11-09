@@ -71,6 +71,21 @@ const KNOWN_GAPS = ["langchain", "langgraph", "anthropic sdk", "openai sdk", "ll
 function norm(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Coincidencia por FRONTERA DE PALABRA: "node" no matchea "anode", "c++" sí
+ * matchea "c++". (Clase 2, 4.a reaparición: antes era substring plano.)
+ */
+export function termMatches(haystack: string, term: string): boolean {
+  const t = norm(term);
+  if (!t) return false;
+  // s? = tolerancia a plural simple ("internal tool" matchea "internal tools")
+  return new RegExp("(?<![a-z0-9])" + escapeRegExp(t) + "s?(?![a-z0-9])").test(haystack);
+}
+
 
 /** Segmenta el JD en requisitos: líneas, "·", ";" y oraciones. */
 export function extractRequirements(jd: string): string[] {
@@ -141,7 +156,30 @@ function declaredGap(requirement: string): boolean {
   return KNOWN_GAPS.some((gap) => n.includes(gap));
 }
 
-export function matchRequirement(requirement: string, corpus: readonly CorpusItem[]): FitRequirement {
+/**
+ * Concepto DERIVADO del propio SSOT: todo keyword de skills[] (y geoKeywords)
+ * es matcheable como requisito, así la cobertura es derivable y no una tabla a
+ * mano que se olvida (C++, Java, SQL vivían sólo en ev).
+ */
+export function vocabularyConcept(profile: CvProfile): Concept {
+  const terms = new Set<string>();
+  for (const skill of profile.skills) {
+    for (const keyword of [...(skill.keywords ?? []), ...(skill.geoKeywords ?? [])]) {
+      terms.add(norm(keyword));
+    }
+  }
+  return { id: "profile-vocabulary", req: [...terms], ev: [...terms] };
+}
+
+export function profileConcepts(profile: CvProfile): Concept[] {
+  return [...CONCEPTS, vocabularyConcept(profile)];
+}
+
+export function matchRequirement(
+  requirement: string,
+  corpus: readonly CorpusItem[],
+  concepts: readonly Concept[] = CONCEPTS
+): FitRequirement {
   const n = norm(requirement);
   if (declaredGap(requirement)) {
     return { text: requirement, status: "gap", evidence: [] };
@@ -149,12 +187,12 @@ export function matchRequirement(requirement: string, corpus: readonly CorpusIte
   const evidence: FitEvidence[] = [];
   const seen = new Set<string>();
   const providerReq = PROVIDER_REQ.test(n);
-  outer: for (const concept of CONCEPTS) {
-    if (!concept.req.some((term) => n.includes(term))) continue;
+  outer: for (const concept of concepts) {
+    if (!concept.req.some((term) => termMatches(n, term))) continue;
     const evTerms = providerReq ? PROVIDER_EV : concept.ev;
     for (const item of corpus) {
       const itemNorm = norm(item.text);
-      if (!evTerms.some((term) => itemNorm.includes(term))) continue;
+      if (!evTerms.some((term) => termMatches(itemNorm, term))) continue;
       const key = `${item.text}|${item.url ?? ""}`;
       if (seen.has(key)) continue;
       seen.add(key);
@@ -171,7 +209,13 @@ export function matchRequirement(requirement: string, corpus: readonly CorpusIte
 
 export function matchJd(jd: string, profile: CvProfile): FitResult {
   const corpus = evidenceCorpus(profile);
-  const requirements = extractRequirements(jd).map((text) => matchRequirement(text, corpus));
+  const concepts = profileConcepts(profile);
+  const requirements = extractRequirements(jd).map((text) => matchRequirement(text, corpus, concepts));
   const withEvidence = requirements.filter((r) => r.status === "evidence").length;
   return { requirements, summary: { withEvidence, total: requirements.length } };
+}
+
+/** Un término suelto contra el corpus del perfil (para el sweep de cobertura). */
+export function matchTerm(term: string, profile: CvProfile): FitRequirement {
+  return matchRequirement(term, evidenceCorpus(profile), profileConcepts(profile));
 }

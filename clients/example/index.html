@@ -71,7 +71,7 @@ button.primary { background:var(--lab-accent, #00c9c0); border-color:transparent
 <script type="module" crossorigin src="/src/client/main.ts"></script>
 </head>
 <body>
-<script type="application/json" id="lab-config">{"slug":"example","brand":"Example Co","role":"Plataforma de demo","locale":"es","jd":"Agentic workflows · MCP · internal tools · REST/webhooks · Python/Node","modules":["agent","mcp","fit","provenance","chat"],"chat":{"enabled":true,"endpoint":"","suggested":["¿Tienes experiencia con MCP?","¿Qué construiste en la USFQ?","¿Dónde están tus brechas para este rol?"]},"accent":"#7a5cff"}</script>
+<script type="application/json" id="lab-config">{"slug":"example","brand":"Example Co","role":"Plataforma de demo","locale":"es","jd":"Agentic workflows · MCP · internal tools · REST/webhooks · Python/Node","modules":["agent","mcp","fit","provenance","chat"],"chat":{"enabled":true,"endpoint":"","suggested":[{"en":"Do you have experience with MCP?","es":"¿Tienes experiencia con MCP?"},{"en":"What did you build at USFQ?","es":"¿Qué construiste en la USFQ?"},{"en":"Where are your gaps for this role?","es":"¿Dónde están tus brechas para este rol?"}]},"accent":"#7a5cff"}</script>
 
 <section id="lab-gate" aria-labelledby="gate-title">
   <p class="gate-eyebrow" data-es="Laboratorio de cliente · cliente de ejemplo" data-en="Client lab · example client">Laboratorio de cliente · cliente de ejemplo</p>
@@ -229,9 +229,9 @@ button.primary { background:var(--lab-accent, #00c9c0); border-color:transparent
     <p class="lab-note" data-i18n="mod.chat.disclaimer">Demo: las respuestas salen del perfil público; no compartas datos personales. Los modelos free pueden registrar prompts.</p>
     <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
     <div id="chat-suggested" class="chat-suggested">
-      <button type="button" class="chat-suggested">¿Tienes experiencia con MCP?</button>
-      <button type="button" class="chat-suggested">¿Qué construiste en la USFQ?</button>
-      <button type="button" class="chat-suggested">¿Dónde están tus brechas para este rol?</button>
+      <button type="button" class="chat-suggested" data-es="¿Tienes experiencia con MCP?" data-en="Do you have experience with MCP?">¿Tienes experiencia con MCP?</button>
+      <button type="button" class="chat-suggested" data-es="¿Qué construiste en la USFQ?" data-en="What did you build at USFQ?">¿Qué construiste en la USFQ?</button>
+      <button type="button" class="chat-suggested" data-es="¿Dónde están tus brechas para este rol?" data-en="Where are your gaps for this role?">¿Dónde están tus brechas para este rol?</button>
     </div>
     <div class="chat-input-row">
       <input id="chat-input" type="text" maxlength="300" data-i18n-ph="mod.chat.placeholder" placeholder="Preguntá sobre el perfil público… (máx 300 caracteres)">

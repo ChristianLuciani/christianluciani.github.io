@@ -30,7 +30,8 @@ export interface ClientChat {
   /** Endpoint del proxy (Cloudflare Worker). Vacío = el módulo degrada a
    *  "chat unavailable"; también se puede fijar con VITE_CHAT_ENDPOINT. */
   endpoint?: string;
-  suggested: string[];
+  /** Preguntas sugeridas, bilingües como el resto del entry copy. */
+  suggested: LangText[];
 }
 
 export interface ClientLab {
@@ -84,6 +85,11 @@ export function validateClient(client: ClientLab): string[] {
   }
   if (client.chat.enabled && client.chat.suggested.length === 0) {
     problems.push("chat.enabled con suggested vacío");
+  }
+  for (const [i, q] of client.chat.suggested.entries()) {
+    if (!q.en.trim() || !q.es?.trim()) {
+      problems.push(`chat.suggested[${i}] requiere en y es no vacíos`);
+    }
   }
   if (client.unlisted !== undefined && typeof client.unlisted !== "boolean") {
     problems.push("unlisted debe ser boolean");

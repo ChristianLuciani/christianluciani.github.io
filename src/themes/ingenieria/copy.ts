@@ -558,6 +558,7 @@ export const INGENIERIA_COPY: CopyPack = {
     es: "Difractómetro de rayos X — USFQ",
     en: "X-ray diffractometer — USFQ"
   },
-  "gallery.science.2.title": { es: "DIFRACTÓMETRO DE RAYOS X", en: "X-RAY DIFFRACTOMETER" }
+  "gallery.science.2.title": { es: "DIFRACTÓMETRO DE RAYOS X", en: "X-RAY DIFFRACTOMETER" },
+  "footer.clientLabs": { es: "Laboratorios de cliente", en: "Client labs" }
 
 };

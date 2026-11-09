@@ -17,7 +17,7 @@ export interface LabConfig {
   locale: LabLocale;
   jd: string;
   modules: string[];
-  chat: { enabled: boolean; endpoint: string; suggested: string[] };
+  chat: { enabled: boolean; endpoint: string; suggested: { en: string; es?: string }[] };
   accent: string;
 }
 

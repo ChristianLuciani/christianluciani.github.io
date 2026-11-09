@@ -38,7 +38,7 @@ interface LabConfig {
   locale: LabLocale;
   jd: string;
   modules: readonly string[];
-  chat: { enabled: boolean; endpoint: string; suggested: string[] };
+  chat: { enabled: boolean; endpoint: string; suggested: { en: string; es?: string }[] };
   accent: string;
 }
 
@@ -53,7 +53,7 @@ function labConfig(client: ClientLab): LabConfig {
     chat: {
       enabled: client.chat.enabled,
       endpoint: client.chat.endpoint ?? "",
-      suggested: client.chat.suggested
+      suggested: client.chat.suggested.map((q) => ({ en: q.en, es: q.es }))
     },
     accent: client.theme.accent
   };
@@ -166,7 +166,10 @@ function chatModuleHtml(client: ClientLab): string {
   </section>`;
   }
   const suggested = client.chat.suggested
-    .map((q) => `      <button type="button" class="chat-suggested">${escapeHtml(q)}</button>`)
+    .map((q) => {
+      const shown = locale === "es" ? q.es ?? q.en : q.en;
+      return `      <button type="button" class="chat-suggested" data-es="${escapeAttr(q.es ?? q.en)}" data-en="${escapeAttr(q.en)}">${escapeHtml(shown)}</button>`;
+    })
     .join("\n");
   return `  <section class="lab-module" data-module="chat" aria-labelledby="mod-chat-title">
     <h3 id="mod-chat-title" data-i18n="mod.chat.title">${escapeHtml(labT(locale, "mod.chat.title"))}</h3>
