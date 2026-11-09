@@ -30,6 +30,14 @@ const SNAPSHOT_BYTES = readFileSync(resolve(ROOT, "src", "data", "now.snapshot.j
 const GENERATED = readFileSync(GENERATED_PATH, "utf8");
 const INDEX_HTML = readFileSync(resolve(ROOT, "index.html"), "utf8");
 
+// próximo patch sobre el pin vigente: el test no depende de qué tag exista hoy
+const nextTag = (tag: string): string => {
+  const match = /^v(\d+)\.(\d+)\.(\d+)$/.exec(tag);
+  if (!match) throw new Error(`tag no estable: ${tag}`);
+  return `v${match[1]}.${match[2]}.${Number(match[3]) + 1}`;
+};
+const MOVED_TAG = nextTag(LOCK.tag);
+
 /* ──────────────────────────────────────────────
    1. Lock — el pin es un tag inmutable del productor único
 ────────────────────────────────────────────── */
@@ -142,9 +150,9 @@ describe("snapshot now/v1 — contrato del productor", () => {
     expect(targetLock(LOCK, moved, LOCK.tag)).toBe(LOCK);
     expect(() => verifyDigest(moved, targetLock(LOCK, moved, LOCK.tag))).toThrow(/digest/);
     // tag nuevo → re-pin declarado (el digest se registra de esos bytes)
-    expect(targetLock(LOCK, moved, "v1.0.2")).toEqual({
+    expect(targetLock(LOCK, moved, MOVED_TAG)).toEqual({
       repo: PRODUCER_REPO,
-      tag: "v1.0.2",
+      tag: MOVED_TAG,
       sha256: sha256Hex(moved)
     });
     // un tag MENOR se rechaza: un pin retirado no re-pinea hacia abajo
