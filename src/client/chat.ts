@@ -128,9 +128,12 @@ export async function mountChat(
     return;
   }
 
+  let sending = false; // guard anti in-flight: Enter durante un request no dispara llamadas concurrentes
   const sendMessage = async (): Promise<void> => {
+    if (sending) return;
     const text = input.value.trim();
     if (!text || text.length > MAX_INPUT_CHARS) return;
+    sending = true;
     if (history.filter((m) => m.role === "user").length >= MAX_USER_TURNS) {
       bubble(messagesEl, "system", dict()["mod.chat.rateLimited"]);
       return;
@@ -164,6 +167,7 @@ export async function mountChat(
       assistantEl.className = "chat-msg system";
       assistantEl.textContent = dict()["mod.chat.unavailable"];
     } finally {
+      sending = false;
       send.disabled = false;
       input.focus();
     }

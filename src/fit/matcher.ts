@@ -52,12 +52,13 @@ const CONCEPTS: Concept[] = [
 
 /**
  * Si el requisito nombra un proveedor (OpenAI/Anthropic), la evidencia debe
- * nombrar un proveedor real — no vale "agent" genérico: el SSOT menciona
- * Claude/ChatGPT (ZENTROPY) y Poe (Drahma), así que hay evidencia honesta; si
- * no la hubiera, el requisito sale como gap.
+ * nombrar ESE proveedor — lista cerrada: openai, anthropic, claude, chatgpt,
+ * gpt. "llm"/"LiteLLM"/"Ollama" NO cuentan (self-hosting no es el proveedor del
+ * aviso). En el SSOT real hay evidencia honesta: ZENTROPY ingiere Claude
+ * JSON/ZIP y ChatGPT. Si no la hubiera, el requisito sale como gap.
  */
 const PROVIDER_REQ = /(openai|anthropic)/;
-const PROVIDER_EV = ["openai", "anthropic", "claude", "chatgpt", "gpt", "poe", "llm"];
+const PROVIDER_EV = ["openai", "anthropic", "claude", "chatgpt", "gpt"];
 
 /** Librerías/SDKs que el perfil NO declara: un requisito que las nombre es gap. */
 const KNOWN_GAPS = ["langchain", "langgraph", "anthropic sdk", "openai sdk", "llamaindex"];

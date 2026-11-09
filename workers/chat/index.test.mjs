@@ -5,7 +5,7 @@
  */
 import { test, beforeEach, afterEach } from "node:test";
 import assert from "node:assert/strict";
-import worker, { RateLimiter } from "./index.mjs";
+import worker, { RateLimiter, __resetContextCacheForTests } from "./index.mjs";
 
 const CONTEXT = {
   sections: [
@@ -95,6 +95,7 @@ function chatRequest(env, { origin = "https://christianluciani.github.io", messa
 
 beforeEach(() => {
   providerQueue = [];
+  __resetContextCacheForTests();
   mockFetch();
 });
 
@@ -335,6 +336,42 @@ test("budget con precio declarado: costo finito y sin hard stop", async () => {
   await new Promise((resolve) => setTimeout(resolve, 10));
   const second = await chatRequest(env);
   assert.equal(second.status, 200); // gasto ~0.0001 USD: lejos del stop 0.95
+});
+
+test("contexto que cuelga: timeout → 502 y la concurrencia NO queda fugada", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const href = String(url);
+    if (href === "https://site.test/agent/chat-context.json") {
+      // Cuelga hasta que el AbortSignal del timeout dispare.
+      return new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener("abort", () => {
+          const error = new Error("The operation timed out");
+          error.name = "TimeoutError";
+          reject(error);
+        });
+      });
+    }
+    if (href === "https://openrouter.ai/api/v1/chat/completions") {
+      providerCalls.push({ body: JSON.parse(init.body), headers: init.headers });
+      return new Response("nunca", { status: 200 });
+    }
+    throw new Error(`fetch inesperado: ${href}`);
+  };
+  const keepAlive = setInterval(() => {}, 5); // sostiene el loop para que el timeout dispare
+  try {
+    const env = makeEnv({ CONTEXT_TIMEOUT_MS: "20" });
+    const first = await chatRequest(env);
+    assert.equal(first.status, 502);
+    assert.equal((await first.json()).error, "context_unavailable");
+    const second = await chatRequest(env); // misma IP: NO debe ser 429
+    assert.notEqual(second.status, 429);
+    assert.equal(second.status, 502);
+    assert.equal(providerCalls.length, 0); // nunca llegó al provider
+  } finally {
+    clearInterval(keepAlive);
+    globalThis.fetch = previousFetch;
+  }
 });
 
 test("fallback JSON cuando el cliente pide application/json", async () => {

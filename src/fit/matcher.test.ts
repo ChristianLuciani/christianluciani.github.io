@@ -40,13 +40,27 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     expect(mcp.evidence.some((e) => e.claim.toLowerCase().includes("mcp"))).toBe(true);
   });
 
-  it("honestidad: un requisito con proveedor exige evidencia del proveedor (no 'agent' genérico)", () => {
+  it("honestidad: un requisito con proveedor exige evidencia del proveedor (lista cerrada, sin 'llm'/'LiteLLM')", () => {
     const toolUse = result.requirements.find((r) => r.text.toLowerCase().includes("tool use"))!;
     expect(toolUse.status).toBe("evidence");
-    // La evidencia (source verbatim, sin truncar) cita Claude/ChatGPT (ZENTROPY) o Poe (Drahma).
+    // La evidencia (source verbatim, sin truncar) nombra el proveedor: Claude/ChatGPT (ZENTROPY).
     for (const ev of toolUse.evidence) {
-      expect(ev.source.toLowerCase()).toMatch(/openai|anthropic|claude|chatgpt|gpt|poe|llm/);
+      expect(ev.source.toLowerCase()).toMatch(/openai|anthropic|claude|chatgpt|gpt/);
+      expect(ev.source.toLowerCase()).not.toMatch(/llm|litellm|ollama/);
     }
+  });
+
+  it("lista cerrada: 'LiteLLM / Ollama' o 'LLM orchestration' solos NO son evidencia de OpenAI/Anthropic", () => {
+    const localFirst = {
+      skills: [{ name: "Technological Sovereignty", keywords: ["self-hosting", "LiteLLM / Ollama"] }],
+      projects: [],
+      artifacts: [],
+      experience: [{ role: { en: "Dev" }, org: "x", start: "2020", end: "present", highlights: { en: ["LLM orchestration"] } }],
+      languages: []
+    } as unknown as CvProfile;
+    const r = matchJd("OpenAI/Anthropic tool use", localFirst);
+    expect(r.requirements[0].status).toBe("gap");
+    expect(r.requirements[0].evidence).toEqual([]);
   });
 
   it("honestidad: 'internal tools' matchea por CLI/pasco/internal, no por 'engineering'", () => {

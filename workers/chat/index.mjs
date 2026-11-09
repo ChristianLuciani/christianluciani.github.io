@@ -39,6 +39,9 @@ const DEFAULTS = {
   BUDGET_STOP: "0.95",
   STREAM_TIMEOUT_MS: "30000",
   CONTEXT_URL: `${SITE_ORIGIN}/agent/chat-context.json`,
+  // El fetch del contexto también tiene timeout: si cuelga, se libera la
+  // concurrencia (inflight) y se responde 502 — nunca queda fugada la IP.
+  CONTEXT_TIMEOUT_MS: "5000",
   // Allowlist configurable por env; free-first + fallback pago barato (429/402/5xx
   // del free). El pago DEBE tener precio en PRICES_JSON (fail closed). No
   // hardcodear un modelo que pueda desaparecer: ajustá en el deploy.
@@ -191,6 +194,11 @@ export class RateLimiter {
 
 let contextCache = { at: 0, value: null };
 
+/** Solo para tests: limpia la caché de contexto entre casos. */
+export function __resetContextCacheForTests() {
+  contextCache = { at: 0, value: null };
+}
+
 async function loadContext(env) {
   if (typeof env.CHAT_CONTEXT === "string" && env.CHAT_CONTEXT.trim()) {
     return env.CHAT_CONTEXT; // bundled
@@ -198,7 +206,9 @@ async function loadContext(env) {
   const now = Date.now();
   if (contextCache.value && now - contextCache.at < 5 * 60 * 1000) return contextCache.value;
   const url = env.CONTEXT_URL ?? DEFAULTS.CONTEXT_URL;
-  const response = await fetch(url);
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(Number(env.CONTEXT_TIMEOUT_MS ?? DEFAULTS.CONTEXT_TIMEOUT_MS))
+  });
   if (!response.ok) throw new Error(`chat-context.json → ${response.status}`);
   const json = await response.json();
   if (!json || !Array.isArray(json.sections)) throw new Error("chat-context.json inválido");

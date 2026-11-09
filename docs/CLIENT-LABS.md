@@ -129,7 +129,10 @@ exactamente eso: se genera y sirve por URL directa, pero no se lista.
   (ok, cascada 429→fallback, input inválido, kill switch, CORS, rate limit,
   budget, modo JSON, prompt injection: el contexto siempre sale del servidor).
 - CI verifica además que `dist/clients/<slug>/index.html` exista con noindex y
-  bundle lab, y que `dist/agent/*.json` sea idéntico a `public/agent/`.
+  bundle lab, que `dist/agent/*.json` sea idéntico a `public/agent/`, y
+  `npm run clients:smoke` carga cada `dist/clients/<slug>/` en Chrome headless
+  (HTTP loopback) y afirma que el bundle arranca: gate → lab, tools ejecutan
+  JSON real, Verify 3/3 OK, Fit N/M, chat degrada sin endpoint.
 
 ## No-goals (v1)
 
