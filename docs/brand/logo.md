@@ -14,7 +14,7 @@
 > wordmark sigue siendo «Christian Luciani».
 >
 > **Hogar canónico del mark estático:** `ChristianLuciani/cluciani-brand-kit`
-> (tag `v1.2.0`, commit `3e14224`). Este repo es el **consumidor runtime**;
+> (tag `v1.3.0`, commit `e70c1f0`). Este repo es el **consumidor runtime**;
 > `assets/brand/logo/` es un espejo vendored pinneado en `brand-kit.lock.json`
 > y verificado con `npm run brand:verify`. No se edita a mano.
 > La **animación** y su geometría runtime viven acá; el brand kit sincroniza
@@ -344,7 +344,7 @@ assets/brand/logo/
 ```
 
 El inventario y la regeneración canónicos viven en `cluciani-brand-kit`
-(tag `v1.2.0`). En este repo `assets/brand/logo/` es un espejo vendored: se
+(tag `v1.3.0`). En este repo `assets/brand/logo/` es un espejo vendored: se
 verifica con `npm run brand:verify`; no se regenera acá. El script local
 `tools/logo/generate-logo.mjs` queda deprecado como referencia/sync.
 Gate de fidelidad: `node tools/logo/verify-dom-fidelity.mjs` — salida **0** limpio
