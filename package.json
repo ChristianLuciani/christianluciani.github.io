@@ -18,6 +18,7 @@
     "build:clients": "tsx tools/build-clients.ts",
     "clients:check": "tsx tools/build-clients.ts --check",
     "clients:smoke": "node tools/clients/smoke.mjs",
+    "links:check": "node tools/check-artifact-links.mjs",
     "curation:report": "tsx tools/curation.ts --report",
     "golden:update": "tsx tools/golden/update.ts",
     "golden:policy": "tsx tools/golden/policy-cli.ts",

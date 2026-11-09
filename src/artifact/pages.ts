@@ -73,7 +73,9 @@ export function sitemapXml(addresses: readonly SiteAddress[]): string {
 
 /**
  * Tags cuyos atributos referencian un archivo del artefacto. `<a href>` queda
- * afuera a propósito: es navegación (externa o ancla), no un asset.
+ * afuera de ESTE pass porque es navegación; las rutas internas raíz-absolutas
+ * de `<a href="/…">` se prefijan en un pass aparte (abajo), igual que los
+ * assets: bajo SITE_BASE son rutas del artefacto y deben llevar el prefijo.
  */
 const ASSET_TAG = /<(img|link|script|source|audio|video|iframe)\b[^>]*>/gi;
 const ASSET_ATTRIBUTE = /\b(src|href|data-local)="([^"]*)"/gi;
@@ -184,6 +186,11 @@ export function publishPage(
     )
   );
 
+  // Anclajes internos raíz-absolutos (<a href="/clients/">): rutas del propio
+  // artefacto → mismo tratamiento que los assets (prefijo base, una vez).
+  output = output.replace(/<a\b[^>]*\bhref="(\/(?!\/)[^"]*)"/g, (tag, url: string) =>
+    tag.replace('href="' + url + '"', 'href="' + withArtifactBase(url, address) + '"')
+  );
   for (const [served, dataUri] of icons) {
     output = output.split(`src="${servedAssetPath(served, address)}"`).join(`src="${dataUri}"`);
   }

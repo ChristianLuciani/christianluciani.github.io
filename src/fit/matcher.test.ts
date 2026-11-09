@@ -4,7 +4,7 @@
  * gaps declarados. Sin LLM, sin score opaco, sin evidencia inventada.
  */
 import { describe, expect, it } from "vitest";
-import { extractRequirements, matchJd, matchTerm, termMatches } from "./matcher.ts";
+import { extractRequirements, matchJd, matchTerm, norm, termMatches } from "./matcher.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import type { CvProfile } from "../data/profile.types.ts";
 import { blacksmith } from "../content/clients/blacksmith.ts";
@@ -71,15 +71,20 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     }
   });
 
-  it("sweep de cobertura derivable: TODO keyword de skills[] del SSOT pedido como requisito da evidencia", () => {
+  it("sweep de cobertura derivable: TODO keyword de skills[] del SSOT pedido como requisito da evidencia QUE LO NOMBRA", () => {
     // El instrumento que termina con la clase 2: la cobertura se deriva del
-    // SSOT, no de una tabla a mano (antes C++/Java/SQL estaban sólo en ev).
+    // SSOT y la evidencia no se fabrica — cada claim debe contener el keyword
+    // pedido (frontera de palabra), no cualquier otro keyword del vocabulario.
     const keywords = P.skills.flatMap((s) => [...(s.keywords ?? []), ...(s.geoKeywords ?? [])]);
     expect(keywords.length).toBeGreaterThan(10);
     for (const keyword of keywords) {
       const r = matchTerm(keyword, P);
       expect(r.status, `keyword "${keyword}" debe ser evidencia`).toBe("evidence");
       expect(r.evidence.length).toBeGreaterThan(0);
+      // al menos una evidencia nombra el keyword (los conceptos curados pueden
+      // sumar hermanos del mismo concepto, p. ej. A2A para ACP)
+      const namesIt = r.evidence.some((ev) => termMatches(norm(ev.source), keyword));
+      expect(namesIt, `evidencia de "${keyword}" debe nombrarlo: ${r.evidence.map((e) => e.claim.slice(0, 50)).join(" | ")}`).toBe(true);
     }
   });
 

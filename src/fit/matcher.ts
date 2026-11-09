@@ -35,6 +35,9 @@ interface Concept {
   id: string;
   req: string[];
   ev: string[];
+  /** true → la evidencia debe nombrar los términos de req que matchearon
+   *  (no cualquier término del concepto): evita evidencia fabricada. */
+  evFromReq?: boolean;
 }
 
 // Orden: lo específico primero (internal-tools antes que el tool-use genérico).
@@ -68,7 +71,7 @@ const PROVIDER_EV = ["openai", "anthropic", "claude", "chatgpt", "gpt"];
 /** Librerías/SDKs que el perfil NO declara: un requisito que las nombre es gap. */
 const KNOWN_GAPS = ["langchain", "langgraph", "anthropic sdk", "openai sdk", "llamaindex"];
 
-function norm(text: string): string {
+export function norm(text: string): string {
   return text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 }
 function escapeRegExp(text: string): string {
@@ -168,7 +171,7 @@ export function vocabularyConcept(profile: CvProfile): Concept {
       terms.add(norm(keyword));
     }
   }
-  return { id: "profile-vocabulary", req: [...terms], ev: [...terms] };
+  return { id: "profile-vocabulary", req: [...terms], ev: [...terms], evFromReq: true };
 }
 
 export function profileConcepts(profile: CvProfile): Concept[] {
@@ -188,8 +191,15 @@ export function matchRequirement(
   const seen = new Set<string>();
   const providerReq = PROVIDER_REQ.test(n);
   outer: for (const concept of concepts) {
-    if (!concept.req.some((term) => termMatches(n, term))) continue;
-    const evTerms = providerReq ? PROVIDER_EV : concept.ev;
+    const matchedReq = concept.req.filter((term) => termMatches(n, term));
+    if (matchedReq.length === 0) continue;
+    // evFromReq: la evidencia DEBE nombrar el término pedido (p. ej. "C++"
+    // no vale un claim de agent orchestration). Sin el flag, ev es la lista
+    // curada de sinónimos del concepto.
+    // evFromReq: si un término largo también matcheó, los de 1 char no cuentan
+    // ("C" no debe prestar evidencia a "C++").
+    const reqTerms = matchedReq.some((t) => t.length >= 2) ? matchedReq.filter((t) => t.length >= 2) : matchedReq;
+    const evTerms = providerReq ? PROVIDER_EV : concept.evFromReq ? reqTerms : concept.ev;
     for (const item of corpus) {
       const itemNorm = norm(item.text);
       if (!evTerms.some((term) => termMatches(itemNorm, term))) continue;

@@ -63,7 +63,7 @@ al deploy y ajustar allowlist + precios. El techo duro es el budget (USD 1).
   sólo si el cliente lo pide (`Accept: application/json`) o el navegador no
   soporta streaming.
 - **Privacidad**: el contexto lo carga el servidor (`CONTEXT_URL`, cacheado 5
-  min) — el cliente no puede inyectar contexto. No si loguea contenido de
+  min) — el cliente no puede inyectar contexto. No se loguea contenido de
   mensajes, sólo counts. Prompt injection no puede sacar lo que no está en el
   contexto (sólo hay perfil público).
 - **Headers OpenRouter**: `HTTP-Referer`/`X-Title` del sitio y

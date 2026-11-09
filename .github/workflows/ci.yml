@@ -157,6 +157,10 @@ jobs:
       - run: npm run clients:smoke
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+      # Toda URL raíz-absoluta referenciada por las páginas de dist/ (anchors
+      # incluidos) debe existir en el artefacto — bajo SITE_BASE el footer a
+      # /clients/ no puede 404ear (#145).
+      - run: npm run links:check
       # I6 (ADR-001, #131): toda URL de asset de cada página publicada existe en
       # dist/, el sitemap lista exactamente esas páginas y los recursos que pide
       # el RUNTIME (audio, laboratorio) están en el artefacto con la base

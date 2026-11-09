@@ -198,6 +198,9 @@ function labCss(): string {
   return `
 :root { color-scheme: dark; }
 * { box-sizing: border-box; }
+/* El gate usa display:flex en esta hoja: [hidden] del UA pierde; hay que
+ * ganarle explícitamente o gate.hidden = true no lo oculta (blocker). */
+[hidden] { display: none !important; }
 body { margin:0; background:#0c1016; color:#e8edf4; font:15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
 code, pre, textarea, input { font:13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
 a { color:var(--lab-accent, #00c9c0); }

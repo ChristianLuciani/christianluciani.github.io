@@ -123,7 +123,12 @@ async function smokeSlug(origin, slug, tmp) {
     // El bundle debe haber evaluado y cableado el botón (blocker: bundle roto = clic muerto).
     await s.eval(`document.getElementById("lab-enter").click(), true`);
     await waitFor(s, `document.getElementById("lab").hidden === false`, `${slug}: #lab se desoculta tras Enter`);
+    // Aserción por ESTILO COMPUTADO, no sólo atributo: display:flex del gate
+    // le ganaba a [hidden] del UA y el gate nunca se ocultaba de verdad.
+    const gateDisplay = await s.eval(`getComputedStyle(document.getElementById("lab-gate")).display`);
+    const labDisplay = await s.eval(`getComputedStyle(document.getElementById("lab")).display`);
     check(`${slug}: Enter the lab desoculta el laboratorio (bundle OK)`, true);
+    check(`${slug}: gate oculto de verdad (display computado)`, gateDisplay === "none" && labDisplay !== "none", `gate=${gateDisplay} lab=${labDisplay}`);
 
     check(`${slug}: 4 tool cards`, (await s.eval(`document.querySelectorAll(".tool-card").length`)) === 4);
 
