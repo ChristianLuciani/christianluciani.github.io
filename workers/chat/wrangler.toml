@@ -1,0 +1,49 @@
+# Chat proxy (#145) — Cloudflare Worker.
+# Deploy: ver workers/chat/README.md
+#   wrangler secret put OPENROUTER_API_KEY   # NUNCA en el repo ni en vars
+#   wrangler deploy
+name = "client-lab-chat"
+main = "index.mjs"
+compatibility_date = "2026-11-06"
+
+[vars]
+# Kill switch: CHAT_ENABLED = "false" → 503 chat_disabled
+CHAT_ENABLED = "true"
+# Budget total USD 1 (alerta 0.75, hard stop 0.95, sin auto-top-up)
+BUDGET_USD = "1"
+BUDGET_ALERT = "0.75"
+BUDGET_STOP = "0.95"
+# Allowlist free-first; fallback pago barato (openai/gpt-4o-mini) si el free
+# devuelve 429/402/5xx. Ajustar al deploy según los :free vigentes de OpenRouter;
+# el fallback pago DEBE figurar con precio en PRICES_JSON (fail closed).
+MODEL_ALLOWLIST = "google/gemini-2.0-flash-exp:free,meta-llama/llama-3.3-70b-instruct:free,openai/gpt-4o-mini"
+# Contexto servido por el sitio público (sólo perfil público, ≤ 6k tokens)
+CONTEXT_URL = "https://christianluciani.github.io/agent/chat-context.json"
+# Precios USD por millón de tokens, por modelo (para el budget); los :free son 0.
+# FAIL CLOSED: un modelo pago sin precio acá (o sin chunk de usage) cuenta como
+# hard stop inmediato — agregar un fallback pago exige cargar su precio.
+PRICES_JSON = "{\"openai/gpt-4o-mini\":{\"input\":0.15,\"output\":0.6}}"
+# Límites: 5/min/IP · 15/h/IP · 40/día/IP · 100/día global · 300/mes · 1 concurrente/IP · 2 globales · 4 turnos · 300 chars · 250 tokens out
+RATE_MIN_IP = "5"
+RATE_HOUR_IP = "15"
+RATE_DAY_IP = "40"
+RATE_DAY_GLOBAL = "100"
+RATE_MONTH_GLOBAL = "300"
+CONC_IP = "1"
+CONC_GLOBAL = "2"
+MAX_TURNS_USER = "4"
+MAX_MESSAGES = "8"
+# Tope de 300 chars sólo sobre el input del usuario; el historial assistant
+# (respuestas del modelo, hasta 250 tokens) se reenvía completo, acordonado a 8000.
+MAX_INPUT_CHARS = "300"
+MAX_ASSISTANT_CHARS = "8000"
+MAX_OUTPUT_TOKENS = "250"
+
+# Durable Object con los contadores atómicos (rate limit + concurrencia + spend)
+[[durable_objects.bindings]]
+name = "LIMITS"
+class_name = "RateLimiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["RateLimiter"]

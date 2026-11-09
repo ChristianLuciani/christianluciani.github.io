@@ -47,6 +47,9 @@ jobs:
       # el espejo local de marca debe coincidir con el pin del brand kit
       - run: npm run brand:verify
       - run: npm test
+      # Tests de agentes (#145): protocolo MCP (node --test) y Worker de chat
+      # con provider mockeado. No son vitest: corren aparte.
+      - run: npm run test:agents
       # Gates multi-tema (#133): copy ES/EN completo (sin claves huérfanas),
       # curación 100% decidida con `reason` y `experienceSections` completa,
       # 0 literales de color en la piel y contraste AA declarado — por CADA tema
@@ -115,6 +118,19 @@ jobs:
             test -f "dist/$file" || { echo "falta dist/$file"; exit 1; }
             cmp "dist/$file" "public/$file" || { echo "dist/$file ≠ public/$file"; exit 1; }
           done
+          # Client labs (#145): una página por slug del registro, noindex, con el
+          # bundle del lab inyectado; y los JSON de agentes servidos desde la raíz.
+          # Los slugs salen del registro (agregar un cliente no toca este gate).
+          slugs=$(npx tsx -e 'import("./src/content/clients/index.ts").then((m) => console.log(m.clientSlugs().join(" ")))')
+          for slug in $slugs ; do
+            test -f "dist/clients/$slug/index.html" || { echo "falta dist/clients/$slug/index.html"; exit 1; }
+            grep -q 'name="robots" content="noindex' "dist/clients/$slug/index.html" || { echo "clients/$slug sin noindex"; exit 1; }
+            grep -q 'src="/assets/lab-' "dist/clients/$slug/index.html" || { echo "clients/$slug sin bundle lab"; exit 1; }
+          done
+          for file in manifest.json profile.json projects.json publications.json chat-context.json ; do
+            test -f "dist/agent/$file" || { echo "falta dist/agent/$file"; exit 1; }
+            cmp "dist/agent/$file" "public/agent/$file" || { echo "dist/agent/$file ≠ public/agent/$file"; exit 1; }
+          done
           # el JSON-LD de la entidad se DERIVA (#140): se parsea el HTML servido
           # y se exige UN Person de primer nivel con @id y UN FAQPage con preguntas
           # (contar strings sería ciego: el @graph de ScholarlyArticle también
@@ -134,6 +150,17 @@ jobs:
           # un index.html commiteado en modo CDN rompe build.test.ts; este gate
           # lo dice con el diff, no con un test de 10 líneas de distancia
           git diff --exit-code -- index.html
+      # Smoke del client lab en Chrome real (#145): carga cada dist/clients/<slug>/
+      # por HTTP loopback y verifica que el bundle del lab arranca (gate → #lab,
+      # tools ejecutan JSON, Verify 3/3 OK, Fit N/M, chat degrada sin endpoint).
+      # Cierra la clase de "el gate sólo grepea el artefacto".
+      - run: npm run clients:smoke
+        env:
+          CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+      # Toda URL raíz-absoluta referenciada por las páginas de dist/ (anchors
+      # incluidos) debe existir en el artefacto — bajo SITE_BASE el footer a
+      # /clients/ no puede 404ear (#145).
+      - run: npm run links:check
       # I6 (ADR-001, #131): toda URL de asset de cada página publicada existe en
       # dist/, el sitemap lista exactamente esas páginas y los recursos que pide
       # el RUNTIME (audio, laboratorio) están en el artefacto con la base
@@ -153,3 +180,11 @@ jobs:
       - run: npm run intro:verify
         env:
           CHROME_PATH: ${{ steps.chrome.outputs.chrome-path }}
+      # Mismo gate de links sobre un build con SITE_BASE: va al FINAL del job
+      # porque reescribe dist/ con el prefijo (los assets de vite ya están en dist/).
+      - name: links bajo SITE_BASE
+        run: |
+          npx vite build --manifest >/dev/null
+          SITE_BASE=/demo npx tsx build.ts --dist --manifest dist/.vite/manifest.json >/dev/null
+          node tools/check-artifact-links.mjs --base /demo
+          rm -rf dist/.vite

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="es" data-client="example" style="--lab-accent:#7a5cff">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Example Co · Plataforma de demo — Laboratorio de cliente · Christian Luciani</title>
+<meta name="description" content="Laboratorio de cliente: Plataforma de demo @ Example Co.">
+<link rel="icon" type="image/svg+xml" href="/assets/brand/favicon-aurea-teal.svg">
+<style>
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+/* El gate usa display:flex en esta hoja: [hidden] del UA pierde; hay que
+ * ganarle explícitamente o gate.hidden = true no lo oculta (blocker). */
+[hidden] { display: none !important; }
+body { margin:0; background:#0c1016; color:#e8edf4; font:15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif; }
+code, pre, textarea, input { font:13px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; }
+a { color:var(--lab-accent, #00c9c0); }
+button { font:inherit; cursor:pointer; border:1px solid #2a3342; background:#141a24; color:#e8edf4; border-radius:8px; padding:8px 14px; }
+button:hover { border-color:var(--lab-accent, #00c9c0); }
+button.primary { background:var(--lab-accent, #00c9c0); border-color:transparent; color:#0c1016; font-weight:600; }
+#lab-gate { min-height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:14px; padding:24px; max-width:720px; margin:0 auto; animation:lab-gate-in .45s ease-out both; }
+@keyframes lab-gate-in { from { opacity:0; transform:translateY(8px); } }
+.gate-eyebrow { color:var(--lab-accent, #00c9c0); letter-spacing:.14em; text-transform:uppercase; font-size:12px; margin:0; }
+#lab-gate h1 { font-size:clamp(28px, 5vw, 44px); margin:0; }
+.gate-lead { color:#aeb9c8; max-width:60ch; margin:0; }
+.gate-note { color:#6b7686; font-size:13px; max-width:52ch; }
+#lab-enter { font-size:16px; padding:12px 22px; background:var(--lab-accent, #00c9c0); color:#0c1016; border:none; font-weight:600; }
+#lab { max-width:960px; margin:0 auto; padding:24px 16px 48px; }
+.lab-head { display:flex; justify-content:space-between; align-items:flex-start; gap:16px; border-bottom:1px solid #232b38; padding-bottom:16px; flex-wrap:wrap; }
+.lab-brand { color:var(--lab-accent, #00c9c0); font-size:12px; letter-spacing:.12em; text-transform:uppercase; margin:0 0 4px; }
+.lab-title { margin:0; font-size:26px; }
+.lab-sub { color:#8b96a6; font-size:13px; margin:6px 0 0; }
+.lab-head-side { display:flex; gap:10px; align-items:center; }
+.lab-module { border:1px solid #232b38; border-radius:12px; padding:20px; margin-top:20px; background:#10151d; }
+.lab-module h3 { margin:0 0 8px; font-size:19px; }
+.lab-module p { color:#aeb9c8; }
+.lab-note { color:#6b7686 !important; font-size:13px; }
+.tool-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:14px; margin-top:12px; }
+.tool-card { border:1px solid #232b38; border-radius:10px; padding:14px; background:#0d1219; }
+.tool-card h4 { margin:0 0 6px; color:var(--lab-accent, #00c9c0); }
+.tool-card details { margin:8px 0; } .tool-card summary { cursor:pointer; color:#8b96a6; font-size:12px; }
+.tool-card pre, .mcp-snippet { background:#0a0e14; border:1px solid #1d2530; border-radius:8px; padding:10px; overflow:auto; white-space:pre-wrap; word-break:break-word; }
+.tool-input { width:100%; background:#0a0e14; color:#e8edf4; border:1px solid #1d2530; border-radius:8px; padding:8px; }
+.tool-run { margin-top:8px; }
+.tool-out { margin-top:10px; } .tool-out-label { font-size:11px; text-transform:uppercase; letter-spacing:.1em; color:#6b7686; margin:8px 0 4px; }
+.tool-req, .tool-res { margin:0; } .tool-res { color:#9fe8d8; } .tool-res.tool-error { color:#ff9d7a; }
+#fit-input { width:100%; background:#0a0e14; color:#e8edf4; border:1px solid #1d2530; border-radius:8px; padding:10px; }
+.lab-actions { display:flex; gap:10px; margin:10px 0; }
+.fit-output { margin:10px 0 0; padding-left:20px; } .fit-output li { margin-bottom:10px; }
+.fit-status { font-size:11px; text-transform:uppercase; letter-spacing:.1em; padding:2px 8px; border-radius:99px; margin-right:8px; }
+.fit-status.evidence { background:rgba(0,201,192,.12); color:#5ee6de; }
+.fit-status.gap { background:rgba(255,122,26,.14); color:#ffb37a; }
+.fit-evidence { margin:6px 0 0; padding-left:16px; color:#8b96a6; font-size:13px; }
+.fit-evidence a { color:var(--lab-accent, #00c9c0); }
+.prov-results { list-style:none; padding:0; margin:12px 0 0; }
+.prov-results li { font-size:13px; margin-bottom:6px; }
+.prov-badge-ok { color:#5ee6de; } .prov-badge-fail { color:#ff9d7a; font-weight:700; }
+.chat-messages { display:flex; flex-direction:column; gap:8px; max-height:320px; overflow:auto; border:1px solid #1d2530; border-radius:8px; padding:10px; background:#0a0e14; margin-bottom:10px; }
+.chat-msg { max-width:85%; padding:8px 12px; border-radius:10px; white-space:pre-wrap; }
+.chat-msg.user { align-self:flex-end; background:#1c2634; }
+.chat-msg.assistant { align-self:flex-start; background:#12202b; }
+.chat-msg.system { align-self:center; color:#6b7686; font-size:12px; background:none; }
+.chat-cites { margin-top:6px; display:flex; gap:6px; flex-wrap:wrap; }
+.chat-cite { font-size:11px; border:1px solid var(--lab-accent, #00c9c0); color:var(--lab-accent, #00c9c0); border-radius:99px; padding:1px 8px; }
+.chat-suggested { display:flex; flex-wrap:wrap; gap:8px; margin-bottom:10px; }
+.chat-suggested button { font-size:13px; padding:6px 10px; }
+.chat-input-row { display:flex; gap:8px; }
+#chat-input { flex:1; background:#0a0e14; color:#e8edf4; border:1px solid #1d2530; border-radius:8px; padding:8px 10px; }
+.lab-foot { max-width:960px; margin:0 auto; padding:0 16px 40px; color:#6b7686; font-size:12px; display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+.lab-foot code { color:#8b96a6; }
+@media (max-width:640px) { .chat-msg { max-width:100%; } }
+</style>
+<script type="module" crossorigin src="/src/client/main.ts"></script>
+</head>
+<body>
+<script type="application/json" id="lab-config">{"slug":"example","brand":"Example Co","role":"Plataforma de demo","locale":"es","jd":"Agentic workflows · MCP · internal tools · REST/webhooks · Python/Node","modules":["agent","mcp","fit","provenance","chat"],"chat":{"enabled":true,"endpoint":"","suggested":[{"en":"Do you have experience with MCP?","es":"¿Tienes experiencia con MCP?"},{"en":"What did you build at USFQ?","es":"¿Qué construiste en la USFQ?"},{"en":"Where are your gaps for this role?","es":"¿Dónde están tus brechas para este rol?"}]},"accent":"#7a5cff"}</script>
+
+<section id="lab-gate" aria-labelledby="gate-title">
+  <p class="gate-eyebrow" data-es="Laboratorio de cliente · cliente de ejemplo" data-en="Client lab · example client">Laboratorio de cliente · cliente de ejemplo</p>
+  <h1 id="gate-title" data-es="Esta página prueba que el laboratorio es paramétrico" data-en="This page proves the lab is parametric">Esta página prueba que el laboratorio es paramétrico</h1>
+  <p class="gate-lead" data-es="Cada texto, color, aviso y módulo de esta página viene de un archivo de configuración, no de una plantilla. Agregar un cliente es agregar un archivo y una entrada en el registro." data-en="Every string, color, JD and module on this page comes from a config file, not from a template. Adding a client means adding one file and one registry entry.">Cada texto, color, aviso y módulo de esta página viene de un archivo de configuración, no de una plantilla. Agregar un cliente es agregar un archivo y una entrada en el registro.</p>
+  <p class="gate-note">Esta área fue preparada para el equipo de contratación. Sin contraseña — el laboratorio es público pero no indexado.</p>
+  <button id="lab-enter" type="button" data-es="Entrar al laboratorio" data-en="Enter the lab">Entrar al laboratorio</button>
+</section>
+
+<main id="lab" hidden>
+  <header class="lab-head">
+    <div>
+      <p class="lab-brand">Example Co · Plataforma de demo</p>
+      <h2 class="lab-title" data-i18n="lab.title">Laboratorio de cliente</h2>
+      <p class="lab-sub"><span data-verify="name">Christian Luciani</span> · <span data-verify="lastRole">Strategic Systems Consultant</span> · <span data-verify="project">Kontablo — Universal Accounting Ontology</span></p>
+    </div>
+    <div class="lab-head-side">
+      <a href="/" data-i18n="lab.home">christianluciani.github.io</a>
+      <button id="lab-lang" type="button">EN</button>
+    </div>
+  </header>
+  <section class="lab-module" data-module="agent" aria-labelledby="mod-agent-title">
+    <h3 id="mod-agent-title" data-i18n="mod.agent.title">Interfaz de agente</h3>
+    <p data-i18n="mod.agent.desc">Contrato de tools determinista sobre el perfil público: JSON Schema + endpoints REST estáticos.</p>
+    <p class="lab-note" data-i18n="mod.agent.note">Ejecución determinista de tools — sin llamada a modelo, sin API key.</p>
+    <div class="tool-grid">
+    <article class="tool-card" data-tool="get_profile" data-endpoint="/agent/profile.json">
+      <h4>get_profile</h4>
+      <p>Public profile: identity, positioning, experience, skills, links, provenance.</p>
+      <details><summary>inputSchema</summary><pre>{
+  "type": "object",
+  "properties": {},
+  "additionalProperties": false
+}</pre></details>
+      <label>input JSON<textarea class="tool-input" rows="2" spellcheck="false">{}</textarea></label>
+      <button type="button" class="tool-run" data-i18n="mod.agent.run">Ejecutar</button>
+      <div class="tool-out" hidden>
+        <p class="tool-out-label" data-i18n="mod.agent.request">Request</p>
+        <pre class="tool-req"></pre>
+        <p class="tool-out-label" data-i18n="mod.agent.response">Response</p>
+        <pre class="tool-res"></pre>
+      </div>
+    </article>
+    <article class="tool-card" data-tool="list_projects" data-endpoint="/agent/projects.json">
+      <h4>list_projects</h4>
+      <p>All projects from the public profile registry, with links and evidence.</p>
+      <details><summary>inputSchema</summary><pre>{
+  "type": "object",
+  "properties": {
+    "published": {
+      "type": "boolean",
+      "description": "Filter to publicly published projects."
+    }
+  },
+  "additionalProperties": false
+}</pre></details>
+      <label>input JSON<textarea class="tool-input" rows="2" spellcheck="false">{ "published": true }</textarea></label>
+      <button type="button" class="tool-run" data-i18n="mod.agent.run">Ejecutar</button>
+      <div class="tool-out" hidden>
+        <p class="tool-out-label" data-i18n="mod.agent.request">Request</p>
+        <pre class="tool-req"></pre>
+        <p class="tool-out-label" data-i18n="mod.agent.response">Response</p>
+        <pre class="tool-res"></pre>
+      </div>
+    </article>
+    <article class="tool-card" data-tool="get_project" data-endpoint="/agent/projects.json">
+      <h4>get_project</h4>
+      <p>One project by (partial, case-insensitive) name.</p>
+      <details><summary>inputSchema</summary><pre>{
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "name"
+  ],
+  "additionalProperties": false
+}</pre></details>
+      <label>input JSON<textarea class="tool-input" rows="2" spellcheck="false">{ "name": "kontablo" }</textarea></label>
+      <button type="button" class="tool-run" data-i18n="mod.agent.run">Ejecutar</button>
+      <div class="tool-out" hidden>
+        <p class="tool-out-label" data-i18n="mod.agent.request">Request</p>
+        <pre class="tool-req"></pre>
+        <p class="tool-out-label" data-i18n="mod.agent.response">Response</p>
+        <pre class="tool-res"></pre>
+      </div>
+    </article>
+    <article class="tool-card" data-tool="search_publications" data-endpoint="/agent/publications.json">
+      <h4>search_publications</h4>
+      <p>Search publications by title/venue (case-insensitive substring).</p>
+      <details><summary>inputSchema</summary><pre>{
+  "type": "object",
+  "properties": {
+    "query": {
+      "type": "string",
+      "minLength": 1
+    }
+  },
+  "required": [
+    "query"
+  ],
+  "additionalProperties": false
+}</pre></details>
+      <label>input JSON<textarea class="tool-input" rows="2" spellcheck="false">{ "query": "accounting" }</textarea></label>
+      <button type="button" class="tool-run" data-i18n="mod.agent.run">Ejecutar</button>
+      <div class="tool-out" hidden>
+        <p class="tool-out-label" data-i18n="mod.agent.request">Request</p>
+        <pre class="tool-req"></pre>
+        <p class="tool-out-label" data-i18n="mod.agent.response">Response</p>
+        <pre class="tool-res"></pre>
+      </div>
+    </article>
+    </div>
+  </section>
+  <section class="lab-module" data-module="mcp" aria-labelledby="mod-mcp-title">
+    <h3 id="mod-mcp-title" data-i18n="mod.mcp.title">Servidor MCP</h3>
+    <p data-i18n="mod.mcp.desc">Un servidor MCP real por stdio (Node, sin red, sin secretos) que sirve los mismos cuatro tools desde public/agent/*.json. Corre localmente en tu máquina — esta página solo documenta el contrato.</p>
+    <p class="lab-note"><span data-i18n="mod.mcp.tools">tools:</span> <code>get_profile, list_projects, get_project, search_publications</code> · <span data-i18n="mod.mcp.reads">leen</span> <code>public/agent/*.json</code></p>
+    <p data-i18n="mod.mcp.snippet">Config del cliente (p. ej. cualquier host MCP):</p>
+    <pre class="mcp-snippet" id="mcp-snippet">{
+  "mcpServers": {
+    "profile": {
+      "command": "node",
+      "args": [
+        "mcp/server.mjs"
+      ]
+    }
+  }
+}</pre>
+    <button type="button" id="mcp-copy" data-i18n="mod.mcp.copy">Copiar</button>
+  </section>
+  <section class="lab-module" data-module="fit" aria-labelledby="mod-fit-title">
+    <h3 id="mod-fit-title" data-i18n="mod.fit.title">Explorador de fit</h3>
+    <p data-i18n="mod.fit.desc">Pegá la descripción del puesto. El matcher es determinista sobre el perfil público: evidencia con links o un gap declarado. Sin LLM, sin score opaco.</p>
+    <textarea id="fit-input" rows="5" spellcheck="false" data-i18n-ph="mod.fit.placeholder" placeholder="Pegá aquí la descripción del puesto…"></textarea>
+    <div class="lab-actions">
+      <button type="button" id="fit-preset" data-i18n="mod.fit.preset">Cargar el aviso de este cliente</button>
+      <button type="button" id="fit-run" class="primary" data-i18n="mod.fit.run">Analizar</button>
+    </div>
+    <p id="fit-summary" class="lab-note" hidden></p>
+    <ol id="fit-output" class="fit-output"></ol>
+  </section>
+  <section class="lab-module" data-module="provenance" aria-labelledby="mod-provenance-title">
+    <h3 id="mod-provenance-title" data-i18n="mod.provenance.title">Procedencia</h3>
+    <p data-i18n="mod.provenance.desc">Esta página es salida de un pipeline. La insignia muestra el commit exacto de la fuente; Verificar vuelve a pedir el snapshot commiteado y compara tres hechos con este DOM.</p>
+    <button type="button" id="prov-verify" data-i18n="mod.provenance.verify">Verificar</button>
+    <ul id="prov-results" class="prov-results"></ul>
+  </section>
+  <section class="lab-module" data-module="chat" aria-labelledby="mod-chat-title">
+    <h3 id="mod-chat-title" data-i18n="mod.chat.title">Chat (grounded)</h3>
+    <p data-i18n="mod.chat.desc">Las respuestas salen solo del perfil público, vía un proxy server-side — la API key nunca llega al navegador.</p>
+    <p class="lab-note" data-i18n="mod.chat.disclaimer">Demo: las respuestas salen del perfil público; no compartas datos personales. Los modelos free pueden registrar prompts.</p>
+    <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+    <div id="chat-suggested" class="chat-suggested">
+      <button type="button" class="chat-suggested" data-es="¿Tienes experiencia con MCP?" data-en="Do you have experience with MCP?">¿Tienes experiencia con MCP?</button>
+      <button type="button" class="chat-suggested" data-es="¿Qué construiste en la USFQ?" data-en="What did you build at USFQ?">¿Qué construiste en la USFQ?</button>
+      <button type="button" class="chat-suggested" data-es="¿Dónde están tus brechas para este rol?" data-en="Where are your gaps for this role?">¿Dónde están tus brechas para este rol?</button>
+    </div>
+    <div class="chat-input-row">
+      <input id="chat-input" type="text" maxlength="300" data-i18n-ph="mod.chat.placeholder" placeholder="Preguntá sobre el perfil público… (máx 300 caracteres)">
+      <button type="button" id="chat-send" class="primary" data-i18n="mod.chat.send">Enviar</button>
+    </div>
+  </section>
+</main>
+
+<footer class="lab-foot">
+  <span class="lab-provenance" id="lab-provenance">generado desde profile-data @ <code>32a3a6999cd3b06ff26c3ee99065d37c9faec095</code> · pasco 0.4.0 · schema v1.16 · 2026-11-07</span>
+  <a href="https://github.com/ChristianLuciani/profile-as-code" target="_blank" rel="noopener">profile-as-code</a>
+</footer>
+
+</body>
+</html>

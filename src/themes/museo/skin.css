@@ -1191,3 +1191,8 @@ a { color:inherit; }
   .room-footnote { margin-top:28px; }
   #btn-download, #btn-skip-intro { bottom:1rem; right:1rem; }
 }
+
+/* Footer del sitio (#145): link discreto a /clients/ — vars del tema, sin literales de color. */
+.site-footer { display:flex; justify-content:center; padding:28px 16px 36px; }
+.site-footer-link { color:var(--ink-meta); font-size:11px; letter-spacing:.14em; text-transform:uppercase; text-decoration:none; }
+.site-footer-link:hover, .site-footer-link:focus-visible { color:var(--teal); }

@@ -34,6 +34,8 @@ const DOCUMENT = [
   '<img src="assets/qr-site.svg">',
   '<script type="module" crossorigin src="/assets/main-abc.js"></script>',
   '<a href="https://christianluciani.github.io">site</a>',
+  '<a href="/clients/">Client labs</a>',
+  '<a href="#hero">ancla</a>',
   '<script type="application/ld+json">{"@id":"https://christianluciani.github.io"}</script>'
 ].join("\n");
 
@@ -145,6 +147,20 @@ describe("pages — publicar", () => {
       '<meta property="og:image" content="https://cdn.example/gh/o/r@v1/public/assets/og-image.png">';
     const { html } = publishPage(cdn, PREFIXED);
     expect(html).toContain('content="https://cdn.example/gh/o/r@v1/public/assets/og-image.png"');
+  });
+
+  it("prefija los anchors internos raíz-absolutos bajo base y no los externos ni las anclas (#145 F3)", () => {
+    const prefixed = publishPage(DOCUMENT, PREFIXED).html;
+    expect(prefixed).toContain('<a href="/repo/clients/">Client labs</a>');
+    expect(prefixed).toContain('<a href="#hero">ancla</a>');
+    expect(prefixed).toContain('<a href="https://christianluciani.github.io">site</a>');
+    // idempotente: publicar dos veces no duplica el prefijo
+    const twice = publishPage(prefixed, PREFIXED).html;
+    expect(twice).toContain('<a href="/repo/clients/">Client labs</a>');
+    expect(twice).not.toContain("/repo/repo/");
+    // en raíz (Pages) el anchor interno queda como está
+    const root = publishPage(DOCUMENT, ROOT).html;
+    expect(root).toContain('<a href="/clients/">Client labs</a>');
   });
 
   it("el render real no deja rutas relativas al documento", () => {

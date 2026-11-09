@@ -32,6 +32,11 @@ import {
   publishPage,
   sitemapXml
 } from "./src/artifact/pages.ts";
+// Ojo: el gate "cero red" (src/data/now.generated.test.ts) prohíbe que el
+// grafo de imports de build.ts toque tools/ — por eso estas funciones viven
+// en src/ y los CLIs de tools/ son finos.
+import { writeAgentFiles } from "./src/agent/write.ts";
+import { clientSourceFiles, labEntryPath, publishClientPages } from "./src/clients/publish.ts";
 
 interface Options {
   readonly dist: boolean;
@@ -102,6 +107,15 @@ function main(): void {
   // publican; sin selector, todos.
   const themes = buildThemes();
 
+  // public/agent/* se regenera SIEMPRE antes de cualquier otra cosa: en el
+  // chain `npm run build` este modo fuente corre ANTES de `vite build`, así
+  // que `public/` (que vite copia a dist/ tal cual) ya lleva los JSON frescos
+  // derivados del SSOT (#145 §2.1/§2.5). Los archivos commiteados quedan
+  // vigilados por el test de drift.
+  for (const file of writeAgentFiles()) {
+    console.log(`✅ ${file} regenerado · SSOT`);
+  }
+
   if (!options.dist) {
     // Render fuente: SIEMPRE el tema default. El archivo commiteado y su golden
     // no dependen de `SITE_THEME` ni de la dirección de deploy.
@@ -110,6 +124,14 @@ function main(): void {
     const out = resolve(process.cwd(), "index.html");
     writeFileSync(out, html, "utf8");
     console.log(`✅ index.html generado (${html.length} bytes) → ${out} · tema: ${theme.id}`);
+    // Páginas de cliente commiteadas (#145): clients/<slug>/index.html por
+    // cada slug del registro + clients/index.html.
+    for (const [relative, clientHtml] of Object.entries(clientSourceFiles())) {
+      const file = resolve(process.cwd(), relative);
+      mkdirSync(dirname(file), { recursive: true });
+      writeFileSync(file, clientHtml, "utf8");
+      console.log(`✅ ${relative} (${clientHtml.length} bytes)`);
+    }
     return;
   }
 
@@ -136,6 +158,24 @@ function main(): void {
   const sitemap = resolve(outDir, "sitemap.xml");
   writeFileSync(sitemap, sitemapXml(addresses), "utf8");
   console.log(`✅ ${sitemap} · ${addresses.length} URL(s) · entry: ${entry}`);
+
+  // Páginas de cliente del artefacto (#145): mismas páginas que la fuente pero
+  // con el entry del bundle del lab inyectado y las rutas prefijadas con el
+  // base del artefacto. Quedan en noindex: no van al sitemap.
+  const labEntry = labEntryPath(
+    JSON.parse(readFileSync(manifestPath, "utf8")) as Record<
+      string,
+      { file: string; isEntry?: boolean }
+    >
+  );
+  const base = artifactBase();
+  const clientPages = publishClientPages(clientSourceFiles(), labEntry, base);
+  for (const [relative, clientHtml] of Object.entries(clientPages)) {
+    const file = resolve(outDir, relative);
+    mkdirSync(dirname(file), { recursive: true });
+    writeFileSync(file, clientHtml, "utf8");
+    console.log(`✅ ${resolve(outDir, relative)} · entry lab: ${labEntry}`);
+  }
 
   // El manifest es insumo del build, no parte del artefacto servido.
   const viteDir = resolve(outDir, ".vite");

@@ -1,0 +1,73 @@
+{
+  "name": "christianluciani-profile",
+  "version": "1.0.0",
+  "description": "Deterministic, read-only tools over Christian Luciani's public profile. Static JSON endpoints — no model call, no API key.",
+  "provenance": {
+    "commit": "32a3a6999cd3b06ff26c3ee99065d37c9faec095",
+    "engine": "0.4.0",
+    "schema": "1.16"
+  },
+  "tools": [
+    {
+      "name": "get_profile",
+      "description": "Public profile: identity, positioning, experience, skills, links, provenance.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "additionalProperties": false
+      },
+      "endpoint": "/agent/profile.json"
+    },
+    {
+      "name": "list_projects",
+      "description": "All projects from the public profile registry, with links and evidence.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "published": {
+            "type": "boolean",
+            "description": "Filter to publicly published projects."
+          }
+        },
+        "additionalProperties": false
+      },
+      "endpoint": "/agent/projects.json"
+    },
+    {
+      "name": "get_project",
+      "description": "One project by (partial, case-insensitive) name.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      },
+      "endpoint": "/agent/projects.json"
+    },
+    {
+      "name": "search_publications",
+      "description": "Search publications by title/venue (case-insensitive substring).",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "additionalProperties": false
+      },
+      "endpoint": "/agent/publications.json"
+    }
+  ]
+}

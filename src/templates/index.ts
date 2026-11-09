@@ -10,6 +10,7 @@
  */
 import { bodyOpen } from "./body_open.ts";
 import { coverHtml } from "./cover_html.ts";
+import { footerHtml } from "./footer_html.ts";
 import { headHtml } from "./head_html.ts";
 import { heroHtml } from "./hero_html.ts";
 import { nowHtml } from "./now_html.ts";
@@ -58,6 +59,7 @@ export function assembleHtml({ theme = DEFAULT_THEME }: AssembleOptions = {}): s
     nowHtml() +
     planoHtml() +
     roomsHtml() +
+    footerHtml() +
     FOOTER
   );
 }
