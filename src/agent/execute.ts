@@ -4,13 +4,14 @@
  * GET al endpoint del manifiesto + el filtro declarado por el inputSchema.
  */
 import { validateInput } from "./schema.ts";
+import { publicUrl } from "./urls.ts";
 import type { AgentTool } from "./export.ts";
 
 export type JsonLoader = (url: string) => Promise<unknown>;
 
-/** fetch de navegador como loader por defecto (rutas raíz-absolutas). */
+/** fetch de navegador como loader por defecto (GET; rutas bajo el base del artefacto). */
 export const fetchLoader: JsonLoader = async (url) => {
-  const response = await fetch(url);
+  const response = await fetch(publicUrl(url));
   if (!response.ok) throw new Error(`endpoint ${url} respondió ${response.status}`);
   return response.json();
 };

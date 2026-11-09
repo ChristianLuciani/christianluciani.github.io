@@ -7,6 +7,7 @@ import { CLIENT_SOURCE_ENTRY, clientPageHtml, clientsIndexHtml } from "./page.ts
 import { CLIENTS, clientSlugs } from "../content/clients/index.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import { PROFILE_COMMIT, PROFILE_ENGINE } from "../data/profile.provenance.ts";
+import { currentRoleEn } from "../agent/verify.ts";
 import type { CvProfile } from "../data/profile.types.ts";
 
 const PROFILE_DATA = PROFILE as unknown as CvProfile;
@@ -25,7 +26,7 @@ describe("client page — contrato del documento", () => {
     expect(html).toContain('id="lab-enter"');
   });
 
-  it("los 5 módulos宣言ados renderizan sus secciones", () => {
+  it("los módulos declarados por el cliente renderizan sus secciones", () => {
     for (const mod of CLIENTS.blacksmith.modules) {
       expect(html).toContain(`data-module="${mod}"`);
     }
@@ -41,7 +42,13 @@ describe("client page — contrato del documento", () => {
   it("los 3 hechos verificables salen del SSOT como data-verify en el DOM", () => {
     const esc = (s: string): string => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     expect(html).toContain(`data-verify="name">${esc(PROFILE_DATA.identity.name)}`);
-    expect(html).toContain(`data-verify="lastRole">${esc(PROFILE_DATA.experience[0].role.en)}`);
+    // lastRole = rol VIGENTE por recencia (present = futuro), no experience[0].
+    // El perfil actual tiene experience[0] con end 2026-01-01 y otro con "present":
+    // si la derivación cae en experience[0], este test no es tautológico y falla.
+    const current = currentRoleEn(PROFILE_DATA);
+    expect(PROFILE_DATA.experience[0].end).not.toBe("present");
+    expect(current).toBe(PROFILE_DATA.experience.find((e) => e.end === "present")?.role.en);
+    expect(html).toContain(`data-verify="lastRole">${esc(current)}`);
     const published = PROFILE_DATA.projects.find((p) => p.published)!;
     expect(html).toContain(`data-verify="project">${esc(published.name)}`);
   });
@@ -77,13 +84,16 @@ describe("client page — contrato del documento", () => {
     }
   });
 
-  it("el slug del cliente viene del config, no del template (html lang y data-client)", () => {
-    expect(html).toContain(`data-client="blacksmith"`);
-    expect(html).toContain('<html lang="en"');
-    const example = clientPageHtml(CLIENTS.example);
-    expect(example).toContain(`data-client="example"`);
-    expect(example).toContain('<html lang="es"');
-    expect(example).toContain("Esta página prueba que el laboratorio es paramétrico");
+  it("cada slug del registro renderiza su propia página (lang y data-client del config)", () => {
+    for (const slug of clientSlugs()) {
+      const page = clientPageHtml(CLIENTS[slug]);
+      expect(page).toContain(`data-client="${slug}"`);
+      expect(page).toContain(`<html lang="${CLIENTS[slug].locale}"`);
+      expect(page).toContain(CLIENTS[slug].entry.title.en.replace(/&/g, "&amp;"));
+    }
+    // blacksmith es locale en; existe al menos un cliente es (prueba la parametrización)
+    expect(CLIENTS.blacksmith.locale).toBe("en");
+    expect(clientSlugs().some((s) => CLIENTS[s].locale === "es")).toBe(true);
   });
 
   it("/clients/ indexa los labs registrados, también noindex", () => {

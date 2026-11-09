@@ -41,10 +41,17 @@ caiga; el techo duro es el budget.
   15/h/IP · 40/día/IP · 100/día global · 300/mes global · 1 concurrente/IP ·
   2 globales.
 - **Turnos/input/output**: máx 4 turnos de usuario (8 mensajes), 300 chars por
-  mensaje, 250 tokens de salida, temperatura 0.2.
+  mensaje **de usuario** (el historial `assistant` se reenvía completo — hasta
+  250 tokens ≈ 600–1000 chars — acordonado a 8000 como guardarrail de abuso),
+  250 tokens de salida, temperatura 0.2.
 - **Budget**: USD 1 total; alerta a 0.75 (header `x-budget-alert`), hard stop a
   0.95 (503 `budget_exceeded`), sin auto-top-up. `PRICES_JSON` mapea modelo →
-  precio USD/M tokens para contabilizar; los `:free` cuestan 0.
+  precio USD/M tokens; los `:free` cuestan 0. **Fail closed**: un modelo pago sin
+  precio declarado (o sin chunk de `usage`) registra costo = budget completo →
+  hard stop inmediato. Agregar un fallback pago exige cargar su precio.
+- **Concurrencia**: los slots `inflight` (1/IP, 2 globales) se liberan siempre —
+  también en abortos por timeout (30 s) o desconexión del cliente (respuesta
+  504); un proveedor lento no deja a la IP en 429 permanente.
 - **Kill switch**: `CHAT_ENABLED=false` → 503 `chat_disabled`.
 - **Streaming**: SSE desde v1 con keep-alive y timeout de 30 s; fallback JSON
   sólo si el cliente lo pide (`Accept: application/json`) o el navegador no

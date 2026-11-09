@@ -76,14 +76,23 @@ function validateMessages(messages, env) {
   if (messages.length > Number(env.MAX_MESSAGES ?? DEFAULTS.MAX_MESSAGES)) {
     return `máx ${env.MAX_MESSAGES ?? DEFAULTS.MAX_MESSAGES} mensajes (4 turnos)`;
   }
+  // El tope de 300 chars es del INPUT del usuario. El rol assistant reenvía
+  // respuestas del modelo (hasta 250 tokens ≈ 600–1000 chars) y NO se trunca:
+  // un historial multi-turno con respuestas largas debe ser válido. Sí se
+  // acordona al abuso con un tope amplio para assistant.
   const maxChars = Number(env.MAX_INPUT_CHARS ?? DEFAULTS.MAX_INPUT_CHARS);
+  const maxAssistantChars = Number(env.MAX_ASSISTANT_CHARS ?? 8000);
   let userCount = 0;
   for (const message of messages) {
     if (typeof message !== "object" || message === null) return "mensaje inválido";
     if (message.role !== "user" && message.role !== "assistant") return "role debe ser user|assistant";
     if (typeof message.content !== "string" || message.content.length === 0) return "content vacío";
-    if (message.content.length > maxChars) return `content supera ${maxChars} caracteres`;
-    if (message.role === "user") userCount += 1;
+    if (message.role === "user") {
+      if (message.content.length > maxChars) return `content de usuario supera ${maxChars} caracteres`;
+      userCount += 1;
+    } else if (message.content.length > maxAssistantChars) {
+      return `content de assistant supera ${maxAssistantChars} caracteres`;
+    }
   }
   if (userCount > Number(env.MAX_TURNS_USER ?? DEFAULTS.MAX_TURNS_USER)) return "máx 4 turnos de usuario";
   if (messages[messages.length - 1].role !== "user") return "el último mensaje debe ser user";
@@ -162,9 +171,11 @@ export class RateLimiter {
   }
 
   async #spend(request) {
-    const { usd, checkOnly } = await request.json();
+    const { usd: rawUsd, checkOnly } = await request.json();
     const state = await this.#state();
     const budget = Number(this.env.BUDGET_USD ?? DEFAULTS.BUDGET_USD);
+    // Costo no finito (fail closed de usageCost) = hard stop inmediato.
+    const usd = Number.isFinite(rawUsd) ? rawUsd : budget;
     if (!checkOnly) state.spend = (state.spend ?? 0) + usd;
     await this.storage.put("counters", state);
     return Response.json({
@@ -235,8 +246,14 @@ function prices(env) {
 }
 
 function usageCost(usage, model, env) {
-  const price = prices(env)[model] ?? { input: 0, output: 0 };
-  return ((usage?.prompt_tokens ?? 0) * (price.input ?? 0) + (usage?.completion_tokens ?? 0) * (price.output ?? 0)) / 1e6;
+  // Los :free cuestan 0 aunque no llegue chunk de usage.
+  if (model.endsWith(":free")) return 0;
+  // FAIL CLOSED: un modelo pago sin precio declarado en PRICES_JSON, o sin
+  // usage recibido, cuenta como hard stop (costo = budget) — el control de
+  // costo nunca falla abierto.
+  const price = prices(env)[model];
+  if (!price || !usage) return Number.POSITIVE_INFINITY;
+  return ((usage.prompt_tokens ?? 0) * (price.input ?? 0) + (usage.completion_tokens ?? 0) * (price.output ?? 0)) / 1e6;
 }
 
 async function limitsCall(env, path, body) {
@@ -313,10 +330,17 @@ export default {
     let providerResponse = null;
     let lastStatus = 0;
     for (const model of models) {
-      const response = await callProvider(model, env, messages, streaming, controller.signal).catch((error) => {
-        if (error?.name === "AbortError") throw error;
-        return null;
-      });
+      // Aborto (timeout 30 s o desconexión del cliente): no se re-lanza — se
+      // libera la concurrencia y se responde; el contador inflight del DO no
+      // queda fugado.
+      if (controller.signal.aborted) break;
+      let response;
+      try {
+        response = await callProvider(model, env, messages, streaming, controller.signal);
+      } catch {
+        response = null;
+      }
+      if (controller.signal.aborted) break;
       if (!response) continue;
       if (response.ok) {
         providerResponse = { response, model };
@@ -329,6 +353,11 @@ export default {
         await release();
         return json({ error: "provider_rejected", status: response.status }, 400, origin);
       }
+    }
+    if (controller.signal.aborted) {
+      clearTimeout(timeout);
+      await release();
+      return json({ error: "aborted" }, 504, origin);
     }
     if (!providerResponse) {
       clearTimeout(timeout);

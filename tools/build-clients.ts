@@ -14,8 +14,9 @@
  *   tsx tools/build-clients.ts --check         # falla si hay drift en la fuente
  *   tsx tools/build-clients.ts --dist [--out dist] [--manifest dist/.vite/manifest.json]
  */
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, realpathSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { clientSourceFiles, labEntryPath, publishClientPages } from "../src/clients/publish.ts";
 import { validateClients } from "../src/content/clients/index.ts";
 import { artifactBase } from "../src/themes/index.ts";
@@ -96,4 +97,12 @@ function main(): void {
   }
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+// Ejecución directa robusta (realpath: tolera symlinks/espacios en el path).
+const isMain = (() => {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
+})();
+if (isMain) main();

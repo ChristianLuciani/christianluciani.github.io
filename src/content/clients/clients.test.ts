@@ -9,8 +9,9 @@ import { CLIENTS, clientSlugs, getClient, validateClients } from "./index.ts";
 import { CLIENT_MODULES, validateClient } from "./types.ts";
 
 describe("client labs — registro paramétrico", () => {
-  it("registra blacksmith y example; todos válidos", () => {
-    expect(clientSlugs()).toEqual(["blacksmith", "example"]);
+  it("registra blacksmith + al menos un cliente de prueba; todos válidos (sin hardcodear la lista)", () => {
+    expect(clientSlugs()).toContain("blacksmith");
+    expect(clientSlugs().length).toBeGreaterThanOrEqual(2);
     validateClients();
     for (const slug of clientSlugs()) {
       expect(validateClient(CLIENTS[slug])).toEqual([]);
@@ -18,7 +19,7 @@ describe("client labs — registro paramétrico", () => {
   });
 
   it("getClient lanza con la lista de slugs para uno desconocido", () => {
-    expect(() => getClient("nope")).toThrow(/blacksmith, example/);
+    expect(() => getClient("nope")).toThrow(/válidos: .*blacksmith/);
   });
 
   it("blacksmith declara los 5 módulos, locale en, entry EN+ES y JD del aviso", () => {

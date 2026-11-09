@@ -5,6 +5,7 @@
  * fallback "chat unavailable" — el resto del laboratorio sigue funcionando.
  */
 import { extractCitations } from "../agent/citations.ts";
+import { publicUrl } from "../agent/urls.ts";
 import { LAB_I18N, type LabLocale } from "./i18n.ts";
 import type { LabConfig } from "./lab.ts";
 
@@ -41,7 +42,7 @@ function addCitations(el: HTMLElement, text: string, sectionIds: readonly string
 
 async function loadSectionIds(): Promise<string[]> {
   try {
-    const response = await fetch("/agent/chat-context.json");
+    const response = await fetch(publicUrl("/agent/chat-context.json"));
     if (!response.ok) return [];
     const json = (await response.json()) as { sections?: { id: string }[] };
     return (json.sections ?? []).map((s) => s.id);

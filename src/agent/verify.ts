@@ -14,10 +14,37 @@ export interface FactCheck {
   ok: boolean;
 }
 
+interface ExperienceLike {
+  role: { en: string; es?: string };
+  start: string;
+  end?: string;
+}
+
 interface ProfileJsonLike {
   name?: string;
-  experience?: { role: { en: string; es?: string } }[];
+  experience?: ExperienceLike[];
   projects?: { name: string }[];
+}
+
+/**
+ * Clave de recencia — la MISMA regla del repo (print_cv_html.ts /
+ * sala_html.ts): `end === "present"` es el futuro y va primero; el resto
+ * compara ISO. El SSOT no garantiza orden, así que `experience[0]` NO es
+ * necesariamente el rol vigente.
+ */
+export function recencyKey(item: { start: string; end?: string }): string {
+  const end = item.end ?? item.start;
+  return end === "present" ? "9999-12-31" : end;
+}
+
+/** Rol vigente: primero por recencia (end desc, start desc). */
+export function currentRoleEn(profile: { experience?: ExperienceLike[] }): string {
+  const experience = profile.experience ?? [];
+  if (experience.length === 0) return "";
+  const sorted = [...experience].sort(
+    (a, b) => recencyKey(b).localeCompare(recencyKey(a)) || b.start.localeCompare(a.start)
+  );
+  return sorted[0]?.role?.en ?? "";
 }
 
 /**
@@ -28,7 +55,7 @@ export function checkFacts(facts: readonly DomFact[], json: ProfileJsonLike): Fa
   return facts.map((fact) => {
     let ok = false;
     if (fact.id === "name") ok = json.name === fact.value;
-    else if (fact.id === "lastRole") ok = json.experience?.[0]?.role?.en === fact.value;
+    else if (fact.id === "lastRole") ok = currentRoleEn(json) === fact.value;
     else if (fact.id === "project") ok = (json.projects ?? []).some((p) => p.name === fact.value);
     return { id: fact.id, ok };
   });

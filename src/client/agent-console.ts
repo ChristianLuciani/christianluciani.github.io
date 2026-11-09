@@ -30,7 +30,7 @@ export function mountAgentConsole(root: Element): void {
           res.classList.add("tool-error");
           return;
         }
-        req.textContent = `POST ${tool.endpoint} · ${tool.name} ${JSON.stringify(parsed)}`;
+        req.textContent = `GET ${tool.endpoint} · ${tool.name} ${JSON.stringify(parsed)}`;
         try {
           const result = await runTool(tool, parsed, fetchLoader);
           res.textContent = JSON.stringify(result, null, 2);

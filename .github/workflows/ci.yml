@@ -120,7 +120,9 @@ jobs:
           done
           # Client labs (#145): una página por slug del registro, noindex, con el
           # bundle del lab inyectado; y los JSON de agentes servidos desde la raíz.
-          for slug in blacksmith example ; do
+          # Los slugs salen del registro (agregar un cliente no toca este gate).
+          slugs=$(npx tsx -e 'import("./src/content/clients/index.ts").then((m) => console.log(m.clientSlugs().join(" ")))')
+          for slug in $slugs ; do
             test -f "dist/clients/$slug/index.html" || { echo "falta dist/clients/$slug/index.html"; exit 1; }
             grep -q 'name="robots" content="noindex' "dist/clients/$slug/index.html" || { echo "clients/$slug sin noindex"; exit 1; }
             grep -q 'src="/assets/lab-' "dist/clients/$slug/index.html" || { echo "clients/$slug sin bundle lab"; exit 1; }

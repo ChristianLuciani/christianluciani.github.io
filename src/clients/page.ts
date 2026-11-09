@@ -10,6 +10,7 @@
  */
 import { CLIENTS, clientSlugs, type ClientLab } from "../content/clients/index.ts";
 import { agentManifest } from "../agent/export.ts";
+import { currentRoleEn } from "../agent/verify.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import type { CvProfile } from "../data/profile.types.ts";
 import { PROFILE_COMMIT, PROFILE_ENGINE, ENGINE_URL } from "../data/profile.provenance.ts";
@@ -65,7 +66,8 @@ function verifyFacts(): { name: string; lastRole: string; project: string } {
   const published = PROFILE_DATA.projects.find((p) => p.published);
   return {
     name: PROFILE_DATA.identity.name,
-    lastRole: PROFILE_DATA.experience[0]?.role.en ?? "",
+    // Rol VIGENTE por la regla de recencia del repo (present = futuro), no experience[0].
+    lastRole: currentRoleEn(PROFILE_DATA),
     project: published?.name ?? PROFILE_DATA.projects[0]?.name ?? ""
   };
 }
@@ -125,7 +127,7 @@ function mcpModuleHtml(client: ClientLab): string {
   return `  <section class="lab-module" data-module="mcp" aria-labelledby="mod-mcp-title">
     <h3 id="mod-mcp-title" data-i18n="mod.mcp.title">${escapeHtml(labT(locale, "mod.mcp.title"))}</h3>
     <p data-i18n="mod.mcp.desc">${escapeHtml(labT(locale, "mod.mcp.desc"))}</p>
-    <p class="lab-note">tools: <code>${escapeHtml(toolNames)}</code> — leen <code>public/agent/*.json</code></p>
+    <p class="lab-note"><span data-i18n="mod.mcp.tools">${escapeHtml(labT(locale, "mod.mcp.tools"))}</span> <code>${escapeHtml(toolNames)}</code> · <span data-i18n="mod.mcp.reads">${escapeHtml(labT(locale, "mod.mcp.reads"))}</span> <code>public/agent/*.json</code></p>
     <p data-i18n="mod.mcp.snippet">${escapeHtml(labT(locale, "mod.mcp.snippet"))}</p>
     <pre class="mcp-snippet" id="mcp-snippet">${escapeHtml(snippet)}</pre>
     <button type="button" id="mcp-copy" data-i18n="mod.mcp.copy">${escapeHtml(labT(locale, "mod.mcp.copy"))}</button>

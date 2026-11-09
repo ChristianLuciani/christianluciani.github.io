@@ -18,7 +18,7 @@ import {
 } from "./export.ts";
 import { validateInput } from "./schema.ts";
 import { runTool, ToolError } from "./execute.ts";
-import { checkFacts } from "./verify.ts";
+import { checkFacts, currentRoleEn, recencyKey } from "./verify.ts";
 import { extractCitations } from "./citations.ts";
 import { PROFILE } from "../data/profile.generated.ts";
 import { PROFILE_COMMIT } from "../data/profile.provenance.ts";
@@ -141,11 +141,34 @@ describe("ejecución determinista de tools (loader inyectado)", () => {
   });
 });
 
-describe("provenance verify — detecta divergencia inyectada", () => {
-  const json = profileJson(P) as { name: string; experience: { role: { en: string } }[]; projects: { name: string }[] };
+describe("provenance verify — regla de recencia + divergencia inyectada", () => {
+  const json = profileJson(P) as {
+    name: string;
+    experience: { role: { en: string }; start: string; end?: string }[];
+    projects: { name: string }[];
+  };
+
+  it("recencyKey: present es el futuro (misma regla que print_cv/sala)", () => {
+    expect(recencyKey({ start: "2025-01-01", end: "present" })).toBe("9999-12-31");
+    expect(recencyKey({ start: "2025-08-01", end: "2026-01-01" })).toBe("2026-01-01");
+  });
+
+  it("currentRoleEn elige el rol con end=present aunque no sea experience[0]", () => {
+    const synthetic = {
+      experience: [
+        { role: { en: "Viejo" }, start: "2025-08-01", end: "2026-01-01" },
+        { role: { en: "Vigente" }, start: "2025-01-01", end: "present" }
+      ]
+    };
+    expect(currentRoleEn(synthetic)).toBe("Vigente");
+    // En el perfil real, experience[0] NO es el vigente (end 2026-01-01 < present)
+    expect(json.experience[0].end).not.toBe("present");
+    expect(currentRoleEn(json)).toBe(json.experience.find((e) => e.end === "present")!.role.en);
+  });
+
   const facts = [
     { id: "name" as const, value: json.name },
-    { id: "lastRole" as const, value: json.experience[0].role.en },
+    { id: "lastRole" as const, value: currentRoleEn(json) },
     { id: "project" as const, value: json.projects.find((p) => p.name.includes("Kontablo"))!.name }
   ];
 
@@ -158,6 +181,9 @@ describe("provenance verify — detecta divergencia inyectada", () => {
     const checks = checkFacts(tampered, json);
     expect(checks.find((c) => c.id === "name")!.ok).toBe(false);
     expect(checks.filter((c) => c.ok)).toHaveLength(2);
+    // y si el DOM muestra el naive experience[0], el check de lastRole falla
+    const naive = facts.map((f) => (f.id === "lastRole" ? { ...f, value: json.experience[0].role.en } : f));
+    expect(checkFacts(naive, json).find((c) => c.id === "lastRole")!.ok).toBe(false);
   });
 });
 

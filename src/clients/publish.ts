@@ -17,22 +17,29 @@ export function clientSourceFiles(): Record<string, string> {
   return files;
 }
 
+/** Prefija TODAS las rutas raíz-absolutas de href/src con `base` (idempotente). */
+function prefixRootAbsolute(html: string, base: string): string {
+  const basePrefix = base.replace(/^\/+/, ""); // "demo" o ""
+  return html.replace(/\b(href|src)="\/(?!\/)([^"]*)"/g, (match, attr: string, url: string) => {
+    if (basePrefix && url.startsWith(`${basePrefix}/`)) return match; // ya prefijado
+    return `${attr}="${base}/${url}"`;
+  });
+}
+
 /**
- * Inyecta el entry bundleado del lab y el prefijo del artefacto en una página
- * de cliente. La página sólo referencia el favicon (raíz-absoluto) y el entry
- * fuente; `<a href>` es navegación y queda como está.
+ * Inyecta el entry bundleado del lab en una página de lab y prefija el resto de
+ * rutas raíz-absolutas (assets, navegación interna `/clients/…`, `/`) con el
+ * `base` del artefacto. Las URLs externas (`https:`, `//host`) no las toca.
  */
 export function publishClientPage(html: string, labEntry: string, base: string): string {
   if (!html.includes(CLIENT_SOURCE_ENTRY)) {
     throw new Error("build-clients: la página no contiene el entry fuente del lab");
   }
-  const prefixed = (path: string): string => `${base}/${path.replace(/^\/+/, "")}`;
-  return html
-    .replace(
-      CLIENT_SOURCE_ENTRY,
-      `<script type="module" crossorigin src="${prefixed(labEntry)}"></script>`
-    )
-    .replace(/\b(href|src)="(\/assets\/[^"]*)"/g, (_m, attr: string, url: string) => `${attr}="${prefixed(url)}"`);
+  const withEntry = html.replace(
+    CLIENT_SOURCE_ENTRY,
+    `<script type="module" crossorigin src="${base}/${labEntry.replace(/^\/+/, "")}"></script>`
+  );
+  return prefixRootAbsolute(withEntry, base);
 }
 
 export function labEntryPath(manifest: Record<string, { file: string; isEntry?: boolean }>): string {
@@ -51,7 +58,11 @@ export function publishClientPages(
 ): Record<string, string> {
   const out: Record<string, string> = {};
   for (const [relative, html] of Object.entries(files)) {
-    out[relative] = html.includes(CLIENT_SOURCE_ENTRY) ? publishClientPage(html, labEntry, base) : html;
+    // Las páginas de lab llevan el entry fuente; el índice (clients/index.html)
+    // no tiene entry y sólo recibe el prefijo de rutas.
+    out[relative] = html.includes(CLIENT_SOURCE_ENTRY)
+      ? publishClientPage(html, labEntry, base)
+      : prefixRootAbsolute(html, base);
   }
   return out;
 }

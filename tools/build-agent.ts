@@ -9,6 +9,8 @@
  * Uso: tsx tools/build-agent.ts [--check]
  *   --check  no escribe: falla (exit 1) si hay drift contra lo commiteado.
  */
+import { realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { checkAgentFiles, writeAgentFiles } from "../src/agent/write.ts";
 
 function main(): void {
@@ -25,4 +27,12 @@ function main(): void {
   for (const file of writeAgentFiles()) console.log(`✅ ${file}`);
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) main();
+// Ejecución directa robusta (realpath: tolera symlinks/espacios en el path).
+const isMain = (() => {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
+})();
+if (isMain) main();

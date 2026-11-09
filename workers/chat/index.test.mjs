@@ -235,6 +235,108 @@ test("budget: hard stop a 0.95 → 503 budget_exceeded", async () => {
   assert.equal(providerCalls.length, 0);
 });
 
+test("multi-turno: historial con respuestas de assistant >300 chars es válido (tope sólo en user)", async () => {
+  providerQueue.push({
+    status: 200,
+    body: sseBody([providerChunk("ok"), "data: [DONE]\n\n"])
+  });
+  const longAssistant = "a".repeat(540); // 250 tokens ≈ 600–1000 chars: el modelo se corta ahí
+  const turns = [];
+  for (let i = 0; i < 3; i += 1) turns.push({ role: "user", content: `pregunta ${i + 1}` }, { role: "assistant", content: longAssistant });
+  turns.push({ role: "user", content: "última" }); // 4 turnos de usuario en total
+  const response = await chatRequest(makeEnv(), { messages: turns });
+  assert.equal(response.status, 200);
+  await response.text(); // consume el stream para que el finally haga release
+  assert.equal(providerCalls[0].body.messages.length, turns.length + 1); // + system
+
+  const fiveUsers = Array.from({ length: 5 }, (_, i) => ({ role: "user", content: `p${i}` }));
+  const rejected = await chatRequest(makeEnv(), { messages: fiveUsers });
+  assert.equal(rejected.status, 400);
+  assert.match((await rejected.json()).error, /4 turnos/);
+});
+
+test("aborto por timeout libera la concurrencia: el siguiente request de la IP no es 429", async () => {
+  const previousFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const href = String(url);
+    if (href === "https://site.test/agent/chat-context.json") {
+      return new Response(JSON.stringify(CONTEXT), { status: 200 });
+    }
+    if (href === "https://openrouter.ai/api/v1/chat/completions") {
+      providerCalls.push({ body: JSON.parse(init.body), headers: init.headers });
+      // Provider que honra el signal: cuelga hasta que el Worker aborte.
+      return new Promise((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => {
+          const error = new Error("The operation was aborted");
+          error.name = "AbortError";
+          reject(error);
+        });
+      });
+    }
+    throw new Error(`fetch inesperado: ${href}`);
+  };
+  // El timer del Worker hace unref (no sostiene el loop de Node): acá se
+  // sostiene el event loop con un interval ref'd para que el abort dispare.
+  const keepAlive = setInterval(() => {}, 5);
+  try {
+    const env = makeEnv({ STREAM_TIMEOUT_MS: "20" });
+    const first = await chatRequest(env);
+    assert.equal(first.status, 504); // aborted → 504, no rethrow
+    assert.equal((await first.json()).error, "aborted");
+    const second = await chatRequest(env); // misma IP: NO debe ser 429
+    assert.notEqual(second.status, 429);
+    assert.equal(providerCalls.length, 2); // el provider SÍ se llamó de nuevo
+  } finally {
+    clearInterval(keepAlive);
+    globalThis.fetch = previousFetch;
+  }
+});
+
+test("budget fail-closed: modelo pago sin precio en PRICES_JSON → hard stop vía usage", async () => {
+  providerQueue.push({ status: 429, text: "rl" });
+  providerQueue.push({
+    status: 200,
+    body: sseBody([
+      providerChunk("respuesta pago"),
+      `data: ${JSON.stringify({ usage: { prompt_tokens: 500, completion_tokens: 100 } })}\n\n`,
+      "data: [DONE]\n\n"
+    ])
+  });
+  const env = makeEnv(); // PRICES_JSON ausente → {} → paid-b sin precio → costo infinito
+  const first = await chatRequest(env);
+  assert.equal(first.status, 200);
+  assert.equal(providerCalls[1].body.model, "paid-b");
+  await first.text(); // consume el stream: dispara usage + release en el finally
+  await new Promise((resolve) => setTimeout(resolve, 10)); // deja correr el waitUntil(spend)
+  const second = await chatRequest(env);
+  assert.equal(second.status, 503);
+  assert.equal((await second.json()).error, "budget_exceeded");
+  assert.equal(providerCalls.length, 2); // el segundo request ni llegó al provider
+});
+
+test("budget con precio declarado: costo finito y sin hard stop", async () => {
+  providerQueue.push({ status: 429, text: "rl" });
+  providerQueue.push({
+    status: 200,
+    body: sseBody([
+      providerChunk("ok"),
+      `data: ${JSON.stringify({ usage: { prompt_tokens: 500, completion_tokens: 100 } })}\n\n`,
+      "data: [DONE]\n\n"
+    ])
+  });
+  providerQueue.push({
+    status: 200,
+    body: sseBody([providerChunk("ok2"), "data: [DONE]\n\n"])
+  });
+  const env = makeEnv({ PRICES_JSON: JSON.stringify({ "paid-b": { input: 0.15, output: 0.6 } }) });
+  const first = await chatRequest(env);
+  assert.equal(first.status, 200);
+  await first.text(); // consume el stream: dispara usage + release en el finally
+  await new Promise((resolve) => setTimeout(resolve, 10));
+  const second = await chatRequest(env);
+  assert.equal(second.status, 200); // gasto ~0.0001 USD: lejos del stop 0.95
+});
+
 test("fallback JSON cuando el cliente pide application/json", async () => {
   providerQueue.push({
     status: 200,

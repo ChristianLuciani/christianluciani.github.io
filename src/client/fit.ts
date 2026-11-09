@@ -4,6 +4,7 @@
  * links o gaps declarados. Sin LLM, sin score opaco.
  */
 import { matchJd, type FitResult } from "../fit/matcher.ts";
+import { publicUrl } from "../agent/urls.ts";
 import type { CvProfile } from "../data/profile.types.ts";
 import { LAB_I18N, type LabLocale } from "./i18n.ts";
 import type { LabConfig } from "./lab.ts";
@@ -65,7 +66,7 @@ export function mountFit(root: Element, config: LabConfig, getLocale: () => LabL
   run.addEventListener("click", () => {
     void (async () => {
       try {
-        const response = await fetch("/agent/profile.json");
+        const response = await fetch(publicUrl("/agent/profile.json"));
         if (!response.ok) throw new Error(`profile.json → ${response.status}`);
         const payload = (await response.json()) as ProfilePayload;
         const profile = {

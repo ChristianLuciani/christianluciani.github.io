@@ -5,6 +5,7 @@
  * snapshot commiteado, no una promesa "live".
  */
 import { checkFacts, type DomFact } from "../agent/verify.ts";
+import { publicUrl } from "../agent/urls.ts";
 import { LAB_I18N, type LabLocale } from "./i18n.ts";
 
 export function domFacts(doc: Document): DomFact[] {
@@ -24,7 +25,7 @@ export function mountProvenance(root: Element, doc: Document, getLocale: () => L
       button.textContent = dict["mod.provenance.checking"];
       results.replaceChildren();
       try {
-        const response = await fetch("/agent/profile.json");
+        const response = await fetch(publicUrl("/agent/profile.json"));
         if (!response.ok) throw new Error(`profile.json → ${response.status}`);
         const json = (await response.json()) as Parameters<typeof checkFacts>[1];
         for (const check of checkFacts(domFacts(doc), json)) {

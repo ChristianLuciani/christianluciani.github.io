@@ -13,7 +13,8 @@
  * Tests de protocolo: npm run test:mcp  (node --test mcp/server.test.mjs)
  */
 import { createInterface } from "node:readline";
-import { readFileSync } from "node:fs";
+import { readFileSync, realpathSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 
 const AGENT_DIR = new URL("../public/agent/", import.meta.url);
 
@@ -128,7 +129,14 @@ export function createServer(input, output) {
   return rl;
 }
 
-/* Ejecución directa: node mcp/server.mjs */
-if (import.meta.url === `file://${process.argv[1]}`) {
+/* Ejecución directa: node mcp/server.mjs (detección por realpath, no por string). */
+const isMain = (() => {
+  try {
+    return Boolean(process.argv[1]) && realpathSync(fileURLToPath(import.meta.url)) === realpathSync(process.argv[1]);
+  } catch {
+    return false;
+  }
+})();
+if (isMain) {
   createServer(process.stdin, process.stdout);
 }
