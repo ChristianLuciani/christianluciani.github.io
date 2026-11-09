@@ -8,10 +8,10 @@
 > el **tile teal** del brand kit (`favicon-aurea-teal.svg` + `-teal-32.png` +
 > `-teal-16.png`) y deja de declarar el transparente; el pin subió a
 > `cluciani-brand-kit@v1.1.0` (`brand-kit.lock.json`, 66 assets) y
-> `vars.BRAND_KIT_CDN_BASE` debía apuntar al mismo tag. **Actualizado 2026-11-03 (issue
-> #112):** el pin del lock subió a `v1.2.0` (89 assets, release aditivo) y la
-> variable de deploy debe seguir al mismo tag. La copia publicada en
-> `/assets/brand/` pasa de 3 a 4 favicons y `data-local` de 7 a 8. Medido a
+> `vars.BRAND_KIT_CDN_BASE` debía apuntar al mismo tag. **Actualizado 2026-11-09 (issue
+> #175):** el pin del lock subió a `v1.3.0` (release aditivo: suma `assets/badge/`;
+> `assets/logo/` no cambia, 89 assets intactos) y `vars.BRAND_KIT_CDN_BASE` apunta al
+> mismo tag. Medido a
 > 2026-11-03.
 
 > **Actualización 2026-10-27 — marca separada del runtime.** Los 3 favicons ya
