@@ -96,9 +96,11 @@ v1 con fallback JSON, CORS sólo para el sitio y localhost. Deploy, modelos y
 límites: [workers/chat/README.md](../workers/chat/README.md). Tests con provider
 mockeado: `npm run test:worker`.
 
-El endpoint llega al front-end por `VITE_CHAT_ENDPOINT` (build) o
-`chat.endpoint` en el config del cliente. Sin endpoint configurado el módulo
-degrada a "chat unavailable" y el resto del lab sigue funcionando. El tope de
+El endpoint llega al front-end por la **repository variable**
+`VITE_CHAT_ENDPOINT` (deploy.yml la pasa al build; crearla en Settings →
+Variables con la URL del Worker) o por `chat.endpoint` en el config del
+cliente. Sin endpoint configurado el módulo degrada a "chat unavailable" y
+el resto del lab sigue funcionando. El tope de
 300 chars aplica sólo al input del usuario (el historial assistant se reenvía
 completo); el budget es fail-closed (modelo pago sin precio en `PRICES_JSON` =
 hard stop) y la concurrencia se libera también en abortos. Las rutas del

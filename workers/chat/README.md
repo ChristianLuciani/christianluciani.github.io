@@ -19,9 +19,12 @@ wrangler secret put OPENROUTER_API_KEY   # una sola vez; nunca en el repo
 wrangler deploy                          # → https://client-lab-chat.<account>.workers.dev
 ```
 
-Después fijá el endpoint en el sitio (build del lab) con la variable de entorno
-`VITE_CHAT_ENDPOINT=https://client-lab-chat.<account>.workers.dev/api/chat`, o
-en el config del cliente (`chat.endpoint` en `src/content/clients/*.ts`).
+Después fijá el endpoint en el sitio (build del lab): creá la **repository
+variable** `VITE_CHAT_ENDPOINT` (Settings → Secrets and variables → Actions →
+Variables) con `https://client-lab-chat.<account>.workers.dev/api/chat` —
+`deploy.yml` la pasa al build como `VITE_CHAT_ENDPOINT` y el lab la inyecta en
+el bundle. Sin la variable el chat despliega en modo degradado "unavailable".
+Alternativa commiteada: `chat.endpoint` en `src/content/clients/*.ts`.
 Dominio propio cuando esté disponible (Custom Domain del Worker); DuckDNS no
 aplica a un Worker (es DNS dinámico/tunnel, no un host de Worker).
 
