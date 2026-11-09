@@ -1,8 +1,19 @@
 name: Refresh now
 
-# Refresca «Ahora» desde `ChristianLuciani/now` (#117): único job con red;
-# commitea snapshot + módulo + index.html y despacha CI/deploy (el push con
-# GITHUB_TOKEN no los dispara).
+# Refresca «Ahora» desde `ChristianLuciani/now` (#117): único job con red.
+# Re-pinea el tag, regenera snapshot + módulo + index.html + golden, y publica
+# por PR — `main` exige el check `build-test`, así que el bot no puede pushear
+# directo (GH006) ni dejar el commit en un runner. Flujo completo:
+#   1. commit en la rama `chore/now-refresh`
+#   2. PR contra `main` (se reusa si quedó uno abierto)
+#   3. `ci.yml` despachado sobre la rama: el PR lo abre `GITHUB_TOKEN`, así que
+#      el evento `pull_request` NO dispara workflows y `build-test` no correría
+#      solo (la protección de `main` lo exige y el merge quedaría bloqueado)
+#   4. merge squash cuando `build-test` está verde
+#   5. `ci.yml` + `deploy.yml` despachados sobre `main`: el merge lo hace el
+#      bot, así que el `push` tampoco dispara workflows
+# Con el mismo tag, `sync:now` verifica el digest del pin; un tag nuevo es un
+# re-pin TOFU. Fallar en cualquier paso deja el PR abierto y el job en rojo.
 
 on:
   schedule:
@@ -11,6 +22,7 @@ on:
 
 permissions:
   contents: write
+  pull-requests: write
   actions: write
 
 concurrency:
@@ -37,8 +49,7 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
 
       # El valor entra por env (NUNCA interpolado en el script) y se valida ANTES
-      # de usarlo: un ref con `$()` o backticks no es un tag. Con el MISMO tag,
-      # sync:now verifica el digest del pin; un tag nuevo es un re-pin TOFU.
+      # de usarlo: un ref con `$()` o backticks no es un tag.
       - name: Re-pinear y verificar el snapshot
         env:
           TAG_RAW: ${{ steps.tag.outputs.tag }}
@@ -52,13 +63,12 @@ jobs:
       # regenera acá, el primer cambio del feed pone la suite en rojo y congela la
       # sección. Es un cambio de datos, no de presentación: `Golden-Cambio: datos`.
       # `golden:update` regenera el baseline de CADA tema registrado (#133): se
-      # commitea el directorio entero, no sólo museo.html, o main queda rojo con
-      # el snapshot del tema nuevo stale.
+      # commitea el directorio entero, no sólo museo.html.
       - run: npm run golden:update
       - run: npm run build:html
       - run: npm test
 
-      - name: Commitear solo si el pin o los bytes cambiaron
+      - name: Commitear en la rama de refresh si el pin o los bytes cambiaron
         id: commit
         env:
           TAG: ${{ steps.tag.outputs.tag }}
@@ -68,35 +78,71 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c chore/now-refresh
           git add now.lock.json src/data/now.snapshot.json src/data/now.generated.ts index.html tests/golden
           git commit -m "chore(now): refresh snapshot from ChristianLuciani/now@$TAG" -m "Golden-Cambio: datos"
-          git push
           echo "changed=true" >> "$GITHUB_OUTPUT"
 
-      # Idempotente y recuperable: si el dispatch falló tras el push, un re-run
-      # (changed=false) igual lo completa; si ya hay run para ese commit, no duplica.
-      - name: Asegurar CI y deploy sobre el commit actual
-        if: always()
+      - name: Abrir el PR, correr build-test y mergear
+        if: steps.commit.outputs.changed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          git fetch --quiet origin main
-          HEAD_SHA="$(git rev-parse HEAD)"
-          git merge-base --is-ancestor "$HEAD_SHA" origin/main || { echo "HEAD no está en main: no se despacha"; exit 0; }
-          case "$(git log -1 --format=%s)" in
-            "chore(now): refresh snapshot from ChristianLuciani/now@"*) ;;
-            *) echo "HEAD no es un refresh: no se despacha"; exit 0 ;;
-          esac
-          for wf in ci.yml deploy.yml; do
-            # Fail-closed: si la consulta falla, stdout vacío NO es "ya hay run"
-            # (antes ese error se leía como run existente y el commit quedaba en
-            # main sin CI ni deploy, en silencio).
-            if ! runs="$(gh run list --workflow "$wf" --commit "$HEAD_SHA" --limit 1 --json databaseId --jq 'length')"; then
-              echo "::error::no se pudo consultar runs de $wf"; exit 1
-            fi
-            case "$runs" in
-              0) gh workflow run "$wf" --ref main; echo "dispatch $wf @ $HEAD_SHA" ;;
-              ''|*[!0-9]*) echo "::error::respuesta no numérica de gh para $wf: '$runs'"; exit 1 ;;
-              *) echo "$wf ya tiene run para $HEAD_SHA" ;;
-            esac
-          done
+          set -euo pipefail
+          BRANCH='chore/now-refresh'
+
+          # `build-test` sobre la rama: el chequeo que `main` exige para mergear.
+          # Se lee del rollup del PR (atado al head SHA), no del run más nuevo:
+          # tras un force-push un run viejo ya no dice nada sobre este commit.
+          wait_build_test() {
+            gh workflow run ci.yml --ref "$BRANCH"
+            local states=''
+            for _ in $(seq 1 80); do
+              states="$(gh pr view "$PR" --json statusCheckRollup \
+                        --jq '[.statusCheckRollup[] | select(.name == "build-test") | (.conclusion // .state // "PENDING")] | join(",")' \
+                        2>/dev/null || true)"
+              case "$states" in
+                *FAILURE*|*CANCELLED*|*TIMED_OUT*|*ACTION_REQUIRED*)
+                  echo "::error::build-test en $BRANCH falló ($states)"; exit 1 ;;
+                *SUCCESS*) return 0 ;;
+              esac
+              sleep 15
+            done
+            echo "::error::build-test en $BRANCH no terminó a tiempo"
+            exit 1
+          }
+
+          git push --quiet --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+
+          PR="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$PR" ]; then
+            printf '%s\n' \
+              "Re-pinea «Ahora» a \`ChristianLuciani/now@$TAG\` y regenera snapshot, módulo, index.html y golden." \
+              "Lo abre el refresh automático: el cambio es sólo de datos y la suite completa ya corrió en verde antes de commitear." \
+              "" \
+              "Golden-Cambio: datos" > /tmp/now-pr-body.md
+            gh pr create --head "$BRANCH" --base main \
+              --title "chore(now): refresh snapshot to $TAG" \
+              --body-file /tmp/now-pr-body.md
+            PR="$(gh pr list --head "$BRANCH" --state open --json number --jq '.[0].number')"
+          fi
+          test -n "$PR" || { echo '::error::no se pudo abrir el PR del refresh'; exit 1; }
+          echo "PR #$PR ($BRANCH @ $TAG)"
+
+          wait_build_test
+
+          # `main` puede haber avanzado desde el checkout: rebase y un CI más.
+          if ! gh pr merge "$PR" --squash --delete-branch; then
+            echo "merge de #$PR rechazado; rebase sobre main y reintento"
+            git fetch --quiet origin main
+            git rebase --quiet origin/main
+            git push --quiet --force-with-lease origin "HEAD:refs/heads/$BRANCH"
+            wait_build_test
+            gh pr merge "$PR" --squash --delete-branch
+          fi
+
+          # El merge lo hizo el bot: el `push` no dispara workflows.
+          gh workflow run ci.yml --ref main
+          gh workflow run deploy.yml --ref main
+          echo "refresh publicado: PR #$PR mergeado y deploy despachado"

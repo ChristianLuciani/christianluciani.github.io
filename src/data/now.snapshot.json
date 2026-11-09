@@ -1,26 +1,26 @@
 {
   "schema": "now/v1",
-  "asOf": "2026-11-05T20:00:33Z",
+  "asOf": "2026-11-08T21:09:48Z",
   "items": [
     {
       "kind": "pr",
-      "title": "fix(cli): the notFields docstring states the guarantee the pin delivers",
-      "url": "https://github.com/ChristianLuciani/profile-as-code/pull/469",
-      "date": "2026-11-05",
-      "source": "github:ChristianLuciani/profile-as-code"
+      "title": "fix(themes): cierra los 2 nit del pase fresco de #165",
+      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/166",
+      "date": "2026-11-08",
+      "source": "github:ChristianLuciani/christianluciani.github.io"
     },
     {
       "kind": "pr",
-      "title": "fix(release): consume the `--` separator pnpm forwards",
-      "url": "https://github.com/ChristianLuciani/profile-as-code/pull/471",
-      "date": "2026-11-05",
-      "source": "github:ChristianLuciani/profile-as-code"
+      "title": "docs(readme): refleja la estructura real y las tres versiones publicadas",
+      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/168",
+      "date": "2026-11-08",
+      "source": "github:ChristianLuciani/christianluciani.github.io"
     },
     {
       "kind": "release",
-      "title": "profile-as-code v0.4.0",
-      "url": "https://github.com/ChristianLuciani/profile-as-code/releases/tag/v0.4.0",
-      "date": "2026-11-04",
+      "title": "profile-as-code v0.5.0",
+      "url": "https://github.com/ChristianLuciani/profile-as-code/releases/tag/v0.5.0",
+      "date": "2026-11-07",
       "source": "github:ChristianLuciani/profile-as-code"
     },
     {
