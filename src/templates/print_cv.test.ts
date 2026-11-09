@@ -24,6 +24,8 @@ import { assembleHtml } from "./index";
 import { printCvHtml } from "./print_cv_html";
 import { PRINT_LOGO_PATH, PRINT_RULE_COLOR } from "./print-tokens";
 import { SKIN_SOURCE, emitSkinCss, tokenDeclarations } from "../themes/museo/skin.ts";
+import { skinCss, skinFor } from "../themes/skin.ts";
+import { themeIds } from "../themes/index.ts";
 
 const profile = PROFILE as unknown as CvProfile;
 const HTML = printCvHtml(profile);
@@ -152,11 +154,12 @@ describe("print-CV — footer de procedencia (solo print)", () => {
   });
 
   it("vive dentro de #print-cv, que está oculto en pantalla y visible al imprimir", () => {
-    expect(occurrences(ASSEMBLED, 'class="p-footer"')).toBe(1);
+    // Una variante por idioma (#160): un footer en cada bloque.
+    expect(occurrences(ASSEMBLED, 'class="p-footer"')).toBe(2);
     const footer = ASSEMBLED.indexOf('class="p-footer"');
     expect(footer).toBeGreaterThan(ASSEMBLED.indexOf('id="print-cv"'));
     expect(footer).toBeLessThan(ASSEMBLED.indexOf('<header class="hud">'));
-    expect(ASSEMBLED).toContain("#print-cv { display:none; }");
+    expect(ASSEMBLED).toContain("#print-cv, #print-cv-en { display:none; }");
   });
 
   it("F2: es el ÚLTIMO hijo de #print-cv (no abre una página huérfana detrás)", () => {
@@ -410,5 +413,159 @@ describe("print-CV — #122: logo de marca, reglas teal y prosa de una sola fuen
       positioning: { ...profile.positioning, statement: undefined as never }
     };
     expect(printCvHtml(fixture)).toContain(profile.positioning.audiences.recruiters.es!);
+  });
+});
+
+/* ── #160: el PDF sigue al selector ES/EN sin JS ──────────────────────
+ *
+ * Dos variantes deterministas generadas en el build: `#print-cv` (ES, la
+ * histórica — su bloque no cambia) y `#print-cv-en` (EN, con `lang="en"`). La
+ * piel del tema muestra una u otra en `@media print` según `html[lang]`. Estos
+ * gates fijan: el ES sigue byte-idéntico, el EN no mezcla idiomas, los
+ * invariantes del SSOT (`org`, `institution`, `skills[].name`, publicaciones)
+ * quedan iguales, y el camino sin JS está declarado en la piel. */
+describe("print-CV — #160: variante EN y alternancia por idioma", () => {
+  const EN = printCvHtml(profile, "en");
+  const EN_CURATION = printCvCuration("en");
+
+  it("el ES no cambia: `#print-cv` conserva su bloque y no declara `lang` propio", () => {
+    expect(HTML).toContain('<div id="print-cv" aria-hidden="true">');
+    expect(HTML).not.toContain('id="print-cv-en"');
+    // La variante EN es ADITIVA: el bloque ES no cambia. La byte-identidad la
+    // sostiene el golden (`tests/golden/*.html`), no una comparación consigo mismo.
+  });
+
+  it("el EN es un bloque hermano con id propio y `lang=\"en\"`", () => {
+    expect(EN).toContain('<div id="print-cv-en" lang="en" aria-hidden="true">');
+    expect(EN).not.toContain('<div id="print-cv" ');
+    // El CSS embebido queda scopeado a SU id: el layout del ES no cambia.
+    expect(EN).toContain("#print-cv-en .p-footer");
+    expect(EN).not.toContain("#print-cv .p-footer");
+  });
+
+  it("el ensamblador publica las dos variantes, en orden ES → EN", () => {
+    const es = ASSEMBLED.indexOf('id="print-cv"');
+    const en = ASSEMBLED.indexOf('id="print-cv-en"');
+    expect(es).toBeGreaterThan(-1);
+    expect(en).toBeGreaterThan(es);
+    expect(occurrences(ASSEMBLED, '<div id="print-cv-en" lang="en"')).toBe(1);
+  });
+
+  it("títulos, labels y niveles salen del pack en EN (mismas claves, cero nuevas)", () => {
+    expect(EN_CURATION.sections.profile).toBe("Profile");
+    expect(EN_CURATION.sections.experience.en).toBe("Trajectory");
+    expect(EN_CURATION.sections.professional).toBe("Professional experience");
+    expect(EN_CURATION.sections.training).toBe("Education and workshops");
+    expect(EN_CURATION.sections.education).toBe("Academic education");
+    expect(EN_CURATION.sections.publications).toBe("Selected publications");
+    expect(EN_CURATION.sections.skills).toBe("Skills");
+    expect(EN_CURATION.labels.present).toBe("PRESENT");
+    expect(EN_CURATION.labels.languages).toBe("Languages");
+    expect(EN_CURATION.languageNames.en).toBe("English");
+    expect(EN_CURATION.levelLabels.intermediate).toBe("intermediate");
+
+    for (const heading of [
+      "<h2>Profile</h2>",
+      "<h2>Trajectory</h2>",
+      "<h2>Academic education</h2>",
+      "<h2>Selected publications</h2>",
+      "<h2>Skills</h2>",
+      '<h3 class="p-subhead">Professional experience</h3>',
+      '<h3 class="p-subhead">Education and workshops</h3>'
+    ]) {
+      expect(EN).toContain(heading);
+    }
+    expect(EN).toContain("Languages:");
+    expect(EN).toContain("English (intermediate)");
+    expect(EN).toContain("PRESENT");
+    expect(EN).toContain("generated from profile-data @");
+    // El ES de las mismas claves NO se filtra al bloque EN.
+    for (const leaked of [
+      "<h2>Perfil</h2>",
+      "<h2>Trayectoria</h2>",
+      "<h2>Competencias</h2>",
+      "Idiomas:",
+      "Inglés (intermedio)",
+      "generado desde profile-data @"
+    ]) {
+      expect(EN).not.toContain(leaked);
+    }
+  });
+
+  it("los hechos `LangText` se imprimen en EN (roles, formación, prosa)", () => {
+    const consultant = profile.experience.find(
+      (item) => item.role.es === "Consultor Estratégico de Sistemas"
+    );
+    expect(consultant?.role.en).toBeTruthy();
+    expect(EN).toContain(consultant!.role.en);
+    expect(EN).not.toContain("Consultor Estratégico de Sistemas");
+    expect(EN).toContain(profile.positioning.statement.en!.slice(0, 40));
+    const edu = profile.education.find((item) => item.degree.es === "Especialización en Audiovisuales");
+    expect(edu?.degree.en).toBeTruthy();
+    expect(EN).toContain(edu!.degree.en);
+    expect(EN).not.toContain("Especialización en Audiovisuales");
+  });
+
+  it("los invariantes del SSOT quedan iguales en ambos idiomas (org/institution/skills/publicaciones)", () => {
+    // Los valores se imprimen escapados en HTML: se comparan en su forma emitida.
+    const htmlEsc = (value: string): string =>
+      value
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+    // `org` se imprime CRUDO en EN (el ES usa `orgEs()` sólo como glosa).
+    expect(EN).toContain("Independent — Panama / Ecuador");
+    expect(EN).not.toContain("Independiente — Panamá / Ecuador");
+    for (const item of profile.experience) expect(EN).toContain(htmlEsc(item.org));
+    for (const item of profile.education) expect(EN).toContain(htmlEsc(item.institution));
+    for (const skill of profile.skills) expect(EN).toContain(htmlEsc(skill.name));
+    for (const publication of profile.publications) expect(EN).toContain(htmlEsc(publication.title));
+  });
+
+  it("un `en` vacío cae al ES del MISMO campo (fallback declarado, no texto inventado)", () => {
+    const fixture: CvProfile = {
+      ...profile,
+      positioning: {
+        ...profile.positioning,
+        statement: { es: "Prosa disponible sólo en español.", en: "" } as never
+      }
+    };
+    expect(printCvHtml(fixture, "en")).toContain("Prosa disponible sólo en español.");
+    expect(printCvHtml(fixture, "en")).not.toContain("<p></p>");
+  });
+
+  it("el `alt` del logo sigue al idioma (el del QR ya es neutro: nombre propio + URL)", () => {
+    expect(HTML).toContain('alt="Logotipo de Christian Luciani"');
+    expect(EN).toContain('alt="Logo · Christian Luciani"');
+    expect(EN).not.toContain("Logotipo de");
+  });
+
+  it("la piel de CADA tema alterna la variante con `html[lang]` — sin JS", () => {
+    // El contrato de piel (`docs/CREAR-TEMA.md` §3.2) es obligatorio en TODO
+    // `skin.css`: sin la alternancia el PDF imprime los dos CV apilados. Se
+    // mide el CSS EMITIDO de cada tema registrado, no el de `museo` + una
+    // promesa en prosa (F1 del pase fresco: el gate sólo cubría el default).
+    for (const id of themeIds()) {
+      const skin = skinCss(skinFor(id).source, PRINT_RULE_COLOR);
+      expect(skin, `piel de ${id}`).toContain('#print-cv, #print-cv-en { display:none; }');
+      expect(skin, `piel de ${id}`).toContain("body > *:not(#print-cv):not(#print-cv-en)");
+      expect(skin, `piel de ${id}`).toContain(
+        'html[lang="en"] #print-cv { display:none !important; }'
+      );
+      expect(skin, `piel de ${id}`).toContain(
+        'html:not([lang="en"]) #print-cv-en { display:none !important; }'
+      );
+      // La última sección del EN arranca en página propia (cola de 2 líneas que
+      // detectó `print:verify` al medir la variante EN por primera vez).
+      expect(skin, `piel de ${id}`).toContain(
+        'html[lang="en"] #print-cv-en .p-section.p-keep { break-before: page; }'
+      );
+    }
+  });
+
+  it("es determinista también en EN: mismo PROFILE → mismo bloque byte a byte", () => {
+    expect(printCvHtml(profile, "en")).toBe(EN);
   });
 });

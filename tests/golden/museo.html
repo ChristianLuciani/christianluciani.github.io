@@ -1326,24 +1326,36 @@ a { color:inherit; }
 
 /* ══════════════════════════════════════════════
    ESTILOS DE IMPRESIÓN — CV plano A4
+   DOS variantes deterministas, generadas en el build: `#print-cv` (ES) y
+   `#print-cv-en` (EN). En impresión entra sólo la del `html[lang]` activo:
+   el PDF sigue al selector ES/EN sin JS (#160).
 ══════════════════════════════════════════════ */
-#print-cv { display:none; }
+#print-cv, #print-cv-en { display:none; }
 
 @media print {
-  body > *:not(#print-cv) { display:none !important; }
+  body > *:not(#print-cv):not(#print-cv-en) { display:none !important; }
   canvas,#loader,#nav,#progress,#btn-download,#btn-sound,#btn-lang,.hud { display:none !important; }
-  #print-cv { display:block !important; font-family:Georgia,serif; font-size:11pt; color:#111; line-height:1.6; padding:2cm; background:white; }
-  #print-cv h1 { font-size:22pt; margin-bottom:2pt; }
+  #print-cv, #print-cv-en { display:block !important; font-family:Georgia,serif; font-size:11pt; color:#111; line-height:1.6; padding:2cm; background:white; }
+  /* Alternancia por idioma: la variante del OTRO idioma no llega al PDF. */
+  html[lang="en"] #print-cv { display:none !important; }
+  html:not([lang="en"]) #print-cv-en { display:none !important; }
+  /* La última sección (Competencias) arranca en página propia en la variante
+     EN: su texto deja una cola de 2 líneas sola en la última página si compite
+     por el espacio (medido con `print:verify`, #160). La especificidad gana a
+     la regla del bloque embebido, que se conserva para no tocar los bytes del
+     bloque ES. El flujo ES queda como estaba. */
+  html[lang="en"] #print-cv-en .p-section.p-keep { break-before: page; }
+  #print-cv h1, #print-cv-en h1 { font-size:22pt; margin-bottom:2pt; }
   /* Reglas de sección del CV: el color sale de print-tokens.ts (#122),
      la MISMA constante que el footer — no un gris fijo por bloque. */
-  #print-cv h2 { font-size:13pt; border-bottom:1pt solid #00c9c0; padding-bottom:3pt; margin:18pt 0 6pt; }
-  #print-cv h3 { font-size:11pt; margin-bottom:2pt; }
-  #print-cv .p-meta { font-size:9pt; color:#555; }
-  #print-cv ul { padding-left:1.2em; }
-  #print-cv li { margin-bottom:2pt; }
-  #print-cv a { color:#111; text-decoration:none; }
-  #print-cv .p-section { margin-bottom:14pt; }
-  #print-cv .p-entry { margin-bottom:10pt; }
+  #print-cv h2, #print-cv-en h2 { font-size:13pt; border-bottom:1pt solid #00c9c0; padding-bottom:3pt; margin:18pt 0 6pt; }
+  #print-cv h3, #print-cv-en h3 { font-size:11pt; margin-bottom:2pt; }
+  #print-cv .p-meta, #print-cv-en .p-meta { font-size:9pt; color:#555; }
+  #print-cv ul, #print-cv-en ul { padding-left:1.2em; }
+  #print-cv li, #print-cv-en li { margin-bottom:2pt; }
+  #print-cv a, #print-cv-en a { color:#111; text-decoration:none; }
+  #print-cv .p-section, #print-cv-en .p-section { margin-bottom:14pt; }
+  #print-cv .p-entry, #print-cv-en .p-entry { margin-bottom:10pt; }
   @page { margin:2cm; size:A4; }
 }
 
@@ -1660,6 +1672,247 @@ a { color:inherit; }
   </div>
 
   <div class="p-footer">generado desde profile-data @ 32a3a6999cd3b06ff26c3ee99065d37c9faec095 · 2026-11-07</div>
+</div>
+<!-- ── CV PLANO PARA IMPRESIÓN / PDF (oculto en pantalla, visible al imprimir) ── -->
+<div id="print-cv-en" lang="en" aria-hidden="true">
+  <style>
+    /* QR del CV impreso: arriba a la derecha */
+    #print-cv-en .p-head { display:flex; flex-wrap:wrap; align-items:flex-start; justify-content:space-between; gap:1rem; }
+    #print-cv-en .p-head > div:first-child { flex:1; min-width:200px; }
+    /* Logo de marca (#122): variante print-A4 del brand kit, acotada para no
+       competir con el QR (30 mm) ni empujar el A4. */
+    #print-cv-en .p-logo { width:16mm; height:auto; display:block; margin-bottom:4pt; }
+    #print-cv-en .qr-wrap { text-align:center; }
+    #print-cv-en .qr-wrap img { width:30mm; height:30mm; }
+    #print-cv-en .qr-wrap .qr-note { font-size:6.5pt; color:#555; margin-top:2pt; }
+    /* Subsecciones de Trayectoria: empleo vs formación (curación D2) */
+    #print-cv-en .p-subsection { margin-top:10pt; }
+    #print-cv-en .p-subsection > .p-subhead { font-size:10.5pt; text-transform:uppercase; letter-spacing:.04em; color:#555; margin:10pt 0 4pt; }
+    /* Footer de procedencia: solo print (dentro del bloque oculto en pantalla) */
+    /* Reglas del CV: UNA fuente declarada, el teal del brand (#122). */
+    #print-cv-en .p-footer { margin-top:18pt; padding-top:4pt; border-top:1pt solid #00c9c0; font-size:7pt; color:#777; break-inside:avoid; break-before:avoid; }
+    /* F2: el footer no queda huérfano — tampoco se separa del bloque que lo precede */
+    #print-cv-en .p-section.p-keep { break-inside:avoid; break-before:avoid; }
+  </style>
+  <div class="p-head">
+    <div>
+      <img class="p-logo" src="/assets/brand/logo-aurea-settled-512.png" alt="Logo · Christian Luciani">
+      <h1>Christian Luciani</h1>
+      <div class="p-meta">
+        Cuenca, Ecuador<br>
+        <a href="https://christianluciani.github.io">christianluciani.github.io</a> · <a href="https://wa.me/593993716335">wa.me/593993716335</a> · <a href="https://orcid.org/0000-0002-6955-5384">orcid.org/0000-0002-6955-5384</a> · <a href="https://github.com/ChristianLuciani">github.com/ChristianLuciani</a>
+      </div>
+    </div>
+    <div class="qr-wrap">
+      <img src="assets/qr-site.svg" alt="QR · Christian Luciani — christianluciani.github.io">
+      <div class="qr-note">christianluciani.github.io</div>
+    </div>
+  </div>
+
+  <div class="p-section">
+    <h2>Profile</h2>
+    <p>Independent physicist. In an agentic economy, I build infrastructure for people and organisations: complex systems, educational innovation and sovereign open source.</p>
+  </div>
+
+  <div class="p-section">
+    <h2>Trajectory</h2>
+    <div class="p-meta">Employment, education and workshops · 1998 – PRESENT</div>
+    <div class="p-subsection">
+      <h3 class="p-subhead">Professional experience</h3>
+    <div class="p-entry p-exp">
+      <h3>Strategic Systems Consultant — Independent — Panama / Ecuador</h3>
+      <div class="p-meta">2025 – PRESENT</div>
+      <ul>
+        <li>BI platforms and digital infrastructure · Zoho ERP</li>
+        <li>Cash audit and recording system for a Type C casino (Salsa-Casino)</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Auditor &amp; Consultant — Grupo Angel — Panamá</h3>
+      <div class="p-meta">2025 – 2026</div>
+      <ul>
+        <li>Second period — audit and consulting on the vault recording system</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Physics Laboratory Coordinator — Universidad San Francisco de Quito (USFQ) — Quito, Ecuador</h3>
+      <div class="p-meta">2019 – 2024</div>
+      <ul>
+        <li>800+ students per year · 36 original laboratory guides</li>
+        <li>USFQ Open House: development of experiments for the general public · department petty cash</li>
+        <li>X-ray diffractometer technician-operator · co-author of 3 refereed papers, 2 preprints and 1 conference abstract (2022–2025)</li>
+        <li>Institutional Radiological Safety Officer</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Lighting Technician (freelance) — Fluge-Panamá</h3>
+      <div class="p-meta">2017 – 2018</div>
+      <ul>
+        <li>Freelance lighting technician for corporate and entertainment events</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Vault Officer — Recording &amp; Audit System Designer — Grupo Angel — Panamá</h3>
+      <div class="p-meta">2016 – 2018</div>
+      <ul>
+        <li>Registration of all vault transactions · cash income and expenses · supplier payments · cash counts</li>
+        <li>Designed and optimized the operation&#39;s database and audit procedures</li>
+        <li>Organization, classification and storage of documents</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Producer &amp; Account Executive — BTL Logistics — Magic Dreams Productions — Panamá</h3>
+      <div class="p-meta">2011 – 2014</div>
+      <ul>
+        <li>Logistics and setup of BTL activations at large-scale events, per project</li>
+        <li>Clients: Copa Airlines, Visa, ALTA, Cervecería Nacional, Herbalife, BAC Credomatic, HSBC, +Móvil, TVXC, Canada Dry, Nissan/Panamotors, Elmor, Alcaldía de Panamá</li>
+        <li>Coordination of the Panama Christmas Parade 2013</li>
+        <li>Event production · Herbalife Extravaganza 2012</li>
+        <li>Featured in: Cirque du Soleil (Dralion), Aerosmith, Shakira, Juan Luis Guerra, Juanes, Jennifer Lopez, Franco de Vita, Prince Royce, Natalia Jiménez, Daddy Yankee, Yanni, 2011 Baseball World Cup</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Still Photography Assistant — Frank Martínez &amp; Alberto Hernández — Caracas</h3>
+      <div class="p-meta">2007 – 2010</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Camera · Editing · Direction of Photography (freelance) — Independent — Caracas</h3>
+      <div class="p-meta">2006 – 2010</div>
+      <ul>
+        <li>Documentaries Pura Belleza, Una Sola Jugadera, Caminos Verdes and the series Caracas Múltiple — camera and editor (2008)</li>
+        <li>La Escalera de Patty — Prix du Public, FECOVEN 2008 · 9 Arepas — ESPN selection 2008</li>
+        <li>14 micros on HIV — direction of photography and colorization, Positrón/Artgnosis (2009)</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Editing &amp; Montage Instructor · Post-production Coordinator — Escuela de Cine y TV — Caracas</h3>
+      <div class="p-meta">2009 – 2010</div>
+      <ul>
+        <li>Editing and montage instructor (2009–2010)</li>
+        <li>Post-production coordinator, series Creadores Visuales de Venezuela (2010)</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Video-to-Film Transfer Internship — Produrama — Caracas</h3>
+      <div class="p-meta">2008</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>TV Studio Technician — Teaching Assistant — Universidad Santa María — Caracas</h3>
+      <div class="p-meta">2007 – 2008</div>
+      <ul>
+        <li>Equipment maintenance · student supervision · inventory · technical lighting</li>
+      </ul>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Research Trainee — Physics and Nuclear Reactor Center — Instituto Venezolano de Investigaciones Científicas (IVIC) — Caracas</h3>
+      <div class="p-meta">2003 – 2006</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Physics Professor — Universidad Simón Bolívar — Caracas</h3>
+      <div class="p-meta">2003 – 2006</div>
+      <ul>
+        <li>Labs I, II and III for engineering and sciences (2nd and 3rd year)</li>
+        <li>Physics I teaching assistant (Apr–Jul 2003)</li>
+        <li>Doctoral research in complex systems · first publications</li>
+      </ul>
+    </div>
+    </div>
+    <div class="p-subsection">
+      <h3 class="p-subhead">Education and workshops</h3>
+    <div class="p-entry p-exp">
+      <h3>Fashion Photography Workshop — Alberto Hernández — AVECOFAN — Caracas</h3>
+      <div class="p-meta">2010</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Audiovisual Project Development Workshop — MEDIAX — Caracas</h3>
+      <div class="p-meta">2009</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Electronic Cinematography Direction Workshop — Daniel Mendoza — VIART — Caracas</h3>
+      <div class="p-meta">2007</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Passport to Electronic Cinematography (Cinealta) — Jesús «Chuchi» Rivero — ANAC — Caracas</h3>
+      <div class="p-meta">2006</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Documentary Photography Course — Universidad Central de Venezuela — Caracas</h3>
+      <div class="p-meta">2006</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>I Andean Workshop on Chaos and Complexity — UNET — San Cristóbal, Venezuela</h3>
+      <div class="p-meta">2004</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>II Latin American School of High Energy Physics — CERN — San Miguel Regla, Mexico (scholarship)</h3>
+      <div class="p-meta">2003</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>V, VI &amp; VII School of Relativity, Fields and Astrophysics — Universidad de Los Andes (ULA) — Mérida, Venezuela</h3>
+      <div class="p-meta">2000 – 2002</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>I Latin American School of Astrobiology — UNESCO-ICTP — Caracas</h3>
+      <div class="p-meta">1999</div>
+    </div>
+    <div class="p-entry p-exp">
+      <h3>Postgraduate Course in Instrumentation — Universidad Central de Venezuela — Caracas</h3>
+      <div class="p-meta">1998</div>
+    </div>
+    </div>
+  </div>
+
+  <div class="p-section">
+    <h2>Academic education</h2>
+    <div class="p-entry p-edu">
+      <h3>Specialization in Audiovisual Media — Escuela de Cine y TV — Caracas · Prix du Public FECOVEN 2008</h3>
+      <div class="p-meta">2006 – 2008 · Film and audiovisual media · Postgraduate specialization in film and audiovisual media.</div>
+    </div>
+    <div class="p-entry p-edu">
+      <h3>Doctoral Candidacy — Complex Systems (ABD) — Universidad Simón Bolívar — Venezuela</h3>
+      <div class="p-meta">2003 – 2006 · Complex systems · All-but-dissertation (ABD) — thesis not completed.</div>
+    </div>
+    <div class="p-entry p-edu">
+      <h3>B.Sc. in Physics — Universidad Central de Venezuela · Thesis: Cosmological Models in D-Branes (N-dimensional)</h3>
+      <div class="p-meta">1997 – 2003 · Physics · Undergraduate thesis: Cosmological Models in D-Branes (N-dimensional). SENESCYT registration on file (not published).</div>
+    </div>
+    <div class="p-entry p-edu">
+      <h3>High School Diploma in Sciences — Instituto Católico El Carmen — Caracas</h3>
+      <div class="p-meta">1990 – 1996 · Sciences</div>
+    </div>
+  </div>
+
+  <div class="p-section">
+    <h2>Selected publications</h2>
+    <ul>
+      <li class="p-pub"><strong>2026</strong> — Kontablo: A Graph-Based Universal Accounting Ontology for the M2M Agentic Economy. <em>Preprint — Zenodo &amp; SSRN (not yet peer-reviewed)</em>. <a href="https://doi.org/10.5281/zenodo.20738795">doi.org/10.5281/zenodo.20738795</a></li>
+      <li class="p-pub"><strong>2025</strong> — Highly efficient caffeine-based PVA composite film for UV shielding. <em>Carbon Trends</em>. <a href="https://doi.org/10.1016/j.cartre.2025.100502">doi.org/10.1016/j.cartre.2025.100502</a></li>
+      <li class="p-pub"><strong>2025</strong> — Tunable Dielectric Carbon Materials from Hydrothermally Nanostructured Organic Carbon Sources. <em>ChemPhysChem</em>. <a href="https://doi.org/10.1002/cphc.202400711">doi.org/10.1002/cphc.202400711</a></li>
+      <li class="p-pub"><strong>2023</strong> — Optimization of microfibrillated cellulose isolation from cocoa pod husk via mild oxalic acid hydrolysis. <em>Heliyon</em>. <a href="https://doi.org/10.1016/j.heliyon.2023.e17258">doi.org/10.1016/j.heliyon.2023.e17258</a></li>
+      <li class="p-pub"><strong>2023</strong> — Hydrochars from Lignocellulosic Residues for Green Electronics, Environmental Remediation, Energy and Agricultural Applications. <em>ResearchGate preprint</em>. <a href="https://www.researchgate.net/publication/383276828">www.researchgate.net/publication/383276828</a></li>
+      <li class="p-pub"><strong>2022</strong> — Optimization of Microcrystalline Cellulose Isolation from Cocoa Pod Husk via Mild Oxalic Acid Hydrolysis. <em>SSRN Electronic Journal</em>. <a href="https://doi.org/10.2139/ssrn.4307097">doi.org/10.2139/ssrn.4307097</a></li>
+      <li class="p-pub"><strong>2022</strong> — Ivory Nut (Phytelephas equatorialis) Residues: Chemical Composition for Applications in Health Care, Industry and Environmental Remediation — Towards Sustainability. <em>2022 AIChE Annual Meeting (abstract)</em>. <a href="https://aiche.confex.com/aiche/2022/meetingapp.cgi/Paper/649030">aiche.confex.com/aiche/2022/meetingapp.cgi/Paper/649030</a></li>
+      <li class="p-pub"><strong>2006</strong> — Neural control on multiple time scales: Insights from human stick balancing. <em>Condensed Matter Physics</em>. <a href="https://doi.org/10.5488/CMP.9.2.373">doi.org/10.5488/CMP.9.2.373</a></li>
+      <li class="p-pub"><strong>2006</strong> — Balancing with Noise and Delay. <em>Progress of Theoretical Physics Supplement</em>. <a href="https://doi.org/10.1143/PTPS.161.314">doi.org/10.1143/PTPS.161.314</a></li>
+    </ul>
+  </div>
+
+  <div class="p-section p-keep">
+    <h2>Skills</h2>
+    <ul>
+      <li class="p-lang"><strong>Languages:</strong> Spanish (native) · English (intermediate) · French (intermediate)</li>
+      <li class="p-skill"><strong>Synthetic Cognition / Agents</strong> — advanced</li>
+      <li class="p-skill"><strong>Agentic Coding</strong> — advanced</li>
+      <li class="p-skill"><strong>Technological Sovereignty</strong> — expert</li>
+      <li class="p-skill"><strong>Open Source</strong> — advanced</li>
+      <li class="p-skill"><strong>Platforms &amp; Ecosystem</strong> — intermediate</li>
+      <li class="p-skill"><strong>Sciences — Physics</strong> — expert</li>
+      <li class="p-skill"><strong>Programming &amp; Data</strong> — advanced</li>
+      <li class="p-skill"><strong>Audiovisual Production</strong> — advanced</li>
+    </ul>
+  </div>
+
+  <div class="p-footer">generated from profile-data @ 32a3a6999cd3b06ff26c3ee99065d37c9faec095 · 2026-11-07</div>
 </div>
 <header class="hud">
   <div class="hud-inner">

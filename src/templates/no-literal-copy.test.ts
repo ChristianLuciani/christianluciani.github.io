@@ -20,8 +20,9 @@ import { allCopyHits, copyHitsOf, templateFiles } from "../../tools/copy/lint";
  *      `runtime` aparece en el render; el pack es bilingüe y sin conflictos.
  *
  * Lo que este archivo NO mide (y no debe fingir que mide): MAP → nodo del
- * walker. El walker i18n recorre nodos de texto; los pares `print.*` (salta
- * `#print-cv`) y los sólo-atributo (aria/alt/meta/caption) nunca se consultan
+ * walker. El walker i18n recorre nodos de texto; los pares `print.*` (salta los
+ * dos bloques del print, `#print-cv` y `#print-cv-en`) y los sólo-atributo
+ * (aria/alt/meta/caption) nunca se consultan
  * y son copy vivo en otra superficie, no claves muertas. Los pares derivados
  * del SSOT que la rama de datos de hoy no renderiza tampoco son deuda de copy:
  * se derivan. Ver `docs/CREAR-TEMA.md` §3.1.

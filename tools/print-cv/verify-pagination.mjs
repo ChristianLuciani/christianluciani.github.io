@@ -52,6 +52,14 @@
  * agrega dependencias: Chrome es el mismo que ya corre `logo:verify` y `zlib` es
  * de Node.
  *
+ * DOS VARIANTES (#160): el print-CV se publica en ES (`#print-cv`) y EN
+ * (`#print-cv-en`), y la piel muestra una u otra según `html[lang]`. Las tres
+ * condiciones se miden sobre CADA variante: el EN tiene otro flujo de líneas y
+ * mueve los cortes de página (la condición del footer huérfano / última página
+ * vacía es la que se rompe primero). La variante EN se imprime desde una copia
+ * del artefacto con `lang="en"` — el mismo estado que deja el toggle, sin
+ * ejecutar su JS.
+ *
  * Uso: node tools/print-cv/verify-pagination.mjs [dist/index.html]
  * Exit: 0 OK · 1 drift · 2 no se pudo medir (sin Chrome, sin build o PDF raro).
  */
@@ -91,17 +99,49 @@ if (process.platform === "linux") BASE_ARGS.push("--no-sandbox", "--disable-dev-
 /** Falla del artefacto (drift), distinta de «no se pudo medir». */
 export class GateError extends Error {}
 
+/** Bloque del print-CV de un idioma. `#print-cv` y `#print-cv-en` son hermanos. */
+export function printBlockRange(html, id) {
+  const open = `<div id="${id}"`;
+  const start = html.indexOf(open);
+  if (start < 0) throw new GateError(`no encontré el bloque #${id} del print-CV`);
+  const ends = ['<div id="print-cv-en"', '<header class="hud">']
+    .map((marker) => html.indexOf(marker, start + open.length))
+    .filter((at) => at > start);
+  return { start, end: ends.length ? Math.min(...ends) : html.length };
+}
+
 /**
- * Quita el único `.p-footer` del HTML. Falla si no hay exactamente uno: sin esa
- * precondición la medición diferencial compararía dos documentos iguales.
+ * Quita el `.p-footer` del bloque del idioma medido. Falla si dentro de ESE
+ * bloque no hay exactamente uno: sin esa precondición la medición diferencial
+ * compararía dos documentos iguales.
+ *
+ * El otro bloque (el del idioma inactivo) queda intacto: el PDF sólo renderiza
+ * la variante visible, así que su footer no entra en la cuenta de páginas.
  */
-export function removeFooterDiv(html) {
+export function removeFooterDiv(html, id = "print-cv") {
+  const { start, end } = printBlockRange(html, id);
+  const block = html.slice(start, end);
   const footer = /<div class="p-footer">[\s\S]*?<\/div>/g;
-  const matches = html.match(footer) ?? [];
+  const matches = block.match(footer) ?? [];
   if (matches.length !== 1) {
-    throw new GateError(`esperaba exactamente un .p-footer en el print-CV, encontré ${matches.length}`);
+    throw new GateError(
+      `esperaba exactamente un .p-footer en #${id}, encontré ${matches.length}`,
+    );
   }
-  return html.replace(footer, "");
+  return html.slice(0, start) + block.replace(footer, "") + html.slice(end);
+}
+
+/**
+ * Copia del documento con `<html lang="en">`: así se imprime la variante EN sin
+ * depender del toggle (que corre JS). Falla si el `lang` no está donde se espera
+ * — un documento sin `lang` no se puede medir por variante.
+ */
+export function withDocumentLang(html, lang) {
+  const replaced = html.replace(/<html\b[^>]*\blang="[^"]*"/, `<html lang="${lang}"`);
+  if (replaced === html) {
+    throw new GateError("el documento no declara `lang` en <html>: no puedo medir la variante");
+  }
+  return replaced;
 }
 
 /** Páginas del PDF por sus objetos `/Type /Page` (no `/Pages`). */
@@ -368,6 +408,79 @@ function printPdf(htmlPath, pdfPath) {
   }
 }
 
+/**
+ * Variantes medidas. El print-CV tiene una por idioma (#160): `#print-cv` en ES
+ * y `#print-cv-en` en EN. La piel del tema muestra la del `html[lang]` activo,
+ * así que la variante EN se imprime desde una copia con `lang="en"` — el toggle
+ * del sitio hace exactamente eso en runtime, sin JS de por medio en el PDF.
+ */
+const VARIANTS = [
+  { lang: "es", id: "print-cv" },
+  { lang: "en", id: "print-cv-en" },
+];
+
+/**
+ * Mide una variante de idioma: A4, footer no-huérfano y última página con
+ * contenido. Devuelve el renglón del reporte; `temps` acumula los archivos a
+ * borrar (el caller los limpia aunque la medición falle).
+ */
+function measureVariant(source, variant, workDir, suffix, temps) {
+  const html = variant.lang === "es" ? source : withDocumentLang(source, variant.lang);
+  /* Las copias viven junto al artefacto para que `assets/…` siga resolviendo
+   * igual (el QR del encabezado es parte del layout). */
+  const withFooterHtml = join(workDir, `${suffix}-${variant.lang}.html`);
+  const withoutFooterHtml = join(workDir, `${suffix}-${variant.lang}-no-footer.html`);
+  const withPdf = join(tmpdir(), `${suffix}-${variant.lang}-with-footer.pdf`);
+  const withoutPdf = join(tmpdir(), `${suffix}-${variant.lang}-no-footer.pdf`);
+  temps.push(withFooterHtml, withoutFooterHtml, withPdf, withoutPdf);
+
+  writeFileSync(withFooterHtml, html, "utf8");
+  writeFileSync(withoutFooterHtml, removeFooterDiv(html, variant.id), "utf8");
+
+  printPdf(withFooterHtml, withPdf);
+  printPdf(withoutFooterHtml, withoutPdf);
+
+  const withBytes = readFileSync(withPdf);
+  const withoutBytes = readFileSync(withoutPdf);
+  const withPages = pageCount(withBytes);
+  const withoutPages = pageCount(withoutBytes);
+  const notA4 = nonA4Pages(withBytes);
+
+  if (withPages === 0) {
+    throw new GateError("el PDF no tiene páginas: el print-CV no renderizó");
+  }
+  if (notA4.length > 0) {
+    const detail = notA4
+      .map((box) => `p${box.page}=${box.width.toFixed(2)}×${box.height.toFixed(2)}pt`)
+      .join(", ");
+    throw new GateError(
+      `páginas que no son A4 (${detail}; esperado ${A4.width}×${A4.height}pt)`,
+    );
+  }
+  if (withPages !== withoutPages) {
+    throw new GateError(
+      `el footer abre una página propia: ${withPages} páginas con footer vs ` +
+        `${withoutPages} sin él — la última página del print-CV contiene sólo el footer ` +
+        "de procedencia",
+    );
+  }
+  /* Medido sobre el PDF SIN footer: el footer no cuenta como contenido. */
+  try {
+    lastPageFillViolation(pageTextExtents(withoutBytes));
+  } catch (err) {
+    if (err instanceof GateError) {
+      throw new GateError(`${err.message} (documento de ${withPages} página(s))`);
+    }
+    throw err;
+  }
+
+  return (
+    `${variant.lang}: ${withPages} páginas A4; el footer comparte la última ` +
+    `(sin él, ${withoutPages}) y la última cubre el contenido mínimo ` +
+    `(≥${(MIN_LAST_PAGE_FILL * 100).toFixed(0)}% de la extensión y de las líneas de la más llena)`
+  );
+}
+
 function main() {
   const input = resolve(process.argv[2] ?? "dist/index.html");
   if (!existsSync(input)) {
@@ -377,50 +490,25 @@ function main() {
 
   const workDir = dirname(input);
   const suffix = `cv-pagination-${process.pid}-${Date.now()}`;
-  const withoutFooterHtml = join(workDir, `${suffix}-no-footer.html`);
-  const withPdf = join(tmpdir(), `${suffix}-with-footer.pdf`);
-  const withoutPdf = join(tmpdir(), `${suffix}-no-footer.pdf`);
+  const temps = [];
   let exitCode = 0;
 
   try {
-    const html = readFileSync(input, "utf8");
-    /* La copia vive junto al artefacto para que `assets/…` siga resolviendo
-     * igual (el QR del encabezado es parte del layout). */
-    writeFileSync(withoutFooterHtml, removeFooterDiv(html), "utf8");
+    const source = readFileSync(input, "utf8");
+    const summaries = [];
 
-    printPdf(input, withPdf);
-    printPdf(withoutFooterHtml, withoutPdf);
-
-    const withBytes = readFileSync(withPdf);
-    const withoutBytes = readFileSync(withoutPdf);
-    const withPages = pageCount(withBytes);
-    const withoutPages = pageCount(withoutBytes);
-    const notA4 = nonA4Pages(withBytes);
-
-    if (withPages === 0) {
-      throw new GateError("el PDF no tiene páginas: el print-CV no renderizó");
+    for (const variant of VARIANTS) {
+      try {
+        summaries.push(measureVariant(source, variant, workDir, suffix, temps));
+      } catch (err) {
+        /* Una falla de medición SIEMPRE dice de qué variante: el EN tiene otro
+         * flujo de líneas y es la que rompió los cortes al medirse (#160). */
+        if (err instanceof GateError) throw new GateError(`[${variant.lang}] ${err.message}`);
+        throw err;
+      }
     }
-    if (notA4.length > 0) {
-      const detail = notA4
-        .map((box) => `p${box.page}=${box.width.toFixed(2)}×${box.height.toFixed(2)}pt`)
-        .join(", ");
-      throw new GateError(`páginas que no son A4 (${detail}; esperado ${A4.width}×${A4.height}pt)`);
-    }
-    if (withPages !== withoutPages) {
-      throw new GateError(
-        `el footer abre una página propia: ${withPages} páginas con footer vs ${withoutPages} sin él — ` +
-          "la última página del print-CV contiene sólo el footer de procedencia",
-      );
-    }
-    /* Medido sobre el PDF SIN footer: el footer no cuenta como contenido. */
-    lastPageFillViolation(pageTextExtents(withoutBytes));
 
-    console.log(
-      `✅ print-CV: ${withPages} páginas A4; el footer comparte la última ` +
-        `(quitar el footer no reduce el conteo: ${withoutPages}) y la última ` +
-        `página cubre el contenido mínimo (≥${(MIN_LAST_PAGE_FILL * 100).toFixed(0)}% de la ` +
-        "extensión y de las líneas de la más llena)",
-    );
+    console.log(`✅ print-CV · ${summaries.join(" · ")}`);
   } catch (err) {
     if (err instanceof GateError) {
       console.error(`[cv-pagination] FAIL: ${err.message}`);
@@ -430,7 +518,7 @@ function main() {
       exitCode = 2;
     }
   } finally {
-    for (const path of [withoutFooterHtml, withPdf, withoutPdf]) {
+    for (const path of temps) {
       try {
         rmSync(path, { force: true });
       } catch {

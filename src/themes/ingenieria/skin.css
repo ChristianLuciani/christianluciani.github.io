@@ -1097,24 +1097,36 @@ a { color:inherit; }
 
 /* ══════════════════════════════════════════════
    ESTILOS DE IMPRESIÓN — CV plano A4
+   DOS variantes deterministas, generadas en el build: `#print-cv` (ES) y
+   `#print-cv-en` (EN). En impresión entra sólo la del `html[lang]` activo:
+   el PDF sigue al selector ES/EN sin JS (#160).
 ══════════════════════════════════════════════ */
-#print-cv { display:none; }
+#print-cv, #print-cv-en { display:none; }
 
 @media print {
-  body > *:not(#print-cv) { display:none !important; }
+  body > *:not(#print-cv):not(#print-cv-en) { display:none !important; }
   canvas,#loader,#nav,#progress,#btn-download,#btn-sound,#btn-lang,.hud { display:none !important; }
-  #print-cv { display:block !important; font-family:Georgia,serif; font-size:11pt; color:var(--print-ink); line-height:1.6; padding:2cm; background:var(--print-paper); }
-  #print-cv h1 { font-size:22pt; margin-bottom:2pt; }
+  #print-cv, #print-cv-en { display:block !important; font-family:Georgia,serif; font-size:11pt; color:var(--print-ink); line-height:1.6; padding:2cm; background:var(--print-paper); }
+  /* Alternancia por idioma: la variante del OTRO idioma no llega al PDF. */
+  html[lang="en"] #print-cv { display:none !important; }
+  html:not([lang="en"]) #print-cv-en { display:none !important; }
+  /* La última sección (Competencias) arranca en página propia en la variante
+     EN: su texto deja una cola de 2 líneas sola en la última página si compite
+     por el espacio (medido con `print:verify`, #160). La especificidad gana a
+     la regla del bloque embebido, que se conserva para no tocar los bytes del
+     bloque ES. El flujo ES queda como estaba. */
+  html[lang="en"] #print-cv-en .p-section.p-keep { break-before: page; }
+  #print-cv h1, #print-cv-en h1 { font-size:22pt; margin-bottom:2pt; }
   /* Reglas de sección del CV: el color sale de print-tokens.ts (#122),
      la MISMA constante que el footer — no un gris fijo por bloque. */
-  #print-cv h2 { font-size:13pt; border-bottom:1pt solid var(--print-rule); padding-bottom:3pt; margin:18pt 0 6pt; }
-  #print-cv h3 { font-size:11pt; margin-bottom:2pt; }
-  #print-cv .p-meta { font-size:9pt; color:var(--print-meta); }
-  #print-cv ul { padding-left:1.2em; }
-  #print-cv li { margin-bottom:2pt; }
-  #print-cv a { color:var(--print-ink); text-decoration:none; }
-  #print-cv .p-section { margin-bottom:14pt; }
-  #print-cv .p-entry { margin-bottom:10pt; }
+  #print-cv h2, #print-cv-en h2 { font-size:13pt; border-bottom:1pt solid var(--print-rule); padding-bottom:3pt; margin:18pt 0 6pt; }
+  #print-cv h3, #print-cv-en h3 { font-size:11pt; margin-bottom:2pt; }
+  #print-cv .p-meta, #print-cv-en .p-meta { font-size:9pt; color:var(--print-meta); }
+  #print-cv ul, #print-cv-en ul { padding-left:1.2em; }
+  #print-cv li, #print-cv-en li { margin-bottom:2pt; }
+  #print-cv a, #print-cv-en a { color:var(--print-ink); text-decoration:none; }
+  #print-cv .p-section, #print-cv-en .p-section { margin-bottom:14pt; }
+  #print-cv .p-entry, #print-cv-en .p-entry { margin-bottom:10pt; }
   @page { margin:2cm; size:A4; }
 }
 

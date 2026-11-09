@@ -82,8 +82,9 @@ sección "sala-fisica" cambió en la línea 42
   actual:   <div class="entry-period">2018 – 2024</div>
 ```
 
-Secciones: `head` (doctype, meta, JSON-LD, `<style>` global) · `print-cv` · `cover`
-(HUD) · `hero` · `plano` · `sala-<id>` (una por sala, incluida la oculta) · `footer`.
+Secciones: `head` (doctype, meta, JSON-LD, `<style>` global) · `print-cv` (ES) ·
+`print-cv-en` (EN) · `cover` (HUD) · `hero` · `plano` · `sala-<id>` (una por sala, incluida
+la oculta) · `footer`.
 
 Los marcadores viven en `tools/golden/sections.ts`. Si un refactor renombra o elimina un
 marcador, el test falla con **"falta el marcador de la sección …"**: un cambio estructural
