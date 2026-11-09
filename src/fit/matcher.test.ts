@@ -105,6 +105,16 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     expect(matchTerm("SQL", P).status).toBe("evidence");
   });
 
+  it("guion como prefijo de compuesto (#178, pase 8): python-based / node-based / mcp-server matchean", () => {
+    expect(termMatches("python-based tooling", "python")).toBe(true);
+    expect(termMatches("node-based", "node")).toBe(true);
+    expect(termMatches("mcp-server", "mcp")).toBe(true);
+    expect(matchJd("Python-based tooling", P).requirements[0].status).toBe("evidence");
+    expect(matchJd("MCP-based agents", P).requirements[0].status).toBe("evidence");
+    // y el sufijo con guion sigue bloqueado
+    expect(termMatches("objective-c", "c")).toBe(false);
+  });
+
   it("regla estructural clase 2: tokens genéricos sueltos no son requisito — 'async programming' es gap, no evidencia de idiomas", () => {
     const r = matchJd("async programming", P);
     expect(r.requirements).toHaveLength(1);
@@ -126,6 +136,23 @@ describe("matcher determinista sobre la JD de Blacksmith", () => {
     } as unknown as CvProfile;
     const r = matchJd("OpenAI/Anthropic tool use", fakeProfile);
     expect(r.requirements[0].status).toBe("gap");
+  });
+
+  it("el proveedor NOMBRADO es el que debe aparecer en la evidencia (#178, pase 8)", () => {
+    // perfil sintético con sólo Claude: "OpenAI tool use" → gap, "Anthropic tool use" → evidence
+    const onlyClaude = {
+      skills: [],
+      projects: [
+        { name: "X", description: { en: "Uses Claude API for tool calls" }, published: false, links: [], keywords: ["claude"], evidence: [] }
+      ],
+      artifacts: [],
+      experience: [],
+      languages: []
+    } as unknown as CvProfile;
+    expect(matchJd("OpenAI tool use", onlyClaude).requirements[0].status).toBe("gap");
+    expect(matchJd("Anthropic tool use", onlyClaude).requirements[0].status).toBe("evidence");
+    // con el perfil real (ZENTROPY nombra ChatGPT y Claude) ambos matchean
+    expect(matchJd("OpenAI/Anthropic tool use", P).requirements[0].status).toBe("evidence");
   });
 
   it("LangChain/LangGraph es gap declarado", () => {

@@ -65,8 +65,13 @@ const CONCEPTS: Concept[] = [
  * aviso). En el SSOT real hay evidencia honesta: ZENTROPY ingiere Claude
  * JSON/ZIP y ChatGPT. Si no la hubiera, el requisito sale como gap.
  */
-const PROVIDER_REQ = /(openai|anthropic)/;
-const PROVIDER_EV = ["openai", "anthropic", "claude", "chatgpt", "gpt"];
+// El requisito nombra proveedor(s); la evidencia debe nombrar ESE proveedor
+// (lista cerrada por proveedor, #178): OpenAI → openai/chatgpt/gpt;
+// Anthropic → anthropic/claude.
+const PROVIDER_TERMS: Record<string, string[]> = {
+  openai: ["openai", "chatgpt", "gpt"],
+  anthropic: ["anthropic", "claude"]
+};
 
 /** Librerías/SDKs que el perfil NO declara: un requisito que las nombre es gap. */
 const KNOWN_GAPS = ["langchain", "langgraph", "anthropic sdk", "openai sdk", "llamaindex"];
@@ -83,18 +88,20 @@ function escapeRegExp(text: string): string {
  * matchea "c++". (Clase 2, 4.a reaparición: antes era substring plano.)
  */
 /**
- * Coincidencia por TOKEN, no por substring: el charset de token es
- * [a-z0-9_#+-] (letra, dígito, _, +, #, -). Así "C" NO matchea "C#", "C++" ni
- * "Objective-C", pero "c++" sí matchea "c++", "node" sí matchea "node.js"
- * y "python/node" (el . y la / son frontera). El plural s? aplica sólo si el
- * término termina en alfanumérico. (Clase 2, tracking #178.)
+ * Coincidencia por TOKEN con frontera asimétrica (#178):
+ *  · antes del término: (?<![a-z0-9_#+-]) — bloquea anode, objective-c (sufijo), etc.
+ *  · después del término: (?![a-z0-9_#+]) — el guion NO bloquea (prefijo de
+ *    compuesto: python-based, node-based, mcp-server sí matchean), pero # y +
+ *    sí bloquean (C no matchea C#/C++). Plural s? sólo si el término termina
+ *    en alfanumérico.
  */
-const TOKEN_CHARS = "a-z0-9_#+-";
+const BEFORE = "a-z0-9_#+-";
+const AFTER = "a-z0-9_#+";
 export function termMatches(haystack: string, term: string): boolean {
   const t = norm(term);
   if (!t) return false;
   const plural = /[a-z0-9]$/.test(t) ? "s?" : "";
-  return new RegExp("(?<![" + TOKEN_CHARS + "])" + escapeRegExp(t) + plural + "(?![" + TOKEN_CHARS + "])").test(haystack);
+  return new RegExp("(?<![" + BEFORE + "])" + escapeRegExp(t) + plural + "(?![" + AFTER + "])").test(haystack);
 }
 
 
@@ -197,7 +204,10 @@ export function matchRequirement(
   }
   const evidence: FitEvidence[] = [];
   const seen = new Set<string>();
-  const providerReq = PROVIDER_REQ.test(n);
+  const namedProviders = n.match(/openai|anthropic/g);
+  const providerEv = namedProviders
+    ? [...new Set(namedProviders.flatMap((p) => PROVIDER_TERMS[p] ?? []))]
+    : null;
   outer: for (const concept of concepts) {
     const matchedReq = concept.req.filter((term) => termMatches(n, term));
     if (matchedReq.length === 0) continue;
@@ -207,7 +217,7 @@ export function matchRequirement(
     // evFromReq: si un término largo también matcheó, los de 1 char no cuentan
     // ("C" no debe prestar evidencia a "C++").
     const reqTerms = matchedReq.some((t) => t.length >= 2) ? matchedReq.filter((t) => t.length >= 2) : matchedReq;
-    const evTerms = providerReq ? PROVIDER_EV : concept.evFromReq ? reqTerms : concept.ev;
+    const evTerms = providerEv ?? (concept.evFromReq ? reqTerms : concept.ev);
     for (const item of corpus) {
       const itemNorm = norm(item.text);
       if (!evTerms.some((term) => termMatches(itemNorm, term))) continue;
