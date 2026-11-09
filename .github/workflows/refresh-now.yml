@@ -97,8 +97,21 @@ jobs:
           # tras un force-push un run viejo ya no dice nada sobre este commit.
           wait_build_test() {
             gh workflow run ci.yml --ref "$BRANCH"
-            local states=''
+            local states='' pending=''
             for _ in $(seq 1 80); do
+              # El run del evento `pull_request` de un PR abierto por el bot queda
+              # en `action_required` hasta que un humano lo apruebe; ese suite
+              # pendiente deja `statusCheckRollup` en null, así que sin este probe
+              # el loop gira hasta el timeout y muere sin decir por qué.
+              pending="$(gh run list --workflow ci.yml --branch "$BRANCH" --limit 10 \
+                         --json databaseId,conclusion \
+                         --jq '[.[] | select(.conclusion == "action_required")][0].databaseId // empty' \
+                         2>/dev/null || true)"
+              if [ -n "$pending" ]; then
+                echo "::error::el CI de $BRANCH espera aprobación humana (run $pending, action_required)"
+                echo "Aprobalo y reintentá: gh api -X POST repos/$GITHUB_REPOSITORY/actions/runs/$pending/approve"
+                exit 1
+              fi
               states="$(gh pr view "$PR" --json statusCheckRollup \
                         --jq '[.statusCheckRollup[] | select(.name == "build-test") | (.conclusion // .state // "PENDING")] | join(",")' \
                         2>/dev/null || true)"
