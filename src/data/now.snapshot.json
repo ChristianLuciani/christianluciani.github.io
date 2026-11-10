@@ -1,18 +1,18 @@
 {
   "schema": "now/v1",
-  "asOf": "2026-11-09T18:46:09Z",
+  "asOf": "2026-11-10T02:06:22Z",
   "items": [
     {
       "kind": "pr",
-      "title": "fix(ci): force-push del branch de refresh (stale info)",
-      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/177",
+      "title": "ci(now): falla rápido si el CI del refresh espera aprobación humana",
+      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/181",
       "date": "2026-11-09",
       "source": "github:ChristianLuciani/christianluciani.github.io"
     },
     {
       "kind": "pr",
-      "title": "chore(brand): pin v1.2.0 → v1.3.0 y variable CDN",
-      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/179",
+      "title": "ci(now): refresh estilo Dependabot (abre el PR y se detiene)",
+      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/183",
       "date": "2026-11-09",
       "source": "github:ChristianLuciani/christianluciani.github.io"
     },
