@@ -202,7 +202,13 @@ export const MUSEO_COPY: CopyPack = {
   },
   "graph.node.cognicion": { es: "Cognición · Filosofía", en: "Cognition · Philosophy", runtime: true },
   "graph.node.clapps": { es: "CLAPPS · Noesis/Noetix", en: "CLAPPS · Noesis/Noetix", runtime: true },
-  "graph.node.erp": { es: "ERPNext · Zanah", en: "ERPNext · Zanah", runtime: true },
+  "graph.node.noos": {
+    es: "NOOS · Sistema Operativo Organizacional Natural",
+    en: "NOOS · Natural Organization Operating System",
+    runtime: true
+  },
+  "graph.node.profilereadme": { es: "Perfil GitHub", en: "GitHub Profile", runtime: true },
+  "graph.node.internaltools": { es: "Aplicaciones Internas", en: "Internal Tools Gallery", runtime: true },
 
   /* ── SALA COMPETENCIAS (La Paleta) ──────────────────────────── */
   "room.competencias.interests": {
