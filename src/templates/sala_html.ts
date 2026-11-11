@@ -618,7 +618,7 @@ export function roomBodies(): Record<string, string> {
 `,
   grafo: `    <p class="graph-lede" data-scroll="up" data-delay="2">
       ${t("room.grafo.lede")}
-      <span class="hl">${t("room.grafo.teal")}</span>${t("room.grafo.published")}<span class="is-grey">${t("room.grafo.grey")}</span>${t("room.grafo.development")}<span class="hl-gold">${t("room.grafo.gold")}</span>${t("room.grafo.idea")}
+      <span class="hl-gold">${t("room.grafo.gold")}</span>${t("room.grafo.published")}<span class="hl">${t("room.grafo.teal")}</span>${t("room.grafo.development")}<span class="is-grey">${t("room.grafo.grey")}</span>${t("room.grafo.idea")}
     </p>
     <div id="graph-stage" class="graph-stage">
       <canvas id="c-graph" class="illusion-canvas"></canvas>

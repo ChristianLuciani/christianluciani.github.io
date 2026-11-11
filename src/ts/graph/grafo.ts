@@ -26,7 +26,7 @@ interface GrafoEdge {
   b: GrafoNode;
 }
 
-// status: raiz | area | pub (publicado) | desarrollo (sin artefacto público) | futuro (idea, dorado)
+// status: raiz | area | pub (publicado, dorado) | desarrollo (teal) | futuro (idea, gris)
 // COPY DE NODOS (#127): sólo los labels que el pack declara (`graph.node.*`)
 // se piden con `t()`. El resto sigue literal acá porque es nombre propio
 // estable (Christian Luciani, Kontablo, Drahma, …) o etiología de área sin
@@ -62,7 +62,9 @@ export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">
   { id: "infoniz", label: "Infoniz", status: "desarrollo" },
   { id: "taller", label: "Taller Editorial", status: "desarrollo" },
   { id: "identeco", label: "Identeco Cifereca", status: "desarrollo" },
-  { id: "internaltools", label: t("graph.node.internaltools"), status: "desarrollo" }
+  { id: "internaltools", label: t("graph.node.internaltools"), status: "desarrollo" },
+  { id: "estaseologia", label: "Estaseología", status: "futuro" },
+  { id: "sintergeticas", label: t("graph.node.sintergeticas"), status: "futuro" }
 ];
 
 /** Aristas del grafo, por id de nodo (`[desde, hacia]`). */
@@ -85,7 +87,8 @@ export const LINKS: [string, string][] = [
   ["cog", "noetix"], ["noesis", "noetix"], ["estel", "noetix"],
   ["edu", "taller"], ["estel", "taller"],
   ["clapps", "drahma"], ["clapps", "taller"], ["clapps", "noesis"], ["clapps", "noetix"],
-  ["fisica", "clapps"]
+  ["fisica", "clapps"],
+  ["cog", "estaseologia"], ["ia", "sintergeticas"]
 ];
 
 export function mountGrafo(): void {
@@ -200,9 +203,9 @@ export function mountGrafo(): void {
   }
   function col(n: GrafoNode): string {
     if (n.status === "raiz") return "#00c9c0";
-    if (n.status === "futuro") return "#c9a84c";
-    if (n.status === "desarrollo") return "#8892a0";
-    return n.status === "area" ? "#4aa8a4" : "#7fd6cc";
+    if (n.status === "futuro") return "#8892a0";
+    if (n.status === "desarrollo") return "#00c9c0";
+    return n.status === "area" ? "#4aa8a4" : "#c9a84c";
   }
 
   let hv: GrafoNode | null = null;
