@@ -12,6 +12,8 @@ interface GrafoNode {
   status: "raiz" | "area" | "pub" | "desarrollo" | "futuro";
   /** Repo/sitio del proyecto: los nodos `pub` con `href` abren pestaña nueva. */
   href?: string;
+  /** Línea de descripción compacta de la tarjeta (tooltip). */
+  desc: string;
   x: number;
   y: number;
   vx: number;
@@ -35,36 +37,77 @@ interface GrafoEdge {
 // Exportados: `docs/SPEC.md` §4 los cita como fuente de los nodos/aristas y el
 // chequeo de punteros (`tools/docs/doc-pointers.test.ts`) verifica el export.
 export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">[] = [
-  { id: "raiz", label: "Christian Luciani", status: "raiz" },
-  { id: "fisica", label: "Física", status: "area" },
-  { id: "ia", label: t("graph.node.ia"), status: "area" },
-  { id: "sob", label: t("graph.node.soberania"), status: "area" },
-  { id: "oss", label: "Open Source", status: "area" },
-  { id: "edu", label: "Educación", status: "area" },
-  { id: "cog", label: t("graph.node.cognicion"), status: "area" },
-  { id: "kontablo", label: "Kontablo", status: "pub", href: "https://github.com/ChristianLuciani/accounting-esperanto" },
-  { id: "drahma", label: "Drahma", status: "pub", href: "https://github.com/DRAHMAN-ORG/drahman-org" },
-  { id: "profile", label: "profile-as-code", status: "pub", href: "https://github.com/ChristianLuciani/profile-as-code" },
-  { id: "now", label: "now", status: "pub", href: "https://github.com/ChristianLuciani/now" },
-  { id: "brandkit", label: "cluciani-brand-kit", status: "pub", href: "https://github.com/ChristianLuciani/cluciani-brand-kit" },
-  { id: "pascotemplate", label: "profile-data-template", status: "pub", href: "https://github.com/ChristianLuciani/profile-data-template" },
-  { id: "site", label: "christianluciani.github.io", status: "pub", href: "https://github.com/ChristianLuciani/christianluciani.github.io" },
-  { id: "profilereadme", label: t("graph.node.profilereadme"), status: "pub", href: "https://github.com/ChristianLuciani/ChristianLuciani" },
-  { id: "zentropy", label: "ZENTROPY", status: "desarrollo" },
-  { id: "clapps", label: t("graph.node.clapps"), status: "desarrollo" },
-  { id: "estel", label: "Esteléctica", status: "desarrollo" },
-  { id: "topia", label: "Topia", status: "desarrollo" },
-  { id: "nelson", label: "Nelson Companion", status: "desarrollo" },
-  { id: "noos", label: t("graph.node.noos"), status: "desarrollo" },
-  { id: "komuno", label: "Komuno", status: "desarrollo" },
-  { id: "noesis", label: "Noesis", status: "desarrollo" },
-  { id: "noetix", label: "Noetix", status: "desarrollo" },
-  { id: "infoniz", label: "Infoniz", status: "desarrollo" },
-  { id: "taller", label: "Taller Editorial", status: "desarrollo" },
-  { id: "identeco", label: "Identeco Cifereca", status: "desarrollo" },
-  { id: "internaltools", label: t("graph.node.internaltools"), status: "desarrollo" },
-  { id: "estaseologia", label: "Estaseología", status: "futuro" },
-  { id: "sintergeticas", label: t("graph.node.sintergeticas"), status: "futuro" }
+  {
+    id: "raiz", label: "Christian Luciani", status: "raiz",
+    desc: t("graph.desc.raiz")
+  },
+  { id: "fisica", label: "Física", status: "area", desc: t("graph.desc.fisica") },
+  { id: "ia", label: t("graph.node.ia"), status: "area", desc: t("graph.desc.ia") },
+  { id: "sob", label: t("graph.node.soberania"), status: "area", desc: t("graph.desc.sob") },
+  { id: "oss", label: "Open Source", status: "area", desc: t("graph.desc.oss") },
+  { id: "edu", label: "Educación", status: "area", desc: t("graph.desc.edu") },
+  { id: "cog", label: t("graph.node.cognicion"), status: "area", desc: t("graph.desc.cog") },
+  {
+    id: "kontablo", label: "Kontablo", status: "pub",
+    href: "https://github.com/ChristianLuciani/accounting-esperanto",
+    desc: t("graph.desc.kontablo")
+  },
+  {
+    id: "drahma", label: "Drahma", status: "pub",
+    href: "https://github.com/DRAHMAN-ORG/drahman-org",
+    desc: t("graph.desc.drahma")
+  },
+  {
+    id: "profile", label: "profile-as-code", status: "pub",
+    href: "https://github.com/ChristianLuciani/profile-as-code",
+    desc: t("graph.desc.profile")
+  },
+  {
+    id: "now", label: "now", status: "pub",
+    href: "https://github.com/ChristianLuciani/now",
+    desc: t("graph.desc.now")
+  },
+  {
+    id: "brandkit", label: "cluciani-brand-kit", status: "pub",
+    href: "https://github.com/ChristianLuciani/cluciani-brand-kit",
+    desc: t("graph.desc.brandkit")
+  },
+  {
+    id: "pascotemplate", label: "profile-data-template", status: "pub",
+    href: "https://github.com/ChristianLuciani/profile-data-template",
+    desc: t("graph.desc.pascotemplate")
+  },
+  {
+    id: "site", label: "christianluciani.github.io", status: "pub",
+    href: "https://github.com/ChristianLuciani/christianluciani.github.io",
+    desc: t("graph.desc.site")
+  },
+  {
+    id: "profilereadme", label: t("graph.node.profilereadme"), status: "pub",
+    href: "https://github.com/ChristianLuciani/ChristianLuciani",
+    desc: t("graph.desc.profilereadme")
+  },
+  { id: "zentropy", label: "ZENTROPY", status: "desarrollo", desc: t("graph.desc.zentropy") },
+  { id: "clapps", label: t("graph.node.clapps"), status: "desarrollo", desc: t("graph.desc.clapps") },
+  { id: "estel", label: "Esteléctica", status: "desarrollo", desc: t("graph.desc.estel") },
+  { id: "topia", label: "Topia", status: "desarrollo", desc: t("graph.desc.topia") },
+  { id: "nelson", label: "Nelson Companion", status: "desarrollo", desc: t("graph.desc.nelson") },
+  { id: "noos", label: t("graph.node.noos"), status: "desarrollo", desc: t("graph.desc.noos") },
+  { id: "komuno", label: "Komuno", status: "desarrollo", desc: t("graph.desc.komuno") },
+  { id: "noesis", label: "Noesis", status: "desarrollo", desc: t("graph.desc.noesis") },
+  { id: "noetix", label: "Noetix", status: "desarrollo", desc: t("graph.desc.noetix") },
+  { id: "infoniz", label: "Infoniz", status: "desarrollo", desc: t("graph.desc.infoniz") },
+  { id: "taller", label: "Taller Editorial", status: "desarrollo", desc: t("graph.desc.taller") },
+  { id: "identeco", label: "Identeco Cifereca", status: "desarrollo", desc: t("graph.desc.identeco") },
+  {
+    id: "internaltools", label: t("graph.node.internaltools"), status: "desarrollo",
+    desc: t("graph.desc.internaltools")
+  },
+  { id: "estaseologia", label: "Estaseología", status: "futuro", desc: t("graph.desc.estaseologia") },
+  {
+    id: "sintergeticas", label: t("graph.node.sintergeticas"), status: "futuro",
+    desc: t("graph.desc.sintergeticas")
+  }
 ];
 
 /** Aristas del grafo, por id de nodo (`[desde, hacia]`). */
@@ -290,7 +333,9 @@ export function mountGrafo(): void {
                   ? "raíz"
                   : "área";
         tip.innerHTML =
-          '<b style="color:' + col(n) + '">' + n.label + (n.href ? " ↗" : "") + "</b><br><span style=\"color:var(--muted)\">" + stat + "</span>";
+          '<b style="color:' + col(n) + '">' + n.label + (n.href ? " ↗" : "") + "</b><br><span style=\"color:var(--muted)\">" + stat +
+          (n.status !== "raiz" && n.status !== "area" ? " · " + t("graph.tip.author") : "") +
+          "</span><br><span style=\"color:var(--muted)\">" + n.desc + "</span>";
       } else tipEl.style.display = "none";
     }
     canvasEl.style.cursor = n && n.href ? "pointer" : "default";
