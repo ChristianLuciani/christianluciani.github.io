@@ -10,6 +10,8 @@ interface GrafoNode {
   id: string;
   label: string;
   status: "raiz" | "area" | "pub" | "desarrollo" | "futuro";
+  /** Repo/sitio del proyecto: los nodos `pub` con `href` abren pestaña nueva. */
+  href?: string;
   x: number;
   y: number;
   vx: number;
@@ -40,15 +42,27 @@ export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">
   { id: "oss", label: "Open Source", status: "area" },
   { id: "edu", label: "Educación", status: "area" },
   { id: "cog", label: t("graph.node.cognicion"), status: "area" },
-  { id: "kontablo", label: "Kontablo", status: "pub" },
+  { id: "kontablo", label: "Kontablo", status: "pub", href: "https://github.com/ChristianLuciani/accounting-esperanto" },
+  { id: "drahma", label: "Drahma", status: "pub", href: "https://github.com/DRAHMAN-ORG/drahman-org" },
+  { id: "profile", label: "profile-as-code", status: "pub", href: "https://github.com/ChristianLuciani/profile-as-code" },
+  { id: "now", label: "now", status: "pub", href: "https://github.com/ChristianLuciani/now" },
+  { id: "brandkit", label: "cluciani-brand-kit", status: "pub", href: "https://github.com/ChristianLuciani/cluciani-brand-kit" },
+  { id: "pascotemplate", label: "profile-data-template", status: "pub", href: "https://github.com/ChristianLuciani/profile-data-template" },
+  { id: "site", label: "christianluciani.github.io", status: "pub", href: "https://github.com/ChristianLuciani/christianluciani.github.io" },
+  { id: "profilereadme", label: t("graph.node.profilereadme"), status: "pub", href: "https://github.com/ChristianLuciani/ChristianLuciani" },
   { id: "zentropy", label: "ZENTROPY", status: "desarrollo" },
-  { id: "drahma", label: "Drahma", status: "pub" },
   { id: "clapps", label: t("graph.node.clapps"), status: "desarrollo" },
   { id: "estel", label: "Esteléctica", status: "desarrollo" },
-  { id: "erp", label: t("graph.node.erp"), status: "pub" },
-  { id: "profile", label: "profile-as-code", status: "pub" },
   { id: "topia", label: "Topia", status: "desarrollo" },
-  { id: "nelson", label: "Nelson Companion", status: "desarrollo" }
+  { id: "nelson", label: "Nelson Companion", status: "desarrollo" },
+  { id: "noos", label: t("graph.node.noos"), status: "desarrollo" },
+  { id: "komuno", label: "Komuno", status: "desarrollo" },
+  { id: "noesis", label: "Noesis", status: "desarrollo" },
+  { id: "noetix", label: "Noetix", status: "desarrollo" },
+  { id: "infoniz", label: "Infoniz", status: "desarrollo" },
+  { id: "taller", label: "Taller Editorial", status: "desarrollo" },
+  { id: "identeco", label: "Identeco Cifereca", status: "desarrollo" },
+  { id: "internaltools", label: t("graph.node.internaltools"), status: "desarrollo" }
 ];
 
 /** Aristas del grafo, por id de nodo (`[desde, hacia]`). */
@@ -59,10 +73,19 @@ export const LINKS: [string, string][] = [
   ["edu", "drahma"], ["ia", "drahma"],
   ["edu", "clapps"], ["ia", "clapps"], ["cog", "clapps"],
   ["cog", "estel"],
-  ["sob", "erp"], ["oss", "erp"],
+  ["sob", "noos"], ["oss", "noos"], ["noos", "kontablo"], ["noos", "internaltools"],
   ["oss", "topia"], ["cog", "topia"],
-  ["oss", "profile"], ["ia", "profile"],
-  ["edu", "nelson"]
+  ["oss", "profile"], ["ia", "profile"], ["profile", "pascotemplate"], ["profile", "zentropy"],
+  ["edu", "nelson"],
+  ["raiz", "now"], ["now", "site"], ["now", "profilereadme"], ["now", "brandkit"],
+  ["raiz", "brandkit"],
+  ["sob", "komuno"], ["sob", "infoniz"], ["infoniz", "zentropy"], ["identeco", "infoniz"],
+  ["sob", "identeco"],
+  ["cog", "noesis"], ["estel", "noesis"],
+  ["cog", "noetix"], ["noesis", "noetix"], ["estel", "noetix"],
+  ["edu", "taller"], ["estel", "taller"],
+  ["clapps", "drahma"], ["clapps", "taller"], ["clapps", "noesis"], ["clapps", "noetix"],
+  ["fisica", "clapps"]
 ];
 
 export function mountGrafo(): void {
@@ -264,9 +287,10 @@ export function mountGrafo(): void {
                   ? "raíz"
                   : "área";
         tip.innerHTML =
-          '<b style="color:' + col(n) + '">' + n.label + "</b><br><span style=\"color:var(--muted)\">" + stat + "</span>";
+          '<b style="color:' + col(n) + '">' + n.label + (n.href ? " ↗" : "") + "</b><br><span style=\"color:var(--muted)\">" + stat + "</span>";
       } else tipEl.style.display = "none";
     }
+    canvasEl.style.cursor = n && n.href ? "pointer" : "default";
     if (n) {
       tipEl.style.left = Math.min(mx + 14, W - 230) + "px";
       tipEl.style.top = my - 10 + "px";
@@ -275,6 +299,10 @@ export function mountGrafo(): void {
   canvasEl.addEventListener("mouseleave", () => {
     hv = null;
     tipEl.style.display = "none";
+    canvasEl.style.cursor = "default";
+  });
+  canvasEl.addEventListener("click", () => {
+    if (hv && hv.href) window.open(hv.href, "_blank", "noopener");
   });
 
   loop();
