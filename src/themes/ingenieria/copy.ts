@@ -212,6 +212,103 @@ export const INGENIERIA_COPY: CopyPack = {
   "graph.node.internaltools": { es: "Aplicaciones Internas", en: "Internal Tools Gallery", runtime: true },
   "graph.node.sintergeticas": { es: "Máquinas Sintérgicas", en: "Synergetic Machines", runtime: true },
 
+  /* ── SALA GRAFO · tarjeta (tooltip): autor + descripción compacta ─────── */
+  "graph.tip.author": { es: "Autor · Christian Luciani", en: "Author · Christian Luciani", runtime: true },
+  "graph.desc.raiz": { es: "Autor de todos los proyectos del grafo", en: "Author of every project in the graph", runtime: true },
+  "graph.desc.fisica": { es: "Área: física universitaria y laboratorios", en: "Area: university physics and labs", runtime: true },
+  "graph.desc.ia": { es: "Área: agentes y cognición sintética", en: "Area: agents and synthetic cognition", runtime: true },
+  "graph.desc.sob": { es: "Área: soberanía tecnológica", en: "Area: technological sovereignty", runtime: true },
+  "graph.desc.oss": { es: "Área: contribuciones upstream", en: "Area: upstream contributions", runtime: true },
+  "graph.desc.edu": { es: "Área: docencia y aprendizaje", en: "Area: teaching and learning", runtime: true },
+  "graph.desc.cog": { es: "Área: filosofía de la cognición", en: "Area: philosophy of cognition", runtime: true },
+  "graph.desc.kontablo": {
+    es: "Esperanto contable: ontología de grafos → IFRS/XBRL",
+    en: "An Esperanto for accounting: graph ontology → IFRS/XBRL",
+    runtime: true
+  },
+  "graph.desc.drahma": {
+    es: "36 tutores socráticos para el currículo ecuatoriano",
+    en: "36 Socratic tutors for the Ecuadorian curriculum",
+    runtime: true
+  },
+  "graph.desc.profile": {
+    es: "Motor spec-driven: un SSOT compila todo el perfil",
+    en: "Spec-driven engine: one SSOT compiles the whole profile",
+    runtime: true
+  },
+  "graph.desc.now": { es: "Feed de lo que estoy haciendo ahora", en: "Feed of what I'm doing now", runtime: true },
+  "graph.desc.brandkit": { es: "Kit de identidad visual de la marca", en: "Brand visual identity kit", runtime: true },
+  "graph.desc.pascotemplate": {
+    es: "Plantilla para arrancar un profile-data",
+    en: "Starter template for a profile-data",
+    runtime: true
+  },
+  "graph.desc.site": { es: "Este sitio: el CV, sala por sala", en: "This site: the CV, room by room", runtime: true },
+  "graph.desc.profilereadme": { es: "README del perfil de GitHub", en: "GitHub profile README", runtime: true },
+  "graph.desc.zentropy": {
+    es: "SO cognitivo personal: captura y destila conversaciones",
+    en: "Personal cognitive OS: captures and distills conversations",
+    runtime: true
+  },
+  "graph.desc.clapps": {
+    es: "Plataforma autodidacta, contrapunto al LMS",
+    en: "Self-taught platform, a counterpoint to the LMS",
+    runtime: true
+  },
+  "graph.desc.estel": {
+    es: "Filosofía del conocimiento colectivo (Tronco/Rizoma)",
+    en: "Philosophy of collective knowledge (Trunk/Rhizome)",
+    runtime: true
+  },
+  "graph.desc.topia": {
+    es: "Newsletter con rigor epistémico: eutopías alcanzables",
+    en: "Epistemically rigorous newsletter: achievable eutopias",
+    runtime: true
+  },
+  "graph.desc.nelson": {
+    es: "PWA por voz para mi padre (afasia), offline-first",
+    en: "Voice-guided PWA for my father (aphasia), offline-first",
+    runtime: true
+  },
+  "graph.desc.noos": {
+    es: "Reduce entropía organizacional con cognición distribuida",
+    en: "Reduces organizational entropy with distributed cognition",
+    runtime: true
+  },
+  "graph.desc.komuno": { es: "Organización comunitaria soberana", en: "Sovereign community organization", runtime: true },
+  "graph.desc.noesis": {
+    es: "Comprensión: runtime cognitivo junto a Noetix",
+    en: "Understanding: cognitive runtime alongside Noetix",
+    runtime: true
+  },
+  "graph.desc.noetix": {
+    es: "Síntesis: runtime cognitivo junto a Noesis",
+    en: "Synthesis: cognitive runtime alongside Noesis",
+    runtime: true
+  },
+  "graph.desc.infoniz": {
+    es: "Método/paradigma (no la instancia personal)",
+    en: "Method/paradigm (not the personal instance)",
+    runtime: true
+  },
+  "graph.desc.taller": { es: "Publicación editorial y diseño", en: "Editorial publishing and design", runtime: true },
+  "graph.desc.identeco": { es: "Identidad digital verificable", en: "Verifiable digital identity", runtime: true },
+  "graph.desc.internaltools": {
+    es: "Galería de aplicaciones internas",
+    en: "Internal applications gallery",
+    runtime: true
+  },
+  "graph.desc.estaseologia": {
+    es: "Idea en exploración filosófica",
+    en: "Idea in philosophical exploration",
+    runtime: true
+  },
+  "graph.desc.sintergeticas": {
+    es: "Idea: sinergia humano–cognición sintética",
+    en: "Idea: human–synthetic-cognition synergy",
+    runtime: true
+  },
+
   /* ── SALA COMPETENCIAS (La Paleta) ──────────────────────────── */
   "room.competencias.interests": {
     es: "Escalada en roca · Montañismo · Cine asiático · Neurociencias ·\n        Consecuencias filosóficas de la cognición sintética post-humana · Nutrición · Meditación ·",
