@@ -167,7 +167,7 @@ línea de registro (§8 FASE 5).
 | clasificación de Trayectoria (`experience[]` → `professional`/`training`) | `Curation.experienceSections` (§5.5), resuelta por `activeCuration()` | curación (sin copy) |
 | prosa de perfil (print-CV y sala de Perfil del sitio) | `PROFILE.positioning.statement` (SSOT) — la selección de campo vive en `src/content/cv/profile-prose.ts` (`PROFILE_PROSE`) | hecho (derivado, #122) |
 | feed «Ahora» (fecha + link, 5 filas) | `ChristianLuciani/now` con tag pineado en `now.lock.json` → `src/data/now.generated.ts` | chrome (nunca JSON-LD/FAQ, #117) |
-| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 28 nodos y las 50 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`roomBodies`) | curación (ref. `projects` SSOT) |
+| grafo constelación (nodos/aristas) | roadmap — sin módulo de curación; los 30 nodos y las 52 aristas viven en `src/ts/graph/grafo.ts` (`NODOS`/`LINKS`); la sala (lede + canvas) en `src/templates/sala_html.ts` (`roomBodies`) | curación (ref. `projects` SSOT) |
 | galería placeholders | roadmap — la sala se oculta desde la curación del tema (`salas:galeria` en `exclude`), aplicada al construir las salas del manifest en `src/themes/museo/narrative.ts`; shell en `src/templates/sala_html.ts` (`roomBodies`) | curación |
 | CSS: tokens, tipografía, densidad | `src/themes/museo/skin.css` (el head la emite) | presentación (FASE 5 · #130) |
 | ilusiones, animaciones, canvas | `src/ts/` | presentación (no editable por temas) |

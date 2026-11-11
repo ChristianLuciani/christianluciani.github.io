@@ -190,7 +190,7 @@ export const MUSEO_COPY: CopyPack = {
   "room.grafo.published": { es: ", publicado · ", en: ", published · " },
   "room.grafo.grey": { es: "gris", en: "grey" },
   "room.grafo.development": { es: ", en desarrollo · ", en: ", in development · " },
-  "room.grafo.gold": { es: "dorado", en: "golden" },
+  "room.grafo.gold": { es: "Dorado", en: "Golden" },
   "room.grafo.idea": { es: ", todavía una idea.", en: ", still an idea." },
 
   /* ── SALA GRAFO · labels de los nodos del canvas ─────────────── */
@@ -209,6 +209,7 @@ export const MUSEO_COPY: CopyPack = {
   },
   "graph.node.profilereadme": { es: "Perfil GitHub", en: "GitHub Profile", runtime: true },
   "graph.node.internaltools": { es: "Aplicaciones Internas", en: "Internal Tools Gallery", runtime: true },
+  "graph.node.sintergeticas": { es: "Máquinas Sintérgicas", en: "Synergetic Machines", runtime: true },
 
   /* ── SALA COMPETENCIAS (La Paleta) ──────────────────────────── */
   "room.competencias.interests": {
