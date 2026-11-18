@@ -1,20 +1,27 @@
 {
   "schema": "now/v1",
-  "asOf": "2026-11-10T02:06:22Z",
+  "asOf": "2026-11-18T13:56:38Z",
   "items": [
     {
-      "kind": "pr",
-      "title": "ci(now): falla rápido si el CI del refresh espera aprobación humana",
-      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/181",
-      "date": "2026-11-09",
-      "source": "github:ChristianLuciani/christianluciani.github.io"
+      "kind": "release",
+      "title": "profile-as-code v0.6.0",
+      "url": "https://github.com/ChristianLuciani/profile-as-code/releases/tag/v0.6.0",
+      "date": "2026-11-18",
+      "source": "github:ChristianLuciani/profile-as-code"
     },
     {
       "kind": "pr",
-      "title": "ci(now): refresh estilo Dependabot (abre el PR y se detiene)",
-      "url": "https://github.com/ChristianLuciani/christianluciani.github.io/pull/183",
-      "date": "2026-11-09",
-      "source": "github:ChristianLuciani/christianluciani.github.io"
+      "title": "fix(release): verify separates PROCESSING from FAIL during npm's async window (#507)",
+      "url": "https://github.com/ChristianLuciani/profile-as-code/pull/538",
+      "date": "2026-11-17",
+      "source": "github:ChristianLuciani/profile-as-code"
+    },
+    {
+      "kind": "pr",
+      "title": "feat(audit): experience[].highlightRefs — claim-against-unbuilt + claim-without-proof (D31, #529)",
+      "url": "https://github.com/ChristianLuciani/profile-as-code/pull/539",
+      "date": "2026-11-16",
+      "source": "github:ChristianLuciani/profile-as-code"
     },
     {
       "kind": "release",
@@ -22,13 +29,6 @@
       "url": "https://github.com/ChristianLuciani/cluciani-brand-kit/releases/tag/v1.3.0",
       "date": "2026-11-09",
       "source": "github:ChristianLuciani/cluciani-brand-kit"
-    },
-    {
-      "kind": "release",
-      "title": "profile-as-code v0.5.0",
-      "url": "https://github.com/ChristianLuciani/profile-as-code/releases/tag/v0.5.0",
-      "date": "2026-11-07",
-      "source": "github:ChristianLuciani/profile-as-code"
     },
     {
       "kind": "release",
