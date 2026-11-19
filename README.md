@@ -8,8 +8,8 @@ El mark animado del sitio se llama **Espirángulo** (espiral + triángulo).
 
 El mark **estático** es canónico en
 [`brand-kit-christianluciani`](https://github.com/ChristianLuciani/brand-kit-christianluciani)
-(`v1.4.0`); `assets/brand/logo/` es un espejo vendored pinneado en
-`brand-kit.lock.json` y verificado con `npm run brand:verify`. La animación
+(el tag vigente vive en `brand-kit.lock.json`); `assets/brand/logo/` es un
+espejo vendored pinneado en ese lock y verificado con `npm run brand:verify`. La animación
 runtime y el clock viven en este repo.
 
 ## Versiones publicadas
@@ -52,7 +52,7 @@ christianluciani.github.io/
 ├── tests/
 │   └── golden/             ← un snapshot HTML por tema (museo, ingenieria, ingenieria-nocturno)
 ├── public/                 ← servido tal cual (audio, thumbs, OG, QR, robots/llms/AI-POLICY)
-├── assets/                 ← iconos inline + espejo vendored de marca (brand kit v1.4.0)
+├── assets/                 ← iconos inline + espejo vendored de marca (pin en brand-kit.lock.json)
 ├── docs/
 │   ├── SPEC.md             ← SPEC del sitio (§5 contenido/curación, §8 FASE 5 temas)
 │   ├── CREAR-TEMA.md       ← receta operativa para crear/ajustar un tema
