@@ -7,7 +7,7 @@ El mismo contenido factual (SSOT) se publica en **tres versiones**: el museo (de
 El mark animado del sitio se llama **Espirángulo** (espiral + triángulo).
 
 El mark **estático** es canónico en
-[`cluciani-brand-kit`](https://github.com/ChristianLuciani/cluciani-brand-kit)
+[`brand-kit-christianluciani`](https://github.com/ChristianLuciani/brand-kit-christianluciani)
 (`v1.3.0`); `assets/brand/logo/` es un espejo vendored pinneado en
 `brand-kit.lock.json` y verificado con `npm run brand:verify`. La animación
 runtime y el clock viven en este repo.

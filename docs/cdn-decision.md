@@ -7,7 +7,7 @@
 > **Actualización 2026-11-03 — favicon teal (16 sólo teal).** El sitio declara
 > el **tile teal** del brand kit (`favicon-aurea-teal.svg` + `-teal-32.png` +
 > `-teal-16.png`) y deja de declarar el transparente; el pin subió a
-> `cluciani-brand-kit@v1.1.0` (`brand-kit.lock.json`, 66 assets) y
+> `brand-kit-christianluciani@v1.1.0` (`brand-kit.lock.json`, 66 assets) y
 > `vars.BRAND_KIT_CDN_BASE` debía apuntar al mismo tag. **Actualizado 2026-11-09 (issue
 > #175):** el pin del lock subió a `v1.3.0` (release aditivo: suma `assets/badge/`;
 > `assets/logo/` no cambia, 89 assets intactos) y `vars.BRAND_KIT_CDN_BASE` apunta al
@@ -16,13 +16,13 @@
 
 > **Actualización 2026-10-27 — marca separada del runtime.** Los 3 favicons ya
 > no se resuelven contra el repo del sitio: se sirven desde
-> `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (mapa
+> `brand-kit-christianluciani@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (mapa
 > `/assets/brand/**` → `assets/logo/**`). El OG y las 4 thumbs siguen en este
 > repo (`VITE_ASSET_BASE_URL`). El espejo local de marca queda como fallback,
 > pinneado en `brand-kit.lock.json` y verificado por `npm run brand:verify`.
 > Sin `VITE_BRAND_KIT_BASE_URL`, los favicons se sirven desde Pages como antes.
 > En GitHub Actions la base se toma de `vars.BRAND_KIT_CDN_BASE`; la variable
-> está seteada a `https://cdn.jsdelivr.net/gh/ChristianLuciani/cluciani-brand-kit@v1.0.1`.
+> está seteada a `https://cdn.jsdelivr.net/gh/ChristianLuciani/brand-kit-christianluciani@v1.0.1`.
 
 ## Contexto
 

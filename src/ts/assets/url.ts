@@ -5,7 +5,7 @@ import { ASSET_MANIFEST, type PaperKey } from "./manifest";
  *
  * Dos palancas, dos fuentes:
  *   · `VITE_ASSET_BASE_URL`      → assets del sitio (OG, thumbs, imágenes, audio)
- *   · `VITE_BRAND_KIT_BASE_URL`  → marca canónica en cluciani-brand-kit@tag
+ *   · `VITE_BRAND_KIT_BASE_URL`  → marca canónica en brand-kit-christianluciani@tag
  *
  * La marca NO se sirve del repo del sitio cuando la base del brand kit está
  * configurada: `/assets/brand/**` se resuelve contra `assets/logo/**` del
@@ -67,7 +67,7 @@ export function cdnRepoPath(servedPath: string): string {
   return served.slice(1);
 }
 
-/** Ruta de un asset de marca en el repo canónico `cluciani-brand-kit`. */
+/** Ruta de un asset de marca en el repo canónico `brand-kit-christianluciani`. */
 export function brandKitRepoPath(servedPath: string): string | null {
   const served = rootPath(servedPath);
   if (!served.startsWith("/assets/brand/")) return null;

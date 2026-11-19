@@ -13,7 +13,7 @@
 > 2026-10-27. El nombre es del símbolo, no de la persona ni del sitio; el
 > wordmark sigue siendo «Christian Luciani».
 >
-> **Hogar canónico del mark estático:** `ChristianLuciani/cluciani-brand-kit`
+> **Hogar canónico del mark estático:** `ChristianLuciani/brand-kit-christianluciani`
 > (tag `v1.3.0`, commit `e70c1f0`). Este repo es el **consumidor runtime**;
 > `assets/brand/logo/` es un espejo vendored pinneado en `brand-kit.lock.json`
 > y verificado con `npm run brand:verify`. No se edita a mano.
@@ -289,7 +289,7 @@ transparente o blanco controlado.
 - ❌ Rotar, estirar o reflectar el símbolo.
 - ❌ Recolorear la C a mano o aplanar su bisel (el oro es la firma; el
   acabado ámbar→oro→luz se genera desde `cFinish`).
-- ❌ Dibujar el símbolo a mano: **regenerar en `cluciani-brand-kit`** (ahí
+- ❌ Dibujar el símbolo a mano: **regenerar en `brand-kit-christianluciani`** (ahí
   vive el generador canónico). En este repo el espejo no se regenera.
 - ❌ Editar los SVG/PNG generados — son OUTPUT; la fuente es `geometry.mjs`.
 - ❌ Usar el full en <48px (el ruido de la constelación no se lee; usar
@@ -343,7 +343,7 @@ assets/brand/logo/
   og-image-aurea-settled.png          # 1200×630 settled (v1.2.0)
 ```
 
-El inventario y la regeneración canónicos viven en `cluciani-brand-kit`
+El inventario y la regeneración canónicos viven en `brand-kit-christianluciani`
 (tag `v1.3.0`). En este repo `assets/brand/logo/` es un espejo vendored: se
 verifica con `npm run brand:verify`; no se regenera acá. El script local
 `tools/logo/generate-logo.mjs` queda deprecado como referencia/sync.

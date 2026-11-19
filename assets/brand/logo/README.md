@@ -1,10 +1,10 @@
 # Espejo vendored — no editar
 
 Estos 89 assets son una **copia fallback** del mark canónico que vive en
-[`ChristianLuciani/cluciani-brand-kit`](https://github.com/ChristianLuciani/cluciani-brand-kit).
+[`ChristianLuciani/brand-kit-christianluciani`](https://github.com/ChristianLuciani/brand-kit-christianluciani).
 
 - **Pin:** `v1.3.0` (`e70c1f0…`), registrado en `brand-kit.lock.json`.
-- **CDN canónica:** `https://cdn.jsdelivr.net/gh/ChristianLuciani/cluciani-brand-kit@v1.3.0/assets/logo/`.
+- **CDN canónica:** `https://cdn.jsdelivr.net/gh/ChristianLuciani/brand-kit-christianluciani@v1.3.0/assets/logo/`.
 - **Verificación:** `npm run brand:verify` compara SHA-256 del espejo contra el lock.
 - **Regla:** no se editan a mano ni se generan desde este repo; el generador
   canónico y el manual viven en el brand kit. La animación runtime sí vive en

@@ -1,7 +1,7 @@
 # Plan — Migración de assets a CDN (agnóstica)
 
 > **Actualización 2026-11-09 — pin v1.3.0 (#175).** El pin del espejo subió a
-> `cluciani-brand-kit@v1.3.0` (`brand-kit.lock.json`, commit `e70c1f0`); el
+> `brand-kit-christianluciani@v1.3.0` (`brand-kit.lock.json`, commit `e70c1f0`); el
 > release es aditivo (suma `assets/badge/`), `assets/logo/` no cambia y el
 > espejo no se re-vendoriza. `vars.BRAND_KIT_CDN_BASE` debe apuntar al mismo
 > tag.
@@ -14,7 +14,7 @@
 > logo del print-CV, #122).
 
 > **Actualización 2026-10-27 — marca separada.** Los 3 favicons ya se resuelven
-> desde `cluciani-brand-kit@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (deploy:
+> desde `brand-kit-christianluciani@v1.0.1` con `VITE_BRAND_KIT_BASE_URL` (deploy:
 > `vars.BRAND_KIT_CDN_BASE`); el OG y las 4 thumbs siguen en este repo. El
 > espejo local de marca está pinneado en `brand-kit.lock.json` y se verifica con
 > `npm run brand:verify`.

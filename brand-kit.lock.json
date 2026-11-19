@@ -1,9 +1,9 @@
 {
   "version": 1,
-  "source": "ChristianLuciani/cluciani-brand-kit",
+  "source": "ChristianLuciani/brand-kit-christianluciani",
   "tag": "v1.3.0",
   "commit": "e70c1f0ff09aad91ea4a0892de19abeb3fdbc03f",
-  "cdnBase": "https://cdn.jsdelivr.net/gh/ChristianLuciani/cluciani-brand-kit@v1.3.0",
+  "cdnBase": "https://cdn.jsdelivr.net/gh/ChristianLuciani/brand-kit-christianluciani@v1.3.0",
   "localDir": "assets/brand/logo",
   "assets": {
     "apple-touch-icon-aurea.png": "cb720d8345c9e760d0a010e6d3e93533e6c6a496ec3d0bbc5c11c7bcef3651ea",
