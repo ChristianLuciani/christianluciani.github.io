@@ -2,7 +2,7 @@
  * generate-logo.mjs — [DEPRECADO en este repo]
  *
  * El paquete canónico de assets estáticos se genera en
- * `ChristianLuciani/cluciani-brand-kit`. Aquí `assets/brand/logo` es un espejo
+ * `ChristianLuciani/brand-kit-christianluciani`. Aquí `assets/brand/logo` es un espejo
  * vendored pinneado (brand-kit.lock.json) y no se regenera: este archivo queda
  * como referencia histórica y para el sync del brand kit (#1).
  *

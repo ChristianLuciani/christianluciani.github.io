@@ -68,8 +68,8 @@ export const NODOS: Omit<GrafoNode, "x" | "y" | "vx" | "vy" | "fx" | "fy" | "r">
     desc: t("graph.desc.now")
   },
   {
-    id: "brandkit", label: "cluciani-brand-kit", status: "pub",
-    href: "https://github.com/ChristianLuciani/cluciani-brand-kit",
+    id: "brandkit", label: "brand-kit-christianluciani", status: "pub",
+    href: "https://github.com/ChristianLuciani/brand-kit-christianluciani",
     desc: t("graph.desc.brandkit")
   },
   {

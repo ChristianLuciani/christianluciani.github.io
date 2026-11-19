@@ -1,6 +1,6 @@
 /**
  * check-brand-kit.mjs — verifica que el espejo vendored de marca coincida con
- * el pin de `brand-kit.lock.json` (tag inmutable de cluciani-brand-kit).
+ * el pin de `brand-kit.lock.json` (tag inmutable de brand-kit-christianluciani).
  *
  * El sitio es consumidor: `assets/brand/logo/` es una copia fallback, no la
  * fuente. Este check detecta drift local (archivo editado, faltante o extra)
@@ -30,7 +30,7 @@ try {
 if (!/^v\d+\.\d+\.\d+$/.test(lock.tag ?? "")) fail.push(`tag no inmutable: ${lock.tag}`);
 if (lock.cdnBase !== `https://cdn.jsdelivr.net/gh/${lock.source}@${lock.tag}`)
   fail.push(`cdnBase no coincide con source@tag: ${lock.cdnBase}`);
-if (lock.source !== "ChristianLuciani/cluciani-brand-kit")
+if (lock.source !== "ChristianLuciani/brand-kit-christianluciani")
   fail.push(`source inesperado: ${lock.source}`);
 
 const expected = Object.keys(lock.assets ?? {}).sort();

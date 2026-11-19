@@ -211,7 +211,7 @@ concepto matemático), *La C áurea* (pone el foco en la firma, no en el espiral
 Pendiente: (1) definir el alcance completo de uso (sitio, `alt`, favicon, OG,
 brand kit); (2) verificar colisión de uso/marca antes de un registro. El nombre
 ya está aplicado al laboratorio; el brand kit lo recibe en
-[cluciani-brand-kit#3](https://github.com/ChristianLuciani/cluciani-brand-kit/issues/3).
+[brand-kit-christianluciani#3](https://github.com/ChristianLuciani/brand-kit-christianluciani/issues/3).
 
 ## Publicación
 

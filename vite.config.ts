@@ -15,7 +15,7 @@ const ROOT = fileURLToPath(new URL(".", import.meta.url));
 const ASSET_BASE = artifactBase();
 
 /* Copia vendored de los assets de marca que el sitio SIRVE, pineada en
- * brand-kit.lock.json (cluciani-brand-kit@tag).
+ * brand-kit.lock.json (brand-kit-christianluciani@tag).
  *   · 4 favicons: el tile teal —único que se lee a 16 px— en SVG + 32 + 16; el
  *     transparente (`favicon-aurea.svg`/`-32.png`) queda para superficies
  *     controladas y no se publica como icono del sitio.
