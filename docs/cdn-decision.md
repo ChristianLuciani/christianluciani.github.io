@@ -11,7 +11,9 @@
 > `vars.BRAND_KIT_CDN_BASE` debía apuntar al mismo tag. **Actualizado 2026-11-09 (issue
 > #175):** el pin del lock subió a `v1.3.0` (release aditivo: suma `assets/badge/`;
 > `assets/logo/` no cambia, 89 assets intactos) y `vars.BRAND_KIT_CDN_BASE` apunta al
-> mismo tag. Medido a
+> mismo tag. **Actualizado 2026-11-19 (#191):** el pin subió a `v1.4.0` (aditivo sobre
+> `v1.3.0`: suma `templates/ppt/`; `assets/logo/` intacto, 89 assets) y
+> `vars.BRAND_KIT_CDN_BASE` apunta al mismo tag. Medido a
 > 2026-11-03.
 
 > **Actualización 2026-10-27 — marca separada del runtime.** Los 3 favicons ya

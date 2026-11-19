@@ -1,5 +1,11 @@
 # Plan — Migración de assets a CDN (agnóstica)
 
+> **Actualización 2026-11-19 — pin v1.4.0 (#191).** El pin del espejo subió a
+> `brand-kit-christianluciani@v1.4.0` (`brand-kit.lock.json`, commit `46fc1f5`); el
+> release es aditivo sobre v1.3.0 (suma `templates/ppt/`), `assets/logo/` no cambia
+> y el espejo no se re-vendoriza. `vars.BRAND_KIT_CDN_BASE` debe apuntar al mismo
+> tag.
+>
 > **Actualización 2026-11-09 — pin v1.3.0 (#175).** El pin del espejo subió a
 > `brand-kit-christianluciani@v1.3.0` (`brand-kit.lock.json`, commit `e70c1f0`); el
 > release es aditivo (suma `assets/badge/`), `assets/logo/` no cambia y el
