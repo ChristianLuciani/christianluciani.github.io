@@ -1,7 +1,21 @@
 {
   "schema": "now/v1",
-  "asOf": "2026-11-18T13:56:38Z",
+  "asOf": "2026-11-28T01:57:53Z",
   "items": [
+    {
+      "kind": "pr",
+      "title": "Create FUNDING.yml",
+      "url": "https://github.com/ChristianLuciani/accounting-esperanto/pull/130",
+      "date": "2026-11-27",
+      "source": "github:ChristianLuciani/accounting-esperanto"
+    },
+    {
+      "kind": "pr",
+      "title": "Potential fix for code scanning alert no. 1: Incomplete multi-character sanitization",
+      "url": "https://github.com/ChristianLuciani/brand-kit-christianluciani/pull/27",
+      "date": "2026-11-27",
+      "source": "github:ChristianLuciani/brand-kit-christianluciani"
+    },
     {
       "kind": "release",
       "title": "profile-as-code v0.6.0",
@@ -10,25 +24,11 @@
       "source": "github:ChristianLuciani/profile-as-code"
     },
     {
-      "kind": "pr",
-      "title": "fix(release): verify separates PROCESSING from FAIL during npm's async window (#507)",
-      "url": "https://github.com/ChristianLuciani/profile-as-code/pull/538",
-      "date": "2026-11-17",
-      "source": "github:ChristianLuciani/profile-as-code"
-    },
-    {
-      "kind": "pr",
-      "title": "feat(audit): experience[].highlightRefs — claim-against-unbuilt + claim-without-proof (D31, #529)",
-      "url": "https://github.com/ChristianLuciani/profile-as-code/pull/539",
-      "date": "2026-11-16",
-      "source": "github:ChristianLuciani/profile-as-code"
-    },
-    {
       "kind": "release",
-      "title": "cluciani-brand-kit v1.3.0",
-      "url": "https://github.com/ChristianLuciani/cluciani-brand-kit/releases/tag/v1.3.0",
+      "title": "brand-kit-christianluciani v1.3.0",
+      "url": "https://github.com/ChristianLuciani/brand-kit-christianluciani/releases/tag/v1.3.0",
       "date": "2026-11-09",
-      "source": "github:ChristianLuciani/cluciani-brand-kit"
+      "source": "github:ChristianLuciani/brand-kit-christianluciani"
     },
     {
       "kind": "release",
